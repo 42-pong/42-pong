@@ -7,6 +7,9 @@ WORKDIR /pong
 # todo: 一旦全部
 COPY . .
 
+RUN pip install --upgrade pip && \
+    pip3 install --no-cache-dir -r requirements.txt
+
 EXPOSE 8000
 
 # todo: pythonの簡易的なserver起動(仮)。Djangoを入れたらDjango起動に変更
