@@ -1,0 +1,37 @@
+name: 'Discord Notification: Pull Rquest: review requested'
+on:
+  pull_request:
+    types: [review_requested]
+
+jobs:
+  PR-discord-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: post message via discord-webhook-url
+        run: |
+          # temporary files
+          TEMP_CURL_DATA="data_for_curl.json"
+
+          # 'GitHub' Bot 
+          BOT_USERNAME="GitHub"
+          BOT_AVATAR_URL="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+
+          # notification message
+          NOTIFICATION_CATEGORY="Pull Request"
+          NOTIFICATION_MESSAGE="**[${NOTIFICATION_CATEGORY}]**\nHello World"
+
+          # temporary data file for 'curl' with POST
+          cat <<EOF >"${TEMP_CURL_DATA}"
+          { 
+                "username": "${BOT_USERNAME}",
+                "avatar_url": "${BOT_AVATAR_URL}",
+                "content": "${NOTIFICATION_MESSAGE}"
+          }
+          EOF
+
+          # notify the message to 'secrets.DISCORD_WEBHOOK_URL'
+          curl \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @${TEMP_CURL_DATA} \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
