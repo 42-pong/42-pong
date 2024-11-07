@@ -8,8 +8,13 @@ COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip3 install --no-cache-dir -r requirements.txt
 
+COPY ./tools/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# todo: USER設定
+
 EXPOSE 8000
 
-# todo: pythonの簡易的なserver起動(仮)。Djangoを入れたらDjango起動に変更
-CMD ["python", "-m", "http.server", "8000"]
-
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# defaultはlocalhostのみにbindされるため0.0.0.0を指定
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
