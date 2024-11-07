@@ -1,3 +1,6 @@
+# image/container
+BACKEND	:=	backend
+
 .PHONY: all
 all: up
 
@@ -35,3 +38,17 @@ ps:
 .PHONY: psa
 psa:
 	@docker ps -a
+
+# -------------------------------------------------------
+# docker exec
+# -------------------------------------------------------
+.PHONY: exec-be
+exec-be:
+	@docker exec -it $(BACKEND) /bin/bash
+
+# -------------------------------------------------------
+# docker logs
+# -------------------------------------------------------
+.PHONY: logs-be
+logs-be:
+	@docker logs $(BACKEND)
