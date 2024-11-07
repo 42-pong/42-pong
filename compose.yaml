@@ -1,11 +1,24 @@
 services:
   backend:
+    container_name: backend
+    restart: always
+    ports:
+      - "8000:8000"
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: backend:42
+    env_file: .env
+    working_dir: "/pong/"
+    volumes:
+      - ./backend/pong:/pong
     networks:
       - transcendence
 
-  db:
-    networks:
-      - transcendence
+  # todo: DBが必要になってから追加
+  # db:
+  #   networks:
+  #     - transcendence
 
 networks:
   transcendence:

@@ -7,6 +7,8 @@ WORKDIR /pong
 # todo: 一旦全部
 COPY . .
 
+EXPOSE 8000
+
 # todo: pythonの簡易的なserver起動(仮)。Djangoを入れたらDjango起動に変更
 CMD ["python", "-m", "http.server", "8000"]
 
