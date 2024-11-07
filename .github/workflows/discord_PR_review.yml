@@ -9,6 +9,13 @@ jobs:
     steps:
       - name: post message via discord-webhook-url
         run: |
+          # echo one random element from the first input argument
+          # - the first input argument should be space-separated string
+          echo_one_random_element(){
+            INPUT_ARRAY=($1)
+            echo "${INPUT_ARRAY[RANDOM%${#INPUT_ARRAY[@]}]}"
+          }
+
           # temporary files
           TEMP_CURL_DATA="data_for_curl.json"
 
@@ -16,16 +23,24 @@ jobs:
           BOT_USERNAME="GitHub"
           BOT_AVATAR_URL="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
 
+          # REVIEWER
+          REVIEWER_LOGIN="${{ github.event.requested_reviewer.login }}"
+          REVIEWER_DISCORD_ID="$(echo '${{ vars.MEMBERS }}' | jq -r .\"${REVIEWER_LOGIN}\".\"discord_id\")"
+
+          # random emoji
+          RANDOM_EMOJI="$(echo_one_random_element '${{ vars.EMOJI_SET }}')"
+
           # notification message
           NOTIFICATION_CATEGORY="Pull Request"
-          NOTIFICATION_MESSAGE="**[${NOTIFICATION_CATEGORY}]**\nHello World"
+          NOTIFICATION_MESSAGE="**[${NOTIFICATION_CATEGORY}]**\n${RANDOM_EMOJI} <@${REVIEWER_DISCORD_ID}> レビュー依頼がありました。"
 
           # temporary data file for 'curl' with POST
           cat <<EOF >"${TEMP_CURL_DATA}"
           { 
                 "username": "${BOT_USERNAME}",
                 "avatar_url": "${BOT_AVATAR_URL}",
-                "content": "${NOTIFICATION_MESSAGE}"
+                "content": "${NOTIFICATION_MESSAGE}",
+                "allowed_mentions": { "parse": ["users"] }
           }
           EOF
 
