@@ -62,21 +62,21 @@ jobs:
           # temporary data file for 'curl' with POST
           cat <<EOF >"${TEMPFILE_CURL_DATA}"
           { 
-                "username": "${BOT_USERNAME}",
-                "avatar_url": "${BOT_AVATAR_URL}",
-                "content": "${NOTIFICATION_MESSAGE}",
-                "allowed_mentions": { "parse": ["users"] },
-                "embeds": [{
-                      "author": {
-                            "name": "${PR_USER_LOGIN}",
-                            "url": "${PR_USER_URL}",
-                            "icon_url": "${PR_USER_AVATAR_URL}"
-                      },
-                      "color": "${PR_USER_COLOR}",
-                      "title": "${EMBED_TITLE}",
-                      "description": "${EMBED_DESCRIPTION}",
-                      "url": "${EMBED_URL}"
-                }]
+              "username": "${BOT_USERNAME}",
+              "avatar_url": "${BOT_AVATAR_URL}",
+              "content": "${NOTIFICATION_MESSAGE}",
+              "allowed_mentions": { "parse": ["users"] },
+              "embeds": [{
+                  "author": {
+                      "name": "${PR_USER_LOGIN}",
+                      "url": "${PR_USER_URL}",
+                      "icon_url": "${PR_USER_AVATAR_URL}"
+                  },
+                  "color": "${PR_USER_COLOR}",
+                  "title": "${EMBED_TITLE}",
+                  "description": "${EMBED_DESCRIPTION}",
+                  "url": "${EMBED_URL}"
+              }]
           }
           EOF
 
