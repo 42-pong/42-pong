@@ -16,12 +16,27 @@ jobs:
             echo "${INPUT_ARRAY[RANDOM%${#INPUT_ARRAY[@]}]}"
           }
 
+          # echo file content with replacing all the double quotes: " -> \"
+          echo_file_content_with_escaped_double_quotes(){
+            INPUT_FILE="$1"
+            cat <"$INPUT_FILE" | sed 's/"/\\&/g'
+          }
+
           # temporary files
           TEMP_CURL_DATA="data_for_curl.json"
+          TEMP_EMBED_TITLE="embed_title.txt"
 
           # 'GitHub' Bot 
           BOT_USERNAME="GitHub"
           BOT_AVATAR_URL="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+
+          # PR_USER
+          PR_USER_LOGIN='${{ github.event.pull_request.user.login }}'
+          PR_USER_URL='${{ github.event.pull_request.user.html_url }}'
+          PR_USER_AVATAR_URL='${{ github.event.pull_request.user.avatar_url }}'
+          PR_USER_INFO="$(echo '${{ vars.MEMBERS }}' | jq -r .\"${PR_USER_LOGIN}\")"
+          PR_USER_INTRA="$(echo "${PR_USER_INFO}" | jq -r .\"intra\")"
+          PR_USER_COLOR="$(echo "${PR_USER_INFO}" | jq -r .\"color\")"
 
           # REVIEWER
           REVIEWER_LOGIN="${{ github.event.requested_reviewer.login }}"
@@ -34,13 +49,34 @@ jobs:
           NOTIFICATION_CATEGORY="Pull Request"
           NOTIFICATION_MESSAGE="**[${NOTIFICATION_CATEGORY}]**\n${RANDOM_EMOJI} <@${REVIEWER_DISCORD_ID}> レビュー依頼がありました。"
 
+          # temporary text file for EMBED_TITLE
+          cat <<EOF >"${TEMP_EMBED_TITLE}"
+          [PR #${{ github.event.pull_request.number }}] ${{ github.event.pull_request.title }}
+          EOF
+
+          # EMBED
+          EMBED_TITLE="$(echo_file_content_with_escaped_double_quotes "${TEMP_EMBED_TITLE}")"
+          EMBED_DESCRIPTION='> `${{ github.event.pull_request.base.ref }}` <- `${{ github.event.pull_request.head.ref }}`'
+          EMBED_URL='${{ github.event.pull_request.html_url }}'
+
           # temporary data file for 'curl' with POST
           cat <<EOF >"${TEMP_CURL_DATA}"
           { 
                 "username": "${BOT_USERNAME}",
                 "avatar_url": "${BOT_AVATAR_URL}",
                 "content": "${NOTIFICATION_MESSAGE}",
-                "allowed_mentions": { "parse": ["users"] }
+                "allowed_mentions": { "parse": ["users"] },
+                "embeds": [{
+                      "author": {
+                            "name": "${PR_USER_LOGIN}",
+                            "url": "${PR_USER_URL}",
+                            "icon_url": "${PR_USER_AVATAR_URL}"
+                      },
+                      "color": "${PR_USER_COLOR}",
+                      "title": "${EMBED_TITLE}",
+                      "description": "${EMBED_DESCRIPTION}",
+                      "url": "${EMBED_URL}"
+                }]
           }
           EOF
 
