@@ -23,8 +23,8 @@ jobs:
           }
 
           # temporary files
-          TEMP_CURL_DATA="data_for_curl.json"
-          TEMP_EMBED_TITLE="embed_title.txt"
+          TEMPFILE_CURL_DATA="data_for_curl.json"
+          TEMPFILE_EMBED_TITLE="embed_title.txt"
 
           # 'GitHub' Bot 
           BOT_USERNAME="GitHub"
@@ -50,17 +50,17 @@ jobs:
           NOTIFICATION_MESSAGE="**[${NOTIFICATION_CATEGORY}]**\n${RANDOM_EMOJI} <@${REVIEWER_DISCORD_ID}> レビュー依頼がありました。"
 
           # temporary text file for EMBED_TITLE
-          cat <<EOF >"${TEMP_EMBED_TITLE}"
+          cat <<EOF >"${TEMPFILE_EMBED_TITLE}"
           [PR #${{ github.event.pull_request.number }}] ${{ github.event.pull_request.title }}
           EOF
 
           # EMBED
-          EMBED_TITLE="$(echo_file_content_with_escaped_double_quotes "${TEMP_EMBED_TITLE}")"
+          EMBED_TITLE="$(echo_file_content_with_escaped_double_quotes "${TEMPFILE_EMBED_TITLE}")"
           EMBED_DESCRIPTION='> `${{ github.event.pull_request.base.ref }}` <- `${{ github.event.pull_request.head.ref }}`'
           EMBED_URL='${{ github.event.pull_request.html_url }}'
 
           # temporary data file for 'curl' with POST
-          cat <<EOF >"${TEMP_CURL_DATA}"
+          cat <<EOF >"${TEMPFILE_CURL_DATA}"
           { 
                 "username": "${BOT_USERNAME}",
                 "avatar_url": "${BOT_AVATAR_URL}",
@@ -84,5 +84,5 @@ jobs:
           curl \
             -H "Content-Type: application/json" \
             -X POST \
-            -d @${TEMP_CURL_DATA} \
+            -d @${TEMPFILE_CURL_DATA} \
             ${{ secrets.DISCORD_WEBHOOK_URL }}
