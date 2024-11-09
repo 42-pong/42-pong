@@ -16,8 +16,23 @@ paths:
       summary: Health check endpoint
       description: This endpoint checks the health of the service instance by performing various checks, such as infrastructure connections, host status, and application-specific logic.
       responses:
-        "200": # status code
-          description: A JSON array of user names
+        "200":
+          description: The service is healthy and capable of handling requests.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  message:
+                    type: string
+                    example: "The service is healthy and capable of handling requests."
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-11-09T12:00:00Z"
           content:
             application/json:
               schema:
