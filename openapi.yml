@@ -33,6 +33,23 @@ paths:
                     type: string
                     format: date-time
                     example: "2024-11-09T12:00:00Z"
+        "503":
+          description: The service is unhealthy and unable to handle requests.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "unhealthy"
+                  message:
+                    type: string
+                    example: "The service is unhealthy and unable to handle requests."
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-11-09T12:01:00Z"
         "500":
           description: Internal server error occurred during health check.
           content:
