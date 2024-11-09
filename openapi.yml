@@ -33,9 +33,20 @@ paths:
                     type: string
                     format: date-time
                     example: "2024-11-09T12:00:00Z"
+        "500":
+          description: Internal server error occurred during health check.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Health check failure due to unexpected error."
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-11-09T12:02:00Z"
