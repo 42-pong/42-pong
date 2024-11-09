@@ -9,9 +9,9 @@ on:
 
 jobs:
   backend-code-check:
+    runs-on: ubuntu-latest  # GitHub Actionsで使用する環境
     # PR元が 'feature/backend/*' のブランチからの場合にトリガー
     if: startsWith(github.head_ref, 'feature/backend/')
-    runs-on: ubuntu-latest  # GitHub Actionsで使用する環境
 
     steps:
       # ソースコードをチェックアウト
