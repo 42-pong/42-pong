@@ -1,0 +1,50 @@
+name: 'Discord Notification: Discussion: created'
+on:
+  discussion:
+    types: [created]
+
+jobs:
+  discussion-discord-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: post message via discord-webhook-url
+        run: |
+          # echo one random element from the first input argument
+          # - the first input argument should be space-separated string
+          echo_one_random_element(){
+            INPUT_ARRAY=($1)
+            echo "${INPUT_ARRAY[RANDOM%${#INPUT_ARRAY[@]}]}"
+          }
+
+          # temporary files
+          TEMPFILE_CURL_DATA="data_for_curl.json"
+
+          # 'GitHub' Bot
+          BOT_USERNAME="GitHub"
+          BOT_AVATAR_URL="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+
+          # random adjective
+          RANDOM_ADJECTIVE="$(echo_one_random_element '${{ vars.ADJECTIVE_SET }}')"
+
+          # discussion
+          DISCUSSION_CATEGORY='${{ github.event.discussion.category.emoji }} ${{ github.event.discussion.category.name }}'
+
+          # notification message
+          NOTIFICATION_CATEGORY="Discussion"
+          NOTIFICATION_MESSAGE="**[${NOTIFICATION_CATEGORY}]**\n**${DISCUSSION_CATEGORY}** に*${RANDOM_ADJECTIVE}*ディスカッションが作成されました。"
+
+          # temporary data file for 'curl' with POST
+          cat <<EOF >"${TEMPFILE_CURL_DATA}"
+          {
+              "username": "${BOT_USERNAME}",
+              "avatar_url": "${BOT_AVATAR_URL}",
+              "content": "${NOTIFICATION_MESSAGE}"
+          }
+          EOF
+
+          # notify the message to 'secrets.DISCORD_WEBHOOK_URL_DISCUSSION_NOTIFICATION'
+          curl \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @${TEMPFILE_CURL_DATA} \
+            ${{ secrets.DISCORD_WEBHOOK_URL_DISCUSSION_NOTIFICATION }}
