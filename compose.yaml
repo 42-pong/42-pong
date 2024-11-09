@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
     image: backend:42
     env_file: .env
-    working_dir: "/pong/"
+    # WORKDIR(Dockerfile): /pong
     volumes:
       - ./backend/pong:/pong
     networks:
