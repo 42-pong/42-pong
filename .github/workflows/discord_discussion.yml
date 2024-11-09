@@ -38,6 +38,12 @@ jobs:
             fi
           }
 
+          # replace crlf with escaped newline: \r\n -> '\n'
+          echo_with_crlf_as_escaped_newline(){
+            INPUT_STR="$1"
+            echo "${INPUT_STR}" | sed -z 's/\r\n/\\n/g'
+          }
+
           # temporary files
           TEMPFILE_CURL_DATA="data_for_curl.json"
           TEMPFILE_EMBED_TITLE="discussion_title.txt"
@@ -74,7 +80,7 @@ jobs:
 
           # EMBED
           EMBED_TITLE="$(echo_file_content_with_escaped_double_quotes "${TEMPFILE_EMBED_TITLE}")"
-          EMBED_DESCRIPTION="$(echo_file_content_with_escaped_double_quotes "${TEMPFILE_EMBED_DESCRIPTION_TRIMMED}")"
+          EMBED_DESCRIPTION="$(echo_with_crlf_as_escaped_newline "$(echo_file_content_with_escaped_double_quotes "${TEMPFILE_EMBED_DESCRIPTION_TRIMMED}")")"
           EMBED_URL='${{ github.event.discussion.html_url }}'
 
           # notification message
