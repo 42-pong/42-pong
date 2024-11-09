@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # 3rd party apps
     "rest_framework",
     "drf_spectacular",  # for Swagger UI
+    "drf_spectacular_sidecar",  # for Swagger UI
 ]
 
 MIDDLEWARE = [
@@ -135,8 +136,12 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
+    # drf_spectacular
     "TITLE": "Pong API",
     "DESCRIPTION": "The Pong API provides backend services for the Pong game.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": True,  # スキーマのendpointを有効にする
+    # drf_spectacular_sidecar
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
 }
