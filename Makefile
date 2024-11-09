@@ -65,7 +65,8 @@ lint-be:
 # -------------------------------------------------------
 .PHONY: format-be
 format-be:
-	@ruff format $(BACKEND)/pong
+	@ruff format $(BACKEND)/pong # black
+	@ruff check --select I --fix $(BACKEND)/pong # isort
 
 # -------------------------------------------------------
 # static type checker
