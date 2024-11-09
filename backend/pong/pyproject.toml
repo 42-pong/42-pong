@@ -1,3 +1,63 @@
 # # このファイルには以下のツールの設定が含まれています：
-# -
+# - ruff
 # このプロジェクトのすべての設定はこのファイルに含まれています。
+
+[tool.ruff]
+target-version = "py313"
+
+# チェック対象から除外するディレクトリを選択
+# 公式と同じものを除外
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+## Blackと同じ設定
+line-length = 88
+indent-width = 4
+
+
+[tool.ruff.lint]
+# デフォルトでは、RuffはFlake8のFルールとEルールのサブセットを有効にし、ruff formatやBlackのようなフォーマッターの使用と重複する文体ルールは省略している。
+
+# 将来的に廃止される非推奨なルールはignoreさせる。
+ignore = [
+    "ANN1",   # selfとclsの型注釈が不足している
+    "E999",   # 構文エラー
+    "UP027",  # アンパックされたリスト内包表現
+    "PT004",  # pytestのフィクスチャ名にアンダースコアが不足
+    "PT005",  # pytestのフィクスチャ名が不正
+    "D1",     # ドキュメント不足
+    "TD001",  # 不正なTODOタグ
+    "TD002",  # TODOタグの作成者が不足
+    "TD003",  # TODOタグのリンクが不足
+    "PD011",  # pandasのドット値の使用
+]
+
+# アンダースコア始まりの変数は除外
+# for文などで_を使う場合に有用
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
