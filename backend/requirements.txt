@@ -5,10 +5,30 @@
 #    pip-compile --strip-extras requirements.in
 #
 asgiref==3.8.1
-    # via django
+    # via
+    #   django
+    #   django-stubs
 django==5.1.2
+    # via
+    #   -r requirements.in
+    #   django-stubs
+    #   django-stubs-ext
+django-stubs==5.1.1
     # via -r requirements.in
+django-stubs-ext==5.1.1
+    # via django-stubs
+mypy==1.13.0
+    # via -r requirements.in
+mypy-extensions==1.0.0
+    # via mypy
 ruff==0.7.3
     # via -r requirements.in
 sqlparse==0.5.1
     # via django
+types-pyyaml==6.0.12.20240917
+    # via django-stubs
+typing-extensions==4.12.2
+    # via
+    #   django-stubs
+    #   django-stubs-ext
+    #   mypy

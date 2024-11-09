@@ -66,3 +66,10 @@ lint-be:
 .PHONY: format-be
 format-be:
 	@ruff format $(BACKEND)/pong
+
+# -------------------------------------------------------
+# static type checker
+# -------------------------------------------------------
+.PHONY: typecheck-be
+typecheck-be:
+	@mypy $(BACKEND)/pong

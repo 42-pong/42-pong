@@ -1,5 +1,6 @@
 # # このファイルには以下のツールの設定が含まれています：
 # - ruff
+# - mypy
 # このプロジェクトのすべての設定はこのファイルに含まれています。
 
 [tool.ruff]
@@ -82,3 +83,10 @@ docstring-code-format = true
 # docstring内のコードスニペットをフォーマットする際に使用する行長制限を設定
 docstring-code-line-length = "dynamic"
 
+
+[tool.mypy]
+# mypy の一般設定をここに記述
+python_version = 3.13
+# 型アノテーションのない関数を呼び出すことや定義することを禁止します。
+disallow_untyped_calls = true
+disallow_untyped_defs = true
