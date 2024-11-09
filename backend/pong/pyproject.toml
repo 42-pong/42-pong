@@ -61,3 +61,24 @@ ignore = [
 # アンダースコア始まりの変数は除外
 # for文などで_を使う場合に有用
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# すべてBlackのコーディングスタイルに従っています。
+quote-style = "double"
+
+indent-style = "space"
+
+# リストや辞書、関数の引数などで最後の項目の後にカンマを追加します
+skip-magic-trailing-comma = false
+
+# 適切な行末の改行文字（LFまたはCRLF）を自動的に判別
+line-ending = "auto"
+
+# docstring内のコード例を自動的にフォーマットする機能を有効にする。
+# reStructuredTextのコード/リテラルブロック、doctestsがサポートされます。
+# docstring は、三重引用符（""" または '''）で囲まれた文字列リテラルとして記述されます。
+docstring-code-format = true
+
+# docstring内のコードスニペットをフォーマットする際に使用する行長制限を設定
+docstring-code-line-length = "dynamic"
+

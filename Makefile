@@ -59,3 +59,10 @@ logs-be:
 .PHONY: lint-be
 lint-be:
 	@ruff check $(BACKEND)/pong
+
+# -------------------------------------------------------
+# formatter
+# -------------------------------------------------------
+.PHONY: format-be
+format-be:
+	@ruff format $(BACKEND)/pong
