@@ -63,7 +63,7 @@ jobs:
 
            # temporary text file for EMBED_TITLE
           cat <<EOF >"${TEMPFILE_EMBED_TITLE}"
-          ${{ github.event.discussion.title }}
+          [Discussion #${{ github.event.discussion.number }}] ${{ github.event.discussion.title }}
           EOF
 
            # temporary text file for EMBED_DESCRIPTION
