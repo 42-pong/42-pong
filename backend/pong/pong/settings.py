@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # 3rd party apps
     "rest_framework",
+    "drf_spectacular",  # for Swagger UI
 ]
 
 MIDDLEWARE = [
@@ -123,3 +124,19 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# drf_spectacular for Swagger UI
+# https://drf-spectacular.readthedocs.io/en/latest/readme.html
+
+REST_FRAMEWORK = {
+    # view setやserializerから自動的にOpenAPI3.0スキーマを生成
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Pong API",
+    "DESCRIPTION": "The Pong API provides backend services for the Pong game.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": True,  # スキーマのendpointを有効にする
+}
