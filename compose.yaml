@@ -1,0 +1,13 @@
+services:
+  backend:
+    networks:
+      - transcendence
+
+  db:
+    networks:
+      - transcendence
+
+networks:
+  transcendence:
+    name: trc-network
+    driver: bridge
