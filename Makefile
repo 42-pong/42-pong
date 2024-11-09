@@ -16,8 +16,8 @@ up:
 down:
 	@docker compose down
 
-.PHONY: build
-build:
+.PHONY: build-up
+build-up:
 	@docker compose up --build -d
 
 .PHONY: start
