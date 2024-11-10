@@ -11,6 +11,7 @@ jobs:
   backend-code-check:
     runs-on: ubuntu-latest  # GitHub Actionsで使用する環境
     # PR元が 'feature/backend/*' のブランチからの場合にトリガー
+    # TODO: 'feature-backend'に変更
     if: startsWith(github.head_ref, 'feature/backend/')
 
     steps:
@@ -32,12 +33,12 @@ jobs:
 
       # RuffによるLinterチェック
       - name: Run Ruff Linter
-        run: make lint-be
+        run: make lint -C backend/pong
 
       # Ruffによるフォーマットチェック
       - name: Run Ruff Formatter
-        run: make format-be
+        run: make format -C backend/pong
 
       # Mypyによる型チェック
       - name: Run Mypy Type Checker
-        run: make typecheck-be
+        run: make typecheck -C backend/pong

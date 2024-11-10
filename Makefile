@@ -52,25 +52,3 @@ exec-be:
 .PHONY: logs-be
 logs-be:
 	@docker logs $(BACKEND)
-
-# -------------------------------------------------------
-# linter
-# -------------------------------------------------------
-.PHONY: lint-be
-lint-be:
-	@ruff check $(BACKEND)/pong
-
-# -------------------------------------------------------
-# formatter
-# -------------------------------------------------------
-.PHONY: format-be
-format-be:
-	@ruff format $(BACKEND)/pong # black
-	@ruff check --select I --fix $(BACKEND)/pong # isort
-
-# -------------------------------------------------------
-# static type checker
-# -------------------------------------------------------
-.PHONY: typecheck-be
-typecheck-be:
-	@mypy $(BACKEND)/pong
