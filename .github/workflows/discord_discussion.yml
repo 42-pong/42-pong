@@ -1,0 +1,115 @@
+name: 'Discord Notification: Discussion: created'
+on:
+  discussion:
+    types: [created]
+
+jobs:
+  discussion-discord-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: post message via discord-webhook-url
+        run: |
+          # echo one random element from the first input argument
+          # - the first input argument should be space-separated string
+          echo_one_random_element(){
+            INPUT_ARRAY=($1)
+            echo "${INPUT_ARRAY[RANDOM%${#INPUT_ARRAY[@]}]}"
+          }
+
+          # echo file content with replacing all the double quotes: " -> \"
+          echo_file_content_with_escaped_double_quotes(){
+            INPUT_FILE="$1"
+            cat <"$INPUT_FILE" | sed 's/"/\\&/g'
+          }
+
+          # usage: trim_lines <input_file> <output_file> <maximal_line_count>
+          # - if <input_file> has more than <maximal_line_count>,
+          #   replace the rest part with '...'
+          trim_lines(){
+            INPUT_FILE="$1"
+            OUTPUT_FILE="$2"
+            LINE_LIMIT="$3"
+            if [[ $(cat <"$INPUT_FILE" | wc -l) -gt "$LINE_LIMIT" ]];
+              then
+                cat <"$INPUT_FILE" | head >"$OUTPUT_FILE" -n "$LINE_LIMIT"
+                echo "..." >>"$OUTPUT_FILE"
+              else
+                cat <"$INPUT_FILE" >"$OUTPUT_FILE"
+            fi
+          }
+
+          # replace crlf with escaped newline: \r\n -> '\n'
+          echo_with_crlf_as_escaped_newline(){
+            INPUT_STR="$1"
+            echo "${INPUT_STR}" | sed -z 's/\r\n/\\n/g'
+          }
+
+          # temporary files
+          TEMPFILE_CURL_DATA="data_for_curl.json"
+          TEMPFILE_EMBED_TITLE="discussion_title.txt"
+          TEMPFILE_EMBED_DESCRIPTION="discussion_body.txt"
+          TEMPFILE_EMBED_DESCRIPTION_TRIMMED="discussion_body_trimmed.txt"
+
+          # 'GitHub' Bot
+          BOT_USERNAME="GitHub"
+          BOT_AVATAR_URL="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
+
+          # DISCUSSION_USER
+          DISCUSSION_USER_LOGIN='${{ github.event.discussion.user.login }}'
+          DISCUSSION_USER_URL='${{ github.event.discussion.user.html_url }}'
+          DISCUSSION_USER_AVATAR_URL='${{ github.event.discussion.user.avatar_url }}'
+          DISCUSSION_USER_INFO="$(echo '${{ vars.MEMBERS }}' | jq -r .\"${DISCUSSION_USER_LOGIN}\")"
+          DISCUSSION_USER_COLOR="$(echo "${DISCUSSION_USER_INFO}" | jq -r .\"color\")"
+
+          # random adjective
+          RANDOM_ADJECTIVE="$(echo_one_random_element '${{ vars.ADJECTIVE_SET }}')"
+
+          # discussion
+          DISCUSSION_CATEGORY='${{ github.event.discussion.category.emoji }} ${{ github.event.discussion.category.name }}'
+
+           # temporary text file for EMBED_TITLE
+          cat <<EOF >"${TEMPFILE_EMBED_TITLE}"
+          [Discussion #${{ github.event.discussion.number }}] ${{ github.event.discussion.title }}
+          EOF
+
+           # temporary text file for EMBED_DESCRIPTION
+          cat <<EOF >"${TEMPFILE_EMBED_DESCRIPTION}"
+          ${{ github.event.discussion.body }}
+          EOF
+          trim_lines "${TEMPFILE_EMBED_DESCRIPTION}" "${TEMPFILE_EMBED_DESCRIPTION_TRIMMED}" 10
+
+          # EMBED
+          EMBED_TITLE="$(echo_file_content_with_escaped_double_quotes "${TEMPFILE_EMBED_TITLE}")"
+          EMBED_DESCRIPTION="$(echo_with_crlf_as_escaped_newline "$(echo_file_content_with_escaped_double_quotes "${TEMPFILE_EMBED_DESCRIPTION_TRIMMED}")")"
+          EMBED_URL='${{ github.event.discussion.html_url }}'
+
+          # notification message
+          NOTIFICATION_CATEGORY="Discussion"
+          NOTIFICATION_MESSAGE="**[${NOTIFICATION_CATEGORY}]**\n**${DISCUSSION_CATEGORY}** に*${RANDOM_ADJECTIVE}*ディスカッションが作成されました。"
+
+          # temporary data file for 'curl' with POST
+          cat <<EOF >"${TEMPFILE_CURL_DATA}"
+          {
+              "username": "${BOT_USERNAME}",
+              "avatar_url": "${BOT_AVATAR_URL}",
+              "content": "${NOTIFICATION_MESSAGE}",
+              "embeds": [{
+                  "author": {
+                      "name": "${DISCUSSION_USER_LOGIN}",
+                      "url": "${DISCUSSION_USER_URL}",
+                      "icon_url": "${DISCUSSION_USER_AVATAR_URL}"
+                  },
+                  "color": "${DISCUSSION_USER_COLOR}",
+                  "title": "${EMBED_TITLE}",
+                  "description": "${EMBED_DESCRIPTION}",
+                  "url": "${EMBED_URL}"
+              }]
+          }
+          EOF
+
+          # notify the message to 'secrets.DISCORD_WEBHOOK_URL_DISCUSSION_NOTIFICATION'
+          curl \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d @${TEMPFILE_CURL_DATA} \
+            ${{ secrets.DISCORD_WEBHOOK_URL_DISCUSSION_NOTIFICATION }}
