@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-from .health_check import health_check
+from .health_check.views import health_check
 
 urlpatterns = [
     path("admin/", admin.site.urls),
