@@ -1,5 +1,8 @@
 #!/bin/bash
 
-# todo: createsuperuser, migrate など
+# todo: createsuperuserなど
+
+# DBのmigrationを実行
+python manage.py migrate
 
 exec "$@"
