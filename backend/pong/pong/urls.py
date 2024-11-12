@@ -31,5 +31,5 @@ urlpatterns = [
         name="swagger-ui",
     ),
     # health check
-    path("health/", health_check, name="health-check"),
+    path("api/health/", health_check, name="health-check"),
 ]
