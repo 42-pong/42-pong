@@ -1,8 +1,16 @@
+SEPARATOR = @echo "----------------------------------------------"
+
 .PHONY: all
 all: check
 
 .PHONY: check
-check: lint format typecheck
+check:
+	@make -s lint
+	$(SEPARATOR)
+	@make -s format
+	$(SEPARATOR)
+	@make -s typecheck
+	$(SEPARATOR)
 
 # -------------------------------------------------------
 # linter
