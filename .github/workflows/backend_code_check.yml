@@ -11,8 +11,7 @@ jobs:
   backend-code-check:
     runs-on: ubuntu-latest  # GitHub Actionsで使用する環境
     # PR元が 'feature/backend/*' のブランチからの場合にトリガー
-    # TODO: 'feature-backend'に変更
-    if: startsWith(github.head_ref, 'feature/backend/')
+    if: startsWith(github.head_ref, 'feature-backend')
 
     steps:
       # ソースコードをチェックアウト
