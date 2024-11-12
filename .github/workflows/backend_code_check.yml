@@ -1,0 +1,44 @@
+name: Backend Code Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  backend-code-check:
+    runs-on: ubuntu-latest  # GitHub Actionsで使用する環境
+    # PR元が 'feature/backend/*' のブランチからの場合にトリガー
+    # TODO: 'feature-backend'に変更
+    if: startsWith(github.head_ref, 'feature/backend/')
+
+    steps:
+      # ソースコードをチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Pythonのセットアップ
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'  # Pythonのバージョンを指定
+
+      # 依存関係のインストール
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      # RuffによるLinterチェック
+      - name: Run Ruff Linter
+        run: make lint -C backend/pong
+
+      # Ruffによるフォーマットチェック
+      - name: Run Ruff Formatter
+        run: make format -C backend/pong
+
+      # Mypyによる型チェック
+      - name: Run Mypy Type Checker
+        run: make typecheck -C backend/pong
