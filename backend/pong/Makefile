@@ -25,4 +25,4 @@ typecheck:
 # -------------------------------------------------------
 .PHONY: unit-test
 unit-test:
-	@python manage.py test
+	@python manage.py test -v2
