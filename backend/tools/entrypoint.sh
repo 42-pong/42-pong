@@ -1,5 +1,6 @@
 #!/bin/bash
 
-# todo: createsuperuser, migrate など
+python3 manage.py migrate --noinput
+
 
 exec "$@"
