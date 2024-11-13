@@ -7,7 +7,7 @@ WORKDIR /pong
 # 新規userを作成。この時点ではuserはroot
 RUN useradd -ms /bin/bash pong
 
-COPY requirements.txt .
+COPY tools/requirements.txt .
 RUN pip install --upgrade pip && \
     pip3 install --no-cache-dir -r requirements.txt
 
