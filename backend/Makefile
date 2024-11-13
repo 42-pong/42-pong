@@ -15,7 +15,11 @@ all:
 # コンテナ内でtools/requirements.inを元にtools/requirements.txtを生成する
 .PHONY: gen-dependency
 gen-dependency:
-	@cp $(TOOLS_DIR)/$(REQUIREMENTS_IN) $(PROJECT_DIR)/; \
+	@if ! docker exec $(BACKEND_CONTAINER) which pip-compile > /dev/null 2>&1; then \
+		echo "pip-tools is not installed in the container"; \
+		exit 1; \
+	fi; \
+	cp $(TOOLS_DIR)/$(REQUIREMENTS_IN) $(PROJECT_DIR)/; \
 	docker exec $(BACKEND_CONTAINER) pip-compile --strip-extras $(REQUIREMENTS_IN) -o $(REQUIREMENTS_TXT); \
 	mv $(PROJECT_DIR)/$(REQUIREMENTS_TXT) $(TOOLS_DIR)/; \
 	rm $(PROJECT_DIR)/$(REQUIREMENTS_IN)
