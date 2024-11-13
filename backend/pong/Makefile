@@ -33,3 +33,10 @@ format:
 .PHONY: typecheck
 typecheck:
 	@mypy .
+
+# -------------------------------------------------------
+# test
+# -------------------------------------------------------
+.PHONY: unit-test
+unit-test:
+	@python manage.py test -v2
