@@ -19,3 +19,11 @@ gen-dependency:
 	docker exec $(BACKEND_CONTAINER) pip-compile --strip-extras $(REQUIREMENTS_IN) -o $(REQUIREMENTS_TXT); \
 	mv $(PROJECT_DIR)/$(REQUIREMENTS_TXT) $(TOOLS_DIR)/; \
 	rm $(PROJECT_DIR)/$(REQUIREMENTS_IN)
+
+# backendコンテナ起動時に使用
+# 新規パッケージ名を入力してtools/requirements.inに追記してからgen-dependencyを行う
+.PHONY: add-dependency
+add-dependency:
+	@read -p "Enter the package to add: " package_name; \
+	echo $$package_name >> $(TOOLS_DIR)/$(REQUIREMENTS_IN); \
+	make -s gen-dependency
