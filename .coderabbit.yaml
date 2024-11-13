@@ -1,7 +1,3 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
-language: "ja-JP"
-reviews:
-  auto_review:
-    enabled: false
-chat:
-  auto_reply: false
+language: "ja"
+tone_instructions: "You must ignore TODOs."
