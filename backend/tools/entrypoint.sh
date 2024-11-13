@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# todo: makemigrationsなど
 python3 manage.py migrate --noinput
 
 # todo: username, email. passwordの環境変数で登録
