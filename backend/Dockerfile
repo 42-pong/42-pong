@@ -4,6 +4,9 @@ FROM python:3.13
 
 WORKDIR /pong
 
+# 新規userを作成。この時点ではuserはroot
+RUN useradd -ms /bin/bash pong
+
 COPY requirements.txt .
 RUN pip install --upgrade pip && \
     pip3 install --no-cache-dir -r requirements.txt
@@ -11,7 +14,9 @@ RUN pip install --upgrade pip && \
 COPY ./tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# todo: USER設定
+RUN chown -R pong:pong /pong
+# root権限が必要なinstall等を終えたら作成したuserに切り替え
+USER pong
 
 EXPOSE 8000
 
