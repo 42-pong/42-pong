@@ -14,6 +14,11 @@ services:
       - ./backend/pong:/pong
     networks:
       - transcendence
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   # todo: DBが必要になってから追加
   # db:
