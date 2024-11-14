@@ -7,7 +7,7 @@ WORKDIR /pong
 # 新規userを作成。この時点ではuserはroot
 RUN useradd -ms /bin/bash pong
 
-# pip-tools: requirements.txtの生成用に開発時のみ使用
+# pip-tools: 開発環境でrequirements.inからrequirements.txtを生成するために使用
 COPY tools/requirements.txt .
 RUN pip install --upgrade pip && \
     pip install pip-tools && \
