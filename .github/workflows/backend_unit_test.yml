@@ -2,9 +2,11 @@ name: Backend Unit Test
 
 on:
   pull_request:
-    branches: [main, dev, 'feature-backend-*']
+    paths:
+      - 'backend/**'
   push:
-    branches: [main, dev, 'feature-backend-*']
+    paths:
+      - 'backend/**'
 
 jobs:
   backend-unit-test:
