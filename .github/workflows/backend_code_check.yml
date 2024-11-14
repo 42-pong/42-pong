@@ -32,12 +32,12 @@ jobs:
 
       # RuffによるLinterチェック
       - name: Run Ruff Linter
-        run: make lint -C backend/pong
+        run: make -s lint -C backend/pong
 
       # Ruffによるフォーマットチェック
       - name: Run Ruff Formatter
-        run: make formatcheck -C backend/pong
+        run: make -s formatcheck -C backend/pong
 
       # Mypyによる型チェック
       - name: Run Mypy Type Checker
-        run: make typecheck -C backend/pong
+        run: make -s typecheck -C backend/pong
