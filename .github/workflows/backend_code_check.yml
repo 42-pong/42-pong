@@ -36,10 +36,7 @@ jobs:
 
       # Ruffによるフォーマットチェック
       - name: Run Ruff Formatter
-        # エラーがあれば修正せずに警告を出す
-        run: |
-          ruff format --check backend/pong
-          ruff check --select I backend/pong # isort
+        run: make formatcheck -C backend/pong
 
       # Mypyによる型チェック
       - name: Run Mypy Type Checker
