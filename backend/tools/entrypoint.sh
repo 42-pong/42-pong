@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# エラーが発生した場合にスクリプトの実行を停止する
+set -e
+
 # todo: makemigrationsなど
 python3 manage.py migrate --noinput
 
