@@ -16,7 +16,8 @@ import environ
 # 環境変数のスキーマを定義
 env = environ.Env(
     # set casting, default value
-    DEBUG=(bool, False)
+    DEBUG=(bool, False),
+	SECRET_KEY=(str, 'your-default-secret-key')
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
