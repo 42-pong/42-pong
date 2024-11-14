@@ -1,7 +1,7 @@
 django==5.1.2
 django-stubs
-ruff
-mypy
+ruff==0.7.3
+mypy==1.13.0
 djangorestframework
 djangorestframework-stubs
 drf-spectacular # for Swagger UI
