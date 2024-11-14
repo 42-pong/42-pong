@@ -19,6 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
+# todo: 本番環境用を作成する場合、django-environ or python-dotenvを使って.envでSECRET_KEYを設定する。
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = (
     "django-insecure-lqyo8yy!fs!kyqr408#rk@gs-%svxh43d2r4$nt@1vh46dtd-4"
@@ -111,7 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Tokyo"
 
 USE_I18N = True
 
