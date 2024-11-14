@@ -27,6 +27,11 @@ format:
 	@ruff format . # black
 	@ruff check --select I --fix . # isort
 
+.PHONY: formatcheck
+formatcheck:
+	@ruff format --check .
+	@ruff check --select I .
+
 # -------------------------------------------------------
 # static type checker
 # -------------------------------------------------------
