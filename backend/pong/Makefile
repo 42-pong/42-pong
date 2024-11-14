@@ -7,7 +7,7 @@ all: check
 check:
 	@make -s lint
 	$(SEPARATOR)
-	@make -s format
+	@make -s formatcheck
 	$(SEPARATOR)
 	@make -s typecheck
 	$(SEPARATOR)
