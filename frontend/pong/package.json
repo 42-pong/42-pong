@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "start": "npm run build && npm run preview",
     "prebuild": "npm run clean",
     "build": "vite build",
     "preview": "vite preview",
