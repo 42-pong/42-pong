@@ -6,10 +6,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm run clean",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "clean": "rimraf ./dist"
   },
   "devDependencies": {
+    "rimraf": "^6.0.1",
     "vite": "^5.4.10"
   }
 }
