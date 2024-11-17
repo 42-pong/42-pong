@@ -1,0 +1,19 @@
+{
+  "name": "pong",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "start": "npm run build && npm run preview",
+    "prebuild": "npm run clean",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rimraf ./dist"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "vite": "^5.4.10"
+  }
+}
