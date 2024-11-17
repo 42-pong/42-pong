@@ -5,10 +5,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    # TODO
-    # depends_on:
-    #   backend:
-    #     condition: service_healthy
+    depends_on:
+      backend:
+        condition: service_healthy
     restart: always
     ports:
       - "${FRONT_SERVER_PORT}:80"
