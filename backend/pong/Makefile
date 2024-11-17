@@ -7,7 +7,7 @@ all: check
 check:
 	@make -s lint
 	$(SEPARATOR)
-	@make -s format
+	@make -s formatcheck
 	$(SEPARATOR)
 	@make -s typecheck
 	$(SEPARATOR)
@@ -26,6 +26,11 @@ lint:
 format:
 	@ruff format . # black
 	@ruff check --select I --fix . # isort
+
+.PHONY: formatcheck
+formatcheck:
+	@ruff format --check .
+	@ruff check --select I .
 
 # -------------------------------------------------------
 # static type checker
