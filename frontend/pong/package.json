@@ -10,6 +10,9 @@
     "prebuild": "npm run clean",
     "build": "vite build",
     "preview": "vite preview",
+    "format": "biome format --write",
+    "lint:check": "biome lint",
+    "check": "biome check",
     "clean": "rimraf ./dist"
   },
   "devDependencies": {
