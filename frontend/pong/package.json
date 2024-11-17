@@ -13,6 +13,7 @@
     "clean": "rimraf ./dist"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "rimraf": "^6.0.1",
     "vite": "^5.4.10"
   }
