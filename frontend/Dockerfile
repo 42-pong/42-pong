@@ -15,11 +15,11 @@ RUN npm install && npm run build
 
 
 # ----- stage: production -----
-FROM nginx:${NGINX_TAG} AS production
+FROM nginxinc/nginx-unprivileged:${NGINX_TAG} AS production
 
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
 
 # TODO
-# COPY nginx.conf /etc/nginx/nginx.conf
+# COPY --chown=nginx:nginx nginx.conf /etc/nginx/nginx.conf
 
 CMD ["nginx", "-g", "daemon off;"]
