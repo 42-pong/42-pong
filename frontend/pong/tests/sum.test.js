@@ -1,5 +1,5 @@
 // sum.test.js
-import { expect, it, describe } from "vitest";
+import { describe, expect, it } from "vitest";
 import { sum } from "../js/sum.js";
 
 describe("let's test sum", () => {
