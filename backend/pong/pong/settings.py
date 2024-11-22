@@ -11,13 +11,15 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import environ
+
+# todo mypyが型対応していない3rdパーティのライブラリも型対応できるようにする
+import environ  # type: ignore
 
 # 環境変数のスキーマを定義
 env = environ.Env(
     DEBUG=(bool, False),
-	# 自動テストで例外処理になるためSECRET_KEYを定義
-	SECRET_KEY=(str, "your-default-secret-key")
+    # 自動テストで例外処理になるためSECRET_KEYを定義
+    SECRET_KEY=(str, "your-default-secret-key"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
