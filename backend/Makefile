@@ -24,7 +24,10 @@ gen-dependency:
 	docker cp $(BACKEND_CONTAINER):/$(TMP_DIR)/$(REQUIREMENTS_TXT) $(TOOLS_DIR)/;
 
 # backendコンテナ起動時に使用
-# 新規パッケージ名を入力してtools/requirements.inに追記してからgen-dependencyを行う
+# - 新規パッケージ名を入力すると、自動でtools/requirements.inに追記されgen-dependencyを行う
+# - パッケージ名の入力に間違えがあった場合も、そのままtools/requirements.inに追記されて
+#   gen-dependencyが行われ、tools/requirements.txtの生成を試みる。
+#   存在しないパッケージ名の場合はtools/requirements.txtが生成されずにエラー終了する。
 .PHONY: add-dependency
 add-dependency:
 	@read -p "Enter the package to add: " package_name; \
