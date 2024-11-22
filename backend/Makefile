@@ -6,7 +6,7 @@ TOOLS_DIR			:=	tools
 REQUIREMENTS_IN		:=	requirements.in
 REQUIREMENTS_TXT	:=	requirements.txt
 
-PROJECT_DIR	:=	pong
+TMP_DIR	:=	tmp
 
 .PHONY: all
 all:
@@ -19,10 +19,9 @@ gen-dependency:
 		echo "pip-tools is not installed in the container"; \
 		exit 1; \
 	fi; \
-	cp $(TOOLS_DIR)/$(REQUIREMENTS_IN) $(PROJECT_DIR)/; \
-	docker exec $(BACKEND_CONTAINER) pip-compile --strip-extras $(REQUIREMENTS_IN) -o $(REQUIREMENTS_TXT); \
-	mv $(PROJECT_DIR)/$(REQUIREMENTS_TXT) $(TOOLS_DIR)/; \
-	rm $(PROJECT_DIR)/$(REQUIREMENTS_IN)
+	docker cp $(TOOLS_DIR)/$(REQUIREMENTS_IN) $(BACKEND_CONTAINER):/$(TMP_DIR); \
+	docker exec $(BACKEND_CONTAINER) /bin/bash -c "cd /$(TMP_DIR) && pip-compile --strip-extras $(REQUIREMENTS_IN) -o $(REQUIREMENTS_TXT)"; \
+	docker cp $(BACKEND_CONTAINER):/$(TMP_DIR)/$(REQUIREMENTS_TXT) $(TOOLS_DIR)/;
 
 # backendコンテナ起動時に使用
 # 新規パッケージ名を入力してtools/requirements.inに追記してからgen-dependencyを行う
