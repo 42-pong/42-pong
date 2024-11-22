@@ -40,12 +40,24 @@ services:
       timeout: 5s
       retries: 3
 
-  # todo: DBが必要になってから追加
-  # db:
-  #   networks:
-  #     - transcendence
+  db:
+    image: postgres:17.0-bullseye
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - transcendence
 
 networks:
   transcendence:
     name: trc-network
     driver: bridge
+
+volumes:
+  db-data:
+    name: trc-db-data
