@@ -20,6 +20,9 @@ env = environ.Env(
     DEBUG=(bool, False),
     # 自動テストで例外処理になるためSECRET_KEYを定義
     SECRET_KEY=(str, "your-default-secret-key"),
+    DB_NAME=(str, "db_name"),
+    DB_USER=(str, "db_user"),
+    DB_PASSWORD=(str, "db_password"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -91,11 +94,14 @@ WSGI_APPLICATION = "pong.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": "db",  # compose.yamlのDBのservice名
+        "PORT": "5432",  # postgresのデフォルトポート
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
