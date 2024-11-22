@@ -8,11 +8,13 @@ python3 manage.py migrate --noinput
 
 python3 manage.py shell <<EOF
 import os
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 if not User.objects.filter(is_superuser=True).exists():
+
     def get_env_value(key: str) -> str:
         value: str | None = os.getenv(key)
         if not value:
@@ -23,7 +25,7 @@ if not User.objects.filter(is_superuser=True).exists():
     SUPERUSER_EMAIL = get_env_value("SUPERUSER_EMAIL")
     SUPERUSER_PASSWORD = get_env_value("SUPERUSER_PASSWORD")
 
-    User.objects.create_superuser(
+    User.objects.create_superuser( # type: ignore
         username=SUPERUSER_NAME,
         email=SUPERUSER_EMAIL,
         password=SUPERUSER_PASSWORD,
