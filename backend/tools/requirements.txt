@@ -24,6 +24,8 @@ django==5.1.2
     #   djangorestframework
     #   drf-spectacular
     #   drf-spectacular-sidecar
+django-environ==0.11.2
+    # via -r requirements.in
 django-stubs==5.1.1
     # via
     #   -r requirements.in
