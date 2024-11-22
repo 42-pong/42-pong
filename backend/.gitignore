@@ -11,5 +11,3 @@ db.sqlite3
 # Environments
 env/
 venv/
-
-requirements.in
