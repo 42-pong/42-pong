@@ -54,6 +54,8 @@ mypy==1.13.0
     # via -r requirements.in
 mypy-extensions==1.0.0
     # via mypy
+psycopg2-binary==2.9.10
+    # via -r requirements.in
 pyyaml==6.0.2
     # via drf-spectacular
 referencing==0.35.1
