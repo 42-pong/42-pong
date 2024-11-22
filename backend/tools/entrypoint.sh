@@ -26,8 +26,11 @@ if not SUPERUSER_PASSWORD:
 User = get_user_model()
 
 if not User.objects.filter(is_superuser=True).exists():
-	User.objects.create_superuser(username=SUPERUSER_NAME, email=SUPERUSER_EMAIL, password=SUPERUSER_PASSWORD)
-	print(f"Superuser '{SUPERUSER_NAME}' created successfully")
+    def get_env_value(key: str) -> str:
+        value: str | None = os.getenv(key)
+        if not value:
+            raise ValueError("{key} is not set in environment variables")
+        return value
 else:
 	print(f"Superuser already exists")
 EOF
