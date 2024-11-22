@@ -30,7 +30,7 @@ if not User.objects.filter(is_superuser=True).exists():
     )
     print(f"Superuser '{SUPERUSER_NAME}' created successfully")
 else:
-	print(f"Superuser already exists")
+    print("Superuser already exists")
 EOF
 
 exec "$@"
