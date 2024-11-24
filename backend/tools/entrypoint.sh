@@ -3,10 +3,13 @@
 # エラーが発生した場合にスクリプトの実行を停止する
 set -e
 
-# todo: makemigrationsなど
-python3 manage.py migrate --noinput
+migrate_db() {
+    # todo: makemigrationsなど
+    python3 manage.py migrate --noinput
+}
 
-python3 manage.py shell <<EOF
+create_superuser() {
+    python3 manage.py shell <<EOF
 import os
 
 from django.contrib.auth import get_user_model
@@ -34,5 +37,12 @@ if not User.objects.filter(is_superuser=True).exists():
 else:
     print("Superuser already exists")
 EOF
+}
 
+main() {
+    migrate_db
+    create_superuser
+}
+
+main
 exec "$@"
