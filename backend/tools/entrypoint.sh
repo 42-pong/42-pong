@@ -18,7 +18,7 @@ if not User.objects.filter(is_superuser=True).exists():
     def get_env_value(key: str) -> str:
         value: str | None = os.getenv(key)
         if not value:
-            raise ValueError("{key} is not set in environment variables")
+            raise ValueError(f"{key} is not set in environment variables")
         return value
 
     SUPERUSER_NAME = get_env_value("SUPERUSER_NAME")
