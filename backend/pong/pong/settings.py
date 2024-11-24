@@ -12,21 +12,30 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+# todo mypyが型対応していない3rdパーティのライブラリも型対応できるようにする
+import environ  # type: ignore
+
+# 環境変数のスキーマを定義
+env = environ.Env(
+    DEBUG=(bool, False),
+    # 自動テストで例外処理になるためSECRET_KEYを定義
+    SECRET_KEY=(str, "your-default-secret-key"),
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# .envファイルを探し、読み込む
+env_file = Path(BASE_DIR) / ".env"
+environ.Env.read_env(env_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# todo: 本番環境用を作成する場合、django-environ or python-dotenvを使って.envでSECRET_KEYを設定する。
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = (
-    "django-insecure-lqyo8yy!fs!kyqr408#rk@gs-%svxh43d2r4$nt@1vh46dtd-4"
-)
+DEBUG = env("DEBUG")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = env("SECRET_KEY")
+
 
 ALLOWED_HOSTS: list[str] = []
 
