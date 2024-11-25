@@ -1,0 +1,7 @@
+stages:
+  - code_check
+  - test:unit
+
+include:
+  - local: .gitlab/ci/backend.yml
+  - local: .gitlab/ci/frontend.yml
