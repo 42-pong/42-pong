@@ -5,6 +5,39 @@ E = TypeVar("E")  # エラー時の値の型
 
 
 class Result(Generic[T, E]):
+    """
+    成功(ok)または失敗(error)を表現する型
+    処理の結果として成功または失敗の状態を保持し、それぞれに関連する値をラップする
+    成功時にはT型の値を返し、失敗時にはE型の値を返す
+
+    使用例:
+    ```
+    def func() -> Result[int, str]:
+        if エラーの場合:
+            return Result.error("Error: some error occurred")
+        # 成功の場合
+        success_value: int = 42
+        return Result.ok(success_value)
+
+
+    result: Result[int, str] = func()
+    if result.is_ok:
+        # 成功時の処理
+        print(f"success value: {result.unwrap()}")
+    else:
+        # エラー時の処理
+        print(f"error value: {result.unwrap_error()}")
+    ```
+
+    メソッド:
+        - `is_ok`       : 成功状態かどうか
+        - `is_error`    : エラー状態かどうか
+        - `unwrap`      : 成功時の値(T型)を取り出す。エラー時は例外
+        - `unwrap_error`: エラー時の値(E型)を取り出す。成功時は例外
+        - `ok`          : 成功結果を作成
+        - `error`       : エラー結果を作成
+    """
+
     def __init__(self, value: Union[T, E], is_ok: bool):
         self._value = value
         self._is_ok = is_ok
