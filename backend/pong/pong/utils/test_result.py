@@ -15,21 +15,31 @@ class ResultTests(TestCase):
 
     def _assert_result_ok(self, value: T) -> None:
         """
-        Result.ok()が成功状態で返す値を確認
+        Result.ok()が成功状態で値を返し、unwrap_error()で例外を発生させることを確認
         """
         result: Result[T, None] = Result.ok(value)
 
         self.assertTrue(result.is_ok)
         self.assertEqual(result.unwrap(), value)
+        # Result.ok()の時にunwrap_error()を呼ぶと例外が発生することを確認
+        with self.assertRaisesMessage(
+            ValueError, f"Called unwrap_error on an ok value: {value}"
+        ):
+            result.unwrap_error()
 
     def _assert_result_error(self, value: E) -> None:
         """
-        Result.error()がエラー状態で返す値を確認
+        Result.error()がエラー状態で値を返し、unwrap()で例外を発生させることを確認
         """
         result: Result[None, E] = Result.error(value)
 
         self.assertFalse(result.is_ok)
         self.assertEqual(result.unwrap_error(), value)
+        # Result.error()の時にunwrap()を呼ぶと例外が発生することを確認
+        with self.assertRaisesMessage(
+            ValueError, f"Called unwrap on an error value: {value}"
+        ):
+            result.unwrap()
 
     def test_result_ok_int(self) -> None:
         """
