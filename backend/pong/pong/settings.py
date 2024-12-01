@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",  # for Swagger UI
     "drf_spectacular_sidecar",  # for Swagger UI
+    # apps
+    "jwt",
 ]
 
 MIDDLEWARE = [
@@ -151,6 +153,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     # view setやserializerから自動的にOpenAPI3.0スキーマを生成
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # djangorestframework_simplejwt
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -162,4 +168,8 @@ SPECTACULAR_SETTINGS = {
     # drf_spectacular_sidecar
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    # djangorestframework_simplejwt
+    "AUTHENTICATION_WHITELIST": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication"
+    ],
 }
