@@ -40,6 +40,12 @@ class Result(Generic[T, E]):
         # unwrap()と同様の理由でcast()を使用して、型チェックを通している
         return cast(E, self._value)
 
+    def __repr__(self) -> str:
+        if self._is_ok:
+            return f"Result.ok({repr(self._value)})"
+        else:
+            return f"Result.error({repr(self._value)})"
+
     @classmethod
     def ok(cls, value: T) -> "Result[T, E]":
         """

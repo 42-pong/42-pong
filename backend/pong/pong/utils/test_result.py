@@ -72,3 +72,12 @@ class ResultTests(TestCase):
         Result.error()でstr型の値を正常にラップできることを確認
         """
         self._assert_result_error("error message")
+
+    def test_result_repr(self) -> None:
+        """
+        Resultオブジェクトの文字列表現(__repr__)が正しいことを確認
+        """
+        ok_result: Result[int, None] = Result.ok(123)
+        error_result: Result[None, str] = Result.error("failure")
+        self.assertEqual(repr(ok_result), "Result.ok(123)")
+        self.assertEqual(repr(error_result), "Result.error('failure')")
