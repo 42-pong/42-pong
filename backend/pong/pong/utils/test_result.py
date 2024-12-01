@@ -22,6 +22,15 @@ class ResultTests(TestCase):
         self.assertTrue(result.is_ok)
         self.assertEqual(result.unwrap(), value)
 
+    def _assert_result_error(self, value: E) -> None:
+        """
+        Result.error()がエラー状態で返す値を確認
+        """
+        result: Result[None, E] = Result.error(value)
+
+        self.assertFalse(result.is_ok)
+        self.assertEqual(result.unwrap_error(), value)
+
     def test_result_ok_int(self) -> None:
         """
         Result.ok()でint型の値を正常にラップできることを確認
@@ -39,3 +48,15 @@ class ResultTests(TestCase):
         Result.ok()でlist型の値を正常にラップできることを確認
         """
         self._assert_result_ok([1, 2, 3])
+
+    def test_result_error_int(self) -> None:
+        """
+        Result.error()でint型の値を正常にラップできることを確認
+        """
+        self._assert_result_error(-1)
+
+    def test_result_error_str(self) -> None:
+        """
+        Result.error()でstr型の値を正常にラップできることを確認
+        """
+        self._assert_result_error("error message")

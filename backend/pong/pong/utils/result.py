@@ -24,9 +24,28 @@ class Result(Generic[T, E]):
         # cast()を使ってT型であることを明示し、型チェックを通している
         return cast(T, self._value)
 
+    def unwrap_error(self) -> E:
+        """
+        失敗時に呼ばれることを前提として、失敗時の値(E型)を返す
+        もし成功時(result_ok)の状態で呼ばれた場合、例外(ValueError)を発生させる
+        """
+        if self._is_ok:
+            raise ValueError(
+                f"Called unwrap_error on an ok value: {self._value}"
+            )
+        # unwrap()と同様の理由でcast()を使用して、型チェックを通している
+        return cast(E, self._value)
+
     @classmethod
     def ok(cls, value: T) -> "Result[T, E]":
         """
         成功時のResultインスタンスを生成
         """
         return cls(value=value, is_ok=True)
+
+    @classmethod
+    def error(cls, value: E) -> "Result[T, E]":
+        """
+        失敗時のResultインスタンスを生成
+        """
+        return cls(value=value, is_ok=False)
