@@ -8,3 +8,6 @@ drf-spectacular # for Swagger UI
 drf-spectacular-sidecar # for Swagger UI
 django-environ
 psycopg2-binary
+djangorestframework-simplejwt[crypto]
+djangorestframework-simplejwt[crypto]
+djangorestframework-simplejwt[crypto]

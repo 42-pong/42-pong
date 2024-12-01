@@ -14,14 +14,19 @@ attrs==24.2.0
     #   referencing
 certifi==2024.8.30
     # via requests
+cffi==1.17.1
+    # via cryptography
 charset-normalizer==3.4.0
     # via requests
+cryptography==44.0.0
+    # via djangorestframework-simplejwt
 django==5.1.2
     # via
     #   -r requirements.in
     #   django-stubs
     #   django-stubs-ext
     #   djangorestframework
+    #   djangorestframework-simplejwt
     #   drf-spectacular
     #   drf-spectacular-sidecar
 django-environ==0.11.2
@@ -35,12 +40,15 @@ django-stubs-ext==5.1.1
 djangorestframework==3.15.2
     # via
     #   -r requirements.in
+    #   djangorestframework-simplejwt
     #   drf-spectacular
+djangorestframework-simplejwt==5.3.1
+    # via -r requirements.in
 djangorestframework-stubs==3.15.1
     # via -r requirements.in
-drf-spectacular==0.27.2
+drf-spectacular==0.28.0
     # via -r requirements.in
-drf-spectacular-sidecar==2024.11.1
+drf-spectacular-sidecar==2024.12.1
     # via -r requirements.in
 idna==3.10
     # via requests
@@ -56,6 +64,10 @@ mypy-extensions==1.0.0
     # via mypy
 psycopg2-binary==2.9.10
     # via -r requirements.in
+pycparser==2.22
+    # via cffi
+pyjwt==2.10.1
+    # via djangorestframework-simplejwt
 pyyaml==6.0.2
     # via drf-spectacular
 referencing==0.35.1
