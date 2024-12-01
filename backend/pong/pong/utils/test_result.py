@@ -20,6 +20,7 @@ class ResultTests(TestCase):
         result: Result[T, None] = Result.ok(value)
 
         self.assertTrue(result.is_ok)
+        self.assertFalse(result.is_error)
         self.assertEqual(result.unwrap(), value)
         # Result.ok()の時にunwrap_error()を呼ぶと例外が発生することを確認
         with self.assertRaisesMessage(
@@ -34,6 +35,7 @@ class ResultTests(TestCase):
         result: Result[None, E] = Result.error(value)
 
         self.assertFalse(result.is_ok)
+        self.assertTrue(result.is_error)
         self.assertEqual(result.unwrap_error(), value)
         # Result.error()の時にunwrap()を呼ぶと例外が発生することを確認
         with self.assertRaisesMessage(

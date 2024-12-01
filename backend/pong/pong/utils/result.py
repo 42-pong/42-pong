@@ -13,6 +13,10 @@ class Result(Generic[T, E]):
     def is_ok(self) -> bool:
         return self._is_ok
 
+    @property
+    def is_error(self) -> bool:
+        return not self._is_ok
+
     def unwrap(self) -> T:
         """
         成功時のみ呼ばれることを前提として、成功時の値(T型)を返す
