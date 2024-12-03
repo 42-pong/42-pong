@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     "drf_spectacular",  # for Swagger UI
     "drf_spectacular_sidecar",  # for Swagger UI
     # apps
-    "jwt",
+    "jwt_token",
 ]
 
 MIDDLEWARE = [

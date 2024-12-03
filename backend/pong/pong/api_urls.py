@@ -1,6 +1,6 @@
 from django.urls import include, path
 
-import jwt.urls as jwt_urls
+import jwt_token.urls as jwt_urls
 
 urlpatterns = [
     # jwt token
