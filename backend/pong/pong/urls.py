@@ -19,10 +19,9 @@ from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-import pong.api_urls as api_urls
+import jwt_token.urls as jwt_urls
 
 from .health_check.views import health_check
-import jwt_token.urls as jwt_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
