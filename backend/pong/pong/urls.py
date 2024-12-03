@@ -22,6 +22,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 import pong.api_urls as api_urls
 
 from .health_check.views import health_check
+import jwt_token.urls as jwt_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -34,5 +35,6 @@ urlpatterns = [
     ),
     # health check
     path("api/health/", health_check, name="health-check"),
-    path("api/", include(api_urls)),
+    # jwt_token
+    path("api/token/", include(jwt_urls)),
 ]
