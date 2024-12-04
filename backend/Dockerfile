@@ -7,8 +7,10 @@ WORKDIR /pong
 # 新規userを作成。この時点ではuserはroot
 RUN useradd -ms /bin/bash pong
 
-COPY requirements.txt .
+# pip-tools: 開発環境でrequirements.inからrequirements.txtを生成するために使用
+COPY tools/requirements.txt .
 RUN pip install --upgrade pip && \
+    pip install pip-tools && \
     pip3 install --no-cache-dir -r requirements.txt
 
 COPY ./tools/entrypoint.sh /usr/local/bin/entrypoint.sh

@@ -23,7 +23,7 @@ services:
     container_name: backend
     restart: always
     ports:
-      - "8000:8000"
+      - "${BACKEND_SERVER_PORT}:8000"
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -34,18 +34,38 @@ services:
       - ./backend/pong:/pong
     networks:
       - transcendence
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
 
-  # todo: DBが必要になってから追加
-  # db:
-  #   networks:
-  #     - transcendence
+  db:
+    image: postgres:17.0-bullseye
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - transcendence
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME} -h localhost -p 5432 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   transcendence:
     name: trc-network
     driver: bridge
+
+volumes:
+  db-data:
+    name: trc-db-data

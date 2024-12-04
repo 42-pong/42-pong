@@ -12,21 +12,33 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+# todo mypyが型対応していない3rdパーティのライブラリも型対応できるようにする
+import environ  # type: ignore
+
+# 環境変数のスキーマを定義
+env = environ.Env(
+    DEBUG=(bool, False),
+    # 自動テストで例外処理になるためSECRET_KEYを定義
+    SECRET_KEY=(str, "your-default-secret-key"),
+    DB_NAME=(str, "db_name"),
+    DB_USER=(str, "db_user"),
+    DB_PASSWORD=(str, "db_password"),
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# .envファイルを探し、読み込む
+env_file = Path(BASE_DIR) / ".env"
+environ.Env.read_env(env_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# todo: 本番環境用を作成する場合、django-environ or python-dotenvを使って.envでSECRET_KEYを設定する。
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = (
-    "django-insecure-lqyo8yy!fs!kyqr408#rk@gs-%svxh43d2r4$nt@1vh46dtd-4"
-)
+DEBUG = env("DEBUG")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = env("SECRET_KEY")
+
 
 ALLOWED_HOSTS: list[str] = []
 
@@ -44,6 +56,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",  # for Swagger UI
     "drf_spectacular_sidecar",  # for Swagger UI
+    # apps
+    "jwt_token",
 ]
 
 MIDDLEWARE = [
@@ -82,11 +96,14 @@ WSGI_APPLICATION = "pong.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": "db",  # compose.yamlのDBのservice名
+        "PORT": "5432",  # postgresのデフォルトポート
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -136,6 +153,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     # view setやserializerから自動的にOpenAPI3.0スキーマを生成
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # djangorestframework_simplejwt
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -147,4 +168,8 @@ SPECTACULAR_SETTINGS = {
     # drf_spectacular_sidecar
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    # djangorestframework_simplejwt
+    "AUTHENTICATION_WHITELIST": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication"
+    ],
 }

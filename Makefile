@@ -1,5 +1,6 @@
 # image/container
-BACKEND	:=	backend
+BACKEND		:=	backend
+DATABASE	:=	postgres
 
 .PHONY: all
 all: up
@@ -46,9 +47,17 @@ psa:
 exec-be:
 	@docker exec -it $(BACKEND) /bin/bash
 
+.PHONY: exec-db
+exec-db:
+	@docker exec -it $(DATABASE) /bin/bash
+
 # -------------------------------------------------------
 # docker logs
 # -------------------------------------------------------
 .PHONY: logs-be
 logs-be:
 	@docker logs $(BACKEND)
+
+.PHONY: logs-db
+logs-db:
+	@docker logs $(DATABASE)
