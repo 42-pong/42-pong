@@ -16,8 +16,10 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+import jwt_token.urls as jwt_urls
 
 from .health_check.views import health_check
 
@@ -32,4 +34,6 @@ urlpatterns = [
     ),
     # health check
     path("api/health/", health_check, name="health-check"),
+    # jwt_token
+    path("api/token/", include(jwt_urls)),
 ]
