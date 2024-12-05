@@ -13,9 +13,6 @@ jobs:
       docker:
         image: docker:19.03.12
         options: --privileged
-        ports:
-          - 5432:5432
-          - 8000:8000
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
