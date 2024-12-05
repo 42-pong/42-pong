@@ -38,6 +38,14 @@ jobs:
         run: |
           docker compose -f compose.yaml up -d backend db
 
+      # backendコンテナのlogsを確認する
+      - name: Check backend container logs
+        run: docker compose -f compose.yaml logs backend
+
+      # dbコンテナのlogsを確認する
+      - name: Check db container logs
+        run: docker compose -f compose.yaml logs db
+
       - name: Wait for db service to be ready
         run: |
           while ! docker compose -f compose.yaml exec -T db pg_isready -U user; do sleep 1; done
