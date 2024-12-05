@@ -20,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # GitHubリポジトリの設定で定義したシークレットを.envファイルに書き込む
+      # GitHubリポジトリの設定で定義した変数を.envファイルに書き込む
       - name: Create .env file
         run: |
           echo "FRONT_SERVER_PORT=${{ vars.FRONT_SERVER_PORT }}" >> .env
@@ -38,13 +38,23 @@ jobs:
         run: |
           docker compose -f compose.yaml up -d db
 
-      - name: Wait for db service to be ready
-        run: |
-          while ! docker compose -f compose.yaml exec -T db pg_isready -U user; do sleep 1; done
-
       # dbコンテナのlogsを確認する
       - name: Check db container logs
         run: docker compose -f compose.yaml logs db
+
+      # dbコンテナが起動するまで一定時間待機する
+      - name: Wait for db service to be ready
+        run: |
+          timeout=15
+          until docker compose -f compose.yaml exec -T db pg_isready -U user || [ $timeout -le 0 ]; do
+            echo "Waiting for database... ($timeout seconds left)"
+            sleep 1
+            timeout=$((timeout-1))
+          done
+          if [ $timeout -le 0 ]; then
+            echo "Database failed to start"
+            exit 1
+          fi
 
       # backendコンテナを起動する
       - name: Set up db container with Docker Compose
