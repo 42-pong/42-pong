@@ -1,0 +1,18 @@
+name: Backend Unit Test
+
+on:
+  pull_request:
+    paths:
+      - 'backend/pong/**'
+      - '.github/workflows/backend_unit_test.yml'
+
+jobs:
+  backend-unit-test:
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
