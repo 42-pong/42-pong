@@ -35,6 +35,10 @@ jobs:
         run: |
           docker compose -f compose.yaml up -d db
 
+      # DBコンテナのログを確認する
+      - name: Check db container logs
+        run: docker compose -f compose.yaml logs db
+
       # DBコンテナが起動するまで一定時間待機する
       - name: Wait for db service to be ready
         run: |
@@ -53,6 +57,10 @@ jobs:
       - name: Set up backend container with docker compose
         run: |
           docker compose -f compose.yaml up -d backend
+
+      # backendコンテナのログを確認する
+      - name: Check backend container logs
+        run: docker compose -f compose.yaml logs backend
 
       # backendのunit-testを実行
       - name: Run Backend Unit Test
