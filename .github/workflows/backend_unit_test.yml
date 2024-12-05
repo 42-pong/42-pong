@@ -69,3 +69,8 @@ jobs:
       # docker composeを停止してクリーンアップする
       - name: Tear down docker compose
         run: docker compose -f compose.yaml down
+
+      # .envファイルを削除
+      - name: Cleanup sensitive file
+        if: always()
+        run: rm -f .env
