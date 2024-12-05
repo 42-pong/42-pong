@@ -16,3 +16,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # GitHubリポジトリの設定で定義した変数を.envファイルに書き込む
+      - name: Create .env file
+        run: |
+          echo "FRONT_SERVER_PORT=${{ vars.FRONT_SERVER_PORT }}" >> .env
+          echo "BACKEND_SERVER_PORT=${{ vars.BACKEND_SERVER_PORT }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "SUPERUSER_NAME=${{ secrets.SUPERUSER_NAME }}" >> .env
+          echo "SUPERUSER_EMAIL=${{ secrets.SUPERUSER_EMAIL }}" >> .env
+          echo "SUPERUSER_PASSWORD=${{ secrets.SUPERUSER_PASSWORD }}" >> .env
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
