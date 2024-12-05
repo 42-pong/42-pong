@@ -33,26 +33,31 @@ jobs:
           echo "DB_USER=${{ secrets.DB_USER }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
-      # backendコンテナ内のテストがDBコンテナに依存しているため、2つのサービスを起動する
-      - name: Set up Docker Compose
+      # backendコンテナ内のテストがDBコンテナに依存しているため、DBコンテナを先に起動する
+      - name: Set up backend container with Docker Compose
         run: |
-          docker compose -f compose.yaml up -d backend db
-
-      # backendコンテナのlogsを確認する
-      - name: Check backend container logs
-        run: docker compose -f compose.yaml logs backend
-
-      # dbコンテナのlogsを確認する
-      - name: Check db container logs
-        run: docker compose -f compose.yaml logs db
+          docker compose -f compose.yaml up -d db
 
       - name: Wait for db service to be ready
         run: |
           while ! docker compose -f compose.yaml exec -T db pg_isready -U user; do sleep 1; done
 
+      # dbコンテナのlogsを確認する
+      - name: Check db container logs
+        run: docker compose -f compose.yaml logs db
+
+      # backendコンテナを起動する
+      - name: Set up db container with Docker Compose
+        run: |
+          docker compose -f compose.yaml up -d backend
+
+      # backendコンテナのlogsを確認する
+      - name: Check backend container logs
+        run: docker compose -f compose.yaml logs backend
+
+      # backendのユニットテストを実行
       - name: Run Backend Unit Test
         run: docker compose -f compose.yaml exec -T backend make unit-test
 
-      # backendのユニットテストを実行
       - name: Tear down Docker Compose
         run: docker compose -f compose.yaml down
