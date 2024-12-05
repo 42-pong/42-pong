@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # エラーが発生した場合にスクリプトの実行を停止する
-set -e
+set -eux
 
 migrate_db() {
     # todo: makemigrationsなど
