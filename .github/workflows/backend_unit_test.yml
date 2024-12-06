@@ -20,15 +20,17 @@ jobs:
       # GitHubリポジトリの設定で定義した変数を.envファイルに書き込む
       - name: Create .env file
         run: |
-          echo "FRONT_SERVER_PORT=\"${{ vars.FRONT_SERVER_PORT }}\"" >> .env
-          echo "BACKEND_SERVER_PORT=\"${{ vars.BACKEND_SERVER_PORT }}\"" >> .env
-          echo "SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"" >> .env
-          echo "SUPERUSER_NAME=\"${{ secrets.SUPERUSER_NAME }}\"" >> .env
-          echo "SUPERUSER_EMAIL=\"${{ secrets.SUPERUSER_EMAIL }}\"" >> .env
-          echo "SUPERUSER_PASSWORD=\"${{ secrets.SUPERUSER_PASSWORD }}\"" >> .env
-          echo "DB_NAME=\"${{ secrets.DB_NAME }}\"" >> .env
-          echo "DB_USER=\"${{ secrets.DB_USER }}\"" >> .env
-          echo "DB_PASSWORD=\"${{ secrets.DB_PASSWORD }}\"" >> .env
+          cat <<-EOF > .env
+            FRONT_SERVER_PORT="${{ vars.FRONT_SERVER_PORT }}"
+            BACKEND_SERVER_PORT="${{ vars.BACKEND_SERVER_PORT }}"
+            SECRET_KEY="${{ secrets.SECRET_KEY }}"
+            SUPERUSER_NAME="${{ secrets.SUPERUSER_NAME }}"
+            SUPERUSER_EMAIL="${{ secrets.SUPERUSER_EMAIL }}"
+            SUPERUSER_PASSWORD="${{ secrets.SUPERUSER_PASSWORD }}"
+            DB_NAME="${{ secrets.DB_NAME }}"
+            DB_USER="${{ secrets.DB_USER }}"
+            DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+          EOF
 
       # backendコンテナのunit-testがDBコンテナに依存しているため、DBコンテナを先に起動する
       - name: Set up db container with docker compose
