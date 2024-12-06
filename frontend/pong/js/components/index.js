@@ -1,3 +1,5 @@
-import { HomePage } from "./page/HomePage";
+import { HomeView } from "./view/HomeView";
+import { SignoutView } from "./view/SignoutView";
 
-customElements.define("home-page", HomePage, {});
+customElements.define("home-view", HomeView, {});
+customElements.define("signout-view", SignoutView, {});
