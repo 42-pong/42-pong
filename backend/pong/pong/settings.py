@@ -38,9 +38,7 @@ DEBUG = env("DEBUG")
 
 SECRET_KEY = env("SECRET_KEY")
 
-
 ALLOWED_HOSTS: list[str] = []
-
 
 # Application definition
 
@@ -172,3 +170,6 @@ SPECTACULAR_SETTINGS = {
         "rest_framework_simplejwt.authentication.JWTAuthentication"
     ],
 }
+
+OAUTH_CLIENT_ID = env("OAUTH_CLIENT_ID")
+OAUTH_CLIENT_SECRET_KEY = env("OAUTH_CLIENT_SECRET_KEY")
