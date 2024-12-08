@@ -18,7 +18,6 @@ import environ  # type: ignore
 # 環境変数のスキーマを定義
 env = environ.Env(
     DEBUG=(bool, False),
-    # 自動テストで例外処理になるためSECRET_KEYを定義
     SECRET_KEY=(str, "your-default-secret-key"),
     DB_NAME=(str, "db_name"),
     DB_USER=(str, "db_user"),
