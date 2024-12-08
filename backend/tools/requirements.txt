@@ -62,6 +62,8 @@ mypy==1.13.0
     # via -r requirements.in
 mypy-extensions==1.0.0
     # via mypy
+oauthlib==3.2.2
+    # via requests-oauthlib
 psycopg2-binary==2.9.10
     # via -r requirements.in
 pycparser==2.22
@@ -75,8 +77,12 @@ referencing==0.35.1
     #   jsonschema
     #   jsonschema-specifications
 requests==2.32.3
-    # via djangorestframework-stubs
-rpds-py==0.21.0
+    # via
+    #   djangorestframework-stubs
+    #   requests-oauthlib
+requests-oauthlib==2.0.0
+    # via -r requirements.in
+rpds-py==0.22.3
     # via
     #   jsonschema
     #   referencing
