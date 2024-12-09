@@ -20,7 +20,7 @@ charset-normalizer==3.4.0
     # via requests
 cryptography==44.0.0
     # via djangorestframework-simplejwt
-django==5.1.2
+django==5.1.4
     # via
     #   -r requirements.in
     #   django-stubs
@@ -76,7 +76,7 @@ referencing==0.35.1
     #   jsonschema-specifications
 requests==2.32.3
     # via djangorestframework-stubs
-rpds-py==0.21.0
+rpds-py==0.22.3
     # via
     #   jsonschema
     #   referencing
