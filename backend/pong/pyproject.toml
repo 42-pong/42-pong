@@ -126,3 +126,10 @@ python_version = 3.13
 # 型アノテーションのない関数を呼び出すことや定義することを禁止します。
 disallow_untyped_calls = true
 disallow_untyped_defs = true
+
+# djano-stubsを認識させるためにplugins,django_settings_moduleが必要
+# https://github.com/typeddjango/django-stubs
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "pong.settings"
