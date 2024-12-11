@@ -1,4 +1,4 @@
-import { HomeView } from "../components/view/HomeView";
+import { HomeView } from "../components/views/HomeView";
 import { Route } from "../core/Route";
 import { Router } from "../core/Router";
 
