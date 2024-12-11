@@ -1,3 +1,9 @@
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiRequest,
+    OpenApiResponse,
+    extend_schema,
+)
 from rest_framework import status
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
@@ -15,6 +21,52 @@ class AccountCreateView(APIView):
     # todo: 認証機能を実装したら多分IsAuthenticatedに変更
     permission_classes = (AllowAny,)
 
+    @extend_schema(
+        request=OpenApiRequest(
+            PlayerSerializer,
+            examples=[
+                OpenApiExample(
+                    "Example request",
+                    value={
+                        "user": {
+                            "username": "username",
+                            "email": "user@example.com",
+                            "password": "password",
+                        }
+                    },
+                ),
+            ],
+        ),
+        responses={
+            201: OpenApiResponse(
+                response=PlayerSerializer,
+                examples=[
+                    OpenApiExample(
+                        "Example 201 response",
+                        value={
+                            "player_id": 1,
+                            "username": "username",
+                            "email": "user@example.com",
+                        },
+                    ),
+                ],
+            ),
+            400: OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {
+                        "error": {"type": "string"},
+                    },
+                },
+                examples=[
+                    OpenApiExample(
+                        "Example 400 response",
+                        value={"field": "error messages"},
+                    ),
+                ],
+            ),
+        },
+    )
     # todo: try-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
     def post(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
         # requestをserializerに渡して変換とバリデーションを行う
