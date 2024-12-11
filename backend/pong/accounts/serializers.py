@@ -18,6 +18,31 @@ class UserSerializer(serializers.ModelSerializer):
             "password": {"write_only": True},
         }
 
+    # 必須なフィールドが空の場合はエラー
+    # todo:
+    #  - serializer.errorsに複数のエラーメッセージをセットできそう
+    #  - より詳細なvalidationの実装
+    def _validate_required_fields(
+        self, data: dict, required_fields: list[str]
+    ) -> None:
+        for field in required_fields:
+            # 実装上のミスでdataに存在しないfieldが渡された場合
+            if field not in data:
+                raise AssertionError(
+                    f"{field} is required but not provided in data."
+                )
+            # dataの中のfieldが空の場合
+            if not data.get(field):
+                raise serializers.ValidationError(
+                    {field: "This field is required."}
+                )
+
+    # PlayerSerializerのuser_serializer.is_valid()の内部で呼ばれる
+    def validate(self, data: dict) -> dict:
+        required_fields: list[str] = ["username", "email", "password"]
+        self._validate_required_fields(data, required_fields)
+        return data
+
     # PlayerSerializerのuser_serializer.save()の内部で呼ばれる
     def create(self, validated_data: dict) -> User:
         # todo: usernameはBEが自動生成する
@@ -41,7 +66,10 @@ class PlayerSerializer(serializers.ModelSerializer):
             "updated_at": {"read_only": True},
         }
 
+    # todo: Playerモデルにfieldが追加されたらvalidate()を作成する
+
     # AccountCreateViewのserializer.save()の内部で呼ばれる
+    # todo: 多分トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
     def create(self, validated_data: dict) -> Player:
         # requestの中にuserがあるので、それだけpopしてUserSerializerに渡す
         user_data: dict = validated_data.pop("user")
