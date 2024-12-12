@@ -10,7 +10,9 @@ class Player(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    USERNAME_FIELD = "email"  # ユーザーが認証に使用するfield
+    # ユーザーが認証に使用するfield
+    # todo: ログイン/認証機能実装時に確認して変更
+    USERNAME_FIELD = "email"
 
     class Meta:
         db_table = "players"

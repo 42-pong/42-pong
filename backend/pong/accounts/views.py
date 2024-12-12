@@ -12,6 +12,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .constants import PlayerFields, UserFields
 from .models import Player
 from .serializers import PlayerSerializer
 
@@ -28,10 +29,10 @@ class AccountCreateView(APIView):
                 OpenApiExample(
                     "Example request",
                     value={
-                        "user": {
-                            "username": "username",
-                            "email": "user@example.com",
-                            "password": "password",
+                        PlayerFields.USER: {
+                            UserFields.USERNAME: "username",
+                            UserFields.EMAIL: "user@example.com",
+                            UserFields.PASSWORD: "password",
                         }
                     },
                 ),
@@ -44,9 +45,9 @@ class AccountCreateView(APIView):
                     OpenApiExample(
                         "Example 201 response",
                         value={
-                            "player_id": 1,
-                            "username": "username",
-                            "email": "user@example.com",
+                            "player_id": 1,  # todo: Player,UserどちらのIDを返すか決めて変更
+                            UserFields.USERNAME: "username",
+                            UserFields.EMAIL: "user@example.com",
                         },
                     ),
                 ],
@@ -81,9 +82,9 @@ class AccountCreateView(APIView):
         player: Player = player_serializer.save()
         return Response(
             {
-                "player_id": player.id,
-                "username": player.user.username,
-                "email": player.user.email,
+                "player_id": player.id,  # todo: Player,UserどちらのIDを返すか決めて変更
+                UserFields.USERNAME: player.user.username,
+                UserFields.EMAIL: player.user.email,
             },
             status=status.HTTP_201_CREATED,
         )
