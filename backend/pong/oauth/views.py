@@ -1,9 +1,13 @@
+# views.py
+from urllib.parse import urlencode
+
+import requests
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
-from requests_oauthlib import OAuth2Session
+
 from pong.settings import OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET_KEY
-import requests
+
 
 @api_view(["GET"])
 def oauth_authorize(request: Request) -> Response:
@@ -41,7 +45,12 @@ def oauth_callback(request: Request) -> Response:
     # todo: Result型で定義する？
     code = request.GET.get("code")
     if not code:
-        return Response({"error": "Authorization code is None. Please check your authentication process."}, status=400)
+        return Response(
+            {
+                "error": "Authorization code is None. Please check your authentication process."
+            },
+            status=400,
+        )
     request_data = {
         "code": code,
         "grant_type": "authorization_code",
@@ -53,12 +62,13 @@ def oauth_callback(request: Request) -> Response:
         "https://api.intra.42.fr/oauth/token",
         data=request_data,
     )
-    #todo トークンを取得した後、ユーザーを作成し、データベースに保存する？
+    # todo トークンを取得した後、ユーザーを作成し、データベースに保存する？
     tokens = response.json()
     # todo アプリケーションのホームURLを設定する
     # app_home_url = "https://github.com/42-pong"
     # return Response({"message": "Redirecting to home page"}, status=302, headers={"Location": app_home_url})
     return Response({f"Token: {tokens}"}, status=200)
+
 
 @api_view(["POST"])
 def oauth_fetch_token(request: Request) -> Response:
@@ -72,7 +82,7 @@ def oauth_fetch_token(request: Request) -> Response:
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data=request.data,
         )
-        return (response.json(), response.status_code)
+        return Response(response.json(), response.status_code)
     except Exception as e:
         return Response(
             {"error": f"Failed to fetch token: {str(e)}"}, status=400

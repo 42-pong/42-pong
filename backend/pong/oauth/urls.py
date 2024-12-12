@@ -1,4 +1,5 @@
 from django.urls import path
+
 from .views import oauth_authorize, oauth_callback, oauth_fetch_token
 
 urlpatterns = [
