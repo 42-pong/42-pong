@@ -44,7 +44,6 @@ def oauth_callback(request: Request) -> Response:
     }
     response = requests.post(
         "https://api.intra.42.fr/oauth/token",
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
         data=request_data,
     )
     #todo トークンを取得した後、ユーザーを作成し、データベースに保存する？
@@ -54,3 +53,20 @@ def oauth_callback(request: Request) -> Response:
     # return Response({"message": "Redirecting to home page"}, status=302, headers={"Location": app_home_url})
     return Response({f"Token: {tokens}"}, status=200)
 
+@api_view(["POST"])
+def oauth_fetch_token(request: Request) -> Response:
+    """
+    トークンエンドポイントを提供する関数
+    この関数は認可サーバーから認可コードを使用してトークンを取得するために使用する。
+    """
+    try:
+        response = requests.post(
+            "https://api.intra.42.fr/oauth/token",
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            data=request.data,
+        )
+        return (response.json(), response.status_code)
+    except Exception as e:
+        return Response(
+            {"error": f"Failed to fetch token: {str(e)}"}, status=400
+        )
