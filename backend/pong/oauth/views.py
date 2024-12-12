@@ -13,12 +13,19 @@ def oauth_authorize(request: Request) -> Response:
     認可サーバーに接続する際に、redirect_uriを設定する理由は、認可サーバーはクライアントではなくブラウザーにレスポンスを返すため、
     ブラウザからクライアントにリダイレクトし、認可コードを取得する必要があるため。
     """
-    client = OAuth2Session(
-        client_id=OAUTH_CLIENT_ID, redirect_uri="http://localhost:8000/api/oauth/callback"
+
+    query_params = {
+        "client_id": OAUTH_CLIENT_ID,
+        "redirect_uri": "http://localhost:8000/api/oauth/callback",
+        "response_type": "code",
+        # todo: csrf対策の為にstate追加するかも
+    }
+    query_string = urlencode(query_params)
+
+    authorization_url = (
+        f"https://api.intra.42.fr/oauth/authorize?{query_string}"
     )
-    authorization_url, _ = client.authorization_url(
-        "https://api.intra.42.fr/oauth/authorize"
-    )
+
     return Response(
         status=302,
         headers={"Location": authorization_url},
