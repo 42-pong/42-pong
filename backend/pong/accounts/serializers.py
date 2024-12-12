@@ -8,14 +8,14 @@ from .models import Player
 # PlayerSerializerが呼ばれる時にこのUserSerializerも呼ばれる
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model: type[User] = User
-        fields: tuple[str, ...] = (
+        model = User
+        fields = (
             UserFields.ID,  # todo: UserかPlayerどちらかだけで良さそう
             UserFields.USERNAME,
             UserFields.EMAIL,
             UserFields.PASSWORD,
         )
-        extra_kwargs: dict = {
+        extra_kwargs = {
             UserFields.PASSWORD: {"write_only": True},
         }
 
@@ -64,14 +64,14 @@ class PlayerSerializer(serializers.ModelSerializer):
     user: UserSerializer = UserSerializer()
 
     class Meta:
-        model: type[Player] = Player
-        fields: tuple[str, ...] = (
+        model = Player
+        fields = (
             PlayerFields.ID,  # todo: UserかPlayerどちらかだけで良さそう
             PlayerFields.USER,
             PlayerFields.CREATED_AT,
             PlayerFields.UPDATED_AT,
         )
-        extra_kwargs: dict = {
+        extra_kwargs = {
             PlayerFields.CREATED_AT: {"read_only": True},
             PlayerFields.UPDATED_AT: {"read_only": True},
         }
