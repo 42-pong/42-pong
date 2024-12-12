@@ -6,6 +6,12 @@ from pong.settings import OAUTH_CLIENT_ID
 
 @api_view(["GET"])
 def oauth_authorize(request: Request) -> Response:
+    """
+    認可エンドポイントを提供する関数
+    この関数はクライアント(42pong)が認可サーバーの認可エンドポイントにアクセスし、認可コードを取得するために使用する。
+    認可サーバーに接続する際に、redirect_uriを設定する理由は、認可サーバーはクライアントではなくブラウザーにレスポンスを返すため、
+    ブラウザからクライアントにリダイレクトし、認可コードを取得する必要があるため。
+    """
     client = OAuth2Session(
         client_id=OAUTH_CLIENT_ID, redirect_uri="http://localhost:8000/api/oauth/callback"
     )
