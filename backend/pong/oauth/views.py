@@ -22,3 +22,17 @@ def oauth_authorize(request: Request) -> Response:
         status=302,
         headers={"Location": authorization_url},
     )
+
+@api_view(["GET"])
+def oauth_callback(request: Request) -> Response:
+    """
+    認可サーバーからのレスポンスを受け取る関数
+    この関数は認可サーバーからのレスポンスを受け取り、認可コードを取得するために使用する。
+    """
+    code = request.GET.get("code")
+    if not code:
+        return Response({"error": "Authorization code is missing"}, status=400)
+    #todo トークンを取得する関数を作成する
+    #todo ホーム画面のエンドポイントを返す？
+    return Response({"code": code})
+
