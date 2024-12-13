@@ -6,7 +6,13 @@ from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from pong.settings import OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET_KEY
+from pong.settings import (
+    OAUTH_AUTHORIZATION_ENDPOINT,
+    OAUTH_CALLBACK_ENDPOINT,
+    OAUTH_CLIENT_ID,
+    OAUTH_CLIENT_SECRET_KEY,
+    OAUTH_TOKEN_ENDPOINT,
+)
 
 
 @api_view(["GET"])
@@ -20,15 +26,13 @@ def oauth_authorize(request: Request) -> Response:
 
     query_params = {
         "client_id": OAUTH_CLIENT_ID,
-        "redirect_uri": "http://localhost:8000/api/oauth/callback",
+        "redirect_uri": OAUTH_CALLBACK_ENDPOINT,
         "response_type": "code",
         # todo: csrf対策の為にstate追加するかも
     }
     query_string = urlencode(query_params)
 
-    authorization_url = (
-        f"https://api.intra.42.fr/oauth/authorize?{query_string}"
-    )
+    authorization_url = f"{OAUTH_AUTHORIZATION_ENDPOINT}?{query_string}"
 
     return Response(
         status=302,
@@ -54,12 +58,12 @@ def oauth_callback(request: Request) -> Response:
     request_data = {
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": "http://localhost:8000/api/oauth/callback",
+        "redirect_uri": OAUTH_CALLBACK_ENDPOINT,
         "client_id": OAUTH_CLIENT_ID,
         "client_secret": OAUTH_CLIENT_SECRET_KEY,
     }
     response = requests.post(
-        "https://api.intra.42.fr/oauth/token",
+        OAUTH_TOKEN_ENDPOINT,
         data=request_data,
     )
     # todo トークンを取得した後、ユーザーを作成し、データベースに保存する？
@@ -78,7 +82,7 @@ def oauth_fetch_token(request: Request) -> Response:
     """
     try:
         response = requests.post(
-            "https://api.intra.42.fr/oauth/token",
+            OAUTH_TOKEN_ENDPOINT,
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data=request.data,
         )
