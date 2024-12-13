@@ -4,7 +4,7 @@ import { Router } from "../core/Router";
 
 export const homeRouter = (target) => {
   const routes = {
-    "/": Route.createRoute(HomeView, "/"),
+    "/": Route.defaultRoute(HomeView),
   };
   return new Router(target, HomeView, routes);
 };
