@@ -19,8 +19,8 @@ export class Component extends HTMLElement {
     this._eventListeners = [];
   }
 
-  _getState(key) {
-    return this._state[key];
+  _getState() {
+    return this._state;
   }
 
   _updateState(newState) {

@@ -6,7 +6,7 @@ export class View extends Component {
   }
 
   _getPath() {
-    return this._getState("path");
+    return this._getState().path;
   }
 
   _updatePath(path) {
