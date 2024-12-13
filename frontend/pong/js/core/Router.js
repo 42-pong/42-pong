@@ -17,9 +17,9 @@ export class Router {
     this.#DefaultView = DefaultView;
   }
 
-  update(path = this.#DefaultView._defaultPath, state = {}) {
+  update(path = this.#DefaultView._defaultPath) {
     const route = this.#findRoute(path);
-    const isUpdated = this.#render(route, state);
+    const isUpdated = this.#render(route);
     return isUpdated;
   }
 
@@ -39,14 +39,14 @@ export class Router {
     return true;
   }
 
-  #render(route, state = {}) {
+  #render(route) {
     const { path, View } = route;
     let isUpdated;
 
     if (this.#view instanceof View)
       isUpdated = this.#view._updatePath(path);
     else {
-      this.#view = new View({ ...state, path });
+      this.#view = new View({ path });
       isUpdated = this.#mountView();
     }
     return isUpdated;
