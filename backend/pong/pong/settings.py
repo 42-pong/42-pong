@@ -22,6 +22,11 @@ env = environ.Env(
     DB_NAME=(str, "db_name"),
     DB_USER=(str, "db_user"),
     DB_PASSWORD=(str, "db_password"),
+    OAUTH_CLIENT_ID=(str, "client_id"),
+    OAUTH_CLIENT_SECRET_KEY=(str, "client_secret_key"),
+    OAUTH_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
+    OAUTH_CALLBACK_ENDPOINT=(str, "callback_endpoint"),
+    OAUTH_TOKEN_ENDPOINT=(str, "token_endpoint"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
