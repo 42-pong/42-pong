@@ -22,11 +22,11 @@ env = environ.Env(
     DB_NAME=(str, "db_name"),
     DB_USER=(str, "db_user"),
     DB_PASSWORD=(str, "db_password"),
-    OAUTH_CLIENT_ID=(str, "client_id"),
-    OAUTH_CLIENT_SECRET_KEY=(str, "client_secret_key"),
-    OAUTH_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
-    OAUTH_CALLBACK_ENDPOINT=(str, "callback_endpoint"),
-    OAUTH_TOKEN_ENDPOINT=(str, "token_endpoint"),
+    OAUTH2_CLIENT_ID=(str, "client_id"),
+    OAUTH2_CLIENT_SECRET_KEY=(str, "client_secret_key"),
+    OAUTH2_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
+    OAUTH2_CALLBACK_ENDPOINT=(str, "callback_endpoint"),
+    OAUTH2_TOKEN_ENDPOINT=(str, "token_endpoint"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",  # for Swagger UI
     # apps
     "jwt_token",
-    "oauth",
+    "oauth2",
 ]
 
 MIDDLEWARE = [
@@ -177,8 +177,8 @@ SPECTACULAR_SETTINGS = {
     ],
 }
 
-OAUTH_CLIENT_ID = env("OAUTH_CLIENT_ID")
-OAUTH_CLIENT_SECRET_KEY = env("OAUTH_CLIENT_SECRET_KEY")
-OAUTH_AUTHORIZATION_ENDPOINT = env("OAUTH_AUTHORIZATION_ENDPOINT")
-OAUTH_CALLBACK_ENDPOINT = env("OAUTH_CALLBACK_ENDPOINT")
-OAUTH_TOKEN_ENDPOINT = env("OAUTH_TOKEN_ENDPOINT")
+OAUTH2_CLIENT_ID = env("OAUTH2_CLIENT_ID")
+OAUTH2_CLIENT_SECRET_KEY = env("OAUTH2_CLIENT_SECRET_KEY")
+OAUTH2_AUTHORIZATION_ENDPOINT = env("OAUTH2_AUTHORIZATION_ENDPOINT")
+OAUTH2_CALLBACK_ENDPOINT = env("OAUTH2_CALLBACK_ENDPOINT")
+OAUTH2_TOKEN_ENDPOINT = env("OAUTH2_TOKEN_ENDPOINT")
