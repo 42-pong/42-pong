@@ -148,7 +148,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# drf_spectacular for Swagger UI
+# Django REST framework
 # https://drf-spectacular.readthedocs.io/en/latest/readme.html
 
 REST_FRAMEWORK = {
