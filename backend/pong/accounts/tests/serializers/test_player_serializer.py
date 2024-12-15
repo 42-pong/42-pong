@@ -49,3 +49,35 @@ class PlayerSerializerTests(TestCase):
         )
         self.assertEqual(player.user.email, self.user_data[UserFields.EMAIL])
 
+    def test_player_serializer_multi_create(self) -> None:
+        """
+        PlayerSerializerのcreate()メソッドが複数回呼ばれた場合に正常に動作することを確認する
+        """
+        # 2人目のアカウント情報
+        user_data_2 = {
+            UserFields.USERNAME: "testuser_2",
+            UserFields.EMAIL: "testuser_2@example.com",
+            UserFields.PASSWORD: "testpassword",
+        }
+        player_data_2 = {
+            PlayerFields.USER: user_data_2,
+        }
+
+        # 2人共アカウントを作成し,正常に1対1で紐づいているか確認
+        for player_data in (self.player_data, player_data_2):
+            serializer: PlayerSerializer = PlayerSerializer(data=player_data)
+            if not serializer.is_valid():
+                # このテストではerrorにならない想定
+                raise AssertionError(serializer.errors)
+            player: Player = serializer.save()
+
+            # todo: Player独自のfieldが追加された時にテストも追加する
+            self.assertEqual(
+                player.user.username,
+                player_data[PlayerFields.USER][UserFields.USERNAME],
+            )
+            self.assertEqual(
+                player.user.email,
+                player_data[PlayerFields.USER][UserFields.EMAIL],
+            )
+
