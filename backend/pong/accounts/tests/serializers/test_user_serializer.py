@@ -1,5 +1,6 @@
 from typing import Final
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ...constants import UserFields
@@ -34,6 +35,19 @@ class UserSerializerTests(TestCase):
         serializer: UserSerializer = UserSerializer(data=self.user_data)
 
         self.assertTrue(serializer.is_valid())
+
+    def test_user_serializer_create(self) -> None:
+        """
+        UserSerializerのcreate()メソッドが正常に動作することを確認する
+        """
+        serializer: UserSerializer = UserSerializer(data=self.user_data)
+        if not serializer.is_valid():
+            # このテストではerrorにならない想定
+            raise AssertionError(serializer.errors)
+        user: User = serializer.save()
+
+        self.assertEqual(user.username, self.user_data[USERNAME])
+        self.assertEqual(user.email, self.user_data[EMAIL])
 
     # -------------------------------------------------------------------------
     # エラーケース
