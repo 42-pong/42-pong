@@ -28,4 +28,6 @@ urlpatterns = [
     path("api/health/", health_check, name="health-check"),
     # jwt_token
     path("api/token/", include("jwt_token.urls")),
+    # accounts
+    path("api/accounts/", include("accounts.urls")),
 ]
