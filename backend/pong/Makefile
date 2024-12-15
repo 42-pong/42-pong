@@ -45,3 +45,10 @@ typecheck:
 .PHONY: unit-test
 unit-test:
 	@python manage.py test -v2
+
+# -------------------------------------------------------
+# migration
+# -------------------------------------------------------
+.PHONY: migrate
+migrate:
+	@python manage.py makemigrations && python manage.py migrate
