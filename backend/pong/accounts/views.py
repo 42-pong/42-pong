@@ -18,6 +18,10 @@ from .serializers import PlayerSerializer
 
 
 class AccountCreateView(APIView):
+    """
+    新規アカウントを作成するビュー
+    """
+
     serializer_class: type[PlayerSerializer] = PlayerSerializer
     # todo: 認証機能を実装したら多分IsAuthenticatedに変更
     permission_classes = (AllowAny,)
@@ -70,6 +74,11 @@ class AccountCreateView(APIView):
     )
     # todo: try-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
     def post(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
+        """
+        新規アカウントを作成するPOSTメソッド
+        requestをPlayerSerializerに渡してvalidationを行い、
+        有効な場合はPlayerとUserを作成してDBに追加し、作成されたアカウント情報をresponseとして返す
+        """
         # requestをserializerに渡して変換とバリデーションを行う
         player_serializer = self.serializer_class(data=request.data)
         if not player_serializer.is_valid():

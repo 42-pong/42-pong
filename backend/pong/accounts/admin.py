@@ -6,6 +6,10 @@ from .models import Player
 
 @admin.register(Player)
 class AccountAdmin(admin.ModelAdmin):
+    """
+    Playerモデルの管理画面をカスタマイズする
+    """
+
     list_display = (
         PlayerFields.ID,
         PlayerFields.USER,
