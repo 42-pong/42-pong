@@ -92,3 +92,18 @@ class UserSerializerTests(TestCase):
 
         self.assertFalse(serializer.is_valid())
         self.assertIn(EMAIL, serializer.errors)
+
+    def test_user_serializer_duplicate_username(self) -> None:
+        """
+        既に登録されているusernameが渡された場合にエラーになることを確認する
+        実装はしていない。UserModel関連のどこかで自動チェックしてくれている
+        """
+        User.objects.create_user(
+            username=self.user_data[USERNAME],
+            email="non-exist-email@example.com",
+            password="testpassword",
+        )
+        serializer: UserSerializer = UserSerializer(data=self.user_data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(USERNAME, serializer.errors)
