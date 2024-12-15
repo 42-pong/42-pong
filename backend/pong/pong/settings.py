@@ -24,7 +24,7 @@ env = environ.Env(
     DB_PASSWORD=(str, "db_password"),
     OAUTH2_CLIENT_ID=(str, "client_id"),
     OAUTH2_CLIENT_SECRET_KEY=(str, "client_secret_key"),
-	PONG_API=(str, "api"),
+    PONG_API=(str, "api"),
     OAUTH2_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
     OAUTH2_TOKEN_ENDPOINT=(str, "token_endpoint"),
 )

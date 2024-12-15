@@ -1,19 +1,20 @@
 # views.py
 from urllib.parse import urlencode
-from django.urls import reverse
 
 import requests
+from django.urls import reverse
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from pong.settings import (
+    OAUTH2_AUTHORIZATION_ENDPOINT,
     OAUTH2_CLIENT_ID,
     OAUTH2_CLIENT_SECRET_KEY,
-    PONG_API,
-    OAUTH2_AUTHORIZATION_ENDPOINT,
     OAUTH2_TOKEN_ENDPOINT,
+    PONG_API,
 )
+
 
 @api_view(["GET"])
 def oauth2_authorize(request: Request) -> Response:
@@ -31,7 +32,7 @@ def oauth2_authorize(request: Request) -> Response:
 
     query_params = {
         "client_id": OAUTH2_CLIENT_ID,
-        "redirect_uri": PONG_API + reverse('oauth2_callback'),
+        "redirect_uri": PONG_API + reverse("oauth2_callback"),
         "response_type": "code",
         # todo: csrf対策の為にstate追加するかも
     }
@@ -63,7 +64,7 @@ def oauth2_callback(request: Request) -> Response:
     request_data = {
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": PONG_API + reverse('oauth2_callback'),
+        "redirect_uri": PONG_API + reverse("oauth2_callback"),
         "client_id": OAUTH2_CLIENT_ID,
         "client_secret": OAUTH2_CLIENT_SECRET_KEY,
     }
@@ -76,4 +77,9 @@ def oauth2_callback(request: Request) -> Response:
     # todo アプリケーションのホームURLを設定する(仮)
     # app_home_url = ""
     # return Response({"message": "Home page"}, status=200, headers={"Host": app_home_url})
-    return Response({f"Callback: {PONG_API + reverse('oauth2_callback')}, Token: {tokens}"}, status=200)
+    return Response(
+        {
+            f"Callback: {PONG_API + reverse('oauth2_callback')}, Token: {tokens}"
+        },
+        status=200,
+    )

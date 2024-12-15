@@ -28,7 +28,7 @@ urlpatterns = [
     path("api/health/", health_check, name="health-check"),
     # jwt_token
     path("api/token/", include("jwt_token.urls")),
-	# oauth2
+    # oauth2
     path("api/oauth2/", include("oauth2.urls")),
     # accounts
     path("api/accounts/", include("accounts.urls")),
