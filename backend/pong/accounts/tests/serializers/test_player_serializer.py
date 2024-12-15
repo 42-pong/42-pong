@@ -81,3 +81,7 @@ class PlayerSerializerTests(TestCase):
                 player_data[PlayerFields.USER][UserFields.EMAIL],
             )
 
+    # -------------------------------------------------------------------------
+    # エラーケース
+    # -------------------------------------------------------------------------
+    # todo: PlayerSerializer独自のバリデーションが追加された場合にテストを追加する
