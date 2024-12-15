@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from ...constants import PlayerFields, UserFields
+from ...models import Player
 from ...serializers import PlayerSerializer
 
 
@@ -30,3 +31,21 @@ class PlayerSerializerTests(TestCase):
         serializer: PlayerSerializer = PlayerSerializer(data=self.player_data)
 
         self.assertTrue(serializer.is_valid())
+
+    def test_player_serializer_create(self) -> None:
+        """
+        PlayerSerializerのcreate()メソッドが正常に動作することを確認する
+        """
+        serializer: PlayerSerializer = PlayerSerializer(data=self.player_data)
+        if not serializer.is_valid():
+            # このテストではerrorにならない想定
+            raise AssertionError(serializer.errors)
+        player: Player = serializer.save()
+
+        # todo: 現在Player独自のfieldがないため、紐づくUserのfieldのみ確認している
+        #       今後Player独自のfieldが追加された時にテストも追加する
+        self.assertEqual(
+            player.user.username, self.user_data[UserFields.USERNAME]
+        )
+        self.assertEqual(player.user.email, self.user_data[UserFields.EMAIL])
+
