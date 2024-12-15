@@ -67,3 +67,14 @@ class UserSerializerTests(TestCase):
 
         self.assertFalse(serializer.is_valid())
         self.assertIn(PASSWORD, serializer.errors)
+
+    def test_user_serializer_invalid_email_format(self) -> None:
+        """
+        emailの形式が不正な場合にエラーになることを確認する
+        実装はしていない。models.EmailField()が自動でチェックしてくれている
+        """
+        self.user_data[EMAIL] = "invalid_email@none"
+        serializer: UserSerializer = UserSerializer(data=self.user_data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(EMAIL, serializer.errors)
