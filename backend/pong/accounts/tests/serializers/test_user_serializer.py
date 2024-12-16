@@ -48,6 +48,10 @@ class UserSerializerTests(TestCase):
 
         self.assertEqual(user.username, self.user_data[USERNAME])
         self.assertEqual(user.email, self.user_data[EMAIL])
+        # hash化されていればTrue
+        self.assertTrue(user.check_password(self.user_data[PASSWORD]))
+        # hash化されているので元のパスワードとは異なる
+        self.assertNotEqual(user.password, self.user_data[PASSWORD])
 
     # -------------------------------------------------------------------------
     # エラーケース
