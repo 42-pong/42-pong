@@ -23,6 +23,7 @@ jobs:
           cat <<-EOF > .env
             FRONT_SERVER_PORT="${{ vars.FRONT_SERVER_PORT }}"
             BACKEND_SERVER_PORT="${{ vars.BACKEND_SERVER_PORT }}"
+            DEBUG="${{ vars.DEBUG }}"
             SECRET_KEY="${{ secrets.SECRET_KEY }}"
             SUPERUSER_NAME="${{ secrets.SUPERUSER_NAME }}"
             SUPERUSER_EMAIL="${{ secrets.SUPERUSER_EMAIL }}"
