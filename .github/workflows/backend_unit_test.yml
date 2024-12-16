@@ -62,6 +62,22 @@ jobs:
       - name: Tear down docker compose
         run: docker compose -f compose.yaml down
 
+      # エラーなどでDBコンテナがまだ起動中の場合はlogsを確認する
+      - name: Check db container logs
+        if: always()
+        run: |
+          if docker ps | grep -q postgres; then
+            docker compose -f compose.yaml logs db
+          fi
+
+      # エラーなどでbackendコンテナがまだ起動中の場合はlogsを確認する
+      - name: Check backend container logs
+        if: always()
+        run: |
+          if docker ps | grep -q backend; then
+            docker compose -f compose.yaml logs backend
+          fi
+
       # .envファイルを削除
       - name: Cleanup sensitive file
         if: always()
