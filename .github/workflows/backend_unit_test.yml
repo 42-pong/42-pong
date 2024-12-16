@@ -37,8 +37,7 @@ jobs:
       # --waitオプションによりstateがhealthyになるまで待機する
       # backendコンテナと同時に起動しない理由は、エラー時に問題を切り分けるため
       - name: Set up db container with docker compose
-        run: |
-          docker compose -f compose.yaml up -d db --wait
+        run: docker compose -f compose.yaml up -d db --wait
 
       # DBコンテナのログを確認する
       - name: Check db container logs
@@ -47,8 +46,7 @@ jobs:
       # backendコンテナを起動する
       # --waitオプションによりstateがhealthyになるまで待機する
       - name: Set up backend container with docker compose
-        run: |
-          docker compose -f compose.yaml up -d backend --wait
+        run: docker compose -f compose.yaml up -d backend --wait
 
       # backendコンテナのログを確認する
       - name: Check backend container logs
