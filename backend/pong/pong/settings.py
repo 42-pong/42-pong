@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     # apps
     "jwt_token",
     "accounts",
-    "game",
+    "match",
 ]
 
 MIDDLEWARE = [
