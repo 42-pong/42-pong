@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: post message via discord-webhook-url
+        if: ${{ github.event.requested_reviewer.login != '' }}
         run: |
           # echo one random element from the first input argument
           # - the first input argument should be space-separated string
