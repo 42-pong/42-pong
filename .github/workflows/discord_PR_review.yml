@@ -1,4 +1,4 @@
-name: 'Discord Notification: Pull Rquest: review requested'
+name: 'Discord Notification: Pull Request: review requested'
 on:
   pull_request:
     types: [review_requested]
