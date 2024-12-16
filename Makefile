@@ -1,6 +1,9 @@
-# image/container
-BACKEND		:=	backend
-DATABASE	:=	postgres
+# docker compose
+COMPOSE_FILE		:=	compose.yaml
+
+BACKEND_SERVICE		:=	backend
+DATABASE_SERVICE	:=	db
+
 
 .PHONY: all
 all: up
@@ -41,23 +44,23 @@ psa:
 	@docker ps -a
 
 # -------------------------------------------------------
-# docker exec
+# docker compose exec
 # -------------------------------------------------------
 .PHONY: exec-be
 exec-be:
-	@docker exec -it $(BACKEND) /bin/bash
+	@docker compose exec -it $(BACKEND_SERVICE) /bin/bash
 
 .PHONY: exec-db
 exec-db:
-	@docker exec -it $(DATABASE) /bin/bash
+	@docker compose exec -it $(DATABASE_SERVICE) /bin/bash
 
 # -------------------------------------------------------
-# docker logs
+# docker compose logs
 # -------------------------------------------------------
 .PHONY: logs-be
 logs-be:
-	@docker logs $(BACKEND)
+	@docker compose -f $(COMPOSE_FILE) logs $(BACKEND_SERVICE)
 
 .PHONY: logs-db
 logs-db:
-	@docker logs $(DATABASE)
+	@docker compose -f $(COMPOSE_FILE) logs $(DATABASE_SERVICE)
