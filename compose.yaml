@@ -42,6 +42,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    init: true
 
   db:
     image: postgres:17.0-bullseye
