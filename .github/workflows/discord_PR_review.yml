@@ -35,13 +35,13 @@ jobs:
           PR_USER_LOGIN='${{ github.event.pull_request.user.login }}'
           PR_USER_URL='${{ github.event.pull_request.user.html_url }}'
           PR_USER_AVATAR_URL='${{ github.event.pull_request.user.avatar_url }}'
-          PR_USER_INFO="$(echo '${{ vars.MEMBERS }}' | jq -r .\"${PR_USER_LOGIN}\")"
+          PR_USER_INFO="$(echo '${{ secrets.MEMBERS }}' | jq -r .\"${PR_USER_LOGIN}\")"
           PR_USER_INTRA="$(echo "${PR_USER_INFO}" | jq -r .\"intra\")"
           PR_USER_COLOR="$(echo "${PR_USER_INFO}" | jq -r .\"color\")"
 
           # REVIEWER
           REVIEWER_LOGIN="${{ github.event.requested_reviewer.login }}"
-          REVIEWER_DISCORD_ID="$(echo '${{ vars.MEMBERS }}' | jq -r .\"${REVIEWER_LOGIN}\".\"discord_id\")"
+          REVIEWER_DISCORD_ID="$(echo '${{ secrets.MEMBERS }}' | jq -r .\"${REVIEWER_LOGIN}\".\"discord_id\")"
 
           # random emoji
           RANDOM_EMOJI="$(echo_one_random_element '${{ vars.EMOJI_SET }}')"
