@@ -32,7 +32,7 @@ def oauth2_authorize(request: Request) -> Response:
 
     query_params = {
         "client_id": OAUTH2_CLIENT_ID,
-        "redirect_uri": PONG_API + reverse("oauth2_callback"),
+        "redirect_uri": PONG_API + reverse("oauth2_callback").rstrip("/"),
         "response_type": "code",
         # todo: csrf対策の為にstate追加するかも
     }
@@ -64,7 +64,7 @@ def oauth2_callback(request: Request) -> Response:
     request_data = {
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": PONG_API + reverse("oauth2_callback"),
+        "redirect_uri": PONG_API + reverse("oauth2_callback").rstrip("/"),
         "client_id": OAUTH2_CLIENT_ID,
         "client_secret": OAUTH2_CLIENT_SECRET_KEY,
     }
@@ -72,14 +72,13 @@ def oauth2_callback(request: Request) -> Response:
         OAUTH2_TOKEN_ENDPOINT,
         data=request_data,
     )
-    # todo トークンを取得した後、ユーザーを作成し、データベースに保存する？
     tokens = response.json()
     # todo アプリケーションのホームURLを設定する(仮)
     # app_home_url = ""
     # return Response({"message": "Home page"}, status=200, headers={"Host": app_home_url})
     return Response(
         {
-            f"Callback: {PONG_API + reverse('oauth2_callback')}, Token: {tokens}"
+            f"Callback: {PONG_API + reverse("oauth2_callback").rstrip("/")}, Token: {tokens}"
         },
         status=200,
     )
