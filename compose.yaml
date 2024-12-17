@@ -39,9 +39,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health/ || exit 1"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 3
+      retries: 6
 
   db:
     image: postgres:17.0-bullseye
@@ -57,9 +57,9 @@ services:
       - transcendence
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME} -h localhost -p 5432 || exit 1"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 3
+      retries: 6
 
 networks:
   transcendence:
