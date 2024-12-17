@@ -11,6 +11,7 @@ export class Component extends HTMLElement {
   _getState() {
     return this._state;
   }
+
   _updateState(newState) {
     Object.assign(this._state, newState);
     this._update();

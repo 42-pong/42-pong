@@ -1,26 +1,23 @@
 import { View } from "../../core/View";
-import { AboutView } from "./AboutView";
+//import { AboutView } from "./AboutView";
+import { LoginView } from "./LoginView";
 
 export class HomeView extends View {
   #title;
   #about;
+  #login;
 
   _onConnect() {
     this.#title = document.createElement("h1");
 
-    this.#about = new AboutView();
-    // this.#about = document.createElement("about-view");
+    //this.#about = new AboutView();
+    this.#login = new LoginView();
+
+    this.#about = document.createElement("about-view");
 
     // initial 'isOpenAbout' value as 'false'
     this._getState().isOpenAbout = false;
-
-    this._attachEventListener("click", (event) => {
-      event.preventDefault();
-      const currentIsOpenAbout = this._getState().isOpenAbout;
-      const nextIsOpenAbout = !currentIsOpenAbout;
-
-      this._updateState({ isOpenAbout: nextIsOpenAbout });
-    });
+    this._getState().isOpenLogin = false;
   }
 
   _render() {
@@ -29,10 +26,10 @@ export class HomeView extends View {
         this.#title.textContent = "Hello World";
         break;
       case "/about":
-        this.#title.textContent = "About World";
+        this.#title.textContent = "About";
         break;
-      case "/tmp":
-        this.#title.textContent = "TMP-TMP";
+      case "/login":
+        this.#title.textContent = "Login";
         break;
       case "/users":
         this.#title.textContent = "USERS";
@@ -44,10 +41,25 @@ export class HomeView extends View {
 
     this.appendChild(this.#title);
 
-    const button = document.createElement("button");
-    button.textContent = "Change to  '/About'";
-    this.appendChild(button);
+    const aboutButton = document.createElement("button");
+    aboutButton.textContent = "Change to  '/about'";
+    aboutButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      this._updateState({ isOpenAbout: !this._getState().isOpenAbout});
+      this._updatePath("/about");
+    });
+    this.appendChild(aboutButton);
+
+    const loginButton = document.createElement("button");
+    loginButton.textContent = "Change to '/login'";
+    loginButton.addEventListener("click", (event) => {
+      event.preventDefault();
+      this._updateState({ isOpenLogin: !this._getState().isOpenLogin});
+      this._updatePath("/login");
+    })
+    this.appendChild(loginButton);
 
     if (this._getState().isOpenAbout) this.appendChild(this.#about);
+    if (this._getState().isOpenLogin) this.appendChild(this.#login);
   }
 }

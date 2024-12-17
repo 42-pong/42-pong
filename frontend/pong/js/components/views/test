@@ -1,0 +1,32 @@
+    this.#form = document.createElement("form");
+
+
+    var br = document.createElement("br");
+    //create an input element for e-mail
+    this.#email = document.createElement("input");
+    this.#email.setAttribute("type", "text");
+    this.#email.setAttribute("name", "Email");
+    this.#email.setAttribute("placeholder", "E-mail");
+
+    //create a password
+    this.#password = document.createElement("input");
+    this.#password.setAttribute("type", "password");
+    this.#password.setAttribute("name", "Password");
+    this.#password.setAttribute("placeholder", "Password");
+
+    // create labels for the inputs
+    const emailLabel = document.createElement("label");
+    emailLabel.textContent = "ID:";
+    emailLabel.setAttribute("for", "Email");
+    const passwordLabel = document.createElement("label");
+    passwordLabel.textContent = "PW:";
+    passwordLabel.setAttribute("for", "Password");
+
+    // フォームに要素を追加
+    this.#form.appendChild(emailLabel);
+    this.#form.appendChild(this.#email);
+    this.#form.appendChild(br.cloneNode());
+
+    this.#form.appendChild(passwordLabel);
+    this.#form.appendChild(this.#password);
+    this.#form.appendChild(br.cloneNode());
