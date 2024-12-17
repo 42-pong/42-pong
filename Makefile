@@ -48,11 +48,11 @@ psa:
 # -------------------------------------------------------
 .PHONY: exec-be
 exec-be:
-	@docker compose exec -it $(BACKEND_SERVICE) /bin/bash
+	@docker compose -f $(COMPOSE_FILE) exec -it $(BACKEND_SERVICE) /bin/bash
 
 .PHONY: exec-db
 exec-db:
-	@docker compose exec -it $(DATABASE_SERVICE) /bin/bash
+	@docker compose -f $(COMPOSE_FILE) exec -it $(DATABASE_SERVICE) /bin/bash
 
 # -------------------------------------------------------
 # docker compose logs
