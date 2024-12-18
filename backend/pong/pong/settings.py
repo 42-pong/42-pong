@@ -46,7 +46,7 @@ ALLOWED_HOSTS: list[str] = []
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne", # for django channels
+    "daphne",  # for django channels
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -180,8 +180,8 @@ SPECTACULAR_SETTINGS = {
 
 CHANNEL_LAYERS = {
     # TODO: 必要になったらchannel_redisを利用する
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
 

@@ -4,11 +4,13 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Optional
 
+
 class Stage(Enum):
     INIT = 1
     READY = 2
     PLAY = 3
     END = 4
+
 
 @dataclass
 class PosStruct:
@@ -156,18 +158,25 @@ class MatchHandler:
         self.ball.y += self.ball_speed.y
 
         # 上下の壁との衝突判定
-        if self.ball.y - self.BALL_RADIUS < 0 or self.ball.y + self.BALL_RADIUS > self.HEIGHT:
+        if (
+            self.ball.y - self.BALL_RADIUS < 0
+            or self.ball.y + self.BALL_RADIUS > self.HEIGHT
+        ):
             self.ball_speed.y = -self.ball_speed.y  # ボールのY軸速度を反転
 
         # プレイヤーとの衝突判定
         if (
             self.ball.x - self.BALL_RADIUS < self.player1.x + self.PLAYER_WIDTH
-            and self.player1.y < self.ball.y < self.player1.y + self.PLAYER_HEIGHT
+            and self.player1.y
+            < self.ball.y
+            < self.player1.y + self.PLAYER_HEIGHT
         ):  # プレイヤー1との接触
             self.ball_speed.x = -self.ball_speed.x  # ボールのX軸速度を反転
         elif (
             self.player2.x < self.ball.x + self.BALL_RADIUS
-            and self.player2.y < self.ball.y < self.player2.y + self.PLAYER_HEIGHT
+            and self.player2.y
+            < self.ball.y
+            < self.player2.y + self.PLAYER_HEIGHT
         ):  # プレイヤー2との接触
             self.ball_speed.x = -self.ball_speed.x  # ボールのX軸速度を反転
 

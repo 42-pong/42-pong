@@ -2,6 +2,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from . import match_handler
 
+
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         # match用のハンドラを作成
