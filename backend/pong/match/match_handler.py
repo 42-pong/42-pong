@@ -41,13 +41,19 @@ class MatchHandler:
     ball_speed: PosStruct
     score1: int
     score2: int
+    group_name: str
+    channel_layer: Any
+    channel_name: str
 
-    def __init__(self):
+    def __init__(self, channel_layer, channel_name: str):
+        self.channel_layer = channel_layer
+        self.channel_name = channel_name
         self._reset_state()
 
     """
     ハンドラーメソッド
     """
+
     async def handle(self, payload: dict):
         data: dict = payload["data"]
         response: dict
@@ -140,6 +146,23 @@ class MatchHandler:
             self.stage = Stage.END
 
     """
+    グループ関係のメソッド
+    """
+
+    async def _add_to_group(self):
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+
+    async def _remove_from_group(self):
+        await self.channel_layer.group_discard(
+            self.group_name, self.channel_name
+        )
+
+    async def _send_to_group(self, message):
+        await self.channel_layer.group_send(
+            self.group_name, {"type": "group.message", "message": message}
+        )
+
+    """
     ヘルパーメソッド
     """
 
@@ -152,6 +175,7 @@ class MatchHandler:
         self._reset_ball()
         self.score1 = 0
         self.score2 = 0
+        self.group_name = ""
 
     def _reset_ball(self):
         self.ball: PosStruct = PosStruct(x=self.WIDTH / 2, y=self.HEIGHT / 2)

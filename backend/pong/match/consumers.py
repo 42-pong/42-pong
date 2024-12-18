@@ -5,7 +5,9 @@ from . import match_handler
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         # match用のハンドラを作成
-        self.match_handler = match_handler.MatchHandler()
+        self.match_handler = match_handler.MatchHandler(
+            self.channel_layer, self.channel_name
+        )
 
         await self.accept()
 
@@ -21,3 +23,7 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
                 await self.match_handler.handle(payload)
             case _:
                 pass
+
+    async def group_message(self, event):
+        message = event["message"]
+        await self.send_json(message)
