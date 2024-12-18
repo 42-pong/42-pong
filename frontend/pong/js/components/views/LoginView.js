@@ -30,16 +30,16 @@ export class LoginView extends View {
     //HTMLをDOMに挿入
     this.innerHTML = formHTML;
     // フォーム要素を取得
-    this.#form = this.querySelector('form');
+    this.#form = this.querySelector("form");
     this.#email = this.querySelector('input[name="Email"]');
     this.#password = this.querySelector('input[name="Password"]');
 
-    this.#form.addEventListener('submit', (event) => {
+    this.#form.addEventListener("submit", (event) => {
       event.preventDefault();
       const email = this.#email.value;
       const password = this.#password.value;
-      console.log('Email:', email);
-      console.log('Password:', password);
+      console.log("Email:", email);
+      console.log("Password:", password);
       debugger;
       // ここでメールアドレスとパスワードを送信する処理を追加できます
     });

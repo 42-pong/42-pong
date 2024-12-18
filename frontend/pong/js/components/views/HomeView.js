@@ -30,6 +30,7 @@ export class HomeView extends View {
         break;
       case "/login":
         this.#title.textContent = "Login";
+        this.appendChild(this.#login);
         break;
       case "/users":
         this.#title.textContent = "USERS";
@@ -45,7 +46,9 @@ export class HomeView extends View {
     aboutButton.textContent = "Change to  '/about'";
     aboutButton.addEventListener("click", (event) => {
       event.preventDefault();
-      this._updateState({ isOpenAbout: !this._getState().isOpenAbout});
+      this._updateState({
+        isOpenAbout: !this._getState().isOpenAbout,
+      });
       this._updatePath("/about");
     });
     this.appendChild(aboutButton);
@@ -54,12 +57,18 @@ export class HomeView extends View {
     loginButton.textContent = "Change to '/login'";
     loginButton.addEventListener("click", (event) => {
       event.preventDefault();
-      this._updateState({ isOpenLogin: !this._getState().isOpenLogin});
-      this._updatePath("/login");
-    })
+      console.log("login");
+      // this._updateState({ isOpenLogin: !this._getState().isOpenLogin});
+      // this._updatePath("/login");
+      this.dispatchEvent(
+        new CustomEvent("router", {
+          bubbles: true,
+          detail: { path: "/login-test" },
+        }),
+      );
+    });
     this.appendChild(loginButton);
 
     if (this._getState().isOpenAbout) this.appendChild(this.#about);
-    if (this._getState().isOpenLogin) this.appendChild(this.#login);
   }
 }
