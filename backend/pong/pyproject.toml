@@ -130,6 +130,8 @@ disallow_untyped_defs = true
 # djano-stubsを認識させるためにplugins,django_settings_moduleが必要
 # https://github.com/typeddjango/django-stubs
 plugins = ["mypy_django_plugin.main"]
+# スタブが無いパッケージのエラーは無視させる.サードパーティのライブラリに型情報がないケースもあるため
+ignore_missing_imports = true
 
 [tool.django-stubs]
 django_settings_module = "pong.settings"
