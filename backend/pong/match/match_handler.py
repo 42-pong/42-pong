@@ -1,3 +1,5 @@
+import asyncio
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Optional
@@ -7,7 +9,6 @@ class Stage(Enum):
     READY = 2
     PLAY = 3
     END = 4
-
 
 @dataclass
 class PosStruct:
@@ -41,13 +42,16 @@ class MatchHandler:
     ball_speed: PosStruct
     score1: int
     score2: int
+    local_play: bool
     group_name: str
     channel_layer: Any
     channel_name: str
+    task_queue: Optional[asyncio.Task]
 
     def __init__(self, channel_layer, channel_name: str):
         self.channel_layer = channel_layer
         self.channel_name = channel_name
+        self.task_queue = None
         self._reset_state()
 
     """
@@ -77,16 +81,49 @@ class MatchHandler:
                 pass
 
     async def _handle_init(self, data: dict):
-        pass
+        # プレイモードによって所属させるグループを返る
+        if data["mode"] == "local":
+            self.group_name = "solo_match"
+
+        await self._add_to_group()
+        # TODO: remoteの場合のグループ作成方法は別で考える
+
+        # localモードの場合teamやdisplay_nameは必要ない
+        # TODO: ここら辺べた書きになっているから何か他にいい方法がないか
+        message = self._build_message(
+            "INIT",
+            {
+                "team": "",
+                "display_name1": "",
+                "display_name2": "",
+                "pedal1": {"x": self.player1.x, "y": self.player1.y},
+                "pedal2": {"x": self.player2.x, "y": self.player2.y},
+                "ball": {"x": self.ball.x, "y": self.ball.y},
+            },
+        )
+        await self._send_to_group(message)
 
     async def _handle_ready(self, data: dict):
-        pass
+        message = self._build_message("READY", {})
+        await self._send_to_group(message)
+
+        # ゲーム情報を送り続けるタスクを非同期に実行し続ける
+        self.task_queue = asyncio.create_task(self.send_match_state())
 
     async def _handle_play(self, player_move: dict):
-        pass
+        await self._move_pedal(player_move)
 
     async def _handle_end(self, data: dict):
-        pass
+        win_player: str = "1" if self.score1 > self.score2 else "2"
+        message = self._build_message(
+            "END",
+            {"win": win_player, "score1": self.score1, "score2": self.score2},
+        )
+        await self._send_to_group(message)
+        # 初期化
+        self._reset_state()
+        # matchが終わったのでグループから削除
+        await self._remove_from_group()
 
     """
     ゲームロジック関係のメソッド
@@ -145,6 +182,37 @@ class MatchHandler:
         if self.score1 == 5 or self.score2 == 5:
             self.stage = Stage.END
 
+    async def send_match_state(self):
+        """60FPSでゲームデータを定期的に送信"""
+        while True:
+            await asyncio.sleep(1 / 60)  # 60FPSで待機
+            self._move_ball()
+
+            # 現在のゲーム状態を送信
+            game_state = self._build_message(
+                "PLAY",
+                {
+                    "pedal1": {"x": self.player1.x, "y": self.player1.y},
+                    "pedal2": {"x": self.player2.x, "y": self.player2.y},
+                    "ball": {"x": self.ball.x, "y": self.ball.y},
+                    "score1": self.score1,
+                    "score2": self.score2,
+                },
+            )
+            await self._send_to_group(game_state)
+
+            if self.stage == Stage.END:
+                current_task = asyncio.current_task()
+                current_task.cancel()
+                try:
+                    await asyncio.sleep(1)
+                except asyncio.CannelledError:
+                    print(
+                        "試合が終了したのでタスクを終了しました。",
+                        file=sys.stderr,
+                    )
+                    await _handle_end()
+
     """
     グループ関係のメソッド
     """
@@ -175,8 +243,12 @@ class MatchHandler:
         self._reset_ball()
         self.score1 = 0
         self.score2 = 0
+        self.local_play = False
         self.group_name = ""
 
     def _reset_ball(self):
         self.ball: PosStruct = PosStruct(x=self.WIDTH / 2, y=self.HEIGHT / 2)
         self.ball_speed: PosStruct = PosStruct(x=2, y=2)
+
+    def _build_message(self, stage: str, data: dict):
+        return {"category": "MATCH", "payload": {"stage": stage, "data": data}}
