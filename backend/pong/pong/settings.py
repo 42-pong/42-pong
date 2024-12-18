@@ -24,7 +24,7 @@ env = environ.Env(
     DB_PASSWORD=(str, "db_password"),
     OAUTH2_CLIENT_ID=(str, "client_id"),
     OAUTH2_CLIENT_SECRET_KEY=(str, "client_secret_key"),
-    PONG_API=(str, "api"),
+    PONG_ORIGIN=(str, "api"),
     OAUTH2_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
     OAUTH2_TOKEN_ENDPOINT=(str, "token_endpoint"),
 )
@@ -180,6 +180,6 @@ SPECTACULAR_SETTINGS = {
 
 OAUTH2_CLIENT_ID = env("OAUTH2_CLIENT_ID")
 OAUTH2_CLIENT_SECRET_KEY = env("OAUTH2_CLIENT_SECRET_KEY")
-PONG_API = env("PONG_API")
+PONG_ORIGIN = env("PONG_ORIGIN")
 OAUTH2_AUTHORIZATION_ENDPOINT = env("OAUTH2_AUTHORIZATION_ENDPOINT")
 OAUTH2_TOKEN_ENDPOINT = env("OAUTH2_TOKEN_ENDPOINT")
