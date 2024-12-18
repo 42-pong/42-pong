@@ -1,8 +1,7 @@
 import asyncio
-import sys
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 
 class Stage(Enum):
@@ -48,12 +47,10 @@ class MatchHandler:
     group_name: str
     channel_layer: Any
     channel_name: str
-    task_queue: Optional[asyncio.Task]
 
     def __init__(self, channel_layer: Any, channel_name: str):
         self.channel_layer = channel_layer
         self.channel_name = channel_name
-        self.task_queue = None
         self._reset_state()
 
     """
@@ -108,8 +105,8 @@ class MatchHandler:
         message = self._build_message("READY", {})
         await self._send_to_group(message)
 
-        # ゲーム情報を送り続けるタスクを非同期に実行し続ける
-        self.task_queue = asyncio.create_task(self.send_match_state())
+        # ゲーム状況の更新をする非同期処理を並列で実行する
+        asyncio.create_task(self.send_match_state())
 
     async def _handle_play(self, player_move: dict) -> None:
         await self._move_pedal(player_move)
@@ -121,10 +118,10 @@ class MatchHandler:
             {"win": win_player, "score1": self.score1, "score2": self.score2},
         )
         await self._send_to_group(message)
-        # 初期化
-        self._reset_state()
         # matchが終わったのでグループから削除
         await self._remove_from_group()
+        # 初期化
+        self._reset_state()
 
     """
     ゲームロジック関係のメソッド
@@ -192,7 +189,7 @@ class MatchHandler:
 
     async def send_match_state(self) -> None:
         """60FPSでゲームデータを定期的に送信"""
-        while True:
+        while self.stage != Stage.END:
             await asyncio.sleep(1 / 60)  # 60FPSで待機
             self._move_ball()
 
@@ -209,19 +206,8 @@ class MatchHandler:
             )
             await self._send_to_group(game_state)
 
-            if self.stage == Stage.END:
-                # TODO: これちゃんとキャンセルできているか確認
-                current_task = asyncio.current_task()
-                if current_task is not None:
-                    current_task.cancel()
-                try:
-                    await asyncio.sleep(1)
-                except asyncio.CancelledError:
-                    print(
-                        "試合が終了したのでタスクを終了しました。",
-                        file=sys.stderr,
-                    )
-                    await self._handle_end()
+        # ENDステージの処理
+        await self._handle_end()
 
     """
     グループ関係のメソッド
