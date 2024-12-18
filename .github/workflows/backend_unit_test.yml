@@ -57,9 +57,10 @@ jobs:
           fi
 
       # backendコンテナを起動する
+      # --waitオプションによりstateがhealthyになるまで待機する
       - name: Set up backend container with docker compose
         run: |
-          docker compose -f compose.yaml up -d backend
+          docker compose -f compose.yaml up -d backend --wait
 
       # backendコンテナのログを確認する
       - name: Check backend container logs
