@@ -18,7 +18,6 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
 
         match category:
             case "MATCH":
-                # ここでマッチハンドラに処理移譲
-                pass
+                await self.match_handler.handle(payload)
             case _:
                 pass

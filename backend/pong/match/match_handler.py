@@ -34,6 +34,7 @@ class MatchHandler:
     """
     クラス属性
     """
+    stage: Stage
     player1: PosStruct
     player2: PosStruct
     ball: PosStruct
@@ -41,10 +42,51 @@ class MatchHandler:
     score1: int
     score2: int
 
+    def __init__(self):
+        self._reset_state()
+
+    """
+    ハンドラーメソッド
+    """
+    async def handle(self, payload: dict):
+        data: dict = payload["data"]
+        response: dict
+
+        # TODO: ステージごとのバリデーションも実装する必要あり
+        match payload["stage"]:
+            case "INIT":
+                await self._handle_init(data)
+                self.stage = Stage.READY
+            case "READY":
+                await self._handle_ready(data)
+                self.stage = Stage.PLAY
+            case "PLAY":
+                await self._handle_play(player_move=data)
+            case "END":
+                # TODO: エラー処理
+                # これが送られてくるのは途中でプレーヤーが画面遷移した場合
+                pass
+            case _:
+                # TODO: エラー処理
+                pass
+
+    async def _handle_init(self, data: dict):
+        pass
+
+    async def _handle_ready(self, data: dict):
+        pass
+
+    async def _handle_play(self, player_move: dict):
+        pass
+
+    async def _handle_end(self, data: dict):
+        pass
+
     """
     ゲームロジック関係のメソッド
     """
-    def _move_pedal(self, player_move: dict):
+
+    async def _move_pedal(self, player_move: dict):
         # プレイヤーの動き（y座標）に基づいて位置を更新
         match player_move["move"]:
             case "UP":
@@ -103,6 +145,7 @@ class MatchHandler:
 
     def _reset_state(self):
         # 初期化
+        self.stage = Stage.INIT
         # playerの位置は描画する左下を(0, 0)とする
         self.player1 = PosStruct(x=10, y=230)
         self.player2 = PosStruct(x=580, y=230)
