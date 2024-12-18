@@ -2,7 +2,7 @@ import asyncio
 import sys
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 
 class Stage(Enum):
@@ -62,7 +62,6 @@ class MatchHandler:
 
     async def handle(self, payload: dict):
         data: dict = payload["data"]
-        response: dict
 
         # TODO: ステージごとのバリデーションも実装する必要あり
         match payload["stage"]:
@@ -220,7 +219,7 @@ class MatchHandler:
                         "試合が終了したのでタスクを終了しました。",
                         file=sys.stderr,
                     )
-                    await _handle_end()
+                    await self._handle_end()
 
     """
     グループ関係のメソッド
