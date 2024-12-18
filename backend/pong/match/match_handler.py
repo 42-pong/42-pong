@@ -50,7 +50,7 @@ class MatchHandler:
     channel_name: str
     task_queue: Optional[asyncio.Task]
 
-    def __init__(self, channel_layer, channel_name: str):
+    def __init__(self, channel_layer: Any, channel_name: str):
         self.channel_layer = channel_layer
         self.channel_name = channel_name
         self.task_queue = None
@@ -60,7 +60,7 @@ class MatchHandler:
     ハンドラーメソッド
     """
 
-    async def handle(self, payload: dict):
+    async def handle(self, payload: dict) -> None:
         data: dict = payload["data"]
 
         # TODO: ステージごとのバリデーションも実装する必要あり
@@ -81,7 +81,7 @@ class MatchHandler:
                 # TODO: エラー処理
                 pass
 
-    async def _handle_init(self, data: dict):
+    async def _handle_init(self, data: dict) -> None:
         # プレイモードによって所属させるグループを返る
         if data["mode"] == "local":
             self.group_name = "solo_match"
@@ -104,17 +104,17 @@ class MatchHandler:
         )
         await self._send_to_group(message)
 
-    async def _handle_ready(self, data: dict):
+    async def _handle_ready(self, data: dict) -> None:
         message = self._build_message("READY", {})
         await self._send_to_group(message)
 
         # ゲーム情報を送り続けるタスクを非同期に実行し続ける
         self.task_queue = asyncio.create_task(self.send_match_state())
 
-    async def _handle_play(self, player_move: dict):
+    async def _handle_play(self, player_move: dict) -> None:
         await self._move_pedal(player_move)
 
-    async def _handle_end(self, data: dict):
+    async def _handle_end(self) -> None:
         win_player: str = "1" if self.score1 > self.score2 else "2"
         message = self._build_message(
             "END",
@@ -130,7 +130,7 @@ class MatchHandler:
     ゲームロジック関係のメソッド
     """
 
-    async def _move_pedal(self, player_move: dict):
+    async def _move_pedal(self, player_move: dict) -> None:
         # プレイヤーの動き（y座標）に基づいて位置を更新
         match player_move["move"]:
             case "UP":
@@ -151,7 +151,7 @@ class MatchHandler:
                 ):
                     self.player2.y += self.PLAYER_SPEED
 
-    def _move_ball(self):
+    def _move_ball(self) -> None:
         # ボールの位置を更新
         self.ball.x += self.ball_speed.x
         self.ball.y += self.ball_speed.y
@@ -190,7 +190,7 @@ class MatchHandler:
         if self.score1 == 5 or self.score2 == 5:
             self.stage = Stage.END
 
-    async def send_match_state(self):
+    async def send_match_state(self) -> None:
         """60FPSでゲームデータを定期的に送信"""
         while True:
             await asyncio.sleep(1 / 60)  # 60FPSで待機
@@ -210,11 +210,13 @@ class MatchHandler:
             await self._send_to_group(game_state)
 
             if self.stage == Stage.END:
+                # TODO: これちゃんとキャンセルできているか確認
                 current_task = asyncio.current_task()
-                current_task.cancel()
+                if current_task is not None:
+                    current_task.cancel()
                 try:
                     await asyncio.sleep(1)
-                except asyncio.CannelledError:
+                except asyncio.CancelledError:
                     print(
                         "試合が終了したのでタスクを終了しました。",
                         file=sys.stderr,
@@ -225,15 +227,15 @@ class MatchHandler:
     グループ関係のメソッド
     """
 
-    async def _add_to_group(self):
+    async def _add_to_group(self) -> None:
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
-    async def _remove_from_group(self):
+    async def _remove_from_group(self) -> None:
         await self.channel_layer.group_discard(
             self.group_name, self.channel_name
         )
 
-    async def _send_to_group(self, message):
+    async def _send_to_group(self, message: dict) -> None:
         await self.channel_layer.group_send(
             self.group_name, {"type": "group.message", "message": message}
         )
@@ -242,7 +244,7 @@ class MatchHandler:
     ヘルパーメソッド
     """
 
-    def _reset_state(self):
+    def _reset_state(self) -> None:
         # 初期化
         self.stage = Stage.INIT
         # playerの位置は描画する左下を(0, 0)とする
@@ -254,9 +256,11 @@ class MatchHandler:
         self.local_play = False
         self.group_name = ""
 
-    def _reset_ball(self):
-        self.ball: PosStruct = PosStruct(x=self.WIDTH / 2, y=self.HEIGHT / 2)
+    def _reset_ball(self) -> None:
+        self.ball: PosStruct = PosStruct(
+            x=int(self.WIDTH / 2), y=int(self.HEIGHT / 2)
+        )
         self.ball_speed: PosStruct = PosStruct(x=2, y=2)
 
-    def _build_message(self, stage: str, data: dict):
+    def _build_message(self, stage: str, data: dict) -> dict:
         return {"category": "MATCH", "payload": {"stage": stage, "data": data}}
