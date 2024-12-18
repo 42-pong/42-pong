@@ -9,6 +9,7 @@ on:
 jobs:
   backend-unit-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     services:
       docker:
         image: docker:19.03.12
