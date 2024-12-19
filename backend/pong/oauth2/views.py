@@ -32,7 +32,7 @@ def oauth2_authorize(request: Request) -> Response:
 
     query_params = {
         "client_id": OAUTH2_CLIENT_ID,
-        "redirect_uri": PONG_ORIGIN + reverse("oauth2_callback").rstrip("/"),
+        "redirect_uri": PONG_ORIGIN + reverse("oauth2_callback"),
         "response_type": "code",
         # todo: csrf対策の為にstate追加するかも
     }
@@ -64,7 +64,7 @@ def oauth2_callback(request: Request) -> Response:
     request_data = {
         "code": code,
         "grant_type": "authorization_code",
-        "redirect_uri": PONG_ORIGIN + reverse("oauth2_callback").rstrip("/"),
+        "redirect_uri": PONG_ORIGIN + reverse("oauth2_callback"),
         "client_id": OAUTH2_CLIENT_ID,
         "client_secret": OAUTH2_CLIENT_SECRET_KEY,
     }
@@ -78,7 +78,7 @@ def oauth2_callback(request: Request) -> Response:
     # return Response({"message": "Home page"}, status=200, headers={"Host": app_home_url})
     return Response(
         {
-            f"Callback: {PONG_ORIGIN + reverse("oauth2_callback").rstrip("/")}, Token: {tokens}"
+            f"Callback: {PONG_ORIGIN + reverse("oauth2_callback")}, Token: {tokens}"
         },
         status=200,
     )
