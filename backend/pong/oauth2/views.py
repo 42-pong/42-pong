@@ -18,9 +18,17 @@ from pong.settings import (
     PONG_ORIGIN,
 )
 
-class OAuth2AuthorizeView(APIView):
+class OAuth2BaseView(APIView):
+    """
+    OAuth2関連の共通の変数を定義する基底クラス
+    """
     permission_classes = (AllowAny,)
 
+    @property
+    def redirect_uri(self):
+        return PONG_ORIGIN + reverse("oauth2_callback")
+
+class OAuth2AuthorizeView(OAuth2BaseView):
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
         """
         認可エンドポイントを呼ぶ関数
@@ -35,7 +43,7 @@ class OAuth2AuthorizeView(APIView):
         """
         query_params = {
             "client_id": OAUTH2_CLIENT_ID,
-            "redirect_uri": PONG_ORIGIN + reverse("oauth2_callback"),
+            "redirect_uri": self.redirect_uri,
             "response_type": "code",
         }
         query_string = urlencode(query_params)
@@ -48,8 +56,7 @@ class OAuth2AuthorizeView(APIView):
         )
 
 
-class OAuth2CallbackView(APIView):
-    permission_classes = (AllowAny,)
+class OAuth2CallbackView(OAuth2BaseView):
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
         """
         認可サーバーからのレスポンスを受け取る関数
@@ -66,7 +73,7 @@ class OAuth2CallbackView(APIView):
         request_data = {
             "code": code,
             "grant_type": "authorization_code",
-            "redirect_uri": PONG_ORIGIN + reverse("oauth2_callback"),
+            "redirect_uri": self.redirect_uri,
             "client_id": OAUTH2_CLIENT_ID,
             "client_secret": OAUTH2_CLIENT_SECRET_KEY,
         }
@@ -77,7 +84,6 @@ class OAuth2CallbackView(APIView):
         tokens = response.json()
         return Response(
             {
-                "Callback URL": PONG_ORIGIN + reverse("oauth2_callback"),
                 "Token": tokens,
             },
             status=response.status_code,
