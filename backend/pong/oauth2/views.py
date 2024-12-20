@@ -155,3 +155,8 @@ class OAuth2CallbackView(OAuth2BaseView):
             },
             status=response.status_code,
         )
+
+# todo: 以下のエンドポイントは後で実装する
+# - oauth2/refresh
+# - oauth2/revoke
+# - oauth2/account
