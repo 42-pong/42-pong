@@ -53,6 +53,23 @@ class MatchHandler:
         self.channel_name = channel_name
         self._reset_state()
 
+    def __str__(self) -> str:
+        return (
+            f"MatchHandler(stage={self.stage}, "
+            f"player1={self.player1}, player2={self.player2}, "
+            f"ball={self.ball}, score1={self.score1}, score2={self.score2})"
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"MatchHandler(stage={self.stage}, "
+            f"player1={self.player1}, player2={self.player2}, "
+            f"ball={self.ball}, ball_speed={self.ball_speed}, "
+            f"score1={self.score1}, score2={self.score2}, "
+            f"local_play={self.local_play}, group_name={self.group_name}, "
+            f"channel_layer={self.channel_layer}, channel_name={self.channel_name})"
+        )
+
     """
     ハンドラーメソッド
     """
