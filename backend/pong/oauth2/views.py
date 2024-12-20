@@ -3,6 +3,11 @@ from urllib.parse import urlencode
 
 import requests
 from django.urls import reverse
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiResponse,
+    extend_schema,
+)
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要?
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -29,6 +34,20 @@ class OAuth2BaseView(APIView):
         return PONG_ORIGIN + reverse("oauth2_callback")
 
 class OAuth2AuthorizeView(OAuth2BaseView):
+    @extend_schema(
+        responses={
+            302: OpenApiResponse(
+                description="Redirect to OAuth2 authorization URL",
+                examples=[
+                    OpenApiExample(
+                        "Example 302 Redirect",
+                        value={"Location": "https://example.com/oauth2/authorize?code=abc123..."},
+                    ),
+                ],
+            ),
+        }
+    )
+
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
         """
         認可エンドポイントを呼ぶ関数
