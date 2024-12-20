@@ -106,7 +106,8 @@ class MatchHandler:
         await self._send_to_group(message)
 
         # ゲーム状況の更新をする非同期処理を並列で実行する
-        asyncio.create_task(self.send_match_state())
+        if self.stage == Stage.READY:
+            asyncio.create_task(self.send_match_state())
 
     async def _handle_play(self, player_move: dict) -> None:
         await self._move_pedal(player_move)
