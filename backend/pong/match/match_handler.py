@@ -223,7 +223,7 @@ class MatchHandler:
             self.ball.y - self.BALL_RADIUS < 0
             or self.ball.y + self.BALL_RADIUS > self.HEIGHT
         ):
-            self.ball_speed.y = -self.ball_speed.y # ボールのY軸速度を反転
+            self.ball_speed.y = -self.ball_speed.y  # ボールのY軸速度を反転
 
         # プレイヤーとの衝突判定
         if (
