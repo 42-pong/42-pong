@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework import status
 
 from pong.settings import (
     OAUTH2_AUTHORIZATION_ENDPOINT,
@@ -42,7 +43,7 @@ class OAuth2AuthorizeView(APIView):
         authorization_url = f"{OAUTH2_AUTHORIZATION_ENDPOINT}?{query_string}"
 
         return Response(
-            status=302,
+            status=status.HTTP_302_FOUND,
             headers={"Location": authorization_url},
         )
 
@@ -60,7 +61,7 @@ class OAuth2CallbackView(APIView):
                 {
                     "error": "Authorization code is None. Please check your authentication process."
                 },
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
         request_data = {
             "code": code,
@@ -79,5 +80,5 @@ class OAuth2CallbackView(APIView):
                 "Callback URL": PONG_ORIGIN + reverse("oauth2_callback"),
                 "Token": tokens,
             },
-            status=200,
+            status=response.status_code,
         )
