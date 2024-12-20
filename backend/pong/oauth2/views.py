@@ -76,6 +76,54 @@ class OAuth2AuthorizeView(OAuth2BaseView):
 
 
 class OAuth2CallbackView(OAuth2BaseView):
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(
+                examples=[
+                    OpenApiExample(
+                        "Example 200 Response",
+                        value={
+                            "Token": {
+                                "access_token": "abc123",
+                                "token_type": "bearer",
+                                "expires_in": 3600,
+                                "refresh_token": "abc123",
+                                "scope": "public",
+                                "created_at": 1734675524,
+                                "secret_valid_until": 1736304711
+                            }
+                        },
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description="Error when no code is provided",
+                examples=[
+                    OpenApiExample(
+                        "Example 400 Response",
+                        value={
+                            "error": "Authorization code is None. Please check your authentication process."
+                        },
+                    )
+                ],
+            ),
+            401: OpenApiResponse(
+                description="Error when the provided authorization grant is invalid",
+                examples=[
+                    OpenApiExample(
+                        "Example 401 Response",
+                        value={
+                            "Token": {
+                                "error": "invalid_grant",
+                                "error_description": "The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client."
+                            }
+                        },
+                    )
+                ],
+            ),
+            # todo: 他にもあるかも
+        }
+    )
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
         """
         認可サーバーからのレスポンスを受け取る関数
