@@ -20,7 +20,7 @@ class PosStruct:
 # TODO: docstring追加
 class MatchHandler:
     """
-    Handles the match logic and communication for a pong game.
+    Pongゲームのマッチロジックおよび通信を処理するクラス。
     """
 
     """
@@ -49,11 +49,22 @@ class MatchHandler:
     channel_name: str
 
     def __init__(self, channel_layer: Any, channel_name: str):
+        """
+        MatchHandlerの初期化。
+
+        :param channel_layer: チャネルレイヤー
+        :param channel_name: チャネル名
+        """
         self.channel_layer = channel_layer
         self.channel_name = channel_name
         self._reset_state()
 
     def __str__(self) -> str:
+        """
+        MatchHandlerオブジェクトを文字列として表現。
+
+        :return: MatchHandlerオブジェクトの文字列表現
+        """
         return (
             f"MatchHandler(stage={self.stage}, "
             f"player1={self.player1}, player2={self.player2}, "
@@ -61,6 +72,11 @@ class MatchHandler:
         )
 
     def __repr__(self) -> str:
+        """
+        MatchHandlerオブジェクトを詳細に表現。
+
+        :return: MatchHandlerオブジェクトの詳細な文字列表現
+        """
         return (
             f"MatchHandler(stage={self.stage}, "
             f"player1={self.player1}, player2={self.player2}, "
@@ -75,6 +91,11 @@ class MatchHandler:
     """
 
     async def handle(self, payload: dict) -> None:
+        """
+        プレイヤーからの入力を受け取り、ステージごとに処理を振り分ける。
+
+        :param payload: プレイヤーからのデータを含むペイロード
+        """
         data: dict = payload["data"]
 
         # TODO: ステージごとのバリデーションも実装する必要あり
@@ -96,6 +117,11 @@ class MatchHandler:
                 pass
 
     async def _handle_init(self, data: dict) -> None:
+        """
+        ゲームの初期化処理。
+
+        :param data: 初期化に必要なデータ
+        """
         # プレイモードによって所属させるグループを返る
         if data["mode"] == "local":
             self.group_name = "solo_match"
@@ -119,6 +145,11 @@ class MatchHandler:
         await self._send_to_group(message)
 
     async def _handle_ready(self, data: dict) -> None:
+        """
+        ゲームの準備が整った状態で処理を行う。
+
+        :param data: 準備状態に必要なデータ
+        """
         message = self._build_message("READY", {})
         await self._send_to_group(message)
 
@@ -127,9 +158,19 @@ class MatchHandler:
             asyncio.create_task(self.send_match_state())
 
     async def _handle_play(self, player_move: dict) -> None:
+        """
+        プレイヤーの動きに基づいてゲーム状態を更新。
+
+        :param player_move: プレイヤーの移動情報
+        """
         await self._move_pedal(player_move)
 
     async def _handle_end(self) -> None:
+        """
+        ゲーム終了時の処理。
+
+        勝者を決定し、グループから退出し、ゲーム状態を初期化。
+        """
         win_player: str = "1" if self.score1 > self.score2 else "2"
         message = self._build_message(
             "END",
@@ -146,7 +187,11 @@ class MatchHandler:
     """
 
     async def _move_pedal(self, player_move: dict) -> None:
-        # プレイヤーの動き（y座標）に基づいて位置を更新
+        """
+        プレイヤーのパドルを移動させる。
+
+        :param player_move: プレイヤーの移動情報
+        """
         match player_move["move"]:
             case "UP":
                 if player_move["team"] == "1" and self.player1.y > 0:
@@ -167,7 +212,9 @@ class MatchHandler:
                     self.player2.y += self.PLAYER_SPEED
 
     def _move_ball(self) -> None:
-        # ボールの位置を更新
+        """
+        ボールの位置を更新し、壁やプレイヤーとの衝突を判定する。
+        """
         self.ball.x += self.ball_speed.x
         self.ball.y += self.ball_speed.y
 
@@ -176,7 +223,7 @@ class MatchHandler:
             self.ball.y - self.BALL_RADIUS < 0
             or self.ball.y + self.BALL_RADIUS > self.HEIGHT
         ):
-            self.ball_speed.y = -self.ball_speed.y  # ボールのY軸速度を反転
+            self.ball_speed.y = -self.ball_speed.y # ボールのY軸速度を反転
 
         # プレイヤーとの衝突判定
         if (
@@ -184,15 +231,15 @@ class MatchHandler:
             and self.player1.y
             < self.ball.y
             < self.player1.y + self.PLAYER_HEIGHT
-        ):  # プレイヤー1との接触
-            self.ball_speed.x = -self.ball_speed.x  # ボールのX軸速度を反転
+        ):
+            self.ball_speed.x = -self.ball_speed.x
         elif (
             self.player2.x < self.ball.x + self.BALL_RADIUS
             and self.player2.y
             < self.ball.y
             < self.player2.y + self.PLAYER_HEIGHT
-        ):  # プレイヤー2との接触
-            self.ball_speed.x = -self.ball_speed.x  # ボールのX軸速度を反転
+        ):
+            self.ball_speed.x = -self.ball_speed.x
 
         # 点数判定
         if self.ball.x < self.player1.x:
@@ -206,12 +253,15 @@ class MatchHandler:
             self.stage = Stage.END
 
     async def send_match_state(self) -> None:
-        """60FPSでゲームデータを定期的に送信"""
+        """
+        ゲーム状態を60FPSで定期的に送信する。
+
+        ゲームが終了するまで繰り返し実行される。
+        """
         while self.stage != Stage.END:
-            await asyncio.sleep(1 / 60)  # 60FPSで待機
+            await asyncio.sleep(1 / 60)
             self._move_ball()
 
-            # 現在のゲーム状態を送信
             game_state = self._build_message(
                 "PLAY",
                 {
@@ -232,14 +282,29 @@ class MatchHandler:
     """
 
     async def _add_to_group(self) -> None:
+        """
+        マッチをグループに追加。
+
+        チャネル名を指定したグループに参加させる。
+        """
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
     async def _remove_from_group(self) -> None:
+        """
+        マッチをグループから削除。
+
+        チャネル名を指定したグループから退出させる。
+        """
         await self.channel_layer.group_discard(
             self.group_name, self.channel_name
         )
 
     async def _send_to_group(self, message: dict) -> None:
+        """
+        グループにメッセージを送信。
+
+        :param message: 送信するメッセージ
+        """
         await self.channel_layer.group_send(
             self.group_name, {"type": "group.message", "message": message}
         )
@@ -249,7 +314,11 @@ class MatchHandler:
     """
 
     def _reset_state(self) -> None:
-        # 初期化
+        """
+        ゲームの状態をリセット。
+
+        ゲームのステージ、スコア、プレイヤーの位置、ボールの位置を初期状態に戻す。
+        """
         self.stage = Stage.INIT
         # playerの位置は描画する左下を(0, 0)とする
         self.player1 = PosStruct(x=10, y=230)
@@ -261,10 +330,22 @@ class MatchHandler:
         self.group_name = ""
 
     def _reset_ball(self) -> None:
+        """
+        ボールの位置と速度をリセット。
+
+        ボールを中央に配置し、速度を設定する。
+        """
         self.ball: PosStruct = PosStruct(
             x=int(self.WIDTH / 2), y=int(self.HEIGHT / 2)
         )
         self.ball_speed: PosStruct = PosStruct(x=2, y=2)
 
     def _build_message(self, stage: str, data: dict) -> dict:
+        """
+        メッセージを作成。
+
+        :param stage: ステージ名
+        :param data: ステージに関連するデータ
+        :return: 作成したメッセージ
+        """
         return {"category": "MATCH", "payload": {"stage": stage, "data": data}}
