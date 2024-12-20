@@ -1,7 +1,7 @@
 import asyncio
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, Final
 
 
 class Stage(Enum):
@@ -26,12 +26,12 @@ class MatchHandler:
     """
     クラス定数
     """
-    HEIGHT = 400
-    WIDTH = 600
-    PLAYER_HEIGHT = 60
-    PLAYER_WIDTH = 10
-    PLAYER_SPEED = 5
-    BALL_RADIUS = 10
+    HEIGHT: Final[int] = 400
+    WIDTH: Final[int] = 600
+    PLAYER_HEIGHT: Final[int] = 60
+    PLAYER_WIDTH: Final[int] = 10
+    PLAYER_SPEED: Final[int] = 5
+    BALL_RADIUS: Final[int] = 10
 
     """
     クラス属性
