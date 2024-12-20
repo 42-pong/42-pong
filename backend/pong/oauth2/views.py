@@ -8,12 +8,13 @@ from drf_spectacular.utils import (
     OpenApiResponse,
     extend_schema,
 )
+from rest_framework import status
+
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要?
 from rest_framework.permissions import AllowAny
-from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.views import APIView
 
 from pong.settings import (
     OAUTH2_AUTHORIZATION_ENDPOINT,
@@ -23,15 +24,18 @@ from pong.settings import (
     PONG_ORIGIN,
 )
 
+
 class OAuth2BaseView(APIView):
     """
     OAuth2関連の共通の変数を定義する基底クラス
     """
+
     permission_classes = (AllowAny,)
 
     @property
-    def redirect_uri(self):
+    def redirect_uri(self) -> str:
         return PONG_ORIGIN + reverse("oauth2_callback")
+
 
 class OAuth2AuthorizeView(OAuth2BaseView):
     @extend_schema(
@@ -41,13 +45,14 @@ class OAuth2AuthorizeView(OAuth2BaseView):
                 examples=[
                     OpenApiExample(
                         "Example 302 Redirect",
-                        value={"Location": "https://example.com/oauth2/authorize?code=abc123..."},
+                        value={
+                            "Location": "https://example.com/oauth2/authorize?code=abc123..."
+                        },
                     ),
                 ],
             ),
         }
     )
-
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
         """
         認可エンドポイントを呼ぶ関数
@@ -90,7 +95,7 @@ class OAuth2CallbackView(OAuth2BaseView):
                                 "refresh_token": "abc123",
                                 "scope": "public",
                                 "created_at": 1734675524,
-                                "secret_valid_until": 1736304711
+                                "secret_valid_until": 1736304711,
                             }
                         },
                     )
@@ -115,7 +120,7 @@ class OAuth2CallbackView(OAuth2BaseView):
                         value={
                             "Token": {
                                 "error": "invalid_grant",
-                                "error_description": "The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client."
+                                "error_description": "The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.",
                             }
                         },
                     )
@@ -155,6 +160,7 @@ class OAuth2CallbackView(OAuth2BaseView):
             },
             status=response.status_code,
         )
+
 
 # todo: 以下のエンドポイントは後で実装する
 # - oauth2/refresh
