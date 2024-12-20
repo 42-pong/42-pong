@@ -65,14 +65,16 @@ class OAuth2AuthorizeView(OAuth2BaseView):
         - ユーザーが明示的にログアウトした時(ログアウト時にアクセストークンを削除する場合)
         - リフレッシュトークンの有効期限が切れた時
         """
-        query_params = {
+        query_params: dict[str, str] = {
             "client_id": OAUTH2_CLIENT_ID,
             "redirect_uri": self.redirect_uri,
             "response_type": "code",
         }
-        query_string = urlencode(query_params)
+        query_string: str = urlencode(query_params)
 
-        authorization_url = f"{OAUTH2_AUTHORIZATION_ENDPOINT}?{query_string}"
+        authorization_url: str = (
+            f"{OAUTH2_AUTHORIZATION_ENDPOINT}?{query_string}"
+        )
 
         return Response(
             status=status.HTTP_302_FOUND,
@@ -134,6 +136,7 @@ class OAuth2CallbackView(OAuth2BaseView):
         認可サーバーからのレスポンスを受け取る関数
         この関数は認可サーバーからのレスポンスを受け取り、認可コードを取得するために使用する。
         """
+        # todo Optional[str]?
         code = request.GET.get("code")
         if not code:
             return Response(
@@ -142,14 +145,14 @@ class OAuth2CallbackView(OAuth2BaseView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        request_data = {
+        request_data: dict[str, str] = {
             "code": code,
             "grant_type": "authorization_code",
             "redirect_uri": self.redirect_uri,
             "client_id": OAUTH2_CLIENT_ID,
             "client_secret": OAUTH2_CLIENT_SECRET_KEY,
         }
-        response = requests.post(
+        response: requests.models.Response = requests.post(
             OAUTH2_TOKEN_ENDPOINT,
             data=request_data,
         )
