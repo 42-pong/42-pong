@@ -150,16 +150,23 @@ class OAuth2CallbackView(OAuth2BaseView):
             "client_id": settings.OAUTH2_CLIENT_ID,
             "client_secret": settings.OAUTH2_CLIENT_SECRET_KEY,
         }
-        response: requests.models.Response = requests.post(
+        token_response: requests.models.Response = requests.post(
             settings.OAUTH2_TOKEN_ENDPOINT,
             data=request_data,
         )
-        tokens = response.json()
+        tokens = token_response.json()
+        user_response = requests.get(
+            "https://api.intra.42.fr/v2/me",
+            headers={"Authorization": f"Bearer {tokens.get('access_token')}"},
+        )
+        user_info = user_response.json()
         return Response(
             {
                 "token": tokens,
+                "42 user(me) login": user_info.get("login"),
+                "42 user(me) email": user_info.get("email"),
             },
-            status=response.status_code,
+            status=user_response.status_code,
         )
 
 
