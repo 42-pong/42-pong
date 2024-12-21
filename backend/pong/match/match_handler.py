@@ -232,10 +232,10 @@ class MatchHandler:
         self._process_ball_paddle_collision(self.player2, False)
 
         # 得点判定
-        if self.ball.x <= 0:
+        if self.ball.x + self.BALL_RADIUS <= 0:
             self.score2 += 1
             self._reset_ball()
-        elif self.ball.x >= self.WIDTH:
+        elif self.ball.x - self.BALL_RADIUS >= self.WIDTH:
             self.score1 += 1
             self._reset_ball()
 
