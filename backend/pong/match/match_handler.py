@@ -157,7 +157,7 @@ class MatchHandler:
 
         # ゲーム状況の更新をする非同期処理を並列で実行する
         if self.stage == Stage.READY:
-            asyncio.create_task(self.send_match_state())
+            asyncio.create_task(self._send_match_state())
 
     async def _handle_play(self, player_move: dict) -> None:
         """
@@ -165,7 +165,7 @@ class MatchHandler:
 
         :param player_move: プレイヤーの移動情報
         """
-        await self._move_pedal(player_move)
+        self._move_pedal(player_move)
 
     async def _handle_end(self) -> None:
         """
@@ -188,7 +188,7 @@ class MatchHandler:
     ゲームロジック関係のメソッド
     """
 
-    async def _move_pedal(self, player_move: dict) -> None:
+    def _move_pedal(self, player_move: dict) -> None:
         """
         プレイヤーのパドルを移動させる。
 
@@ -213,9 +213,9 @@ class MatchHandler:
                 ):
                     self.player2.y += self.PLAYER_SPEED
 
-    def _move_ball(self) -> None:
+    def _update(self) -> None:
         """
-        ボールの位置を更新し、壁やプレイヤーとの衝突を判定する。
+        ゲーム状態の更新
         """
         # ボールの移動
         self.ball.x += self.ball_speed.x
@@ -278,7 +278,7 @@ class MatchHandler:
                 elif self.ball.y >= player_pos.y + self.PLAYER_HEIGHT:
                     self.ball_speed.y = abs(self.ball_speed.y)
 
-    async def send_match_state(self) -> None:
+    async def _send_match_state(self) -> None:
         """
         ゲーム状態を60FPSで定期的に送信する。
 
@@ -286,7 +286,7 @@ class MatchHandler:
         """
         while self.stage != Stage.END:
             await asyncio.sleep(1 / 60)
-            self._move_ball()
+            self._update()
 
             game_state = self._build_message(
                 "PLAY",
