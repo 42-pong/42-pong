@@ -1,4 +1,5 @@
 import asyncio
+import math
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Final
@@ -21,6 +22,7 @@ class PosStruct:
 class MatchHandler:
     """
     Pongゲームのマッチロジックおよび通信を処理するクラス。
+    原点（0, 0）は左上
     """
 
     """
@@ -215,42 +217,66 @@ class MatchHandler:
         """
         ボールの位置を更新し、壁やプレイヤーとの衝突を判定する。
         """
+        # ボールの移動
         self.ball.x += self.ball_speed.x
         self.ball.y += self.ball_speed.y
 
         # 上下の壁との衝突判定
-        if (
-            self.ball.y - self.BALL_RADIUS < 0
-            or self.ball.y + self.BALL_RADIUS > self.HEIGHT
-        ):
-            self.ball_speed.y = -self.ball_speed.y  # ボールのY軸速度を反転
+        if self.ball.y - self.BALL_RADIUS <= 0:
+            self.ball_speed.y = abs(self.ball_speed.y)
+        elif self.ball.y + self.BALL_RADIUS >= self.HEIGHT:
+            self.ball_speed.y = -abs(self.ball_speed.y)
 
-        # プレイヤーとの衝突判定
-        if (
-            self.ball.x - self.BALL_RADIUS < self.player1.x + self.PLAYER_WIDTH
-            and self.player1.y
-            < self.ball.y
-            < self.player1.y + self.PLAYER_HEIGHT
-        ):
-            self.ball_speed.x = -self.ball_speed.x
-        elif (
-            self.player2.x < self.ball.x + self.BALL_RADIUS
-            and self.player2.y
-            < self.ball.y
-            < self.player2.y + self.PLAYER_HEIGHT
-        ):
-            self.ball_speed.x = -self.ball_speed.x
+        # パドルとの衝突判定
+        self._process_ball_paddle_collision(self.player1, True)
+        self._process_ball_paddle_collision(self.player2, False)
 
-        # 点数判定
-        if self.ball.x < self.player1.x:
+        # 得点判定
+        if self.ball.x <= 0:
             self.score2 += 1
             self._reset_ball()
-        elif self.player2.x + self.PLAYER_WIDTH < self.ball.x:
+        elif self.ball.x >= self.WIDTH:
             self.score1 += 1
             self._reset_ball()
 
-        if self.score1 == 5 or self.score2 == 5:
+        # 勝利判定
+        if self.score1 >= 5 or self.score2 >= 5:
             self.stage = Stage.END
+
+    def _process_ball_paddle_collision(
+        self, player_pos: PosStruct, is_player1: bool
+    ) -> None:
+        """
+        ボールとパドルの衝突判定と衝突時の処理
+
+        Args:
+            player_pos (PosStruct): プレーヤーの位置
+            is_player1 (bool): プレイヤー1のパドルかどうか
+        """
+        # 衝突判定
+        if (
+            self.ball.x - self.BALL_RADIUS <= player_pos.x + self.PLAYER_WIDTH
+            and self.ball.x + self.BALL_RADIUS >= player_pos.x
+            and self.ball.y - self.BALL_RADIUS <= player_pos.y + self.PLAYER_HEIGHT
+            and self.ball.y + self.BALL_RADIUS >= player_pos.y
+        ):
+            # ボールのx座標がパドルの側面に当たった場合
+            # ボールの中心がパドルの端よりも自陣側に過ぎていたらx軸方向に跳ね返さない
+            if self.ball.y >= player_pos.y and self.ball.y <= player_pos.y + self.PLAYER_HEIGHT:
+                if (
+                    is_player1 and
+                    self.ball.x > player_pos.x + self.PLAYER_WIDTH
+                ):
+                    self.ball_speed.x = abs(self.ball_speed.x)
+                elif self.ball.x < player_pos.x:
+                    self.ball_speed.x = -abs(self.ball_speed.x)
+
+            # ボールのy座標がパドルの上下面に当たった場合
+            if self.ball.x >= player_pos.x and self.ball.x <= player_pos.x + self.PLAYER_WIDTH:
+                if self.ball.y <= player_pos.y:
+                    self.ball_speed.y = -abs(self.ball_speed.y)
+                elif self.ball.y >= player_pos.y + self.PLAYER_HEIGHT:
+                    self.ball_speed.y = abs(self.ball_speed.y)
 
     async def send_match_state(self) -> None:
         """
@@ -320,9 +346,9 @@ class MatchHandler:
         ゲームのステージ、スコア、プレイヤーの位置、ボールの位置を初期状態に戻す。
         """
         self.stage = Stage.INIT
-        # playerの位置は描画する左下を(0, 0)とする
-        self.player1 = PosStruct(x=10, y=230)
-        self.player2 = PosStruct(x=580, y=230)
+        # playerの位置は描画する左上を(0, 0)とする
+        self.player1 = PosStruct(x=10, y=170)
+        self.player2 = PosStruct(x=580, y=170)
         self._reset_ball()
         self.score1 = 0
         self.score2 = 0
