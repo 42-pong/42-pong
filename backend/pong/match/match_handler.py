@@ -290,21 +290,27 @@ class MatchHandler:
 
         ゲームが終了するまで繰り返し実行される。
         """
+        last_update = asyncio.get_event_loop().time()
         while self.stage != Stage.END:
             await asyncio.sleep(1 / 60)
-            self._update()
-
-            game_state = self._build_message(
-                "PLAY",
-                {
-                    "pedal1": {"x": self.player1.x, "y": self.player1.y},
-                    "pedal2": {"x": self.player2.x, "y": self.player2.y},
-                    "ball": {"x": self.ball.x, "y": self.ball.y},
-                    "score1": self.score1,
-                    "score2": self.score2,
-                },
-            )
-            await self._send_to_group(game_state)
+            current_time = asyncio.get_event_loop().time()
+            delta = current_time - last_update
+            if delta >= 1 / 60:
+                self._update()
+                game_state = self._build_message(
+                    "PLAY",
+                    {
+                        "pedal1": {"x": self.player1.x, "y": self.player1.y},
+                        "pedal2": {"x": self.player2.x, "y": self.player2.y},
+                        "ball": {"x": self.ball.x, "y": self.ball.y},
+                        "score1": self.score1,
+                        "score2": self.score2,
+                    },
+                )
+                await self._send_to_group(game_state)
+                last_update = current_time
+            else:
+                await asyncio.sleep(1 / 60 - delta)
 
         # ENDステージの処理
         await self._handle_end()
