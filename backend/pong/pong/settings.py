@@ -18,11 +18,15 @@ import environ  # type: ignore
 # 環境変数のスキーマを定義
 env = environ.Env(
     DEBUG=(bool, False),
-    # 自動テストで例外処理になるためSECRET_KEYを定義
     SECRET_KEY=(str, "your-default-secret-key"),
     DB_NAME=(str, "db_name"),
     DB_USER=(str, "db_user"),
     DB_PASSWORD=(str, "db_password"),
+    OAUTH2_CLIENT_ID=(str, "client_id"),
+    OAUTH2_CLIENT_SECRET_KEY=(str, "client_secret_key"),
+    PONG_ORIGIN=(str, "api"),
+    OAUTH2_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
+    OAUTH2_TOKEN_ENDPOINT=(str, "token_endpoint"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,9 +43,7 @@ DEBUG = env("DEBUG")
 
 SECRET_KEY = env("SECRET_KEY")
 
-
 ALLOWED_HOSTS: list[str] = []
-
 
 # Application definition
 
@@ -60,6 +62,7 @@ INSTALLED_APPS = [
     "channels",
     # apps
     "jwt_token",
+    "oauth2",
     "accounts",
     "match",
 ]
@@ -186,3 +189,9 @@ CHANNEL_LAYERS = {
 }
 
 ASGI_APPLICATION = "pong.asgi.application"
+
+OAUTH2_CLIENT_ID = env("OAUTH2_CLIENT_ID")
+OAUTH2_CLIENT_SECRET_KEY = env("OAUTH2_CLIENT_SECRET_KEY")
+PONG_ORIGIN = env("PONG_ORIGIN")
+OAUTH2_AUTHORIZATION_ENDPOINT = env("OAUTH2_AUTHORIZATION_ENDPOINT")
+OAUTH2_TOKEN_ENDPOINT = env("OAUTH2_TOKEN_ENDPOINT")
