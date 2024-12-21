@@ -1,5 +1,4 @@
 import asyncio
-import math
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Final
@@ -257,22 +256,29 @@ class MatchHandler:
         if (
             self.ball.x - self.BALL_RADIUS <= player_pos.x + self.PLAYER_WIDTH
             and self.ball.x + self.BALL_RADIUS >= player_pos.x
-            and self.ball.y - self.BALL_RADIUS <= player_pos.y + self.PLAYER_HEIGHT
+            and self.ball.y - self.BALL_RADIUS
+            <= player_pos.y + self.PLAYER_HEIGHT
             and self.ball.y + self.BALL_RADIUS >= player_pos.y
         ):
             # ボールのx座標がパドルの側面に当たった場合
             # ボールの中心がパドルの端よりも自陣側に過ぎていたらx軸方向に跳ね返さない
-            if self.ball.y >= player_pos.y and self.ball.y <= player_pos.y + self.PLAYER_HEIGHT:
+            if (
+                self.ball.y >= player_pos.y
+                and self.ball.y <= player_pos.y + self.PLAYER_HEIGHT
+            ):
                 if (
-                    is_player1 and
-                    self.ball.x > player_pos.x + self.PLAYER_WIDTH
+                    is_player1
+                    and self.ball.x > player_pos.x + self.PLAYER_WIDTH
                 ):
                     self.ball_speed.x = abs(self.ball_speed.x)
                 elif self.ball.x < player_pos.x:
                     self.ball_speed.x = -abs(self.ball_speed.x)
 
             # ボールのy座標がパドルの上下面に当たった場合
-            if self.ball.x >= player_pos.x and self.ball.x <= player_pos.x + self.PLAYER_WIDTH:
+            if (
+                self.ball.x >= player_pos.x
+                and self.ball.x <= player_pos.x + self.PLAYER_WIDTH
+            ):
                 if self.ball.y <= player_pos.y:
                     self.ball_speed.y = -abs(self.ball_speed.y)
                 elif self.ball.y >= player_pos.y + self.PLAYER_HEIGHT:
