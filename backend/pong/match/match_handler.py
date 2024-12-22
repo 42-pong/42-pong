@@ -97,12 +97,13 @@ class MatchHandler:
         :param payload: プレイヤーからのデータを含むペイロード
         """
         data: dict = payload["data"]
-        stage = payload.get("stage")
+        stage: str = payload.get("stage", "")
         handler = self.stage_handlers.get(stage)
 
         # TODO: ステージごとのバリデーションも実装する必要あり
         # TODO: 適切なエラーハンドリングを実装
-        await handler(data)
+        if callable(handler):
+            await handler(data)
 
     async def _handle_init(self, data: dict) -> None:
         """
