@@ -9,6 +9,7 @@ class Stage(Enum):
     READY = 2
     PLAY = 3
     END = 4
+    NONE = 5
 
 
 @dataclass
@@ -51,6 +52,12 @@ class MatchHandler:
         :param channel_layer: チャネルレイヤー
         :param channel_name: チャネル名
         """
+        self.stage_handlers = {
+            "INIT": self._handle_init,
+            "READY": self._handle_ready,
+            "PLAY": self._handle_play,
+            "END": self._handle_end,
+        }
         self.channel_layer = channel_layer
         self.channel_name = channel_name
         self._reset_state()
@@ -90,24 +97,12 @@ class MatchHandler:
         :param payload: プレイヤーからのデータを含むペイロード
         """
         data: dict = payload["data"]
+        stage = payload.get("stage")
+        handler = self.stage_handlers.get(stage)
 
         # TODO: ステージごとのバリデーションも実装する必要あり
-        match payload["stage"]:
-            case "INIT":
-                await self._handle_init(data)
-                self.stage = Stage.READY
-            case "READY":
-                await self._handle_ready(data)
-                self.stage = Stage.PLAY
-            case "PLAY":
-                await self._handle_play(player_move=data)
-            case "END":
-                # TODO: エラー処理
-                # これが送られてくるのは途中でプレーヤーが画面遷移した場合
-                pass
-            case _:
-                # TODO: エラー処理
-                pass
+        # TODO: 適切なエラーハンドリングを実装
+        await handler(data)
 
     async def _handle_init(self, data: dict) -> None:
         """
@@ -115,6 +110,7 @@ class MatchHandler:
 
         :param data: 初期化に必要なデータ
         """
+        self.stage = Stage.INIT
         # プレイモードによって所属させるグループを返る
         if data["mode"] == "local":
             self.group_name = "solo_match"
@@ -143,20 +139,22 @@ class MatchHandler:
 
         :param data: 準備状態に必要なデータ
         """
+        self.stage = Stage.READY
         message = self._build_message("READY", {})
         await self._send_to_group(message)
 
         # ゲーム状況の更新をする非同期処理を並列で実行する
         if self.stage == Stage.READY:
             asyncio.create_task(self._send_match_state())
+            self.stage = Stage.PLAY
 
-    async def _handle_play(self, player_move: dict) -> None:
+    async def _handle_play(self, data: dict) -> None:
         """
         プレイヤーの動きに基づいてゲーム状態を更新。
 
-        :param player_move: プレイヤーの移動情報
+        :param data: プレイヤーの移動情報
         """
-        self._move_pedal(player_move)
+        self._move_pedal(player_move=data)
 
     async def _handle_end(self) -> None:
         """
@@ -340,8 +338,8 @@ class MatchHandler:
 
         ゲームのステージ、スコア、プレイヤーの位置、ボールの位置を初期状態に戻す。
         """
-        self.stage = Stage.INIT
-        # playerの位置は描画する左上を(0, 0)とする
+        self.stage = Stage.NONE
+        # playerの位置は左上とする
         self.player1 = PosStruct(x=10, y=170)
         self.player2 = PosStruct(x=580, y=170)
         self._reset_ball()
