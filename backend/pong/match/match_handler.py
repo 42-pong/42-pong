@@ -201,9 +201,9 @@ class MatchHandler:
                 ):
                     self.player2.y += self.PLAYER_SPEED
 
-    def _update(self) -> None:
+    def _update_match_state(self) -> None:
         """
-        ゲーム状態の更新
+        ボールの移動や、ボールと壁・パドルとの衝突、得点の判定を行い、ゲーム状態を更新する。
         """
         # ボールの移動
         self.ball.x += self.ball_speed.x
@@ -285,7 +285,7 @@ class MatchHandler:
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
             if delta >= 1 / 60:
-                self._update()
+                self._update_match_state()
                 game_state = self._build_message(
                     "PLAY",
                     {
