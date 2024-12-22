@@ -17,16 +17,13 @@ class PosStruct:
     y: int
 
 
-# TODO: docstring追加
 class MatchHandler:
     """
     Pongゲームのマッチロジックおよび通信を処理するクラス。
     原点（0, 0）は左上
     """
 
-    """
-    クラス定数
-    """
+    # クラス定数
     HEIGHT: Final[int] = 400
     WIDTH: Final[int] = 600
     PLAYER_HEIGHT: Final[int] = 60
@@ -34,9 +31,7 @@ class MatchHandler:
     PLAYER_SPEED: Final[int] = 5
     BALL_RADIUS: Final[int] = 10
 
-    """
-    クラス属性
-    """
+    # クラス属性
     stage: Stage
     player1: PosStruct
     player2: PosStruct
@@ -87,10 +82,7 @@ class MatchHandler:
             f"channel_layer={self.channel_layer}, channel_name={self.channel_name})"
         )
 
-    """
-    ハンドラーメソッド
-    """
-
+    # ハンドラーメソッド
     async def handle(self, payload: dict) -> None:
         """
         プレイヤーからの入力を受け取り、ステージごとに処理を振り分ける。
@@ -183,10 +175,7 @@ class MatchHandler:
         # 初期化
         self._reset_state()
 
-    """
-    ゲームロジック関係のメソッド
-    """
-
+    # ゲームロジック関係のメソッド
     def _move_pedal(self, player_move: dict) -> None:
         """
         プレイヤーのパドルを移動させる。
@@ -315,10 +304,7 @@ class MatchHandler:
         # ENDステージの処理
         await self._handle_end()
 
-    """
-    グループ関係のメソッド
-    """
-
+    # グループ関係のメソッド
     async def _add_to_group(self) -> None:
         """
         マッチをグループに追加。
@@ -347,10 +333,7 @@ class MatchHandler:
             self.group_name, {"type": "group.message", "message": message}
         )
 
-    """
-    ヘルパーメソッド
-    """
-
+    # ヘルパーメソッド
     def _reset_state(self) -> None:
         """
         ゲームの状態をリセット。
