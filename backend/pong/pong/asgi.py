@@ -15,7 +15,7 @@ from channels.security.websocket import (  # type: ignore
 )
 from django.core.asgi import get_asgi_application
 
-from match import routing
+import match.routing
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pong.settings")
 
@@ -26,7 +26,7 @@ application = ProtocolTypeRouter(
         "websocket": AllowedHostsOriginValidator(  # settings.pyのALLOWED_HOSTの設定を適用
             # Djangoのセッション管理は使用しないので,AuthMiddlewareStackは使用しない
             # TODO: JWTAuthMiddlewareを作成して使用する
-            URLRouter(routing.websocket_urlpatterns),
+            URLRouter(match.routing.websocket_urlpatterns),
         ),
     }
 )
