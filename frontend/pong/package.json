@@ -23,5 +23,8 @@
     "rimraf": "^6.0.1",
     "vite": "^5.4.10",
     "vitest": "^2.1.5"
+  },
+  "msw": {
+    "workerDirectory": ["public"]
   }
 }
