@@ -31,6 +31,7 @@ class MatchHandler:
     PLAYER_WIDTH: Final[int] = 10
     PLAYER_SPEED: Final[int] = 5
     BALL_RADIUS: Final[int] = 10
+    BALL_SPEED: Final[int] = 2
 
     # クラス属性
     stage: Stage
@@ -341,8 +342,13 @@ class MatchHandler:
         """
         self.stage = Stage.NONE
         # playerの位置は左上とする
-        self.player1 = PosStruct(x=10, y=170)
-        self.player2 = PosStruct(x=580, y=170)
+        self.player1 = PosStruct(
+            x=10, y=int(self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2)
+        )
+        self.player2 = PosStruct(
+            x=self.WIDTH - self.PLAYER_WIDTH - 10,
+            y=int(self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2),
+        )
         self._reset_ball()
         self.score1 = 0
         self.score2 = 0
@@ -358,7 +364,9 @@ class MatchHandler:
         self.ball: PosStruct = PosStruct(
             x=int(self.WIDTH / 2), y=int(self.HEIGHT / 2)
         )
-        self.ball_speed: PosStruct = PosStruct(x=2, y=2)
+        self.ball_speed: PosStruct = PosStruct(
+            x=self.BALL_SPEED, y=self.BALL_SPEED
+        )
 
     def _build_message(self, stage: str, data: dict) -> dict:
         """
