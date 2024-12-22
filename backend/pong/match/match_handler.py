@@ -127,8 +127,8 @@ class MatchHandler:
                 "team": "",
                 "display_name1": "",
                 "display_name2": "",
-                "pedal1": {"x": self.player1.x, "y": self.player1.y},
-                "pedal2": {"x": self.player2.x, "y": self.player2.y},
+                "paddle1": {"x": self.player1.x, "y": self.player1.y},
+                "paddle2": {"x": self.player2.x, "y": self.player2.y},
                 "ball": {"x": self.ball.x, "y": self.ball.y},
             },
         )
@@ -155,7 +155,7 @@ class MatchHandler:
 
         :param data: プレイヤーの移動情報
         """
-        self._move_pedal(player_move=data)
+        self._move_paddle(player_move=data)
 
     async def _handle_end(self) -> None:
         """
@@ -175,7 +175,7 @@ class MatchHandler:
         self._reset_state()
 
     # ゲームロジック関係のメソッド
-    def _move_pedal(self, player_move: dict) -> None:
+    def _move_paddle(self, player_move: dict) -> None:
         """
         プレイヤーのパドルを移動させる。
 
@@ -288,8 +288,8 @@ class MatchHandler:
                 game_state = self._build_message(
                     "PLAY",
                     {
-                        "pedal1": {"x": self.player1.x, "y": self.player1.y},
-                        "pedal2": {"x": self.player2.x, "y": self.player2.y},
+                        "paddle1": {"x": self.player1.x, "y": self.player1.y},
+                        "paddle2": {"x": self.player2.x, "y": self.player2.y},
                         "ball": {"x": self.ball.x, "y": self.ball.y},
                         "score1": self.score1,
                         "score2": self.score2,
