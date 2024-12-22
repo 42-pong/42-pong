@@ -12,9 +12,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from . import models, serializers
 from .constants import PlayerFields, UserFields
-from .models import Player
-from .serializers import PlayerSerializer
 
 
 class AccountCreateView(APIView):
@@ -22,13 +21,15 @@ class AccountCreateView(APIView):
     新規アカウントを作成するビュー
     """
 
-    serializer_class: type[PlayerSerializer] = PlayerSerializer
+    serializer_class: type[serializers.PlayerSerializer] = (
+        serializers.PlayerSerializer
+    )
     # todo: 認証機能を実装したら多分IsAuthenticatedに変更
     permission_classes = (AllowAny,)
 
     @extend_schema(
         request=OpenApiRequest(
-            PlayerSerializer,
+            serializers.PlayerSerializer,
             examples=[
                 OpenApiExample(
                     "Example request",
@@ -44,7 +45,7 @@ class AccountCreateView(APIView):
         ),
         responses={
             201: OpenApiResponse(
-                response=PlayerSerializer,
+                response=serializers.PlayerSerializer,
                 examples=[
                     OpenApiExample(
                         "Example 201 response",
@@ -88,7 +89,7 @@ class AccountCreateView(APIView):
             )
 
         # Account(PlayerとUser)を新規作成してDBに追加し、作成された情報を返す
-        player: Player = player_serializer.save()
+        player: models.Player = player_serializer.save()
         return Response(
             {
                 "player_id": player.id,  # todo: Player,UserどちらのIDを返すか決めて変更

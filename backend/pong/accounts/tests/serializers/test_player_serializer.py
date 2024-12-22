@@ -1,8 +1,7 @@
 from django.test import TestCase
 
+from ... import models, serializers
 from ...constants import PlayerFields, UserFields
-from ...models import Player
-from ...serializers import PlayerSerializer
 
 
 class PlayerSerializerTests(TestCase):
@@ -28,7 +27,9 @@ class PlayerSerializerTests(TestCase):
         """
         正常なデータが渡された場合にエラーにならないことを確認する
         """
-        serializer: PlayerSerializer = PlayerSerializer(data=self.player_data)
+        serializer: serializers.PlayerSerializer = (
+            serializers.PlayerSerializer(data=self.player_data)
+        )
 
         self.assertTrue(serializer.is_valid())
 
@@ -36,11 +37,13 @@ class PlayerSerializerTests(TestCase):
         """
         PlayerSerializerのcreate()メソッドが正常に動作することを確認する
         """
-        serializer: PlayerSerializer = PlayerSerializer(data=self.player_data)
+        serializer: serializers.PlayerSerializer = (
+            serializers.PlayerSerializer(data=self.player_data)
+        )
         if not serializer.is_valid():
             # このテストではerrorにならない想定
             raise AssertionError(serializer.errors)
-        player: Player = serializer.save()
+        player: models.Player = serializer.save()
 
         # todo: 現在Player独自のfieldがないため、紐づくUserのfieldのみ確認している
         #       今後Player独自のfieldが追加された時にテストも追加する
@@ -65,11 +68,13 @@ class PlayerSerializerTests(TestCase):
 
         # 2人共アカウントを作成し,正常に1対1で紐づいているか確認
         for player_data in (self.player_data, player_data_2):
-            serializer: PlayerSerializer = PlayerSerializer(data=player_data)
+            serializer: serializers.PlayerSerializer = (
+                serializers.PlayerSerializer(data=player_data)
+            )
             if not serializer.is_valid():
                 # このテストではerrorにならない想定
                 raise AssertionError(serializer.errors)
-            player: Player = serializer.save()
+            player: models.Player = serializer.save()
 
             # todo: Player独自のfieldが追加された時にテストも追加する
             self.assertEqual(

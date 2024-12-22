@@ -1,8 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from . import models
 from .constants import PlayerFields, UserFields
-from .models import Player
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -80,7 +80,7 @@ class PlayerSerializer(serializers.ModelSerializer):
     user: UserSerializer = UserSerializer()
 
     class Meta:
-        model = Player
+        model = models.Player
         fields = (
             PlayerFields.ID,  # todo: UserかPlayerどちらかだけで良さそう
             PlayerFields.USER,
@@ -96,7 +96,7 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     # AccountCreateViewのserializer.save()の内部で呼ばれる
     # todo: 多分トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
-    def create(self, validated_data: dict) -> Player:
+    def create(self, validated_data: dict) -> models.Player:
         """
         新規Playerを作成する
         UserSerializerを使用してUserを作成し、そのUserと関連付けたPlayerを作成する
@@ -110,5 +110,5 @@ class PlayerSerializer(serializers.ModelSerializer):
         new_user: User = user_serializer.save()
 
         # Userを作成した後でPlayerを作成する
-        player: Player = Player.objects.create(user=new_user)
+        player: models.Player = models.Player.objects.create(user=new_user)
         return player

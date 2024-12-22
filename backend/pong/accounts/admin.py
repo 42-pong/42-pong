@@ -1,10 +1,10 @@
 from django.contrib import admin
 
+from . import models
 from .constants import PlayerFields, UserFields
-from .models import Player
 
 
-@admin.register(Player)
+@admin.register(models.Player)
 class AccountAdmin(admin.ModelAdmin):
     """
     Playerモデルの管理画面をカスタマイズする
