@@ -81,7 +81,9 @@ class AccountCreateView(APIView):
         有効な場合はPlayerとUserを作成してDBに追加し、作成されたアカウント情報をresponseとして返す
         """
         # requestをserializerに渡して変換とバリデーションを行う
-        player_serializer = self.serializer_class(data=request.data)
+        player_serializer: serializers.PlayerSerializer = (
+            self.serializer_class(data=request.data)
+        )
         if not player_serializer.is_valid():
             return Response(
                 player_serializer.errors,

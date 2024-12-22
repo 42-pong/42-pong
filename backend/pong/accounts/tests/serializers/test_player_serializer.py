@@ -57,12 +57,12 @@ class PlayerSerializerTests(TestCase):
         PlayerSerializerのcreate()メソッドが複数回呼ばれた場合に正常に動作することを確認する
         """
         # 2人目のアカウント情報
-        user_data_2 = {
+        user_data_2: dict = {
             UserFields.USERNAME: "testuser_2",
             UserFields.EMAIL: "testuser_2@example.com",
             UserFields.PASSWORD: "testpassword",
         }
-        player_data_2 = {
+        player_data_2: dict = {
             PlayerFields.USER: user_data_2,
         }
 
