@@ -50,3 +50,41 @@ class AccountsTests(APITestCase):
             user__username="testuser"
         )
         self.assertEqual(player.user.email, "testuser@example.com")
+
+    # -------------------------------------------------------------------------
+    # エラーケース
+    # -------------------------------------------------------------------------
+    def test_create_account_with_invalid_data(self) -> None:
+        """
+        無効なデータでアカウントを作成するテスト
+        status 400 が返されることを確認
+        ErrorDetail に username, email が含まれることを確認
+        """
+        account_data: dict = {
+            "user": {
+                UserFields.USERNAME: "",  # 空のusername
+                UserFields.EMAIL: "invalid-email@none",  # 不正なemail
+                UserFields.PASSWORD: "testpassword12345",
+            }
+        }
+        response: Response = self.client.post(
+            self.url, account_data, format="json"
+        )
+
+        # responseの内容を確認
+        # response.data = {
+        #     "user": {
+        #         "username": [
+        #             ErrorDetail(string="This field may not be blank.", code="blank")
+        #         ],
+        #         "email": [
+        #             ErrorDetail(string="Enter a valid email address.", code="invalid")
+        #         ],
+        #     }
+        # }
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(UserFields.USERNAME, response.data["user"])
+        self.assertIn(UserFields.EMAIL, response.data["user"])
+
+        # DBの状態を確認
+        self.assertEqual(models.Player.objects.count(), 0)
