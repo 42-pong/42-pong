@@ -18,13 +18,12 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         pass
 
     async def receive_json(self, message: dict) -> None:
-        category = message.get("category")
-        payload = message.get("payload")
+        category: str = message.get("category", "")
+        payload: dict = message.get("payload", {})
 
         match category:
             case "MATCH":
-                if isinstance(payload, dict):
-                    await self.match_handler.handle(payload)
+                await self.match_handler.handle(payload)
             case _:
                 pass
 

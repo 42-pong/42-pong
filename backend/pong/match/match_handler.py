@@ -96,7 +96,7 @@ class MatchHandler:
 
         :param payload: プレイヤーからのデータを含むペイロード
         """
-        data: dict = payload["data"]
+        data: dict = payload.get("data", {})
         stage: str = payload.get("stage", "")
         handler = self.stage_handlers.get(stage)
 
@@ -113,7 +113,7 @@ class MatchHandler:
         """
         self.stage = Stage.INIT
         # プレイモードによって所属させるグループを返る
-        if data["mode"] == "local":
+        if data.get("mode") == "local":
             self.group_name = "solo_match"
 
         await self._add_to_group()
@@ -181,21 +181,21 @@ class MatchHandler:
 
         :param player_move: プレイヤーの移動情報
         """
-        match player_move["move"]:
+        match player_move.get("move"):
             case "UP":
-                if player_move["team"] == "1" and self.player1.y > 0:
+                if player_move.get("team") == "1" and self.player1.y > 0:
                     self.player1.y -= self.PLAYER_SPEED
-                elif player_move["team"] == "2" and self.player2.y > 0:
+                elif player_move.get("team") == "2" and self.player2.y > 0:
                     self.player2.y -= self.PLAYER_SPEED
 
             case "DOWN":
                 if (
-                    player_move["team"] == "1"
+                    player_move.get("team") == "1"
                     and self.player1.y + self.PLAYER_HEIGHT < self.HEIGHT
                 ):
                     self.player1.y += self.PLAYER_SPEED
                 elif (
-                    player_move["team"] == "2"
+                    player_move.get("team") == "2"
                     and self.player2.y + self.PLAYER_HEIGHT < self.HEIGHT
                 ):
                     self.player2.y += self.PLAYER_SPEED
