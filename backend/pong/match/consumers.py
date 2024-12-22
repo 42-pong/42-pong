@@ -1,4 +1,6 @@
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import (  # type: ignore
+    AsyncJsonWebsocketConsumer,
+)
 
 from . import match_handler
 
