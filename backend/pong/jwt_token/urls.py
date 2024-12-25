@@ -1,3 +1,5 @@
+from typing import Final
+
 from django.urls import path
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -5,6 +7,7 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
+app_name: Final[str] = "jwt_token"
 urlpatterns = [
     # 'api/token/'
     path("", TokenObtainPairView.as_view(), name="token_obtain_pair"),

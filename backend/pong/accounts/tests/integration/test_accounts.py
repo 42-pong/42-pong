@@ -14,7 +14,7 @@ class AccountsTests(APITestCase):
         APITestCaseのsetUpメソッドのオーバーライド
         各テストメソッドの実行前に毎回自動実行される
         """
-        self.url: str = reverse("accounts")
+        self.url: str = reverse("accounts:account_create")
 
     # -------------------------------------------------------------------------
     # 正常ケース

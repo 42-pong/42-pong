@@ -1,4 +1,5 @@
 from django.test import TestCase
+from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory
@@ -16,5 +17,5 @@ class HealthCheckUnitTests(TestCase):
         request: Request = factory.get("/health/")
         response: Response = health_check(request)
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {"status": "OK"})
