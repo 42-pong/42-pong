@@ -45,9 +45,11 @@ class AccountCreateView(APIView):
                     OpenApiExample(
                         "Example 201 response",
                         value={
-                            UserFields.ID: 1,
-                            UserFields.USERNAME: "username",
-                            UserFields.EMAIL: "user@example.com",
+                            PlayerFields.USER: {
+                                UserFields.ID: 1,
+                                UserFields.USERNAME: "username",
+                                UserFields.EMAIL: "user@example.com",
+                            }
                         },
                     ),
                 ],
@@ -82,9 +84,11 @@ class AccountCreateView(APIView):
         player: Player = player_serializer.save()
         return Response(
             {
-                UserFields.ID: player.user.id,
-                UserFields.USERNAME: player.user.username,
-                UserFields.EMAIL: player.user.email,
+                PlayerFields.USER: {
+                    UserFields.ID: player.user.id,
+                    UserFields.USERNAME: player.user.username,
+                    UserFields.EMAIL: player.user.email,
+                }
             },
             status=status.HTTP_201_CREATED,
         )
