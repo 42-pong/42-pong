@@ -45,7 +45,7 @@ class AccountCreateView(APIView):
                     OpenApiExample(
                         "Example 201 response",
                         value={
-                            "player_id": 1,  # todo: Player,UserどちらのIDを返すか決めて変更
+                            UserFields.ID: 1,
                             UserFields.USERNAME: "username",
                             UserFields.EMAIL: "user@example.com",
                         },
@@ -82,7 +82,7 @@ class AccountCreateView(APIView):
         player: Player = player_serializer.save()
         return Response(
             {
-                "player_id": player.id,  # todo: Player,UserどちらのIDを返すか決めて変更
+                UserFields.ID: player.user.id,
                 UserFields.USERNAME: player.user.username,
                 UserFields.EMAIL: player.user.email,
             },
