@@ -20,10 +20,7 @@ class AccountAdmin(admin.ModelAdmin):
         PlayerFields.UPDATED_AT,
     )
     list_filter: tuple = (PlayerFields.UPDATED_AT,)
-    search_fields: tuple = (
-        f"{PlayerFields.USER}__{UserFields.USERNAME}",
-        f"{PlayerFields.USER}__{UserFields.EMAIL}",
-    )
+    search_fields: tuple = (f"{PlayerFields.USER}__{UserFields.USERNAME}",)
 
     def user_id(self, obj: Player) -> int:
         """
