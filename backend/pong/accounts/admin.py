@@ -1,7 +1,31 @@
 from django.contrib import admin
+from django.contrib.auth import admin as auth_admin
+from django.contrib.auth import models as auth_models
 
 from .constants import PlayerFields, UserFields
 from .models import Player
+
+
+# todo: Userモデルに関するカスタマイズは専用のファイルに移動した方が良いのかも
+class CustomUserAdmin(auth_admin.UserAdmin):
+    """
+    adminサイトのUsersに表示されるカラムをカスタマイズ
+    """
+
+    list_display: tuple = (
+        UserFields.ID,
+        UserFields.USERNAME,
+        UserFields.EMAIL,
+        "is_superuser",
+        "is_staff",
+        "is_active",
+    )
+
+
+# デフォルトのUserModelの登録を解除して、カスタマイズしたUserAdminクラスで再登録
+# adminサイトにカスタマイズされたlist_displayが表示されるようになる
+admin.site.unregister(auth_models.User)
+admin.site.register(auth_models.User, CustomUserAdmin)
 
 
 @admin.register(Player)
