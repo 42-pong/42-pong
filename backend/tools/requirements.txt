@@ -6,23 +6,43 @@
 #
 asgiref==3.8.1
     # via
+    #   channels
+    #   daphne
     #   django
     #   django-stubs
 attrs==24.2.0
     # via
     #   jsonschema
     #   referencing
+    #   service-identity
+    #   twisted
+autobahn==24.4.2
+    # via daphne
+automat==24.8.1
+    # via twisted
 certifi==2024.8.30
     # via requests
 cffi==1.17.1
     # via cryptography
+channels==4.2.0
+    # via
+    #   -r requirements.in
 charset-normalizer==3.4.0
     # via requests
+constantly==23.10.4
+    # via twisted
 cryptography==44.0.0
-    # via djangorestframework-simplejwt
+    # via
+    #   autobahn
+    #   djangorestframework-simplejwt
+    #   pyopenssl
+    #   service-identity
+daphne==4.1.2
+    # via -r requirements.in
 django==5.1.4
     # via
     #   -r requirements.in
+    #   channels
     #   django-stubs
     #   django-stubs-ext
     #   djangorestframework
@@ -50,8 +70,17 @@ drf-spectacular==0.28.0
     # via -r requirements.in
 drf-spectacular-sidecar==2024.12.1
     # via -r requirements.in
+hyperlink==21.0.0
+    # via
+    #   autobahn
+    #   twisted
 idna==3.10
-    # via requests
+    # via
+    #   hyperlink
+    #   requests
+    #   twisted
+incremental==24.7.2
+    # via twisted
 inflection==0.5.1
     # via drf-spectacular
 jsonschema==4.23.0
@@ -64,10 +93,18 @@ mypy-extensions==1.0.0
     # via mypy
 psycopg2-binary==2.9.10
     # via -r requirements.in
+pyasn1==0.6.1
+    # via
+    #   pyasn1-modules
+    #   service-identity
+pyasn1-modules==0.4.1
+    # via service-identity
 pycparser==2.22
     # via cffi
 pyjwt==2.10.1
     # via djangorestframework-simplejwt
+pyopenssl==24.3.0
+    # via twisted
 pyyaml==6.0.2
     # via drf-spectacular
 referencing==0.35.1
@@ -82,8 +119,14 @@ rpds-py==0.22.3
     #   referencing
 ruff==0.7.3
     # via -r requirements.in
-sqlparse==0.5.2
+service-identity==24.2.0
+    # via twisted
+sqlparse==0.5.3
     # via django
+twisted==24.11.0
+    # via daphne
+txaio==23.1.1
+    # via autobahn
 types-pyyaml==6.0.12.20240917
     # via
     #   django-stubs
@@ -96,9 +139,15 @@ typing-extensions==4.12.2
     #   django-stubs-ext
     #   djangorestframework-stubs
     #   mypy
+    #   twisted
 uritemplate==4.1.1
     # via drf-spectacular
 urllib3==2.2.3
     # via
     #   requests
     #   types-requests
+zope-interface==7.2
+    # via twisted
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

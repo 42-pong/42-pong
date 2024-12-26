@@ -48,6 +48,7 @@ ALLOWED_HOSTS: list[str] = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",  # for django channels
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -58,10 +59,12 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",  # for Swagger UI
     "drf_spectacular_sidecar",  # for Swagger UI
+    "channels",
     # apps
     "jwt_token",
     "oauth2",
     "accounts",
+    "match",
 ]
 
 MIDDLEWARE = [
@@ -177,6 +180,15 @@ SPECTACULAR_SETTINGS = {
         "rest_framework_simplejwt.authentication.JWTAuthentication"
     ],
 }
+
+CHANNEL_LAYERS = {
+    # TODO: 必要になったらchannel_redisを利用する
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
+
+ASGI_APPLICATION = "pong.asgi.application"
 
 OAUTH2_CLIENT_ID = env("OAUTH2_CLIENT_ID")
 OAUTH2_CLIENT_SECRET_KEY = env("OAUTH2_CLIENT_SECRET_KEY")
