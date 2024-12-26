@@ -57,8 +57,6 @@ class OAuth2AuthorizeView(OAuth2BaseView):
         """
         認可エンドポイントを呼ぶ関数
         この関数はクライアント(42pong)が認可サーバーの認可エンドポイントにアクセスし、認可コードを取得するために使用する。
-        認可サーバーに接続する際に、redirect_uriを設定する理由は、認可サーバーはクライアントではなくブラウザーにレスポンスを返すため、
-        ブラウザからクライアントにリダイレクトし、認可コードを取得する必要があるため。
 
         認可エンドポイントを呼ぶケース
         - ユーザーが新規アカウントを作成した時
@@ -134,7 +132,8 @@ class OAuth2CallbackView(OAuth2BaseView):
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
         """
         認可サーバーからのレスポンスを受け取る関数
-        この関数は認可サーバーからのレスポンスを受け取り、認可コードを取得するために使用する。
+        この関数は認可エンドポイント(`/api/oauth2/authorize`)のレスポンスを受け取り、認可コードを取得するために使用する。
+        そのため、このエンドポイントはFEから呼ばれることはありません。
         """
         # todo Optional[str]?
         code = request.GET.get("code")
