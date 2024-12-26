@@ -88,7 +88,7 @@ class OAuth2CallbackView(OAuth2BaseView):
                     OpenApiExample(
                         "Example 200 Response",
                         value={
-                            "Token": {
+                            "token": {
                                 "access_token": "abc123",
                                 "token_type": "bearer",
                                 "expires_in": 3600,
@@ -118,7 +118,7 @@ class OAuth2CallbackView(OAuth2BaseView):
                     OpenApiExample(
                         "Example 401 Response",
                         value={
-                            "Token": {
+                            "token": {
                                 "error": "invalid_grant",
                                 "error_description": "The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.",
                             }
@@ -158,7 +158,7 @@ class OAuth2CallbackView(OAuth2BaseView):
         tokens = response.json()
         return Response(
             {
-                "Token": tokens,
+                "token": tokens,
             },
             status=response.status_code,
         )
