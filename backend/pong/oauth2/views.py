@@ -8,21 +8,15 @@ from drf_spectacular.utils import (
     OpenApiResponse,
     extend_schema,
 )
-from rest_framework import status
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要?
+from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from pong.settings import (
-    OAUTH2_AUTHORIZATION_ENDPOINT,
-    OAUTH2_CLIENT_ID,
-    OAUTH2_CLIENT_SECRET_KEY,
-    OAUTH2_TOKEN_ENDPOINT,
-    PONG_ORIGIN,
-)
+from pong import settings
 
 
 class OAuth2BaseView(APIView):
@@ -34,7 +28,7 @@ class OAuth2BaseView(APIView):
 
     @property
     def redirect_uri(self) -> str:
-        return PONG_ORIGIN + reverse("oauth2_callback")
+        return settings.PONG_ORIGIN + reverse("oauth2:callback")
 
 
 class OAuth2AuthorizeView(OAuth2BaseView):
@@ -68,14 +62,14 @@ class OAuth2AuthorizeView(OAuth2BaseView):
         - リフレッシュトークンの有効期限が切れた時
         """
         query_params: dict[str, str] = {
-            "client_id": OAUTH2_CLIENT_ID,
+            "client_id": settings.OAUTH2_CLIENT_ID,
             "redirect_uri": self.redirect_uri,
             "response_type": "code",
         }
         query_string: str = urlencode(query_params)
 
         authorization_url: str = (
-            f"{OAUTH2_AUTHORIZATION_ENDPOINT}?{query_string}"
+            f"{settings.OAUTH2_AUTHORIZATION_ENDPOINT}?{query_string}"
         )
 
         return Response(
@@ -153,11 +147,11 @@ class OAuth2CallbackView(OAuth2BaseView):
             "code": code,
             "grant_type": "authorization_code",
             "redirect_uri": self.redirect_uri,
-            "client_id": OAUTH2_CLIENT_ID,
-            "client_secret": OAUTH2_CLIENT_SECRET_KEY,
+            "client_id": settings.OAUTH2_CLIENT_ID,
+            "client_secret": settings.OAUTH2_CLIENT_SECRET_KEY,
         }
         response: requests.models.Response = requests.post(
-            OAUTH2_TOKEN_ENDPOINT,
+            settings.OAUTH2_TOKEN_ENDPOINT,
             data=request_data,
         )
         tokens = response.json()
