@@ -39,9 +39,13 @@ class OAuth2BaseView(APIView):
 
 class OAuth2AuthorizeView(OAuth2BaseView):
     @extend_schema(
+        request=None,
         responses={
             302: OpenApiResponse(
                 description="Redirect to OAuth2 authorization URL",
+                response=[
+                    ("Location", str),
+                ],
                 examples=[
                     OpenApiExample(
                         "Example 302 Redirect",
@@ -51,7 +55,7 @@ class OAuth2AuthorizeView(OAuth2BaseView):
                     ),
                 ],
             ),
-        }
+        },
     )
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
         """
@@ -81,6 +85,7 @@ class OAuth2AuthorizeView(OAuth2BaseView):
 
 
 class OAuth2CallbackView(OAuth2BaseView):
+    # todo callbackのエンドポイントのレスポンスが決まったら、request,responseを追加する
     @extend_schema(
         responses={
             200: OpenApiResponse(
