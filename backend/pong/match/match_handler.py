@@ -1,22 +1,16 @@
 import asyncio
-from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Final
 
+import numpy as np
+
 
 class Stage(Enum):
+    NONE = 0
     INIT = 1
     READY = 2
     PLAY = 3
     END = 4
-    NONE = 5
-
-
-@dataclass
-class PosStruct:
-    x: int
-    y: int
-
 
 class MatchHandler:
     """
@@ -33,19 +27,6 @@ class MatchHandler:
     BALL_RADIUS: Final[int] = 10
     BALL_SPEED: Final[int] = 2
 
-    # クラス属性
-    stage: Stage
-    player1: PosStruct
-    player2: PosStruct
-    ball: PosStruct
-    ball_speed: PosStruct
-    score1: int
-    score2: int
-    local_play: bool
-    group_name: str
-    channel_layer: Any
-    channel_name: str
-
     def __init__(self, channel_layer: Any, channel_name: str):
         """
         MatchHandlerの初期化。
@@ -59,9 +40,17 @@ class MatchHandler:
             "PLAY": self._handle_play,
             "END": self._handle_end,
         }
-        self.channel_layer = channel_layer
-        self.channel_name = channel_name
-        self._reset_state()
+        self.channel_layer: Any = channel_layer
+        self.channel_name: str = channel_name
+        self.stage: Stage = Stage.NONE
+        self.player1: np.ndarray = np.array(2)
+        self.player2: np.ndarray = np.array(2)
+        self.ball: np.ndarray = np.array(2)
+        self.ball_speed: np.ndarray = np.array(2)
+        self.score1: int = 0
+        self.score2: int = 0
+        self.local_play: bool = False
+        self.group_name: str = ""
 
     def __str__(self) -> str:
         """
@@ -113,6 +102,8 @@ class MatchHandler:
         :param data: 初期化に必要なデータ
         """
         self.stage = Stage.INIT
+        # 初期化
+        self._reset_state()
         # プレイモードによって所属させるグループを返る
         if data.get("mode") == "local":
             self.group_name = "solo_match"
@@ -128,9 +119,9 @@ class MatchHandler:
                 "team": "",
                 "display_name1": "",
                 "display_name2": "",
-                "paddle1": {"x": self.player1.x, "y": self.player1.y},
-                "paddle2": {"x": self.player2.x, "y": self.player2.y},
-                "ball": {"x": self.ball.x, "y": self.ball.y},
+                "paddle1": {"x": self.player1[0], "y": self.player1[1]},
+                "paddle2": {"x": self.player2[0], "y": self.player2[1]},
+                "ball": {"x": self.ball[0], "y": self.ball[1]},
             },
         )
         await self._send_to_group(message)
@@ -172,8 +163,6 @@ class MatchHandler:
         await self._send_to_group(message)
         # matchが終わったのでグループから削除
         await self._remove_from_group()
-        # 初期化
-        self._reset_state()
 
     # ゲームロジック関係のメソッド
     def _move_paddle(self, player_move: dict) -> None:
@@ -184,46 +173,46 @@ class MatchHandler:
         """
         match player_move.get("move"):
             case "UP":
-                if player_move.get("team") == "1" and self.player1.y > 0:
-                    self.player1.y -= self.PLAYER_SPEED
-                elif player_move.get("team") == "2" and self.player2.y > 0:
-                    self.player2.y -= self.PLAYER_SPEED
+                if player_move.get("team") == "1" and self.player1[1] > 0:
+                    self.player1[1] -= self.PLAYER_SPEED
+                elif player_move.get("team") == "2" and self.player2[1] > 0:
+                    self.player2[1] -= self.PLAYER_SPEED
 
             case "DOWN":
                 if (
                     player_move.get("team") == "1"
-                    and self.player1.y + self.PLAYER_HEIGHT < self.HEIGHT
+                    and self.player1[1] + self.PLAYER_HEIGHT < self.HEIGHT
                 ):
-                    self.player1.y += self.PLAYER_SPEED
+                    self.player1[1] += self.PLAYER_SPEED
                 elif (
                     player_move.get("team") == "2"
-                    and self.player2.y + self.PLAYER_HEIGHT < self.HEIGHT
+                    and self.player2[1] + self.PLAYER_HEIGHT < self.HEIGHT
                 ):
-                    self.player2.y += self.PLAYER_SPEED
+                    self.player2[1] += self.PLAYER_SPEED
 
     def _update_match_state(self) -> None:
         """
         ボールの移動や、ボールと壁・パドルとの衝突、得点の判定を行い、ゲーム状態を更新する。
         """
         # ボールの移動
-        self.ball.x += self.ball_speed.x
-        self.ball.y += self.ball_speed.y
+        self.ball[0] += self.ball_speed[0]
+        self.ball[1] += self.ball_speed[1]
 
         # 上下の壁との衝突判定
-        if self.ball.y - self.BALL_RADIUS <= 0:
-            self.ball_speed.y = abs(self.ball_speed.y)
-        elif self.ball.y + self.BALL_RADIUS >= self.HEIGHT:
-            self.ball_speed.y = -abs(self.ball_speed.y)
+        if self.ball[1] - self.BALL_RADIUS <= 0:
+            self.ball_speed[1] = abs(self.ball_speed[1])
+        elif self.ball[1] + self.BALL_RADIUS >= self.HEIGHT:
+            self.ball_speed[1] = -abs(self.ball_speed[1])
 
         # パドルとの衝突判定
         self._process_ball_paddle_collision(self.player1, True)
         self._process_ball_paddle_collision(self.player2, False)
 
         # 得点判定
-        if self.ball.x + self.BALL_RADIUS <= 0:
+        if self.ball[0] + self.BALL_RADIUS <= 0:
             self.score2 += 1
             self._reset_ball()
-        elif self.ball.x - self.BALL_RADIUS >= self.WIDTH:
+        elif self.ball[0] - self.BALL_RADIUS >= self.WIDTH:
             self.score1 += 1
             self._reset_ball()
 
@@ -232,46 +221,47 @@ class MatchHandler:
             self.stage = Stage.END
 
     def _process_ball_paddle_collision(
-        self, player_pos: PosStruct, is_player1: bool
+        self, player_pos: np.ndarray, is_player1: bool
     ) -> None:
         """
         ボールとパドルの衝突判定と衝突時の処理
 
         Args:
-            player_pos (PosStruct): プレーヤーの位置
+            player_pos (np.ndarray): プレーヤーの位置
             is_player1 (bool): プレイヤー1のパドルかどうか
         """
         # 衝突判定
         if (
-            self.ball.x - self.BALL_RADIUS <= player_pos.x + self.PLAYER_WIDTH
-            and self.ball.x + self.BALL_RADIUS >= player_pos.x
-            and self.ball.y - self.BALL_RADIUS
-            <= player_pos.y + self.PLAYER_HEIGHT
-            and self.ball.y + self.BALL_RADIUS >= player_pos.y
+            self.ball[0] - self.BALL_RADIUS
+            <= player_pos[0] + self.PLAYER_WIDTH
+            and self.ball[0] + self.BALL_RADIUS >= player_pos[0]
+            and self.ball[1] - self.BALL_RADIUS
+            <= player_pos[1] + self.PLAYER_HEIGHT
+            and self.ball[1] + self.BALL_RADIUS >= player_pos[1]
         ):
             # ボールのx座標がパドルの側面に当たった場合
             # ボールの中心がパドルの端よりも自陣側に過ぎていたらx軸方向に跳ね返さない
             if (
-                self.ball.y >= player_pos.y
-                and self.ball.y <= player_pos.y + self.PLAYER_HEIGHT
+                self.ball[1] >= player_pos[1]
+                and self.ball[1] <= player_pos[1] + self.PLAYER_HEIGHT
             ):
                 if (
                     is_player1
-                    and self.ball.x > player_pos.x + self.PLAYER_WIDTH
+                    and self.ball[0] > player_pos[0] + self.PLAYER_WIDTH
                 ):
-                    self.ball_speed.x = abs(self.ball_speed.x)
-                elif self.ball.x < player_pos.x:
-                    self.ball_speed.x = -abs(self.ball_speed.x)
+                    self.ball_speed[0] = abs(self.ball_speed[0])
+                elif self.ball[0] < player_pos[0]:
+                    self.ball_speed[0] = -abs(self.ball_speed[0])
 
             # ボールのy座標がパドルの上下面に当たった場合
             if (
-                self.ball.x >= player_pos.x
-                and self.ball.x <= player_pos.x + self.PLAYER_WIDTH
+                self.ball[0] >= player_pos[0]
+                and self.ball[0] <= player_pos[0] + self.PLAYER_WIDTH
             ):
-                if self.ball.y <= player_pos.y:
-                    self.ball_speed.y = -abs(self.ball_speed.y)
-                elif self.ball.y >= player_pos.y + self.PLAYER_HEIGHT:
-                    self.ball_speed.y = abs(self.ball_speed.y)
+                if self.ball[1] <= player_pos[1]:
+                    self.ball_speed[1] = -abs(self.ball_speed[1])
+                elif self.ball[1] >= player_pos[1] + self.PLAYER_HEIGHT:
+                    self.ball_speed[1] = abs(self.ball_speed[1])
 
     async def _send_match_state(self) -> None:
         """
@@ -289,9 +279,15 @@ class MatchHandler:
                 game_state = self._build_message(
                     "PLAY",
                     {
-                        "paddle1": {"x": self.player1.x, "y": self.player1.y},
-                        "paddle2": {"x": self.player2.x, "y": self.player2.y},
-                        "ball": {"x": self.ball.x, "y": self.ball.y},
+                        "paddle1": {
+                            "x": self.player1[0],
+                            "y": self.player1[1],
+                        },
+                        "paddle2": {
+                            "x": self.player2[0],
+                            "y": self.player2[1],
+                        },
+                        "ball": {"x": self.ball[0], "y": self.ball[1]},
                         "score1": self.score1,
                         "score2": self.score2,
                     },
@@ -342,12 +338,12 @@ class MatchHandler:
         """
         self.stage = Stage.NONE
         # playerの位置は左上とする
-        self.player1 = PosStruct(
-            x=10, y=int(self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2)
-        )
-        self.player2 = PosStruct(
-            x=self.WIDTH - self.PLAYER_WIDTH - 10,
-            y=int(self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2),
+        self.player1 = np.array([10, self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2])
+        self.player2 = np.array(
+            [
+                self.WIDTH - self.PLAYER_WIDTH - 10,
+                self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2,
+            ]
         )
         self._reset_ball()
         self.score1 = 0
@@ -361,12 +357,8 @@ class MatchHandler:
 
         ボールを中央に配置し、速度を設定する。
         """
-        self.ball: PosStruct = PosStruct(
-            x=int(self.WIDTH / 2), y=int(self.HEIGHT / 2)
-        )
-        self.ball_speed: PosStruct = PosStruct(
-            x=self.BALL_SPEED, y=self.BALL_SPEED
-        )
+        self.ball = np.array([self.WIDTH / 2, self.HEIGHT / 2])
+        self.ball_speed = np.array([self.BALL_SPEED, self.BALL_SPEED])
 
     def _build_message(self, stage: str, data: dict) -> dict:
         """
