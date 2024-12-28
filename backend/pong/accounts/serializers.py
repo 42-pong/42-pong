@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            UserFields.ID,  # todo: UserかPlayerどちらかだけで良さそう
+            UserFields.ID,
             UserFields.USERNAME,
             UserFields.EMAIL,
             UserFields.PASSWORD,
@@ -82,7 +82,6 @@ class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Player
         fields = (
-            PlayerFields.ID,  # todo: UserかPlayerどちらかだけで良さそう
             PlayerFields.USER,
             PlayerFields.CREATED_AT,
             PlayerFields.UPDATED_AT,

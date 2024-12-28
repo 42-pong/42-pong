@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
 from ... import models
-from ...constants import UserFields
+from ...constants import PlayerFields, UserFields
 
 
 # todo: 認証付きのテスト追加？
@@ -34,15 +34,16 @@ class AccountsTests(APITestCase):
         response: Response = self.client.post(
             self.url, account_data, format="json"
         )
+        response_user: dict = response.data[PlayerFields.USER]
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data[UserFields.USERNAME], "testuser")
+        self.assertEqual(response_user[UserFields.USERNAME], "testuser")
         self.assertEqual(
-            response.data[UserFields.EMAIL], "testuser@example.com"
+            response_user[UserFields.EMAIL], "testuser@example.com"
         )
         # passwordは返されない
-        self.assertNotIn(UserFields.PASSWORD, response.data)
+        self.assertNotIn(UserFields.PASSWORD, response_user)
 
         # DBの状態を確認
         self.assertEqual(models.Player.objects.count(), 1)
@@ -70,6 +71,7 @@ class AccountsTests(APITestCase):
         response: Response = self.client.post(
             self.url, account_data, format="json"
         )
+        response_user: dict = response.data[PlayerFields.USER]
 
         # responseの内容を確認
         # response.data = {
@@ -83,8 +85,8 @@ class AccountsTests(APITestCase):
         #     }
         # }
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(UserFields.USERNAME, response.data["user"])
-        self.assertIn(UserFields.EMAIL, response.data["user"])
+        self.assertIn(UserFields.USERNAME, response_user)
+        self.assertIn(UserFields.EMAIL, response_user)
 
         # DBの状態を確認
         self.assertEqual(models.Player.objects.count(), 0)

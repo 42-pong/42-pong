@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": []
+    "ignore": ["mockServiceWorker.js"]
   },
   "organizeImports": {
     "enabled": true
