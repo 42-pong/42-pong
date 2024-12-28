@@ -4,6 +4,8 @@ from typing import Any, Final
 
 import numpy as np
 
+from . import geometry_utils
+
 
 class Stage(Enum):
     NONE = 0
@@ -11,6 +13,7 @@ class Stage(Enum):
     READY = 2
     PLAY = 3
     END = 4
+
 
 class MatchHandler:
     """
@@ -369,3 +372,82 @@ class MatchHandler:
         :return: 作成したメッセージ
         """
         return {"category": "MATCH", "payload": {"stage": stage, "data": data}}
+
+    # --------------
+    # 静的関数
+    # --------------
+
+    @staticmethod
+    def intersect_ball_and_paddle(
+        v1: np.ndarray, v2: np.ndarray, v3: np.ndarray, v4: np.ndarray
+    ) -> bool:
+        """
+        ボールの移動前と移動後の点を結ぶ軌跡とパドルの辺の交差判定
+
+        Parameters:
+            v1: ボールの移動前の位置ベクトル (x, y)
+            v2: ボールの移動後の位置ベクトル (x, y)
+            v3: パドルの辺の片方の位置ベクトル (x, y)
+            v4: パドルの辺のもう片方の位置ベクトル (x, y)
+
+        Return:
+            交差していればTrue、そうでなければFalse
+            ただし、ボールが移動したときにパドルと交差したかを知りたいので、移動する前の点がすでに交差している場合はFalseを返す
+        """
+        # ボールの移動前の位置ベクトルから他の位置ベクトルへのベクトルを計算
+        v1_v2: np.ndarray = v2 - v1
+        v1_v3: np.ndarray = v3 - v1
+        v1_v4: np.ndarray = v4 - v1
+
+        # 片方の壁の位置ベクトルから他の位置ベクトルへのベクトルを計算
+        v3_v1: np.ndarray = v1 - v3
+        v3_v2: np.ndarray = v2 - v3
+        v3_v4: np.ndarray = v4 - v3
+
+        # ボールの移動前後の位置がそれぞれパドルの逆側にいて、それがパドルの範囲にあるか
+        is_crossing: bool = geometry_utils.check_opposite_sides(
+            v1_v2, v1_v3, v1_v4
+        ) and geometry_utils.check_opposite_sides(v3_v4, v3_v1, v3_v2)
+
+        # ボールの移動後の位置がパドル上にいるか
+        # パドルの両端がボールの移動の軌跡にちょうど当たるか
+        is_point_on_other_line: bool = (
+            geometry_utils.is_internally_devided(v1, v2, v3)
+            or geometry_utils.is_internally_devided(v1, v2, v4)
+            or geometry_utils.is_internally_devided(v3, v4, v2)
+        )
+
+        # 特別条件: vec1 が vec3-vec4 の線分上の場合は False を返す
+        is_v1_on_line = geometry_utils.is_internally_devided(v3, v4, v1)
+
+        # 交差判定
+        return is_crossing or (is_point_on_other_line and not is_v1_on_line)
+
+    @staticmethod
+    def intersect_ball_and_wall(
+        v1: np.ndarray, v2: np.ndarray, v3: np.ndarray, v4: np.ndarray
+    ) -> bool:
+        """
+        ボールの移動前と移動後の点を結ぶ軌跡と壁(直線)の交差判定
+
+        Parameters:
+            v1: ボールの移動前の位置ベクトル (x, y)
+            v2: ボールの移動後の位置ベクトル (x, y)
+            v3: 壁のある点の位置ベクトル (x, y)
+            v4: 壁のもう一つの点の位置ベクトル (x, y)
+
+        Return:
+            交差すればTrue、それ以外はFalse
+            ただし、ボールが移動したときにパドルと交差したかを知りたいので、移動する前の点がすでに交差している場合はFalseを返す
+        """
+        # 片方の壁の位置ベクトルから他の位置ベクトルへのベクトルを計算
+        v3_v1: np.ndarray = v1 - v3
+        v3_v2: np.ndarray = v2 - v3
+        v3_v4: np.ndarray = v4 - v3
+
+        # 交差判定
+        # v3_v4は直線として扱うので、v3_v1, v3_v2が直線v3_v4の逆側にあるか、
+        # ちょうどv2(ボールの移動先の位置)がv3_v4直線を内分しているれば交差していると判定する
+        return geometry_utils.check_opposite_sides(
+            v3_v4, v3_v1, v3_v2
+        ) or geometry_utils.is_on_the_line(v3, v4, v2)
