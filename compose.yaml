@@ -61,6 +61,26 @@ services:
       timeout: 5s
       retries: 6
 
+  adminer:
+    container_name: adminer
+    build:
+      context: ./adminer
+      dockerfile: Dockerfile
+    image: adminer:42
+    restart: always
+    ports:
+      - ${ADMINER_PORT}:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - transcendence
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${ADMINER_PORT} || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+
 networks:
   transcendence:
     name: trc-network
