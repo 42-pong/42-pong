@@ -15,9 +15,9 @@ services:
       - transcendence
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:${FRONT_SERVER_PORT} || exit 1"]
-      interval: 30s
+      interval: 15s
       timeout: 5s
-      retries: 3
+      retries: 6
 
   backend:
     container_name: backend
