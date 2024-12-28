@@ -46,10 +46,10 @@ class MatchHandler:
         self.channel_layer: Any = channel_layer
         self.channel_name: str = channel_name
         self.stage: Stage = Stage.NONE
-        self.player1: np.ndarray = np.array(2)
-        self.player2: np.ndarray = np.array(2)
-        self.ball: np.ndarray = np.array(2)
-        self.ball_speed: np.ndarray = np.array(2)
+        self.player1: np.ndarray = np.array([0, 0])
+        self.player2: np.ndarray = np.array([0, 0])
+        self.ball: np.ndarray = np.array([0, 0])
+        self.ball_speed: np.ndarray = np.array([0, 0])
         self.score1: int = 0
         self.score2: int = 0
         self.local_play: bool = False
