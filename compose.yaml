@@ -14,7 +14,7 @@ services:
     networks:
       - transcendence
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${FRONT_SERVER_PORT} || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -38,7 +38,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${BACKEND_SERVER_PORT}/api/health/ || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 6
