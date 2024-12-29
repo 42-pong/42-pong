@@ -1,9 +1,4 @@
-from drf_spectacular.utils import (
-    OpenApiExample,
-    OpenApiRequest,
-    OpenApiResponse,
-    extend_schema,
-)
+from drf_spectacular import utils
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
@@ -23,11 +18,11 @@ class AccountCreateView(views.APIView):
     # todo: 認証機能を実装したら多分IsAuthenticatedに変更
     permission_classes = (permissions.AllowAny,)
 
-    @extend_schema(
-        request=OpenApiRequest(
+    @utils.extend_schema(
+        request=utils.OpenApiRequest(
             serializers.PlayerSerializer,
             examples=[
-                OpenApiExample(
+                utils.OpenApiExample(
                     "Example request",
                     value={
                         PlayerFields.USER: {
@@ -40,10 +35,10 @@ class AccountCreateView(views.APIView):
             ],
         ),
         responses={
-            201: OpenApiResponse(
+            201: utils.OpenApiResponse(
                 response=serializers.PlayerSerializer,
                 examples=[
-                    OpenApiExample(
+                    utils.OpenApiExample(
                         "Example 201 response",
                         value={
                             PlayerFields.USER: {
@@ -55,7 +50,7 @@ class AccountCreateView(views.APIView):
                     ),
                 ],
             ),
-            400: OpenApiResponse(
+            400: utils.OpenApiResponse(
                 response={
                     "type": "object",
                     "properties": {
@@ -63,7 +58,7 @@ class AccountCreateView(views.APIView):
                     },
                 },
                 examples=[
-                    OpenApiExample(
+                    utils.OpenApiExample(
                         "Example 400 response",
                         value={"field": "error messages"},
                     ),
