@@ -20,7 +20,7 @@ class OAuth2(models.Model):
 
 
 class FortyTwoToken(models.Model):
-    user = models.OneToOneField(
+    oauth2 = models.OneToOneField(
         OAuth2, on_delete=models.CASCADE, related_name="forty_two_token"
     )
     access_token = models.CharField(max_length=255, unique=True)
@@ -37,4 +37,4 @@ class FortyTwoToken(models.Model):
         db_table = "forty_two_tokens"
 
     def __str__(self) -> str:
-        return self.access_token
+        return self.oauth2.provider
