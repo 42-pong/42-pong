@@ -1,0 +1,31 @@
+const BOARD_WIDTH = 600;
+const BOARD_HEIGHT = 400;
+
+const PADDLE_WIDTH = 10;
+const PADDLE_HEIGHT = 60;
+const PADDLE_SPEED = 5;
+
+const PADDLE_1_INIT_POS = { x: 10, y: 170 };
+const PADDLE_2_INIT_POS = { x: 580, y: 170 };
+
+const BALL_SIZE = 10;
+const BALL_INIT_POS = { x: 295, y: 195 };
+const BALL_INIT_VEC = { x: 2, y: 2 };
+
+const SCORE_1_INIT = 0;
+const SCORE_2_INIT = 0;
+
+export const MatchConstants = Object.freeze({
+  BOARD_WIDTH,
+  BOARD_HEIGHT,
+  PADDLE_WIDTH,
+  PADDLE_HEIGHT,
+  PADDLE_SPEED,
+  PADDLE_1_INIT_POS,
+  PADDLE_2_INIT_POS,
+  BALL_SIZE,
+  BALL_INIT_POS,
+  BALL_INIT_VEC,
+  SCORE_1_INIT,
+  SCORE_2_INIT,
+});
