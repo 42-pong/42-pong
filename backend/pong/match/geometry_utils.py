@@ -34,7 +34,7 @@ def check_opposite_sides(
     ) < 0
 
 
-def is_internally_devided(
+def is_internally_divided(
     v1: np.ndarray, v2: np.ndarray, p: np.ndarray
 ) -> bool:
     """

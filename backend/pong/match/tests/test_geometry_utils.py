@@ -5,7 +5,7 @@ import numpy as np
 from ..geometry_utils import (
     check_opposite_sides,
     cross2d,
-    is_internally_devided,
+    is_internally_divided,
     is_on_the_line,
 )
 
@@ -105,7 +105,7 @@ class TestGeometryUtils(unittest.TestCase):
         result = check_opposite_sides(segment_vec, point_vec1, point_vec2)
         self.assertFalse(result)
 
-    def test_is_internally_devided_true(self) -> None:
+    def test_is_internally_divided_true(self) -> None:
         """
         点が線分を内分する場合のテスト。
         点pが線分v1-v2上にあるため、結果がTrueであることを確認します。
@@ -113,10 +113,10 @@ class TestGeometryUtils(unittest.TestCase):
         v1 = np.array([0, 0])
         v2 = np.array([2, 2])
         p = np.array([1, 1])
-        result = is_internally_devided(v1, v2, p)
+        result = is_internally_divided(v1, v2, p)
         self.assertTrue(result)
 
-    def test_is_internally_devided_false(self) -> None:
+    def test_is_internally_divided_false(self) -> None:
         """
         点が線分を内分しない場合のテスト。
         点pが線分v1-v2上にないため、結果がFalseであることを確認します。
@@ -124,10 +124,10 @@ class TestGeometryUtils(unittest.TestCase):
         v1 = np.array([0, 0])
         v2 = np.array([2, 2])
         p = np.array([1, 3])
-        result = is_internally_devided(v1, v2, p)
+        result = is_internally_divided(v1, v2, p)
         self.assertFalse(result)
 
-    def test_is_internally_devided_collinear_but_not_on_segment(self) -> None:
+    def test_is_internally_divided_collinear_but_not_on_segment(self) -> None:
         """
         点が同じ直線上にはあるが線分上にはない場合のテスト。
         点pが直線上にあるが線分v1-v2上にないため、結果がFalseであることを確認します。
@@ -135,7 +135,7 @@ class TestGeometryUtils(unittest.TestCase):
         v1 = np.array([0, 0])
         v2 = np.array([2, 2])
         p = np.array([3, 3])
-        result = is_internally_devided(v1, v2, p)
+        result = is_internally_divided(v1, v2, p)
         self.assertFalse(result)
 
     def test_is_on_the_line_true(self) -> None:
