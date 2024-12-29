@@ -3,12 +3,12 @@ from rest_framework import serializers as def_serializers
 
 import utils.result
 
-from . import constants, models, serializers
+from . import constants, serializers
 
 CreatePlayerSerializerResult = utils.result.Result[
     serializers.PlayerSerializer, dict
 ]
-CreateAccountResult = utils.result.Result[models.Player, dict]
+CreateAccountResult = utils.result.Result[User, dict]
 
 
 def _create_user_related_player_serializer(
@@ -46,6 +46,9 @@ def create_account(
     Args:
         user_serializer: UserSerializerのインスタンス
         player_data: PlayerSerializerに渡すdata
+
+    Returns:
+        CreateAccountResult: 作成されたUserのResult
     """
     # User作成
     user: User = user_serializer.save()
@@ -63,7 +66,6 @@ def create_account(
     )
 
     # User作成の後にPlayer作成
-    player: models.Player = player_serializer.save()
+    player_serializer.save()
 
-    # todo: userを返すか、accountクラスなどに詰めて返す
-    return CreateAccountResult.ok(player)
+    return CreateAccountResult.ok(user)

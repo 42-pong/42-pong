@@ -1,9 +1,10 @@
+from django.contrib.auth.models import User
 from drf_spectacular import utils
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
 
-from . import constants, create_account, models, serializers
+from . import constants, create_account, serializers
 
 
 class AccountCreateView(views.APIView):
@@ -97,14 +98,13 @@ class AccountCreateView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # 作成されたアカウントの情報はPlayerに紐づくUserから取得可能
-        player: models.Player = create_account_result.unwrap()
+        user: User = create_account_result.unwrap()
         return response.Response(
             {
                 constants.PlayerFields.USER: {
-                    constants.UserFields.ID: player.user.id,
-                    constants.UserFields.USERNAME: player.user.username,
-                    constants.UserFields.EMAIL: player.user.email,
+                    constants.UserFields.ID: user.id,
+                    constants.UserFields.USERNAME: user.username,
+                    constants.UserFields.EMAIL: user.email,
                 }
             },
             status=status.HTTP_201_CREATED,
