@@ -74,8 +74,22 @@ class AccountCreateView(views.APIView):
         requestをSerializerに渡してvalidationを行い、
         有効な場合はPlayerとUserを作成してDBに追加し、作成されたアカウント情報をresponseとして返す
         """
+        # サインアップ専用のUserSerializerを作成
+        user_data: dict = request.data.pop(constants.PlayerFields.USER)
+        user_serializer: serializers.UserSerializer = (
+            serializers.UserSerializer(data=user_data)
+        )
+        if not user_serializer.is_valid():
+            return response.Response(
+                user_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 作成したUserSerializerを使って新規アカウントを作成
         create_account_result: create_account.CreateAccountResult = (
-            create_account.create_account(request.data)
+            create_account.create_account(
+                user_serializer,
+                request.data,
+            )
         )
         if create_account_result.is_error:
             return response.Response(
