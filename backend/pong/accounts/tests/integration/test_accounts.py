@@ -1,14 +1,13 @@
 from django.urls import reverse
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.test import APITestCase
+from rest_framework import response as drf_response
+from rest_framework import status, test
 
 from ... import models
 from ...constants import PlayerFields, UserFields
 
 
 # todo: 認証付きのテスト追加？
-class AccountsTests(APITestCase):
+class AccountsTests(test.APITestCase):
     def setUp(self) -> None:
         """
         APITestCaseのsetUpメソッドのオーバーライド
@@ -31,7 +30,7 @@ class AccountsTests(APITestCase):
                 UserFields.PASSWORD: "testpassword12345",
             }
         }
-        response: Response = self.client.post(
+        response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
         response_user: dict = response.data[PlayerFields.USER]
@@ -68,7 +67,7 @@ class AccountsTests(APITestCase):
                 UserFields.PASSWORD: "testpassword12345",
             }
         }
-        response: Response = self.client.post(
+        response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
         response_user: dict = response.data[PlayerFields.USER]
