@@ -54,13 +54,13 @@ class AccountCreateView(views.APIView):
                 response={
                     "type": "object",
                     "properties": {
-                        "error": {"type": "string"},
+                        "error": {"type": ["string"]},
                     },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 400 response",
-                        value={"field": "error messages"},
+                        value={"error": {"field": ["error messages"]}},
                     ),
                 ],
             ),
@@ -82,7 +82,8 @@ class AccountCreateView(views.APIView):
         )
         if not user_serializer.is_valid():
             return response.Response(
-                user_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                {"error": user_serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # 作成したUserSerializerを使って新規アカウントを作成
@@ -94,7 +95,7 @@ class AccountCreateView(views.APIView):
         )
         if create_account_result.is_error:
             return response.Response(
-                create_account_result.unwrap_error(),
+                {"error": create_account_result.unwrap_error()},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

@@ -74,19 +74,22 @@ class AccountsTests(test.APITestCase):
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
+        response_error: dict = response.data["error"]
 
         # responseの内容を確認
         # response.data = {
-        #     "username": [
-        #         ErrorDetail(string="This field may not be blank.", code="blank")
-        #     ],
-        #     "email": [
-        #         ErrorDetail(string="Enter a valid email address.", code="invalid")
-        #     ],
+        #     "error": {
+        #         "username": [
+        #             ErrorDetail(string="This field may not be blank.", code="blank")
+        #         ],
+        #         "email": [
+        #             ErrorDetail(string="Enter a valid email address.", code="invalid")
+        #         ],
+        #     }
         # }
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(USERNAME, response.data)
-        self.assertIn(EMAIL, response.data)
+        self.assertIn(USERNAME, response_error)
+        self.assertIn(EMAIL, response_error)
 
         # DBの状態を確認
         self.assertEqual(models.Player.objects.count(), 0)
