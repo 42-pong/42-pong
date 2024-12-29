@@ -1,12 +1,17 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from . import models
 from .constants import PlayerFields, UserFields
-from .models import Player
 
 
-# PlayerSerializerが呼ばれる時にこのUserSerializerも呼ばれる
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Userモデルのシリアライザ
+    Userモデルの作成・バリデーションを行う
+    PlayerSerializerが呼ばれると、このUserSerializerも呼ばれる
+    """
+
     class Meta:
         model = User
         fields = (
@@ -19,7 +24,6 @@ class UserSerializer(serializers.ModelSerializer):
             UserFields.PASSWORD: {"write_only": True},
         }
 
-    # 必須なフィールドが空の場合はエラー
     # todo:
     #  - serializer.errorsに複数のエラーメッセージをセットできそう
     #  - より詳細なvalidationの実装
@@ -40,6 +44,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     # PlayerSerializerのuser_serializer.is_valid()の内部で呼ばれる
     def validate(self, data: dict) -> dict:
+        """
+        バリデーションを行う
+        - 必須fieldが空の場合はエラーを発生させる
+        """
         required_fields: list[str] = [
             UserFields.USERNAME,
             UserFields.EMAIL,
@@ -50,6 +58,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     # PlayerSerializerのuser_serializer.save()の内部で呼ばれる
     def create(self, validated_data: dict) -> User:
+        """
+        新規Userを作成する
+        """
         # todo: usernameはBEが自動生成する
         user: User = User.objects.create_user(
             username=validated_data[UserFields.USERNAME],
@@ -60,11 +71,16 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PlayerSerializer(serializers.ModelSerializer):
+    """
+    Playerモデルのシリアライザ
+    Playerモデルの作成・バリデーションを行う
+    """
+
     # 同じ変数名(user)をfieldsに指定する必要がある
     user: UserSerializer = UserSerializer()
 
     class Meta:
-        model = Player
+        model = models.Player
         fields = (
             PlayerFields.USER,
             PlayerFields.CREATED_AT,
@@ -79,7 +95,11 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     # AccountCreateViewのserializer.save()の内部で呼ばれる
     # todo: 多分トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
-    def create(self, validated_data: dict) -> Player:
+    def create(self, validated_data: dict) -> models.Player:
+        """
+        新規Playerを作成する
+        UserSerializerを使用してUserを作成し、そのUserと関連付けたPlayerを作成する
+        """
         # requestの中にuserがあるので、それだけpopしてUserSerializerに渡す
         user_data: dict = validated_data.pop(PlayerFields.USER)
         user_serializer: UserSerializer = UserSerializer(data=user_data)
@@ -89,5 +109,5 @@ class PlayerSerializer(serializers.ModelSerializer):
         new_user: User = user_serializer.save()
 
         # Userを作成した後でPlayerを作成する
-        player: Player = Player.objects.create(user=new_user)
+        player: models.Player = models.Player.objects.create(user=new_user)
         return player

@@ -3,8 +3,8 @@ from typing import Final
 from django.contrib.auth.models import User
 from django.test import TestCase
 
+from ... import serializers
 from ...constants import UserFields
-from ...serializers import UserSerializer
 
 ID: Final[str] = UserFields.ID
 USERNAME: Final[str] = UserFields.USERNAME
@@ -32,7 +32,9 @@ class UserSerializerTests(TestCase):
         """
         正常なデータが渡された場合にエラーにならないことを確認する
         """
-        serializer: UserSerializer = UserSerializer(data=self.user_data)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
 
         self.assertTrue(serializer.is_valid())
 
@@ -40,7 +42,9 @@ class UserSerializerTests(TestCase):
         """
         UserSerializerのcreate()メソッドが正常に動作することを確認する
         """
-        serializer: UserSerializer = UserSerializer(data=self.user_data)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
         if not serializer.is_valid():
             # このテストではerrorにならない想定
             raise AssertionError(serializer.errors)
@@ -61,7 +65,9 @@ class UserSerializerTests(TestCase):
         必須フィールド"username"が空の場合にエラーになることを確認する
         """
         self.user_data[USERNAME] = ""
-        serializer: UserSerializer = UserSerializer(data=self.user_data)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
 
         self.assertFalse(serializer.is_valid())
         self.assertIn(USERNAME, serializer.errors)
@@ -71,7 +77,9 @@ class UserSerializerTests(TestCase):
         必須フィールド"email"が空の場合にエラーになることを確認する
         """
         self.user_data[EMAIL] = ""
-        serializer: UserSerializer = UserSerializer(data=self.user_data)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
 
         self.assertFalse(serializer.is_valid())
         self.assertIn(EMAIL, serializer.errors)
@@ -81,7 +89,9 @@ class UserSerializerTests(TestCase):
         必須フィールド"password"が空の場合にエラーになることを確認する
         """
         self.user_data[PASSWORD] = ""
-        serializer: UserSerializer = UserSerializer(data=self.user_data)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
 
         self.assertFalse(serializer.is_valid())
         self.assertIn(PASSWORD, serializer.errors)
@@ -92,7 +102,9 @@ class UserSerializerTests(TestCase):
         実装はしていない。models.EmailField()が自動でチェックしてくれている
         """
         self.user_data[EMAIL] = "invalid_email@none"
-        serializer: UserSerializer = UserSerializer(data=self.user_data)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
 
         self.assertFalse(serializer.is_valid())
         self.assertIn(EMAIL, serializer.errors)
@@ -107,7 +119,9 @@ class UserSerializerTests(TestCase):
             email="non-exist-email@example.com",
             password="testpassword",
         )
-        serializer: UserSerializer = UserSerializer(data=self.user_data)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
 
         self.assertFalse(serializer.is_valid())
         self.assertIn(USERNAME, serializer.errors)

@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from django.contrib.auth import models as auth_models
 
+from . import models
 from .constants import PlayerFields, UserFields
-from .models import Player
 
 
 # todo: Userモデルに関するカスタマイズは専用のファイルに移動した方が良いのかも
@@ -28,7 +28,7 @@ admin.site.unregister(auth_models.User)
 admin.site.register(auth_models.User, CustomUserAdmin)
 
 
-@admin.register(Player)
+@admin.register(models.Player)
 class AccountAdmin(admin.ModelAdmin):
     """
     adminサイトでPlayersに表示されるカラムをカスタマイズ
@@ -46,13 +46,13 @@ class AccountAdmin(admin.ModelAdmin):
     list_filter: tuple = (PlayerFields.UPDATED_AT,)
     search_fields: tuple = (f"{PlayerFields.USER}__{UserFields.USERNAME}",)
 
-    def user_id(self, obj: Player) -> int:
+    def user_id(self, obj: models.Player) -> int:
         """
         Playerと1対1関係にあるUserのIDをlist_displayで表示するためのメソッド
         """
         return obj.user.id
 
-    def username(self, obj: Player) -> str:
+    def username(self, obj: models.Player) -> str:
         """
         Playerと1対1関係にあるUserのusernameをlist_displayで表示するためのメソッド
         """

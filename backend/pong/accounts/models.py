@@ -4,6 +4,11 @@ from django.db import models
 
 # todo: 表示名・アバター画像PATHなどがfieldに追加される予定
 class Player(models.Model):
+    """
+    Playerモデル
+    Userモデルと1対1の関係を持つ
+    """
+
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="player"
     )
