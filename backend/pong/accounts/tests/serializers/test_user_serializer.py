@@ -3,13 +3,12 @@ from typing import Final
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from ... import serializers
-from ...constants import UserFields
+from ... import constants, serializers
 
-ID: Final[str] = UserFields.ID
-USERNAME: Final[str] = UserFields.USERNAME
-EMAIL: Final[str] = UserFields.EMAIL
-PASSWORD: Final[str] = UserFields.PASSWORD
+ID: Final[str] = constants.UserFields.ID
+USERNAME: Final[str] = constants.UserFields.USERNAME
+EMAIL: Final[str] = constants.UserFields.EMAIL
+PASSWORD: Final[str] = constants.UserFields.PASSWORD
 
 
 class UserSerializerTests(TestCase):

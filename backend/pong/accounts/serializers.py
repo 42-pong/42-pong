@@ -1,8 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from . import models
-from .constants import PlayerFields, UserFields
+from . import constants, models
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -15,13 +14,13 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            UserFields.ID,
-            UserFields.USERNAME,
-            UserFields.EMAIL,
-            UserFields.PASSWORD,
+            constants.UserFields.ID,
+            constants.UserFields.USERNAME,
+            constants.UserFields.EMAIL,
+            constants.UserFields.PASSWORD,
         )
         extra_kwargs = {
-            UserFields.PASSWORD: {"write_only": True},
+            constants.UserFields.PASSWORD: {"write_only": True},
         }
 
     # todo:
@@ -49,9 +48,9 @@ class UserSerializer(serializers.ModelSerializer):
         - 必須fieldが空の場合はエラーを発生させる
         """
         required_fields: list[str] = [
-            UserFields.USERNAME,
-            UserFields.EMAIL,
-            UserFields.PASSWORD,
+            constants.UserFields.USERNAME,
+            constants.UserFields.EMAIL,
+            constants.UserFields.PASSWORD,
         ]
         self._validate_required_fields(data, required_fields)
         return data
@@ -63,9 +62,9 @@ class UserSerializer(serializers.ModelSerializer):
         """
         # todo: usernameはBEが自動生成する
         user: User = User.objects.create_user(
-            username=validated_data[UserFields.USERNAME],
-            email=validated_data[UserFields.EMAIL],
-            password=validated_data[UserFields.PASSWORD],
+            username=validated_data[constants.UserFields.USERNAME],
+            email=validated_data[constants.UserFields.EMAIL],
+            password=validated_data[constants.UserFields.PASSWORD],
         )
         return user
 
@@ -82,13 +81,13 @@ class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Player
         fields = (
-            PlayerFields.USER,
-            PlayerFields.CREATED_AT,
-            PlayerFields.UPDATED_AT,
+            constants.PlayerFields.USER,
+            constants.PlayerFields.CREATED_AT,
+            constants.PlayerFields.UPDATED_AT,
         )
         extra_kwargs = {
-            PlayerFields.CREATED_AT: {"read_only": True},
-            PlayerFields.UPDATED_AT: {"read_only": True},
+            constants.PlayerFields.CREATED_AT: {"read_only": True},
+            constants.PlayerFields.UPDATED_AT: {"read_only": True},
         }
 
     # todo: Playerモデルにfieldが追加されたらvalidate()を作成する
@@ -101,7 +100,7 @@ class PlayerSerializer(serializers.ModelSerializer):
         UserSerializerを使用してUserを作成し、そのUserと関連付けたPlayerを作成する
         """
         # requestの中にuserがあるので、それだけpopしてUserSerializerに渡す
-        user_data: dict = validated_data.pop(PlayerFields.USER)
+        user_data: dict = validated_data.pop(constants.PlayerFields.USER)
         user_serializer: UserSerializer = UserSerializer(data=user_data)
 
         # UserSerializerのvalidate()が成功したらUserを作成する

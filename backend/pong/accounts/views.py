@@ -3,8 +3,7 @@ from drf_spectacular import utils
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
 
-from . import models, serializers
-from .constants import PlayerFields, UserFields
+from . import constants, models, serializers
 
 
 class AccountCreateView(views.APIView):
@@ -25,10 +24,10 @@ class AccountCreateView(views.APIView):
                 utils.OpenApiExample(
                     "Example request",
                     value={
-                        PlayerFields.USER: {
-                            UserFields.USERNAME: "username",
-                            UserFields.EMAIL: "user@example.com",
-                            UserFields.PASSWORD: "password",
+                        constants.PlayerFields.USER: {
+                            constants.UserFields.USERNAME: "username",
+                            constants.UserFields.EMAIL: "user@example.com",
+                            constants.UserFields.PASSWORD: "password",
                         }
                     },
                 ),
@@ -41,10 +40,10 @@ class AccountCreateView(views.APIView):
                     utils.OpenApiExample(
                         "Example 201 response",
                         value={
-                            PlayerFields.USER: {
-                                UserFields.ID: 1,
-                                UserFields.USERNAME: "username",
-                                UserFields.EMAIL: "user@example.com",
+                            constants.PlayerFields.USER: {
+                                constants.UserFields.ID: 1,
+                                constants.UserFields.USERNAME: "username",
+                                constants.UserFields.EMAIL: "user@example.com",
                             }
                         },
                     ),
@@ -89,10 +88,10 @@ class AccountCreateView(views.APIView):
         player: models.Player = player_serializer.save()
         return response.Response(
             {
-                PlayerFields.USER: {
-                    UserFields.ID: player.user.id,
-                    UserFields.USERNAME: player.user.username,
-                    UserFields.EMAIL: player.user.email,
+                constants.PlayerFields.USER: {
+                    constants.UserFields.ID: player.user.id,
+                    constants.UserFields.USERNAME: player.user.username,
+                    constants.UserFields.EMAIL: player.user.email,
                 }
             },
             status=status.HTTP_201_CREATED,

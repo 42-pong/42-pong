@@ -1,7 +1,6 @@
 from django.test import TestCase
 
-from ... import models, serializers
-from ...constants import PlayerFields, UserFields
+from ... import constants, models, serializers
 
 
 class PlayerSerializerTests(TestCase):
@@ -11,13 +10,13 @@ class PlayerSerializerTests(TestCase):
         各テストメソッドの実行前に毎回自動実行される
         """
         self.user_data = {
-            UserFields.USERNAME: "testuser_1",
-            UserFields.EMAIL: "testuser_1@example.com",
-            UserFields.PASSWORD: "testpassword",
+            constants.UserFields.USERNAME: "testuser_1",
+            constants.UserFields.EMAIL: "testuser_1@example.com",
+            constants.UserFields.PASSWORD: "testpassword",
         }
         # DB追加時に自動でセットされるID,CREATED_AT,UPDATED_ATは省略
         self.player_data = {
-            PlayerFields.USER: self.user_data,
+            constants.PlayerFields.USER: self.user_data,
         }
 
     # -------------------------------------------------------------------------
@@ -48,9 +47,11 @@ class PlayerSerializerTests(TestCase):
         # todo: 現在Player独自のfieldがないため、紐づくUserのfieldのみ確認している
         #       今後Player独自のfieldが追加された時にテストも追加する
         self.assertEqual(
-            player.user.username, self.user_data[UserFields.USERNAME]
+            player.user.username, self.user_data[constants.UserFields.USERNAME]
         )
-        self.assertEqual(player.user.email, self.user_data[UserFields.EMAIL])
+        self.assertEqual(
+            player.user.email, self.user_data[constants.UserFields.EMAIL]
+        )
 
     def test_player_serializer_multi_create(self) -> None:
         """
@@ -58,12 +59,12 @@ class PlayerSerializerTests(TestCase):
         """
         # 2人目のアカウント情報
         user_data_2: dict = {
-            UserFields.USERNAME: "testuser_2",
-            UserFields.EMAIL: "testuser_2@example.com",
-            UserFields.PASSWORD: "testpassword",
+            constants.UserFields.USERNAME: "testuser_2",
+            constants.UserFields.EMAIL: "testuser_2@example.com",
+            constants.UserFields.PASSWORD: "testpassword",
         }
         player_data_2: dict = {
-            PlayerFields.USER: user_data_2,
+            constants.PlayerFields.USER: user_data_2,
         }
 
         # 2人共アカウントを作成し,正常に1対1で紐づいているか確認
@@ -79,11 +80,15 @@ class PlayerSerializerTests(TestCase):
             # todo: Player独自のfieldが追加された時にテストも追加する
             self.assertEqual(
                 player.user.username,
-                player_data[PlayerFields.USER][UserFields.USERNAME],
+                player_data[constants.PlayerFields.USER][
+                    constants.UserFields.USERNAME
+                ],
             )
             self.assertEqual(
                 player.user.email,
-                player_data[PlayerFields.USER][UserFields.EMAIL],
+                player_data[constants.PlayerFields.USER][
+                    constants.UserFields.EMAIL
+                ],
             )
 
     # -------------------------------------------------------------------------
