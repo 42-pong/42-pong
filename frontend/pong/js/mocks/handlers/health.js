@@ -1,5 +1,5 @@
 import { http, HttpResponse, delay } from "msw";
-import Endpoints from "../Endpoints";
+import { Endpoints } from "../../Endpoints";
 
 export const handlers = [
   http.get(Endpoints.HEALTH.href, async () => {
