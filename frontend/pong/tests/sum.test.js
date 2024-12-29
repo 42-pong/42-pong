@@ -1,6 +1,6 @@
 // sum.test.js
 import { describe, expect, it } from "vitest";
-import { sum } from "../js/sum.js";
+import { sum } from "../js/utils/sum";
 
 describe("let's test sum", () => {
   it("adds 1 + 2 to equal 3", () => {
