@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+import dataclasses
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class UserFields:
     ID: str = "id"
     USERNAME: str = "username"
@@ -9,7 +9,7 @@ class UserFields:
     PASSWORD: str = "password"
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class PlayerFields:
     USER: str = "user"
     CREATED_AT: str = "created_at"
