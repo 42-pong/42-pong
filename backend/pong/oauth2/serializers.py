@@ -71,8 +71,14 @@ class OAuth2Serializer(serializers.ModelSerializer):
         # todo: validate作成
 
         def create(self, validated_data: dict) -> models.OAuth2:
-            oauth2 = models.OAuth2.objects.create(
-                # todo: userを作成
+            user = validated_data.get("user")
+            if not user:
+                raise serializers.ValidationError(
+                    {"user": "This field is required."}
+                )
+
+            oauth2: models.OAuth2 = models.OAuth2.objects.create(
+                user=user,
                 provider=validated_data["provider"],
                 provider_id=validated_data["provider_id"],
             )
@@ -107,8 +113,13 @@ class FortyTwoTokenSerializer(serializers.ModelSerializer):
     # todo: validate作成
 
     def create(self, validated_data: dict) -> models.FortyTwoToken:
+        oauth2 = validated_data.get("oauth2")
+        if not oauth2:
+            raise serializers.ValidationError(
+                {"oauth2": "This field is required."}
+            )
         forty_two_token = models.FortyTwoToken.objects.create(
-            # todo: oauth2を作成
+            oauth2=oauth2,
             access_token=validated_data["access_token"],
             token_type=validated_data["token_type"],
             access_token_expiry=validated_data["access_token_expiry"],
