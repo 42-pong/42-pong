@@ -67,13 +67,6 @@ class OAuth2Serializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        # トークン情報はサーバー内でしか管理しないため
-        read_only_fields: list[str] = [
-            "provider",
-            "provider_id",
-            "created_at",
-            "updated_at",
-        ]
 
         # todo: validate作成
 
@@ -105,15 +98,7 @@ class FortyTwoTokenSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        # トークン情報はサーバー内でしか管理しないため
-        read_only_fields: list[str] = [
-            "token_type",
-            "access_token_expiry",
-            "refresh_token_expiry",
-            "scope",
-            "created_at",
-            "updated_at",
-        ]
+
         extra_kwargs: dict = {
             "access_token": {"write_only": True},
             "refresh_token": {"write_only": True},
