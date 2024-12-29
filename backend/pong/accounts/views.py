@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from drf_spectacular import utils
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
@@ -66,6 +67,7 @@ class AccountCreateView(views.APIView):
         },
     )
     # todo: try-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
+    # todo: トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
     def post(
         self, request: request.Request, *args: tuple, **kwargs: dict
     ) -> response.Response:
@@ -74,9 +76,25 @@ class AccountCreateView(views.APIView):
         requestをPlayerSerializerに渡してvalidationを行い、
         有効な場合はPlayerとUserを作成してDBに追加し、作成されたアカウント情報をresponseとして返す
         """
-        # requestをserializerに渡して変換とバリデーションを行う
+        # User作成
+        # dataの中にuser情報があるのでpopしてUserSerializerに渡す
+        user_data: dict = request.data.pop(constants.PlayerFields.USER)
+        user_serializer: serializers.UserSerializer = (
+            serializers.UserSerializer(data=user_data)
+        )
+        if not user_serializer.is_valid():
+            return response.Response(
+                user_serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user: User = user_serializer.save()
+
+        # User作成の後にPlayer作成
+        player_data: dict = request.data.copy()
+        # PKであるuser.idを"user"フィールドにセットしUserとPlayerを紐づける
+        player_data[constants.PlayerFields.USER] = user.id
         player_serializer: serializers.PlayerSerializer = (
-            self.serializer_class(data=request.data)
+            self.serializer_class(data=player_data)
         )
         if not player_serializer.is_valid():
             return response.Response(

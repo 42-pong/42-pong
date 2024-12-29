@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework import serializers
+from rest_framework import relations, serializers
 
 from . import constants, models
 
@@ -75,8 +75,11 @@ class PlayerSerializer(serializers.ModelSerializer):
     Playerモデルの作成・バリデーションを行う
     """
 
+    # PrimaryKeyRelatedField: 紐づくターゲットをそのPKを使用して表現する
     # 同じ変数名(user)をfieldsに指定する必要がある
-    user: UserSerializer = UserSerializer()
+    user: relations.PrimaryKeyRelatedField[User] = (
+        relations.PrimaryKeyRelatedField(queryset=User.objects.all())
+    )
 
     class Meta:
         model = models.Player
@@ -90,23 +93,4 @@ class PlayerSerializer(serializers.ModelSerializer):
             constants.PlayerFields.UPDATED_AT: {"read_only": True},
         }
 
-    # todo: Playerモデルにfieldが追加されたらvalidate()を作成する
-
-    # AccountCreateViewのserializer.save()の内部で呼ばれる
-    # todo: 多分トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
-    def create(self, validated_data: dict) -> models.Player:
-        """
-        新規Playerを作成する
-        UserSerializerを使用してUserを作成し、そのUserと関連付けたPlayerを作成する
-        """
-        # requestの中にuserがあるので、それだけpopしてUserSerializerに渡す
-        user_data: dict = validated_data.pop(constants.PlayerFields.USER)
-        user_serializer: UserSerializer = UserSerializer(data=user_data)
-
-        # UserSerializerのvalidate()が成功したらUserを作成する
-        user_serializer.is_valid(raise_exception=True)
-        new_user: User = user_serializer.save()
-
-        # Userを作成した後でPlayerを作成する
-        player: models.Player = models.Player.objects.create(user=new_user)
-        return player
+    # todo: Playerモデルにfieldが追加されたらvalidate(),create()を作成する
