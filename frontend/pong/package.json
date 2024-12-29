@@ -11,11 +11,13 @@
     "start": "npm run build && npm run preview",
     "prebuild": "npm run clean",
     "build": "vite build",
+    "postbuild": "npm run msw:clean",
     "preview": "vite preview",
     "format": "biome format --write",
     "lint:check": "biome lint",
     "check": "biome check",
-    "clean": "rimraf ./dist"
+    "clean": "rimraf ./dist",
+    "msw:clean": "rm ./dist/mockServiceWorker.js"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
