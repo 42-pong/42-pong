@@ -1,19 +1,17 @@
 from django.contrib.auth.models import User
-from django.db import models
+from django.db.models import CASCADE, DateTimeField, Model, OneToOneField
 
 
 # todo: 表示名・アバター画像PATHなどがfieldに追加される予定
-class Player(models.Model):
+class Player(Model):
     """
     Playerモデル
     Userモデルと1対1の関係を持つ
     """
 
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="player"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    user = OneToOneField(User, on_delete=CASCADE, related_name="player")
+    created_at = DateTimeField(auto_now_add=True)
+    updated_at = DateTimeField(auto_now=True)
 
     # ユーザーが認証に使用するfield
     # todo: ログイン/認証機能実装時に確認して変更
