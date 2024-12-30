@@ -5,6 +5,7 @@ import utils.result
 
 from . import constants, serializers
 
+# 関数の結果用のResult型の型エイリアス
 CreatePlayerSerializerResult = utils.result.Result[
     serializers.PlayerSerializer, dict
 ]

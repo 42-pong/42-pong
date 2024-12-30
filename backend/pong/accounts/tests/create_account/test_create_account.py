@@ -15,6 +15,7 @@ class MockUserSerializer(serializers.ModelSerializer):
         )
 
 
+# todo: validationの実装に合わせてテスト追加
 class CreateAccountTests(TestCase):
     def setUp(self) -> None:
         """
