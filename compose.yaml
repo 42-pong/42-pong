@@ -15,9 +15,9 @@ services:
       - transcendence
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
-      interval: 30s
+      interval: 15s
       timeout: 5s
-      retries: 3
+      retries: 6
 
   backend:
     container_name: backend
@@ -57,6 +57,26 @@ services:
       - transcendence
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME} -h localhost -p 5432 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+
+  adminer:
+    container_name: adminer
+    build:
+      context: ./adminer
+      dockerfile: Dockerfile
+    image: adminer:42
+    restart: always
+    ports:
+      - ${ADMINER_PORT}:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - transcendence
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 6
