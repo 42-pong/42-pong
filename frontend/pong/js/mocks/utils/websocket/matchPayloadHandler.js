@@ -39,39 +39,39 @@ export const matchPayloadHandler = (client, payload, matchState) => {
   }
 };
 
-const getNextBall = (ball, ballVec, ballBounds) => {
+const getNextBall = (ball, ballDir, ballBounds) => {
   return {
-    x: incrementWithBounds(ball.x, ballVec.x, 0, ballBounds.x),
-    y: incrementWithBounds(ball.y, ballVec.y, 0, ballBounds.y),
+    x: incrementWithBounds(ball.x, ballDir.x, 0, ballBounds.x),
+    y: incrementWithBounds(ball.y, ballDir.y, 0, ballBounds.y),
   };
 };
 
-const getNextBallVec = (ball, ballVec, ballBounds) => {
+const getNextBallDir = (ball, ballDir, ballBounds) => {
   const isDirectionPreservedX = isPreservingDirectionWithBounds(
     ball.x,
-    ballVec.x,
+    ballDir.x,
     0,
     ballBounds.x,
   );
   const isDirectionPreservedY = isPreservingDirectionWithBounds(
     ball.y,
-    ballVec.y,
+    ballDir.y,
     0,
     ballBounds.y,
   );
   return {
-    x: isDirectionPreservedX ? ballVec.x : -ballVec.x,
-    y: isDirectionPreservedY ? ballVec.y : -ballVec.y,
+    x: isDirectionPreservedX ? ballDir.x : -ballDir.x,
+    y: isDirectionPreservedY ? ballDir.y : -ballDir.y,
   };
 };
 
 const playMatchRoutine = (client, matchState) => {
-  const { ball, ballVec, ballBounds } = matchState;
-  const nextBall = getNextBall(ball, ballVec, ballBounds);
-  const nextBallVec = getNextBallVec(ball, ballVec, ballBounds);
+  const { ball, ballDir, ballBounds } = matchState;
+  const nextBall = getNextBall(ball, ballDir, ballBounds);
+  const nextBallDir = getNextBallDir(ball, ballDir, ballBounds);
 
   matchState.ball = nextBall;
-  matchState.ballVec = nextBallVec;
+  matchState.ballDir = nextBallDir;
 
   sendMatch(
     client,
@@ -87,7 +87,7 @@ const getInitialMatchState = () => {
     paddleBound:
       MatchConstants.BOARD_HEIGHT - MatchConstants.PADDLE_HEIGHT,
     ball: { ...MatchConstants.BALL_INIT_POS },
-    ballVec: { ...MatchConstants.BALL_INIT_VEC },
+    ballDir: { ...MatchConstants.BALL_INIT_DIR },
     ballBounds: {
       x: MatchConstants.BOARD_WIDTH - MatchConstants.BALL_SIZE,
       y: MatchConstants.BOARD_HEIGHT - MatchConstants.BALL_SIZE,

@@ -10,7 +10,7 @@ const PADDLE_2_INIT_POS = { x: 580, y: 170 };
 
 const BALL_SIZE = 10;
 const BALL_INIT_POS = { x: 295, y: 195 };
-const BALL_INIT_VEC = { x: 2, y: 2 };
+const BALL_INIT_DIR = { x: 2, y: 2 };
 
 const SCORE_1_INIT = 0;
 const SCORE_2_INIT = 0;
@@ -25,7 +25,7 @@ export const MatchConstants = Object.freeze({
   PADDLE_2_INIT_POS,
   BALL_SIZE,
   BALL_INIT_POS,
-  BALL_INIT_VEC,
+  BALL_INIT_DIR,
   SCORE_1_INIT,
   SCORE_2_INIT,
 });
