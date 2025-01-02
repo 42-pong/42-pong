@@ -27,6 +27,8 @@ env = environ.Env(
     PONG_ORIGIN=(str, "api"),
     OAUTH2_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
     OAUTH2_TOKEN_ENDPOINT=(str, "token_endpoint"),
+    # todo: デフォルトは設定せず、空文字はエラーにする
+    FRONT_SERVER_PORT=(str, "8080"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -60,6 +62,7 @@ INSTALLED_APPS = [
     "drf_spectacular",  # for Swagger UI
     "drf_spectacular_sidecar",  # for Swagger UI
     "channels",
+    "corsheaders",  # for CORS
     # apps
     "jwt_token",
     "oauth2",
@@ -68,6 +71,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # corsheaders: なるべく上に配置する。特にCommonMiddlewareなどのresponseを生成するミドルウェアの前に配置する必要がある
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -195,3 +200,13 @@ OAUTH2_CLIENT_SECRET_KEY = env("OAUTH2_CLIENT_SECRET_KEY")
 PONG_ORIGIN = env("PONG_ORIGIN")
 OAUTH2_AUTHORIZATION_ENDPOINT = env("OAUTH2_AUTHORIZATION_ENDPOINT")
 OAUTH2_TOKEN_ENDPOINT = env("OAUTH2_TOKEN_ENDPOINT")
+
+
+# Django CORS headers
+# https://github.com/adamchainz/django-cors-headers
+
+# リストに追加することでオリジンを許可する
+CORS_ALLOWED_ORIGINS = [
+    f"http://localhost:{env("FRONT_SERVER_PORT")}",  # frontendコンテナ
+]
+# todo: CORS_ALLOW_CREDENTIALS, CSRFについての設定は必要になり次第追加
