@@ -186,6 +186,10 @@ SPECTACULAR_SETTINGS = {
     ],
 }
 
+
+# Django Channels
+# https://channels.readthedocs.io/en/latest/#
+
 CHANNEL_LAYERS = {
     # TODO: 必要になったらchannel_redisを利用する
     "default": {
@@ -194,6 +198,9 @@ CHANNEL_LAYERS = {
 }
 
 ASGI_APPLICATION = "pong.asgi.application"
+
+
+# OAuth2.0
 
 OAUTH2_CLIENT_ID = env("OAUTH2_CLIENT_ID")
 OAUTH2_CLIENT_SECRET_KEY = env("OAUTH2_CLIENT_SECRET_KEY")
