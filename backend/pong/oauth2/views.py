@@ -203,9 +203,7 @@ class OAuth2CallbackView(OAuth2BaseView):
             "scope": tokens.get("scope"),
         }
         forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
-            serializers.FortyTwoTokenSerializer(
-                data=forty_two_token_data
-            )
+            serializers.FortyTwoTokenSerializer(data=forty_two_token_data)
         )
         forty_two_token_serializer.is_valid(raise_exception=True)
         new_forty_two_token: models.FortyTwoToken = (
@@ -214,16 +212,22 @@ class OAuth2CallbackView(OAuth2BaseView):
 
         return Response(
             {
-                "User username: ": new_oauth2_user.username,
-                "User email: ": new_oauth2_user.email,
-                "User password(hash value): ": new_oauth2_user.password,
-                "User password(raw data): ": oauth2_user_data["password"],
-                "User id(related oauth2): ": new_oauth2.user.id,
-                "OAuth2 provider: ": new_oauth2.provider,
-                "OAuth2 provider_id: ": new_oauth2.provider_id,
-                "OAuth2 id(related forty two token): ": new_forty_two_token.oauth2.id,
-                "token access_token": new_forty_two_token.access_token,
-                "token refresh_token": new_forty_two_token.refresh_token,
+                "user": {
+                    "id": new_oauth2_user.id,
+                    "username": new_oauth2_user.username,
+                    "email": new_oauth2_user.email,
+                },
+                "oauth2": {
+                    "id": new_oauth2.id,
+                    "user_id": new_oauth2.user_id,
+                    "provider": new_oauth2.provider,
+                    "provider_id": new_oauth2.provider_id,
+                },
+                "token": {
+                    "oauth2_id": new_forty_two_token.oauth2_id,
+                    "access_token": new_forty_two_token.access_token,
+                    "refresh_token": new_forty_two_token.refresh_token,
+                },
             },
             status=user_response.status_code,
         )
