@@ -1,8 +1,6 @@
-from rest_framework.decorators import api_view
-from rest_framework.request import Request
-from rest_framework.response import Response
+from rest_framework import decorators, request, response
 
 
-@api_view(["GET"])
-def health_check(request: Request) -> Response:
-    return Response({"status": "OK"})
+@decorators.api_view(["GET"])
+def health_check(request: request.Request) -> response.Response:
+    return response.Response({"status": "OK"})

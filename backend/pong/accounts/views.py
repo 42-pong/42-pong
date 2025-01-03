@@ -1,22 +1,12 @@
-from drf_spectacular.utils import (
-    OpenApiExample,
-    OpenApiRequest,
-    OpenApiResponse,
-    extend_schema,
-)
-from rest_framework import status
+from drf_spectacular import utils
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
-from rest_framework.permissions import AllowAny
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework import permissions, request, response, status, views
 
-from . import models, serializers
-from .constants import PlayerFields, UserFields
+from . import constants, models, serializers
 
 
-class AccountCreateView(APIView):
+class AccountCreateView(views.APIView):
     """
     新規アカウントを作成するビュー
     """
@@ -25,41 +15,41 @@ class AccountCreateView(APIView):
         serializers.PlayerSerializer
     )
     # todo: 認証機能を実装したら多分IsAuthenticatedに変更
-    permission_classes = (AllowAny,)
+    permission_classes = (permissions.AllowAny,)
 
-    @extend_schema(
-        request=OpenApiRequest(
+    @utils.extend_schema(
+        request=utils.OpenApiRequest(
             serializers.PlayerSerializer,
             examples=[
-                OpenApiExample(
+                utils.OpenApiExample(
                     "Example request",
                     value={
-                        PlayerFields.USER: {
-                            UserFields.USERNAME: "username",
-                            UserFields.EMAIL: "user@example.com",
-                            UserFields.PASSWORD: "password",
+                        constants.PlayerFields.USER: {
+                            constants.UserFields.USERNAME: "username",
+                            constants.UserFields.EMAIL: "user@example.com",
+                            constants.UserFields.PASSWORD: "password",
                         }
                     },
                 ),
             ],
         ),
         responses={
-            201: OpenApiResponse(
+            201: utils.OpenApiResponse(
                 response=serializers.PlayerSerializer,
                 examples=[
-                    OpenApiExample(
+                    utils.OpenApiExample(
                         "Example 201 response",
                         value={
-                            PlayerFields.USER: {
-                                UserFields.ID: 1,
-                                UserFields.USERNAME: "username",
-                                UserFields.EMAIL: "user@example.com",
+                            constants.PlayerFields.USER: {
+                                constants.UserFields.ID: 1,
+                                constants.UserFields.USERNAME: "username",
+                                constants.UserFields.EMAIL: "user@example.com",
                             }
                         },
                     ),
                 ],
             ),
-            400: OpenApiResponse(
+            400: utils.OpenApiResponse(
                 response={
                     "type": "object",
                     "properties": {
@@ -67,7 +57,7 @@ class AccountCreateView(APIView):
                     },
                 },
                 examples=[
-                    OpenApiExample(
+                    utils.OpenApiExample(
                         "Example 400 response",
                         value={"field": "error messages"},
                     ),
@@ -76,7 +66,9 @@ class AccountCreateView(APIView):
         },
     )
     # todo: try-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
-    def post(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
+    def post(
+        self, request: request.Request, *args: tuple, **kwargs: dict
+    ) -> response.Response:
         """
         新規アカウントを作成するPOSTメソッド
         requestをPlayerSerializerに渡してvalidationを行い、
@@ -87,19 +79,19 @@ class AccountCreateView(APIView):
             self.serializer_class(data=request.data)
         )
         if not player_serializer.is_valid():
-            return Response(
+            return response.Response(
                 player_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Account(PlayerとUser)を新規作成してDBに追加し、作成された情報を返す
         player: models.Player = player_serializer.save()
-        return Response(
+        return response.Response(
             {
-                PlayerFields.USER: {
-                    UserFields.ID: player.user.id,
-                    UserFields.USERNAME: player.user.username,
-                    UserFields.EMAIL: player.user.email,
+                constants.PlayerFields.USER: {
+                    constants.UserFields.ID: player.user.id,
+                    constants.UserFields.USERNAME: player.user.username,
+                    constants.UserFields.EMAIL: player.user.email,
                 }
             },
             status=status.HTTP_201_CREATED,

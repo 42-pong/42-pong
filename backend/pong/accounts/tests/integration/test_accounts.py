@@ -1,14 +1,19 @@
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.test import APITestCase
+from typing import Final
 
-from ... import models
-from ...constants import PlayerFields, UserFields
+from django.urls import reverse
+from rest_framework import response as drf_response
+from rest_framework import status, test
+
+from ... import constants, models
+
+USERNAME: Final[str] = constants.UserFields.USERNAME
+EMAIL: Final[str] = constants.UserFields.EMAIL
+PASSWORD: Final[str] = constants.UserFields.PASSWORD
+USER: Final[str] = constants.PlayerFields.USER
 
 
 # todo: 認証付きのテスト追加？
-class AccountsTests(APITestCase):
+class AccountsTests(test.APITestCase):
     def setUp(self) -> None:
         """
         APITestCaseのsetUpメソッドのオーバーライド
@@ -26,24 +31,22 @@ class AccountsTests(APITestCase):
         """
         account_data: dict = {
             "user": {
-                UserFields.USERNAME: "testuser",
-                UserFields.EMAIL: "testuser@example.com",
-                UserFields.PASSWORD: "testpassword12345",
+                USERNAME: "testuser",
+                EMAIL: "testuser@example.com",
+                PASSWORD: "testpassword12345",
             }
         }
-        response: Response = self.client.post(
+        response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
-        response_user: dict = response.data[PlayerFields.USER]
+        response_user: dict = response.data[USER]
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response_user[UserFields.USERNAME], "testuser")
-        self.assertEqual(
-            response_user[UserFields.EMAIL], "testuser@example.com"
-        )
+        self.assertEqual(response_user[USERNAME], "testuser")
+        self.assertEqual(response_user[EMAIL], "testuser@example.com")
         # passwordは返されない
-        self.assertNotIn(UserFields.PASSWORD, response_user)
+        self.assertNotIn(PASSWORD, response_user)
 
         # DBの状態を確認
         self.assertEqual(models.Player.objects.count(), 1)
@@ -63,15 +66,15 @@ class AccountsTests(APITestCase):
         """
         account_data: dict = {
             "user": {
-                UserFields.USERNAME: "",  # 空のusername
-                UserFields.EMAIL: "invalid-email@none",  # 不正なemail
-                UserFields.PASSWORD: "testpassword12345",
+                USERNAME: "",  # 空のusername
+                EMAIL: "invalid-email@none",  # 不正なemail
+                PASSWORD: "testpassword12345",
             }
         }
-        response: Response = self.client.post(
+        response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
-        response_user: dict = response.data[PlayerFields.USER]
+        response_user: dict = response.data[USER]
 
         # responseの内容を確認
         # response.data = {
@@ -85,8 +88,8 @@ class AccountsTests(APITestCase):
         #     }
         # }
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(UserFields.USERNAME, response_user)
-        self.assertIn(UserFields.EMAIL, response_user)
+        self.assertIn(USERNAME, response_user)
+        self.assertIn(EMAIL, response_user)
 
         # DBの状態を確認
         self.assertEqual(models.Player.objects.count(), 0)

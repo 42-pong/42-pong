@@ -1,21 +1,21 @@
 from django.contrib import admin
-from django.contrib.auth import admin as auth_admin
-from django.contrib.auth import models as auth_models
+from django.contrib.admin import ModelAdmin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 
-from . import models
-from .constants import PlayerFields, UserFields
+from . import constants, models
 
 
 # todo: Userモデルに関するカスタマイズは専用のファイルに移動した方が良いのかも
-class CustomUserAdmin(auth_admin.UserAdmin):
+class CustomUserAdmin(UserAdmin):
     """
     adminサイトのUsersに表示されるカラムをカスタマイズ
     """
 
     list_display: tuple = (
-        UserFields.ID,
-        UserFields.USERNAME,
-        UserFields.EMAIL,
+        constants.UserFields.ID,
+        constants.UserFields.USERNAME,
+        constants.UserFields.EMAIL,
         "is_superuser",
         "is_staff",
         "is_active",
@@ -24,12 +24,12 @@ class CustomUserAdmin(auth_admin.UserAdmin):
 
 # デフォルトのUserModelの登録を解除して、カスタマイズしたUserAdminクラスで再登録
 # adminサイトにカスタマイズされたlist_displayが表示されるようになる
-admin.site.unregister(auth_models.User)
-admin.site.register(auth_models.User, CustomUserAdmin)
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
 
 
 @admin.register(models.Player)
-class AccountAdmin(admin.ModelAdmin):
+class AccountAdmin(ModelAdmin):
     """
     adminサイトでPlayersに表示されるカラムをカスタマイズ
     """
@@ -40,11 +40,13 @@ class AccountAdmin(admin.ModelAdmin):
     list_display: tuple = (
         "user_id",
         "username",
-        PlayerFields.CREATED_AT,
-        PlayerFields.UPDATED_AT,
+        constants.PlayerFields.CREATED_AT,
+        constants.PlayerFields.UPDATED_AT,
     )
-    list_filter: tuple = (PlayerFields.UPDATED_AT,)
-    search_fields: tuple = (f"{PlayerFields.USER}__{UserFields.USERNAME}",)
+    list_filter: tuple = (constants.PlayerFields.UPDATED_AT,)
+    search_fields: tuple = (
+        f"{constants.PlayerFields.USER}__{constants.UserFields.USERNAME}",
+    )
 
     def user_id(self, obj: models.Player) -> int:
         """
