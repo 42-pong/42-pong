@@ -166,7 +166,7 @@ class OAuth2CallbackView(OAuth2BaseView):
         )
         user_info = user_response.json()
 
-        oauth2_user_request_data: dict[str, str] = {
+        oauth2_user_data: dict[str, str] = {
             # todo: 重複を防ぐget_random_stringのラッパー関数作成
             "username": get_random_string(12),
             "email": user_info.get("email"),
@@ -174,23 +174,23 @@ class OAuth2CallbackView(OAuth2BaseView):
             "password": get_random_string(24),
         }
         oauth2_user_serializer: serializers.UserSerializer = (
-            serializers.UserSerializer(data=oauth2_user_request_data)
+            serializers.UserSerializer(data=oauth2_user_data)
         )
         oauth2_user_serializer.is_valid(raise_exception=True)
         new_oauth2_user: User = oauth2_user_serializer.save()
 
-        oauth2_request_data = {
+        oauth2_data = {
             "user": new_oauth2_user.id,
             "provider": "42",
             "provider_id": user_info.get("id"),
         }
         oauth2_serializer: serializers.OAuth2Serializer = (
-            serializers.OAuth2Serializer(data=oauth2_request_data)
+            serializers.OAuth2Serializer(data=oauth2_data)
         )
         oauth2_serializer.is_valid(raise_exception=True)
         new_oauth2: models.OAuth2 = oauth2_serializer.save()
 
-        forty_two_token_request_data = {
+        forty_two_token_data = {
             "oauth2": new_oauth2.id,
             "access_token": tokens.get("access_token"),
             "token_type": tokens.get("token_type"),
@@ -204,7 +204,7 @@ class OAuth2CallbackView(OAuth2BaseView):
         }
         forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
             serializers.FortyTwoTokenSerializer(
-                data=forty_two_token_request_data
+                data=forty_two_token_data
             )
         )
         forty_two_token_serializer.is_valid(raise_exception=True)
