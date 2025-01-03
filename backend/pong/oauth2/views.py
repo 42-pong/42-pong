@@ -171,7 +171,7 @@ class OAuth2CallbackView(OAuth2BaseView):
             "username": get_random_string(12),
             "email": user_info.get("email"),
             # todo; パスワードは必須のため(仮)
-            "password": get_random_string(24),
+            "password": "",
         }
         oauth2_user_serializer: serializers.UserSerializer = (
             serializers.UserSerializer(data=oauth2_user_data)
@@ -216,7 +216,8 @@ class OAuth2CallbackView(OAuth2BaseView):
             {
                 "User username: ": new_oauth2_user.username,
                 "User email: ": new_oauth2_user.email,
-                "User password: ": new_oauth2_user.password,
+                "User password(hash value): ": new_oauth2_user.password,
+                "User password(raw data): ": oauth2_user_data["password"],
                 "User id(related oauth2): ": new_oauth2.user.id,
                 "OAuth2 provider: ": new_oauth2.provider,
                 "OAuth2 provider_id: ": new_oauth2.provider_id,

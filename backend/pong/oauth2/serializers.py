@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
         )
         extra_kwargs = {
-            "password": {"write_only": True, "required": False},
+            "password": {"write_only": True, "allow_blank": True},
         }
 
     # todo:
