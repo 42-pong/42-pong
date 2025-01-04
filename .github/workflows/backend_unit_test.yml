@@ -29,9 +29,14 @@ jobs:
             SUPERUSER_NAME="${{ secrets.SUPERUSER_NAME }}"
             SUPERUSER_EMAIL="${{ secrets.SUPERUSER_EMAIL }}"
             SUPERUSER_PASSWORD="${{ secrets.SUPERUSER_PASSWORD }}"
+            OAUTH2_CLIENT_ID="${{ secrets.OAUTH2_CLIENT_ID }}"
+            OAUTH2_CLIENT_SECRET_KEY="${{ secrets.OAUTH2_CLIENT_SECRET_KEY }}"
+            OAUTH2_AUTHORIZATION_ENDPOINT="${{ vars.OAUTH2_AUTHORIZATION_ENDPOINT }}"
+            OAUTH2_TOKEN_ENDPOINT="${{ vars.OAUTH2_TOKEN_ENDPOINT }}"
             DB_NAME="${{ secrets.DB_NAME }}"
             DB_USER="${{ secrets.DB_USER }}"
             DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            PONG_ORIGIN="${{ vars.PONG_ORIGIN }}"
           EOF
 
       # backendコンテナのunit-testがDBコンテナに依存しているため、DBコンテナを先に起動する
