@@ -4,7 +4,6 @@ from rest_framework import serializers
 from . import models
 
 
-# todo: create_account関数使用可能になったらUserSerializer削除
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -17,33 +16,6 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "password": {"write_only": True, "allow_blank": True},
         }
-
-    # todo:
-    #  - serializer.errorsに複数のエラーメッセージをセット
-    #  - より詳細なvalidationの実装
-    def _validate_required_fields(
-        self, data: dict, required_fields: list[str]
-    ) -> None:
-        for field in required_fields:
-            # 実装上のミスでdataに存在しないfieldが渡された場合
-            if field not in data:
-                raise AssertionError(
-                    f"{field} is required but not provided in data."
-                )
-            # dataの中のfieldが空の場合
-            if not data.get(field):
-                raise serializers.ValidationError(
-                    {field: "This field is required."}
-                )
-
-    # OAuth2.0の場合はパスワードは不用。emailは42のリソースサーバーから取得するため必須
-    def validate(self, data: dict) -> dict:
-        required_fields: list[str] = [
-            "username",
-            "email",
-        ]
-        self._validate_required_fields(data, required_fields)
-        return data
 
     def create(self, validated_data: dict) -> User:
         user: User = User.objects.create_user(
@@ -68,21 +40,30 @@ class OAuth2Serializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-        # todo: validate作成
+    def _validate_provider_id(self, data: dict) -> None:
+        """
+        providerとprovider_idの組み合わせがすでに存在するかどうかを検証する関数
 
-        def create(self, validated_data: dict) -> models.OAuth2:
-            user = validated_data.get("user")
-            if not user:
-                raise serializers.ValidationError(
-                    {"user": "This field is required."}
-                )
+        Args:
+            data (dict): `provider`と`provider_id`のキーを含む辞書。
 
-            oauth2: models.OAuth2 = models.OAuth2.objects.create(
-                user=user,
-                provider=validated_data["provider"],
-                provider_id=validated_data["provider_id"],
+        Raises:
+            - serializers.ValidationError: `provider`と`provider_id`の組み合わせが
+            既に存在する場合
+        """
+        if models.OAuth2.objects.filter(
+            provider=data["provider"], provider_id=data["provider_id"]
+        ).exists():
+            raise serializers.ValidationError(
+                {
+                    "provider_id": "This provider and provider_id combination already exists."
+                }
             )
-            return oauth2
+
+    # todo: より詳細なvalidationの実装
+    def validate(self, data: dict) -> dict:
+        self._validate_provider_id(data)
+        return data
 
 
 class FortyTwoTokenSerializer(serializers.ModelSerializer):
@@ -110,21 +91,25 @@ class FortyTwoTokenSerializer(serializers.ModelSerializer):
             "refresh_token": {"write_only": True},
         }
 
-    # todo: validate作成
+    def _validate_token_type(self, data: dict) -> None:
+        """
+        トークンタイプが有効な値であるかを検証する関数。
 
-    def create(self, validated_data: dict) -> models.FortyTwoToken:
-        oauth2 = validated_data.get("oauth2")
-        if not oauth2:
+        Args:
+            data (dict): トークン情報を含む辞書。`token_type`キーを必須で含む。
+
+        Raises:
+            serializers.ValidationError: `token_type`が有効な値でない場合
+        """
+        valid_token_types = ["bearer", "mac"]
+        if data["token_type"] not in valid_token_types:
             raise serializers.ValidationError(
-                {"oauth2": "This field is required."}
+                {
+                    "token_type": f"Invalid token_type. Must be one of {valid_token_types}."
+                }
             )
-        forty_two_token = models.FortyTwoToken.objects.create(
-            oauth2=oauth2,
-            access_token=validated_data["access_token"],
-            token_type=validated_data["token_type"],
-            access_token_expiry=validated_data["access_token_expiry"],
-            refresh_token=validated_data["refresh_token"],
-            refresh_token_expiry=validated_data["refresh_token_expiry"],
-            scope=validated_data["scope"],
-        )
-        return forty_two_token
+
+    # todo: より詳細なvalidationの実装
+    def validate(self, data: dict) -> dict:
+        self._validate_token_type(data)
+        return data
