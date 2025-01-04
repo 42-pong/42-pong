@@ -46,6 +46,14 @@ def get_valid_str_env(key: str) -> str:
     return value
 
 
+# NOTE: django内で使う環境変数を追加する際は、以下も一緒に行ったか確認する
+#   - .env.exampleに追加
+#   - .envに追加
+#   - Notionの.env共有を更新
+#   - github actions用
+#     - githubサイトのSettings/Secrets and variablesに追加
+#     - .github/workflows/backend_code_check.ymlのenvに追加
+#     - .github/workflows/backend_unit_test.ymlのCreate .env fileに追加
 # 使用する環境変数を全て取得
 DB_NAME = get_valid_str_env("DB_NAME")
 DB_USER = get_valid_str_env("DB_USER")
