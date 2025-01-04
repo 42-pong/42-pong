@@ -14,6 +14,7 @@ from pathlib import Path
 
 # todo mypyが型対応していない3rdパーティのライブラリも型対応できるようにする
 import environ  # type: ignore
+from django.core.exceptions import ImproperlyConfigured
 
 # 環境変数のスキーマを定義
 env = environ.Env(
@@ -38,12 +39,45 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env_file = Path(BASE_DIR) / ".env"
 environ.Env.read_env(env_file)
 
+
+def get_valid_str_env(key: str) -> str:
+    """
+    環境変数をstrとして取得し、値が不正な場合はエラーを発生させる
+
+    Returns:
+        str: 取得した環境変数の値
+
+    Raises:
+        ImproperlyConfigured: .envに環境変数が設定されていないまたは空文字列の場合
+    """
+    # 環境変数の取得に失敗/存在しない場合、env.str()はImproperlyConfiguredを発生させる
+    value: str = env.str(key)
+    if not value:
+        # 空文字列の場合
+        raise ImproperlyConfigured(f"Set the {key} environment variable")
+    return value
+
+
+# 使用する環境変数を全て取得
+DB_NAME = get_valid_str_env("DB_NAME")
+DB_USER = get_valid_str_env("DB_USER")
+DB_PASSWORD = get_valid_str_env("DB_PASSWORD")
+OAUTH2_CLIENT_ID = get_valid_str_env("OAUTH2_CLIENT_ID")
+OAUTH2_CLIENT_SECRET_KEY = get_valid_str_env("OAUTH2_CLIENT_SECRET_KEY")
+PONG_ORIGIN = get_valid_str_env("PONG_ORIGIN")
+OAUTH2_AUTHORIZATION_ENDPOINT = get_valid_str_env(
+    "OAUTH2_AUTHORIZATION_ENDPOINT"
+)
+OAUTH2_TOKEN_ENDPOINT = get_valid_str_env("OAUTH2_TOKEN_ENDPOINT")
+FRONT_SERVER_PORT = get_valid_str_env("FRONT_SERVER_PORT")
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 DEBUG = env("DEBUG")
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = get_valid_str_env("SECRET_KEY")
 
 ALLOWED_HOSTS: list[str] = []
 
