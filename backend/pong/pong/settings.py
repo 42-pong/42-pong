@@ -16,21 +16,9 @@ from pathlib import Path
 import environ  # type: ignore
 from django.core.exceptions import ImproperlyConfigured
 
-# 環境変数のスキーマを定義
-env = environ.Env(
-    DEBUG=(bool, False),
-    SECRET_KEY=(str, "your-default-secret-key"),
-    DB_NAME=(str, "db_name"),
-    DB_USER=(str, "db_user"),
-    DB_PASSWORD=(str, "db_password"),
-    OAUTH2_CLIENT_ID=(str, "client_id"),
-    OAUTH2_CLIENT_SECRET_KEY=(str, "client_secret_key"),
-    PONG_ORIGIN=(str, "api"),
-    OAUTH2_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
-    OAUTH2_TOKEN_ENDPOINT=(str, "token_endpoint"),
-    # todo: デフォルトは設定せず、空文字はエラーにする
-    FRONT_SERVER_PORT=(str, "8080"),
-)
+# Environment variables
+
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,7 +63,7 @@ FRONT_SERVER_PORT = get_valid_str_env("FRONT_SERVER_PORT")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-DEBUG = env("DEBUG")
+DEBUG = env.bool("DEBUG", False)
 
 SECRET_KEY = get_valid_str_env("SECRET_KEY")
 
@@ -143,9 +131,9 @@ WSGI_APPLICATION = "pong.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
         "HOST": "db",  # compose.yamlのDBのservice名
         "PORT": "5432",  # postgresのデフォルトポート
     }
@@ -234,20 +222,11 @@ CHANNEL_LAYERS = {
 ASGI_APPLICATION = "pong.asgi.application"
 
 
-# OAuth2.0
-
-OAUTH2_CLIENT_ID = env("OAUTH2_CLIENT_ID")
-OAUTH2_CLIENT_SECRET_KEY = env("OAUTH2_CLIENT_SECRET_KEY")
-PONG_ORIGIN = env("PONG_ORIGIN")
-OAUTH2_AUTHORIZATION_ENDPOINT = env("OAUTH2_AUTHORIZATION_ENDPOINT")
-OAUTH2_TOKEN_ENDPOINT = env("OAUTH2_TOKEN_ENDPOINT")
-
-
 # Django CORS headers
 # https://github.com/adamchainz/django-cors-headers
 
 # リストに追加することでオリジンを許可する
 CORS_ALLOWED_ORIGINS = [
-    f"http://localhost:{env("FRONT_SERVER_PORT")}",  # frontendコンテナ
+    f"http://localhost:{FRONT_SERVER_PORT}",  # frontendコンテナ
 ]
 # todo: CORS_ALLOW_CREDENTIALS, CSRFについての設定は必要になり次第追加
