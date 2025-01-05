@@ -1,5 +1,5 @@
 import "./components";
-import { homeRouter } from "./routers/homeRouter.js";
+import { homeRouter } from "./routers/homeRouter";
 
 function main() {
   const app = document.getElementById("app");
