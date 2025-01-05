@@ -1,9 +1,13 @@
 import { Endpoints } from "../../Endpoints";
 import { View } from "../../core/View";
+import { isOpenWebSocket } from "../../websocket";
 
 export class HomeView extends View {
   _onConnect() {
-    Object.assign(this._state, { healthStatus: "..." });
+    Object.assign(this._state, {
+      healthStatus: "...",
+      webSocketBaseStatus: "...",
+    });
 
     const getHealthStatus = async () => {
       let healthStatus;
@@ -18,8 +22,22 @@ export class HomeView extends View {
       return healthStatus;
     };
 
+    const getWebSocketBaseStatus = async () => {
+      let isOpen;
+      try {
+        isOpen = await isOpenWebSocket();
+      } catch (error) {
+        isOpen = false;
+      }
+      return isOpen ? "OK" : "KO";
+    };
+
     getHealthStatus().then((healthStatus) => {
       this._updateState({ healthStatus });
+    });
+
+    getWebSocketBaseStatus().then((webSocketBaseStatus) => {
+      this._updateState({ webSocketBaseStatus });
     });
   }
 
@@ -31,5 +49,9 @@ export class HomeView extends View {
     const status = document.createElement("h2");
     status.textContent = `${Endpoints.HEALTH.pathname}: ${this._getState().healthStatus}`;
     this.appendChild(status);
+
+    const wsStatus = document.createElement("h2");
+    wsStatus.textContent = `${Endpoints.WEBSOCKET_BASE_URL.pathname}: ${this._getState().webSocketBaseStatus}`;
+    this.appendChild(wsStatus);
   }
 }
