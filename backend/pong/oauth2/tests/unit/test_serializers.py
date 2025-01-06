@@ -217,8 +217,64 @@ class OAuth2SerializerTestCase(TestCase):
 
 class FortyTwoTokenSerializerTestCase(TestCase):
     def setUp(self) -> None:
-        # self.oauth2 = OAuth2.objects.create()
-        self.Serializer = serializers.FortyTwoTokenSerializer
+        self.user: models.User = models.User.objects.create_user(
+            username="pong", email="pong@example.com", password=""
+        )
+        self.oauth2: models.OAuth2 = models.OAuth2.objects.create(
+            user=self.user, provider="42", provider_id="12345"
+        )
+        self.Serializer: serializers.FortyTwoTokenSerializer = (
+            serializers.FortyTwoTokenSerializer
+        )
 
-    def test_true(self) -> None:
-        self.assertTrue(True)
+    def test_valid_serializer(self) -> None:
+        """
+        正しいデータの場合、FortyTwoTokenSerializerが正しく機能するかを確認するテスト
+        """
+        # todo: 本来アクセサトークンとリフレッシュトークンの値はランダムのためよそれ用のテストする必要あるかも
+        token_data: dict = {
+            "oauth2": self.oauth2.id,
+            "access_token": "valid_access_token",
+            "access_token_expiry": "2025-01-01T00:00:00Z",
+            "token_type": "bearer",
+            "refresh_token": "valid_refresh_token",
+            "refresh_token_expiry": "2025-01-01T00:00:00Z",
+            "scope": "public",
+        }
+        serializer = self.Serializer(data=token_data)
+        # todo: datetimeについてのテストは時間がかかりそうなため後で書く
+        #       - access_token_expiry
+        #       - refresh_token_expiry
+        expected_data: dict = {
+            "oauth2": self.oauth2,
+            "access_token": "valid_access_token",
+            "token_type": "bearer",
+            "refresh_token": "valid_refresh_token",
+            "scope": "public",
+        }
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(
+            serializer.validated_data["access_token"],
+            expected_data["access_token"],
+        )
+        self.assertEqual(
+            serializer.validated_data["token_type"],
+            expected_data["token_type"],
+        )
+        self.assertEqual(
+            serializer.validated_data["refresh_token"],
+            expected_data["refresh_token"],
+        )
+        self.assertEqual(
+            serializer.validated_data["scope"], expected_data["scope"]
+        )
+
+        self.assertEqual(
+            serializer.data["token_type"], expected_data["token_type"]
+        )
+        self.assertEqual(serializer.data["scope"], expected_data["scope"])
+
+        self.assertNotIn("access_token", serializer.data)
+        self.assertNotIn("refresh_token", serializer.data)
+
+        self.assertEqual(serializer.errors, {})
