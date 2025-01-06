@@ -41,29 +41,8 @@ class OAuth2Serializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def _validate_provider_id(self, data: dict) -> None:
-        """
-        providerとprovider_idの組み合わせがすでに存在するかどうかを検証する関数
-
-        Args:
-            data (dict): `provider`と`provider_id`のキーを含む辞書。
-
-        Raises:
-            - serializers.ValidationError: `provider`と`provider_id`の組み合わせが
-            既に存在する場合
-        """
-        if models.OAuth2.objects.filter(
-            provider=data["provider"], provider_id=data["provider_id"]
-        ).exists():
-            raise serializers.ValidationError(
-                {
-                    "provider_id": "This provider and provider_id combination already exists."
-                }
-            )
-
     # todo: より詳細なvalidationの実装
     def validate(self, data: dict) -> dict:
-        self._validate_provider_id(data)
         return data
 
 

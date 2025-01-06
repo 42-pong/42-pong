@@ -107,6 +107,7 @@ class UserSerializerTestCase(TestCase):
 
     # todo: invalidなserializerのテストを書く
 
+
 class OAuth2SerializerTestCase(TestCase):
     def setUp(self) -> None:
         self.user = models.User.objects.create_user(
@@ -116,7 +117,7 @@ class OAuth2SerializerTestCase(TestCase):
 
     def test_valid_serializer(self) -> None:
         """
-        正しいデータの場合、OAuth2Serializerが正しく機能するかを確認するテスト
+        正しいデータの場合、正しく機能するかを確認するテスト
         """
         oauth2_data: dict = {
             "id": 1,
@@ -145,6 +146,23 @@ class OAuth2SerializerTestCase(TestCase):
             },
         )
         self.assertTrue(serializer.errors == {})
+
+    def test_validate_unique_provider_id(self) -> None:
+        """
+        provider と provider_id の組み合わせが既に存在する場合、適切なエラーを返すか確認するテスト
+        """
+        oauth2: models.OAuth2 = models.OAuth2.objects.create(
+            user=self.user, provider="42", provider_id="12345"
+        )
+        duplicate_data: dict = {
+            "user": oauth2.user.id,
+            "provider": "42",
+            "provider_id": "12345",
+        }
+
+        serializer = self.Serializer(data=duplicate_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.errors["provider_id"][0].code, "unique")
 
 
 class FortyTwoTokenSerializerTestCase(TestCase):
