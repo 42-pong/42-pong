@@ -27,16 +27,16 @@ class MatchHandler:
     # クラス定数
     HEIGHT: Final[int] = 400
     WIDTH: Final[int] = 600
-    PLAYER_HEIGHT: Final[int] = 60
-    PLAYER_WIDTH: Final[int] = 10
-    PLAYER_SPEED: Final[int] = 5
+    PADDLE_HEIGHT: Final[int] = 60
+    PADDLE_WIDTH: Final[int] = 10
+    PADDLE_SPEED: Final[int] = 5
     BALL_RADIUS: Final[int] = 10
     BALL_SPEED: Final[int] = 2
 
     # クラス属性
     stage: Stage
-    player1: PosStruct
-    player2: PosStruct
+    paddle1: PosStruct
+    paddle2: PosStruct
     ball: PosStruct
     ball_speed: PosStruct
     score1: int
@@ -71,7 +71,7 @@ class MatchHandler:
         """
         return (
             f"MatchHandler(stage={self.stage}, "
-            f"player1={self.player1}, player2={self.player2}, "
+            f"paddle1={self.paddle1}, paddle2={self.paddle2}, "
             f"ball={self.ball}, score1={self.score1}, score2={self.score2})"
         )
 
@@ -83,7 +83,7 @@ class MatchHandler:
         """
         return (
             f"MatchHandler(stage={self.stage}, "
-            f"player1={self.player1}, player2={self.player2}, "
+            f"paddle1={self.paddle1}, paddle2={self.paddle2}, "
             f"ball={self.ball}, ball_speed={self.ball_speed}, "
             f"score1={self.score1}, score2={self.score2}, "
             f"local_play={self.local_play}, group_name={self.group_name}, "
@@ -128,8 +128,8 @@ class MatchHandler:
                 "team": "",
                 "display_name1": "",
                 "display_name2": "",
-                "paddle1": {"x": self.player1.x, "y": self.player1.y},
-                "paddle2": {"x": self.player2.x, "y": self.player2.y},
+                "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
+                "paddle2": {"x": self.paddle2.x, "y": self.paddle2.y},
                 "ball": {"x": self.ball.x, "y": self.ball.y},
             },
         )
@@ -156,7 +156,7 @@ class MatchHandler:
 
         :param data: プレイヤーの移動情報
         """
-        self._move_paddle(player_move=data)
+        self._move_paddle(paddle_move=data)
 
     async def _handle_end(self) -> None:
         """
@@ -164,10 +164,10 @@ class MatchHandler:
 
         勝者を決定し、グループから退出し、ゲーム状態を初期化。
         """
-        win_player: str = "1" if self.score1 > self.score2 else "2"
+        win_team: str = "1" if self.score1 > self.score2 else "2"
         message = self._build_message(
             "END",
-            {"win": win_player, "score1": self.score1, "score2": self.score2},
+            {"win": win_team, "score1": self.score1, "score2": self.score2},
         )
         await self._send_to_group(message)
         # matchが終わったのでグループから削除
@@ -176,30 +176,30 @@ class MatchHandler:
         self._reset_state()
 
     # ゲームロジック関係のメソッド
-    def _move_paddle(self, player_move: dict) -> None:
+    def _move_paddle(self, paddle_move: dict) -> None:
         """
         プレイヤーのパドルを移動させる。
 
-        :param player_move: プレイヤーの移動情報
+        :param paddle_move: プレイヤーの移動情報
         """
-        match player_move.get("move"):
+        match paddle_move.get("move"):
             case "UP":
-                if player_move.get("team") == "1" and self.player1.y > 0:
-                    self.player1.y -= self.PLAYER_SPEED
-                elif player_move.get("team") == "2" and self.player2.y > 0:
-                    self.player2.y -= self.PLAYER_SPEED
+                if paddle_move.get("team") == "1" and self.paddle1.y > 0:
+                    self.paddle1.y -= self.PADDLE_SPEED
+                elif paddle_move.get("team") == "2" and self.paddle2.y > 0:
+                    self.paddle2.y -= self.PADDLE_SPEED
 
             case "DOWN":
                 if (
-                    player_move.get("team") == "1"
-                    and self.player1.y + self.PLAYER_HEIGHT < self.HEIGHT
+                    paddle_move.get("team") == "1"
+                    and self.paddle1.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
-                    self.player1.y += self.PLAYER_SPEED
+                    self.paddle1.y += self.PADDLE_SPEED
                 elif (
-                    player_move.get("team") == "2"
-                    and self.player2.y + self.PLAYER_HEIGHT < self.HEIGHT
+                    paddle_move.get("team") == "2"
+                    and self.paddle2.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
-                    self.player2.y += self.PLAYER_SPEED
+                    self.paddle2.y += self.PADDLE_SPEED
 
     def _update_match_state(self) -> None:
         """
@@ -216,8 +216,8 @@ class MatchHandler:
             self.ball_speed.y = -abs(self.ball_speed.y)
 
         # パドルとの衝突判定
-        self._process_ball_paddle_collision(self.player1, True)
-        self._process_ball_paddle_collision(self.player2, False)
+        self._process_ball_paddle_collision(self.paddle1, True)
+        self._process_ball_paddle_collision(self.paddle2, False)
 
         # 得点判定
         if self.ball.x + self.BALL_RADIUS <= 0:
@@ -232,45 +232,45 @@ class MatchHandler:
             self.stage = Stage.END
 
     def _process_ball_paddle_collision(
-        self, player_pos: PosStruct, is_player1: bool
+        self, paddle_pos: PosStruct, is_paddle1: bool
     ) -> None:
         """
         ボールとパドルの衝突判定と衝突時の処理
 
         Args:
-            player_pos (PosStruct): プレーヤーの位置
-            is_player1 (bool): プレイヤー1のパドルかどうか
+            paddle_pos (PosStruct): パドルの位置
+            is_paddle1 (bool): パドルがteam1のものかどうか
         """
         # 衝突判定
         if (
-            self.ball.x - self.BALL_RADIUS <= player_pos.x + self.PLAYER_WIDTH
-            and self.ball.x + self.BALL_RADIUS >= player_pos.x
+            self.ball.x - self.BALL_RADIUS <= paddle_pos.x + self.PADDLE_WIDTH
+            and self.ball.x + self.BALL_RADIUS >= paddle_pos.x
             and self.ball.y - self.BALL_RADIUS
-            <= player_pos.y + self.PLAYER_HEIGHT
-            and self.ball.y + self.BALL_RADIUS >= player_pos.y
+            <= paddle_pos.y + self.PADDLE_HEIGHT
+            and self.ball.y + self.BALL_RADIUS >= paddle_pos.y
         ):
             # ボールのx座標がパドルの側面に当たった場合
             # ボールの中心がパドルの端よりも自陣側に過ぎていたらx軸方向に跳ね返さない
             if (
-                self.ball.y >= player_pos.y
-                and self.ball.y <= player_pos.y + self.PLAYER_HEIGHT
+                self.ball.y >= paddle_pos.y
+                and self.ball.y <= paddle_pos.y + self.PADDLE_HEIGHT
             ):
                 if (
-                    is_player1
-                    and self.ball.x > player_pos.x + self.PLAYER_WIDTH
+                    is_paddle1
+                    and self.ball.x > paddle_pos.x + self.PADDLE_WIDTH
                 ):
                     self.ball_speed.x = abs(self.ball_speed.x)
-                elif self.ball.x < player_pos.x:
+                elif self.ball.x < paddle_pos.x:
                     self.ball_speed.x = -abs(self.ball_speed.x)
 
             # ボールのy座標がパドルの上下面に当たった場合
             if (
-                self.ball.x >= player_pos.x
-                and self.ball.x <= player_pos.x + self.PLAYER_WIDTH
+                self.ball.x >= paddle_pos.x
+                and self.ball.x <= paddle_pos.x + self.PADDLE_WIDTH
             ):
-                if self.ball.y <= player_pos.y:
+                if self.ball.y <= paddle_pos.y:
                     self.ball_speed.y = -abs(self.ball_speed.y)
-                elif self.ball.y >= player_pos.y + self.PLAYER_HEIGHT:
+                elif self.ball.y >= paddle_pos.y + self.PADDLE_HEIGHT:
                     self.ball_speed.y = abs(self.ball_speed.y)
 
     async def _send_match_state(self) -> None:
@@ -289,8 +289,8 @@ class MatchHandler:
                 game_state = self._build_message(
                     "PLAY",
                     {
-                        "paddle1": {"x": self.player1.x, "y": self.player1.y},
-                        "paddle2": {"x": self.player2.x, "y": self.player2.y},
+                        "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
+                        "paddle2": {"x": self.paddle2.x, "y": self.paddle2.y},
                         "ball": {"x": self.ball.x, "y": self.ball.y},
                         "score1": self.score1,
                         "score2": self.score2,
@@ -341,13 +341,13 @@ class MatchHandler:
         ゲームのステージ、スコア、プレイヤーの位置、ボールの位置を初期状態に戻す。
         """
         self.stage = Stage.NONE
-        # playerの位置は左上とする
-        self.player1 = PosStruct(
-            x=10, y=int(self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2)
+        # paddleの位置は左上とする
+        self.paddle1 = PosStruct(
+            x=10, y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2)
         )
-        self.player2 = PosStruct(
-            x=self.WIDTH - self.PLAYER_WIDTH - 10,
-            y=int(self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2),
+        self.paddle2 = PosStruct(
+            x=self.WIDTH - self.PADDLE_WIDTH - 10,
+            y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2),
         )
         self._reset_ball()
         self.score1 = 0
