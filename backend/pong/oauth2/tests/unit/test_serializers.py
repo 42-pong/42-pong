@@ -185,9 +185,34 @@ class OAuth2SerializerTestCase(TestCase):
             serializer.errors["provider_id"][0], required_field_error_message
         )
 
+    def test_validate_empty_data(self) -> None:
+        """
+        空のデータの場合、期待通りにエラーを返すかを確認するテスト
+
+        必須フィールド
+        - user
+        - provider
+        - provider_id
+        """
+        empty_data: dict = {}
+        required_field_error_message: str = "This field is required."
+        serializer = self.Serializer(data=empty_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.errors["user"][0], required_field_error_message)
+        self.assertEqual(serializer.errors["provider"][0], required_field_error_message)
         self.assertEqual(
             serializer.errors["provider_id"][0], required_field_error_message
         )
+
+    def test_validate_none_data(self) -> None:
+        """
+        Noneの場合、期待通りにエラーを返すかを確認するテスト
+        """
+        none_data: dict = None
+        none_error_message: str = "No data provided"
+        serializer = self.Serializer(data=none_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.errors["non_field_errors"][0], none_error_message)
 
 
 class FortyTwoTokenSerializerTestCase(TestCase):
