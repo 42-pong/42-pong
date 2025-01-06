@@ -48,6 +48,37 @@ class UserSerializerTestCase(TestCase):
         )
         self.assertTrue(serializer.errors == {})
 
+    def test_serializer_with_missing_required_field(self):
+        """
+        必須フィールドが存在しない場合、シリアライザが期待通りにエラーを返すかを確認するテスト
+
+        必須フィールド
+        - username
+        - email
+        - password
+
+        テスト項目
+        - シリアライザが無効であること
+        - 検証済みデータが空であること
+        - シリアライズされたデータが空であること
+        - 存在しないフィールドに対して"This field is required."というエラーメッセージが表示されること
+        """
+        missing_required_fields_data: dict = {"username": "pong"}
+        required_field_error_message: str = "This field is required."
+        serializer: serializers.UserSerializer = self.Serializer(
+            data=missing_required_fields_data
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.validated_data, {})
+        self.assertEqual(serializer.data, {"username": "pong"})
+        self.assertEqual(
+            serializer.errors["email"][0], required_field_error_message
+        )
+        self.assertEqual(
+            serializer.errors["password"][0], required_field_error_message
+        )
+
+    # todo: invalidなserializerのテストを書く
 
 
 class OAuth2SerializerTestCase(TestCase):
