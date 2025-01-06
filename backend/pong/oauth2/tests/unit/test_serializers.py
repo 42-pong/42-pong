@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from oauth2 import serializers
+from oauth2 import models, serializers
 
 
 class UserSerializerTestCase(TestCase):
@@ -109,11 +109,42 @@ class UserSerializerTestCase(TestCase):
 
 class OAuth2SerializerTestCase(TestCase):
     def setUp(self) -> None:
-        # self.user = User.objects.create_user()
+        self.user = models.User.objects.create_user(
+            username="pong", email="pong@example.com", password=""
+        )
         self.Serializer = serializers.OAuth2Serializer
 
-    def test_true(self) -> None:
-        self.assertTrue(True)
+    def test_valid_serializer(self) -> None:
+        """
+        正しいデータの場合、OAuth2Serializerが正しく機能するかを確認するテスト
+        """
+        oauth2_data: dict = {
+            "id": 1,
+            "user": self.user.id,
+            "provider": "42",
+            "provider_id": "12345",
+        }
+        serializer: serializers.OAuth2Serializer = self.Serializer(
+            data=oauth2_data
+        )
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(
+            serializer.validated_data,
+            {
+                "user": self.user,
+                "provider": "42",
+                "provider_id": "12345",
+            },
+        )
+        self.assertEqual(
+            serializer.data,
+            {
+                "user": self.user.id,
+                "provider": "42",
+                "provider_id": "12345",
+            },
+        )
+        self.assertTrue(serializer.errors == {})
 
 
 class FortyTwoTokenSerializerTestCase(TestCase):
