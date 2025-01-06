@@ -80,6 +80,54 @@ class UserSerializerTestCase(TestCase):
 
     # todo: invalidなserializerのテストを書く
 
+    def test_validate_empty_data(self) -> None:
+        """
+        空のデータの場合、期待通りにエラーを返すかを確認するテスト
+
+        必須フィールド
+        - username
+        - email
+        - password
+
+        テスト項目:
+        - シリアライザが無効であること
+        - 各必須フィールドに対して「This field is required.」というエラーメッセージが表示されること
+        """
+        empty_data: dict = {}
+        required_field_error_message: str = "This field is required."
+        serializer: serializers.UserSerializer = self.Serializer(
+            data=empty_data
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(
+            serializer.errors["username"][0], required_field_error_message
+        )
+        self.assertEqual(
+            serializer.errors["email"][0], required_field_error_message
+        )
+        self.assertEqual(
+            serializer.errors["password"][0], required_field_error_message
+        )
+
+    def test_validate_none_data(self) -> None:
+        """
+        Noneの場合、期待通りにエラーを返すかを確認するテスト
+
+        テスト項目:
+        - シリアライザが無効であること。
+        - エラーメッセージ「No data provided」が「non_field_errors」に表示されること。
+        """
+        none_data: dict = None
+        none_error_message: str = "No data provided"
+        serializer: serializers.UserSerializer = self.Serializer(
+            data=none_data
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(
+            serializer.errors["non_field_errors"][0], none_error_message
+        )
+
+    # todo: invalidなserializerのテストを書く
 
 class OAuth2SerializerTestCase(TestCase):
     def setUp(self) -> None:
