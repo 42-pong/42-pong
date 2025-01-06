@@ -19,13 +19,7 @@ class UserSerializerTestCase(TestCase):
     #       その場合は関数名を変更する。
     def test_valid_serializer(self) -> None:
         """
-        正しいデータが与えられた場合、UserSerializerが正しく機能するかを確認するテスト
-
-        テスト項目
-        - シリアライザが有効であること
-        - 検証されたデータが期待通りであること
-        - シリアライズされたデータが期待通りであること
-        - シリアライザにエラーがないこと
+        正しいデータの場合、正しく機能するかを確認するテスト
         """
 
         # passwordが空文字を想定
@@ -50,18 +44,12 @@ class UserSerializerTestCase(TestCase):
 
     def test_serializer_with_missing_required_field(self):
         """
-        必須フィールドが存在しない場合、シリアライザが期待通りにエラーを返すかを確認するテスト
+        必須フィールドが存在しない場合、期待通りにエラーを返すかを確認するテスト
 
         必須フィールド
         - username
         - email
         - password
-
-        テスト項目
-        - シリアライザが無効であること
-        - 検証済みデータが空であること
-        - シリアライズされたデータが空であること
-        - 存在しないフィールドに対して"This field is required."というエラーメッセージが表示されること
         """
         missing_required_fields_data: dict = {"username": "pong"}
         required_field_error_message: str = "This field is required."
@@ -78,8 +66,6 @@ class UserSerializerTestCase(TestCase):
             serializer.errors["password"][0], required_field_error_message
         )
 
-    # todo: invalidなserializerのテストを書く
-
     def test_validate_empty_data(self) -> None:
         """
         空のデータの場合、期待通りにエラーを返すかを確認するテスト
@@ -88,10 +74,6 @@ class UserSerializerTestCase(TestCase):
         - username
         - email
         - password
-
-        テスト項目:
-        - シリアライザが無効であること
-        - 各必須フィールドに対して「This field is required.」というエラーメッセージが表示されること
         """
         empty_data: dict = {}
         required_field_error_message: str = "This field is required."
@@ -112,10 +94,6 @@ class UserSerializerTestCase(TestCase):
     def test_validate_none_data(self) -> None:
         """
         Noneの場合、期待通りにエラーを返すかを確認するテスト
-
-        テスト項目:
-        - シリアライザが無効であること。
-        - エラーメッセージ「No data provided」が「non_field_errors」に表示されること。
         """
         none_data: dict = None
         none_error_message: str = "No data provided"
