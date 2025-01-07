@@ -2,7 +2,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any, Final
 
-from . import match_enums
+from . import match_enums, ws_constants
 
 
 @dataclass
@@ -90,8 +90,8 @@ class MatchHandler:
 
         :param payload: プレイヤーからのデータを含むペイロード
         """
-        data: dict = payload.get("data", {})
-        stage: str = payload.get("stage", "")
+        data: dict = payload.get(ws_constants.DATA_KEY, {})
+        stage: str = payload.get(match_enums.Stage.key(), "")
         handler = self.stage_handlers.get(stage)
 
         # TODO: ステージごとのバリデーションも実装する必要あり
@@ -384,9 +384,9 @@ class MatchHandler:
         :return: 作成したメッセージ
         """
         return {
-            "category": "MATCH",
-            "payload": {
+            ws_constants.Category.key(): ws_constants.Category.MATCH.value,
+            ws_constants.PAYLOAD_KEY: {
                 match_enums.Stage.key(): stage.value,
-                "data": data,
+                ws_constants.DATA_KEY: data,
             },
         }
