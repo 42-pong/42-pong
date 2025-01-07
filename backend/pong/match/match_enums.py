@@ -13,7 +13,6 @@ class Stage(BaseEnum):
     READY: Final[str] = "READY"
     PLAY: Final[str] = "PLAY"
     END: Final[str] = "END"
-    NONE: Final[str] = "NONE"
 
 
 class Mode(BaseEnum):
@@ -22,9 +21,9 @@ class Mode(BaseEnum):
 
 
 class Team(BaseEnum):
-    One: Final[str] = "1"
-    Two: Final[str] = "2"
-    Empty: Final[str] = ""
+    ONE: Final[str] = "1"
+    TWO: Final[str] = "2"
+    EMPTY: Final[str] = ""
 
 
 class Move(BaseEnum):

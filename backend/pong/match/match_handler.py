@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Any, Final
+from typing import Any, Final, Optional
 
 from . import match_enums, ws_constants
 
@@ -27,7 +27,7 @@ class MatchHandler:
     BALL_SPEED: Final[int] = 2
 
     # クラス属性
-    stage: match_enums.Stage
+    stage: Optional[match_enums.Stage]
     paddle1: PosStruct
     paddle2: PosStruct
     ball: PosStruct
@@ -118,7 +118,7 @@ class MatchHandler:
         message = self._build_message(
             match_enums.Stage.INIT,
             {
-                match_enums.Team.key(): match_enums.Team.Empty.value,
+                match_enums.Team.key(): match_enums.Team.EMPTY.value,
                 "display_name1": "",
                 "display_name2": "",
                 "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
@@ -165,9 +165,9 @@ class MatchHandler:
         勝者を決定し、グループから退出し、ゲーム状態を初期化。
         """
         win_team: str = (
-            match_enums.Team.One.value
+            match_enums.Team.ONE.value
             if self.score1 > self.score2
-            else match_enums.Team.Two.value
+            else match_enums.Team.TWO.value
         )
         message = self._build_message(
             match_enums.Stage.END,
@@ -190,13 +190,13 @@ class MatchHandler:
             case match_enums.Move.UP.value:
                 if (
                     paddle_move.get(match_enums.Team.key())
-                    == match_enums.Team.One.value
+                    == match_enums.Team.ONE.value
                     and self.paddle1.y > 0
                 ):
                     self.paddle1.y -= self.PADDLE_SPEED
                 elif (
                     paddle_move.get(match_enums.Team.key())
-                    == match_enums.Team.Two.value
+                    == match_enums.Team.TWO.value
                     and self.paddle2.y > 0
                 ):
                     self.paddle2.y -= self.PADDLE_SPEED
@@ -204,13 +204,13 @@ class MatchHandler:
             case match_enums.Move.DOWN.value:
                 if (
                     paddle_move.get(match_enums.Team.key())
-                    == match_enums.Team.One.value
+                    == match_enums.Team.ONE.value
                     and self.paddle1.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
                     self.paddle1.y += self.PADDLE_SPEED
                 elif (
                     paddle_move.get(match_enums.Team.key())
-                    == match_enums.Team.Two.value
+                    == match_enums.Team.TWO.value
                     and self.paddle2.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
                     self.paddle2.y += self.PADDLE_SPEED
@@ -354,7 +354,7 @@ class MatchHandler:
 
         ゲームのステージ、スコア、プレイヤーの位置、ボールの位置を初期状態に戻す。
         """
-        self.stage = match_enums.Stage.NONE
+        self.stage = None
         # paddleの位置は左上とする
         self.paddle1 = PosStruct(
             x=10, y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2)
