@@ -1,15 +1,37 @@
+from typing import Final
+
 from django.contrib.auth.models import User
+from django.utils.crypto import get_random_string
 from rest_framework import serializers as def_serializers
 
 import utils.result
 
 from . import constants, serializers
 
+# 定数
+USERNAME_LENGTH: Final[int] = 7
+
 # 関数の結果用のResult型の型エイリアス
 CreatePlayerSerializerResult = utils.result.Result[
     serializers.PlayerSerializer, dict
 ]
 CreateAccountResult = utils.result.Result[User, dict]
+
+
+def get_unique_random_username() -> str:
+    """
+    ユニークかつランダムな文字列のusernameを生成する
+    UserModelのusernameとして使用する
+    ランダム文字列は英子文字・英大文字・数字の計62文字の組み合わせ
+
+    Returns:
+        str: ランダム文字列かつ、DBに存在しないusername
+    """
+    while True:
+        random_str: str = get_random_string(length=USERNAME_LENGTH)
+        if not User.objects.filter(username=random_str).exists():
+            break
+    return random_str
 
 
 def _create_user_related_player_serializer(
