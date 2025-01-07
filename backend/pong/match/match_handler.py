@@ -23,7 +23,7 @@ class MatchHandler:
     PADDLE_HEIGHT: Final[int] = 60
     PADDLE_WIDTH: Final[int] = 10
     PADDLE_SPEED: Final[int] = 5
-    BALL_RADIUS: Final[int] = 10
+    BALL_SIZE: Final[int] = 10
     BALL_SPEED: Final[int] = 2
 
     # クラス属性
@@ -217,9 +217,9 @@ class MatchHandler:
         self.ball.y += self.ball_speed.y
 
         # 上下の壁との衝突判定
-        if self.ball.y - self.BALL_RADIUS <= 0:
+        if self.ball.y - self.BALL_SIZE <= 0:
             self.ball_speed.y = abs(self.ball_speed.y)
-        elif self.ball.y + self.BALL_RADIUS >= self.HEIGHT:
+        elif self.ball.y + self.BALL_SIZE >= self.HEIGHT:
             self.ball_speed.y = -abs(self.ball_speed.y)
 
         # パドルとの衝突判定
@@ -227,10 +227,10 @@ class MatchHandler:
         self._process_ball_paddle_collision(self.paddle2, False)
 
         # 得点判定
-        if self.ball.x + self.BALL_RADIUS <= 0:
+        if self.ball.x + self.BALL_SIZE <= 0:
             self.score2 += 1
             self._reset_ball()
-        elif self.ball.x - self.BALL_RADIUS >= self.WIDTH:
+        elif self.ball.x - self.BALL_SIZE >= self.WIDTH:
             self.score1 += 1
             self._reset_ball()
 
@@ -250,11 +250,11 @@ class MatchHandler:
         """
         # 衝突判定
         if (
-            self.ball.x - self.BALL_RADIUS <= paddle_pos.x + self.PADDLE_WIDTH
-            and self.ball.x + self.BALL_RADIUS >= paddle_pos.x
-            and self.ball.y - self.BALL_RADIUS
+            self.ball.x - self.BALL_SIZE <= paddle_pos.x + self.PADDLE_WIDTH
+            and self.ball.x + self.BALL_SIZE >= paddle_pos.x
+            and self.ball.y - self.BALL_SIZE
             <= paddle_pos.y + self.PADDLE_HEIGHT
-            and self.ball.y + self.BALL_RADIUS >= paddle_pos.y
+            and self.ball.y + self.BALL_SIZE >= paddle_pos.y
         ):
             # ボールのx座標がパドルの側面に当たった場合
             # ボールの中心がパドルの端よりも自陣側に過ぎていたらx軸方向に跳ね返さない
@@ -369,7 +369,8 @@ class MatchHandler:
         ボールを中央に配置し、速度を設定する。
         """
         self.ball: PosStruct = PosStruct(
-            x=int(self.WIDTH / 2), y=int(self.HEIGHT / 2)
+            x=int(self.WIDTH / 2 - self.BALL_SIZE / 2),
+            y=int(self.HEIGHT / 2 - self.BALL_SIZE / 2),
         )
         self.ball_speed: PosStruct = PosStruct(
             x=self.BALL_SPEED, y=self.BALL_SPEED
