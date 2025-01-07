@@ -1,6 +1,12 @@
+from typing import Final
+
 from django.test import TestCase
 
 from oauth2 import models, serializers
+
+REQUIRED: Final[str] = "required"
+UNIQUE: Final[str] = "unique"
+NULL: Final[str] = "null"
 
 
 class UserSerializerTestCase(TestCase):
@@ -45,65 +51,49 @@ class UserSerializerTestCase(TestCase):
     def test_serializer_with_missing_required_field(self):
         """
         必須フィールドが存在しない場合、期待通りにエラーを返すかを確認するテスト
-
-        必須フィールド
-        - username
-        - email
-        - password
         """
         missing_required_fields_data: dict = {"username": "pong"}
-        required_field_error_message: str = "This field is required."
+        expected_fields: list[str] = [
+            # "username",
+            "email",
+            "password",
+        ]
         serializer: serializers.UserSerializer = self.Serializer(
             data=missing_required_fields_data
         )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.validated_data, {})
         self.assertEqual(serializer.data, {"username": "pong"})
-        self.assertEqual(
-            serializer.errors["email"][0], required_field_error_message
-        )
-        self.assertEqual(
-            serializer.errors["password"][0], required_field_error_message
-        )
+        for key in expected_fields:
+            self.assertEqual(serializer.errors[key][0].code, REQUIRED)
 
     def test_validate_empty_data(self) -> None:
         """
         空のデータの場合、期待通りにエラーを返すかを確認するテスト
-
-        必須フィールド
-        - username
-        - email
-        - password
         """
         empty_data: dict = {}
-        required_field_error_message: str = "This field is required."
+        expected_fields: list[str] = [
+            "username",
+            "email",
+            "password",
+        ]
         serializer: serializers.UserSerializer = self.Serializer(
             data=empty_data
         )
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(
-            serializer.errors["username"][0], required_field_error_message
-        )
-        self.assertEqual(
-            serializer.errors["email"][0], required_field_error_message
-        )
-        self.assertEqual(
-            serializer.errors["password"][0], required_field_error_message
-        )
+        for key in expected_fields:
+            self.assertEqual(serializer.errors[key][0].code, REQUIRED)
 
     def test_validate_none_data(self) -> None:
         """
         Noneの場合、期待通りにエラーを返すかを確認するテスト
         """
         none_data: dict = None
-        none_error_message: str = "No data provided"
         serializer: serializers.UserSerializer = self.Serializer(
             data=none_data
         )
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(
-            serializer.errors["non_field_errors"][0], none_error_message
-        )
+        self.assertEqual(serializer.errors["non_field_errors"][0].code, NULL)
 
     # todo: invalidなserializerのテストを書く
 
@@ -162,57 +152,47 @@ class OAuth2SerializerTestCase(TestCase):
 
         serializer = self.Serializer(data=duplicate_data)
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(serializer.errors["provider_id"][0].code, "unique")
+        self.assertEqual(serializer.errors["provider_id"][0].code, UNIQUE)
 
     def test_serializer_with_missing_required_field(self) -> None:
         """
         必須フィールドが存在しない場合、期待通りにエラーを返すかを確認するテスト
-
-        必須フィールド
-        - user
-        - provider
-        - provider_id
         """
         missing_required_fields_data: dict = {"provider": "42"}
-        required_field_error_message: str = "This field is required."
         serializer: serializers.OAuth2Serializer = self.Serializer(
             data=missing_required_fields_data
         )
+        expected_fields: list[str] = [
+            "user",
+            # "provider",
+            "provider_id",
+        ]
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.validated_data, {})
-        self.assertEqual(serializer.errors["user"][0], required_field_error_message)
-        self.assertEqual(
-            serializer.errors["provider_id"][0], required_field_error_message
-        )
+        for key in expected_fields:
+            self.assertEqual(serializer.errors[key][0].code, REQUIRED)
 
     def test_validate_empty_data(self) -> None:
         """
         空のデータの場合、期待通りにエラーを返すかを確認するテスト
-
-        必須フィールド
-        - user
-        - provider
-        - provider_id
         """
         empty_data: dict = {}
-        required_field_error_message: str = "This field is required."
         serializer = self.Serializer(data=empty_data)
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(serializer.errors["user"][0], required_field_error_message)
-        self.assertEqual(serializer.errors["provider"][0], required_field_error_message)
-        self.assertEqual(
-            serializer.errors["provider_id"][0], required_field_error_message
-        )
+        expected_fields: list[str] = ["user", "provider", "provider_id"]
+        for key in expected_fields:
+            self.assertEqual(serializer.errors[key][0].code, REQUIRED)
 
     def test_validate_none_data(self) -> None:
         """
         Noneの場合、期待通りにエラーを返すかを確認するテスト
         """
         none_data: dict = None
-        none_error_message: str = "No data provided"
         serializer = self.Serializer(data=none_data)
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(serializer.errors["non_field_errors"][0], none_error_message)
+        self.assertEqual(serializer.errors["non_field_errors"][0].code, NULL)
+
+    # todo: invalidなserializerのテストを書く
 
 
 class FortyTwoTokenSerializerTestCase(TestCase):
@@ -253,27 +233,12 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             "scope": "public",
         }
         self.assertTrue(serializer.is_valid())
-        self.assertEqual(
-            serializer.validated_data["access_token"],
-            expected_data["access_token"],
-        )
-        self.assertEqual(
-            serializer.validated_data["token_type"],
-            expected_data["token_type"],
-        )
-        self.assertEqual(
-            serializer.validated_data["refresh_token"],
-            expected_data["refresh_token"],
-        )
-        self.assertEqual(
-            serializer.validated_data["scope"], expected_data["scope"]
-        )
-
-        self.assertEqual(
-            serializer.data["token_type"], expected_data["token_type"]
-        )
-        self.assertEqual(serializer.data["scope"], expected_data["scope"])
-        self.assertEqual(serializer.errors, {})
+        for key, expected_value in expected_data.items():
+            self.assertEqual(serializer.validated_data[key], expected_value)
+        for key in ["token_type", "scope"]:
+            self.assertEqual(serializer.data[key], expected_data[key])
+        for key in ["access_token", "refresh_token"]:
+            self.assertNotIn(key, serializer.data)
 
     def test_serializer_with_missing_required_field(self) -> None:
         """
@@ -294,9 +259,7 @@ class FortyTwoTokenSerializerTestCase(TestCase):
         self.assertEqual(serializer.validated_data, {})
         self.assertEqual(serializer.data, {"scope": "public"})
         for key in expected_fields:
-            self.assertEqual(
-                serializer.errors[key][0].code, "required"
-            )
+            self.assertEqual(serializer.errors[key][0].code, REQUIRED)
 
     def test_validate_empty_data(self) -> None:
         """
@@ -315,9 +278,7 @@ class FortyTwoTokenSerializerTestCase(TestCase):
         serializer: serializers.FortyTwoTokenSerializer = self.Serializer(data=empty_data)
         self.assertFalse(serializer.is_valid())
         for key in expected_fields:
-            self.assertEqual(
-                serializer.errors[key][0].code, "required"
-            )
+            self.assertEqual(serializer.errors[key][0].code, REQUIRED)
 
     def test_validate_none_data(self) -> None:
         """
@@ -326,6 +287,6 @@ class FortyTwoTokenSerializerTestCase(TestCase):
         none_data: dict = None
         serializer: serializers.FortyTwoTokenSerializer = self.Serializer(data=none_data)
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(
-            serializer.errors["non_field_errors"][0].code, "null"
-        )
+        self.assertEqual(serializer.errors["non_field_errors"][0].code, "null")
+
+    # todo: invalidなserializerのテストを書く
