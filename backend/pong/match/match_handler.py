@@ -1,15 +1,8 @@
 import asyncio
 from dataclasses import dataclass
-from enum import Enum
 from typing import Any, Final
 
-
-class Stage(Enum):
-    INIT = 1
-    READY = 2
-    PLAY = 3
-    END = 4
-    NONE = 5
+from . import match_enums
 
 
 @dataclass
@@ -34,7 +27,7 @@ class MatchHandler:
     BALL_SPEED: Final[int] = 2
 
     # クラス属性
-    stage: Stage
+    stage: match_enums.Stage
     paddle1: PosStruct
     paddle2: PosStruct
     ball: PosStruct
@@ -54,10 +47,10 @@ class MatchHandler:
         :param channel_name: チャネル名
         """
         self.stage_handlers = {
-            "INIT": self._handle_init,
-            "READY": self._handle_ready,
-            "PLAY": self._handle_play,
-            "END": self._handle_end,
+            match_enums.Stage.INIT.value: self._handle_init,
+            match_enums.Stage.READY.value: self._handle_ready,
+            match_enums.Stage.PLAY.value: self._handle_play,
+            match_enums.Stage.END.value: self._handle_end,
         }
         self.channel_layer = channel_layer
         self.channel_name = channel_name
@@ -112,9 +105,9 @@ class MatchHandler:
 
         :param data: 初期化に必要なデータ
         """
-        self.stage = Stage.INIT
+        self.stage = match_enums.Stage.INIT
         # プレイモードによって所属させるグループを返る
-        if data.get("mode") == "local":
+        if data.get(match_enums.Mode.key()) == match_enums.Mode.LOCAL.value:
             self.group_name = "solo_match"
 
         await self._add_to_group()
@@ -123,9 +116,9 @@ class MatchHandler:
         # localモードの場合teamやdisplay_nameは必要ない
         # TODO: ここら辺べた書きになっているから何か他にいい方法がないか
         message = self._build_message(
-            "INIT",
+            match_enums.Stage.INIT,
             {
-                "team": "",
+                match_enums.Team.key(): match_enums.Team.Empty.value,
                 "display_name1": "",
                 "display_name2": "",
                 "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
@@ -141,14 +134,14 @@ class MatchHandler:
 
         :param data: 準備状態に必要なデータ
         """
-        self.stage = Stage.READY
-        message = self._build_message("READY", {})
+        self.stage = match_enums.Stage.READY
+        message = self._build_message(match_enums.Stage.READY, {})
         await self._send_to_group(message)
 
         # ゲーム状況の更新をする非同期処理を並列で実行する
-        if self.stage == Stage.READY:
+        if self.stage == match_enums.Stage.READY:
             asyncio.create_task(self._send_match_state())
-            self.stage = Stage.PLAY
+            self.stage = match_enums.Stage.PLAY
 
     async def _handle_play(self, data: dict) -> None:
         """
@@ -164,9 +157,13 @@ class MatchHandler:
 
         勝者を決定し、グループから退出し、ゲーム状態を初期化。
         """
-        win_team: str = "1" if self.score1 > self.score2 else "2"
+        win_team: str = (
+            match_enums.Team.One.value
+            if self.score1 > self.score2
+            else match_enums.Team.Two.value
+        )
         message = self._build_message(
-            "END",
+            match_enums.Stage.END,
             {"win": win_team, "score1": self.score1, "score2": self.score2},
         )
         await self._send_to_group(message)
@@ -182,21 +179,31 @@ class MatchHandler:
 
         :param paddle_move: プレイヤーの移動情報
         """
-        match paddle_move.get("move"):
-            case "UP":
-                if paddle_move.get("team") == "1" and self.paddle1.y > 0:
+        match paddle_move.get(match_enums.Move.key()):
+            case match_enums.Move.UP.value:
+                if (
+                    paddle_move.get(match_enums.Team.key())
+                    == match_enums.Team.One.value
+                    and self.paddle1.y > 0
+                ):
                     self.paddle1.y -= self.PADDLE_SPEED
-                elif paddle_move.get("team") == "2" and self.paddle2.y > 0:
+                elif (
+                    paddle_move.get(match_enums.Team.key())
+                    == match_enums.Team.Two.value
+                    and self.paddle2.y > 0
+                ):
                     self.paddle2.y -= self.PADDLE_SPEED
 
-            case "DOWN":
+            case match_enums.Move.DOWN.value:
                 if (
-                    paddle_move.get("team") == "1"
+                    paddle_move.get(match_enums.Team.key())
+                    == match_enums.Team.One.value
                     and self.paddle1.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
                     self.paddle1.y += self.PADDLE_SPEED
                 elif (
-                    paddle_move.get("team") == "2"
+                    paddle_move.get(match_enums.Team.key())
+                    == match_enums.Team.Two.value
                     and self.paddle2.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
                     self.paddle2.y += self.PADDLE_SPEED
@@ -229,7 +236,7 @@ class MatchHandler:
 
         # 勝利判定
         if self.score1 >= 5 or self.score2 >= 5:
-            self.stage = Stage.END
+            self.stage = match_enums.Stage.END
 
     def _process_ball_paddle_collision(
         self, paddle_pos: PosStruct, is_paddle1: bool
@@ -280,14 +287,14 @@ class MatchHandler:
         ゲームが終了するまで繰り返し実行される。
         """
         last_update = asyncio.get_event_loop().time()
-        while self.stage != Stage.END:
+        while self.stage != match_enums.Stage.END:
             await asyncio.sleep(1 / 60)
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
             if delta >= 1 / 60:
                 self._update_match_state()
                 game_state = self._build_message(
-                    "PLAY",
+                    match_enums.Stage.PLAY,
                     {
                         "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
                         "paddle2": {"x": self.paddle2.x, "y": self.paddle2.y},
@@ -340,7 +347,7 @@ class MatchHandler:
 
         ゲームのステージ、スコア、プレイヤーの位置、ボールの位置を初期状態に戻す。
         """
-        self.stage = Stage.NONE
+        self.stage = match_enums.Stage.NONE
         # paddleの位置は左上とする
         self.paddle1 = PosStruct(
             x=10, y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2)
@@ -368,7 +375,7 @@ class MatchHandler:
             x=self.BALL_SPEED, y=self.BALL_SPEED
         )
 
-    def _build_message(self, stage: str, data: dict) -> dict:
+    def _build_message(self, stage: match_enums.Stage, data: dict) -> dict:
         """
         メッセージを作成。
 
@@ -376,4 +383,10 @@ class MatchHandler:
         :param data: ステージに関連するデータ
         :return: 作成したメッセージ
         """
-        return {"category": "MATCH", "payload": {"stage": stage, "data": data}}
+        return {
+            "category": "MATCH",
+            "payload": {
+                match_enums.Stage.key(): stage.value,
+                "data": data,
+            },
+        }
