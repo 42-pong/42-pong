@@ -31,7 +31,6 @@ class AccountsTests(test.APITestCase):
         """
         account_data: dict = {
             "user": {
-                USERNAME: "testuser",
                 EMAIL: "testuser@example.com",
                 PASSWORD: "testpassword12345",
             }
@@ -43,31 +42,31 @@ class AccountsTests(test.APITestCase):
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response_user[USERNAME], "testuser")
         self.assertEqual(response_user[EMAIL], "testuser@example.com")
         # passwordは返されない
         self.assertNotIn(PASSWORD, response_user)
 
         # DBの状態を確認
         self.assertEqual(models.Player.objects.count(), 1)
+
+        # emailからplayerを取得できる/例外がraiseされないことを確認
         player: models.Player = models.Player.objects.get(
-            user__username="testuser"
+            user__email="testuser@example.com"
         )
         self.assertEqual(player.user.email, "testuser@example.com")
 
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
-    def test_create_account_with_invalid_data(self) -> None:
+    def test_create_account_with_invalid_email(self) -> None:
         """
-        無効なデータでアカウントを作成するテスト
+        不正なemailの形式でアカウントを作成するテスト
         status 400 が返されることを確認
-        ErrorDetail に username, email が含まれることを確認
+        ErrorDetail に email が含まれることを確認
         """
         account_data: dict = {
             "user": {
-                USERNAME: "",  # 空のusername
-                EMAIL: "invalid-email@none",  # 不正なemail
+                EMAIL: "invalid-email@none",  # 不正なemail形式
                 PASSWORD: "testpassword12345",
             }
         }
@@ -79,16 +78,12 @@ class AccountsTests(test.APITestCase):
         # responseの内容を確認
         # response.data = {
         #     "error": {
-        #         "username": [
-        #             ErrorDetail(string="This field may not be blank.", code="blank")
-        #         ],
         #         "email": [
         #             ErrorDetail(string="Enter a valid email address.", code="invalid")
         #         ],
         #     }
         # }
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(USERNAME, response_error)
         self.assertIn(EMAIL, response_error)
 
         # DBの状態を確認

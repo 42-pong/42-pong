@@ -26,7 +26,6 @@ class AccountCreateView(views.APIView):
                     "Example request",
                     value={
                         constants.PlayerFields.USER: {
-                            constants.UserFields.USERNAME: "username",
                             constants.UserFields.EMAIL: "user@example.com",
                             constants.UserFields.PASSWORD: "password",
                         }
@@ -79,6 +78,10 @@ class AccountCreateView(views.APIView):
 
         # サインアップ専用のUserSerializerを作成
         user_data: dict = request.data.pop(constants.PlayerFields.USER)
+        # usernameのみBEがランダムな文字列をセット
+        user_data[constants.UserFields.USERNAME] = (
+            create_account.get_unique_random_username()
+        )
         user_serializer: serializers.UserSerializer = (
             serializers.UserSerializer(data=user_data)
         )
