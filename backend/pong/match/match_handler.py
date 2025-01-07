@@ -155,7 +155,7 @@ class MatchHandler:
         """
         プレーヤーがmatchを退出したときの処理を行う。
         """
-        await self._remove_from_group()
+        await self.remove_from_group()
         self._reset_state()  # 初期化
 
     async def _end_process(self) -> None:
@@ -175,7 +175,7 @@ class MatchHandler:
         )
         await self._send_to_group(message)
         # matchが終わったのでグループから削除
-        await self._remove_from_group()
+        await self.remove_from_group()
         # 初期化
         self._reset_state()
 
@@ -327,7 +327,7 @@ class MatchHandler:
         """
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
-    async def _remove_from_group(self) -> None:
+    async def remove_from_group(self) -> None:
         """
         マッチをグループから削除。
 

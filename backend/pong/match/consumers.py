@@ -15,7 +15,7 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code: int) -> None:
-        pass
+        await self.match_handler.remove_from_group()
 
     async def receive_json(self, message: dict) -> None:
         category: str = message.get(ws_constants.Category.key(), "")
