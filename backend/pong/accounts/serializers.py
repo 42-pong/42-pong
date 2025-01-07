@@ -59,13 +59,15 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data: dict) -> User:
         """
         新規Userを作成する
+        create_user(): emailのnormalize、passwordのhash化などを自動で行う
+
+        Args:
+            validated_data: バリデーション後の全てのuser fieldが含まれるdict
+
+        Returns:
+            User: 新規作成しDBに追加されたUser
         """
-        # todo: usernameはBEが自動生成する
-        user: User = User.objects.create_user(
-            username=validated_data[constants.UserFields.USERNAME],
-            email=validated_data[constants.UserFields.EMAIL],
-            password=validated_data[constants.UserFields.PASSWORD],
-        )
+        user: User = User.objects.create_user(**validated_data)
         return user
 
 
