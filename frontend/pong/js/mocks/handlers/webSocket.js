@@ -3,7 +3,7 @@ import { Endpoints } from "../../Endpoints";
 import { WebSocketEnums } from "../../enums/WebSocketEnums";
 import { matchPayloadHandler } from "../utils/websocket/matchPayloadHandler";
 
-const mock = ws.link(Endpoints.WEBSOCKET_BASE_URL.href);
+const mock = ws.link(Endpoints.WEBSOCKET.href);
 
 export const handlers = [
   mock.addEventListener("connection", ({ client }) => {
