@@ -1,8 +1,12 @@
+import logging
+
 from channels.generic.websocket import (  # type: ignore
     AsyncJsonWebsocketConsumer,
 )
 
 from . import match_handler, ws_constants
+
+logger = logging.getLogger("django")
 
 
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
@@ -18,14 +22,21 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         await self.match_handler.cleanup()
 
     async def receive_json(self, message: dict) -> None:
-        category: str = message.get(ws_constants.Category.key(), "")
-        payload: dict = message.get(ws_constants.PAYLOAD_KEY, {})
+        try:
+            category: str = message[ws_constants.Category.key()]
+            payload: dict = message[ws_constants.PAYLOAD_KEY]
 
-        match category:
-            case ws_constants.Category.MATCH.value:
-                await self.match_handler.handle(payload)
-            case _:
-                pass
+            match category:
+                case ws_constants.Category.MATCH.value:
+                    await self.match_handler.handle(payload)
+                case _:
+                    logger.warning(f"Unknown category received: {category}")
+
+        except Exception as e:
+            # サーバー側の予期しないエラーが起きても切断したくないのでここで拾い、ログレベルerrorで出力する
+            logger.error(
+                f"Unexpected server error occurred: {str(e)}, message: {message}"
+            )
 
     async def group_message(self, event: dict) -> None:
         message = event["message"]
