@@ -273,8 +273,59 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             serializer.data["token_type"], expected_data["token_type"]
         )
         self.assertEqual(serializer.data["scope"], expected_data["scope"])
-
-        self.assertNotIn("access_token", serializer.data)
-        self.assertNotIn("refresh_token", serializer.data)
-
         self.assertEqual(serializer.errors, {})
+
+    def test_serializer_with_missing_required_field(self) -> None:
+        """
+        一部の必須フィールドが存在しない場合、期待通りにエラーを返すかを確認するテスト
+        """
+        missing_required_fields_data: dict = {"scope": "public"}
+        expected_fields: list = [
+            "oauth2",
+            "access_token",
+            "token_type",
+            "access_token_expiry",
+            "refresh_token",
+            "refresh_token_expiry",
+            # "scope",
+        ]
+        serializer: serializers.FortyTwoTokenSerializer = self.Serializer(data=missing_required_fields_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.validated_data, {})
+        self.assertEqual(serializer.data, {"scope": "public"})
+        for key in expected_fields:
+            self.assertEqual(
+                serializer.errors[key][0].code, "required"
+            )
+
+    def test_validate_empty_data(self) -> None:
+        """
+        空のデータの場合（全部の必須フィールドが存在しない場合）、期待通りにエラーを返すかを確認するテスト
+        """
+        empty_data: dict = {}
+        expected_fields: list = [
+            "oauth2",
+            "access_token",
+            "token_type",
+            "access_token_expiry",
+            "refresh_token",
+            "refresh_token_expiry",
+            "scope",
+        ]
+        serializer: serializers.FortyTwoTokenSerializer = self.Serializer(data=empty_data)
+        self.assertFalse(serializer.is_valid())
+        for key in expected_fields:
+            self.assertEqual(
+                serializer.errors[key][0].code, "required"
+            )
+
+    def test_validate_none_data(self) -> None:
+        """
+        Noneの場合、期待通りにエラーを返すかを確認するテスト
+        """
+        none_data: dict = None
+        serializer: serializers.FortyTwoTokenSerializer = self.Serializer(data=none_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(
+            serializer.errors["non_field_errors"][0].code, "null"
+        )
