@@ -59,6 +59,42 @@ class UserSerializerTests(TestCase):
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
+    def test_user_serializer_none_field_username(self) -> None:
+        """
+        必須フィールド"username"が存在しない場合にエラーになることを確認する
+        """
+        self.user_data.pop(USERNAME)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(USERNAME, serializer.errors)
+
+    def test_user_serializer_none_field_email(self) -> None:
+        """
+        必須フィールド"email"が存在しない場合にエラーになることを確認する
+        """
+        self.user_data.pop(EMAIL)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(EMAIL, serializer.errors)
+
+    def test_user_serializer_none_field_password(self) -> None:
+        """
+        必須フィールド"password"が存在しない場合にエラーになることを確認する
+        """
+        self.user_data.pop(PASSWORD)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(PASSWORD, serializer.errors)
+
     def test_user_serializer_empty_username(self) -> None:
         """
         必須フィールド"username"が空の場合にエラーになることを確認する
