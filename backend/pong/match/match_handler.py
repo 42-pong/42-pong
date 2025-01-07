@@ -153,6 +153,13 @@ class MatchHandler:
 
     async def _handle_end(self) -> None:
         """
+        プレーヤーがmatchを退出したときの処理を行う。
+        """
+        await self._remove_from_group()
+        self._reset_state()  # 初期化
+
+    async def _end_process(self) -> None:
+        """
         ゲーム終了時の処理。
 
         勝者を決定し、グループから退出し、ゲーム状態を初期化。
@@ -309,7 +316,7 @@ class MatchHandler:
                 await asyncio.sleep(1 / 60 - delta)
 
         # ENDステージの処理
-        await self._handle_end()
+        await self._end_process()
 
     # グループ関係のメソッド
     async def _add_to_group(self) -> None:
