@@ -46,14 +46,18 @@ class AccountsTests(test.APITestCase):
         # passwordは返されない
         self.assertNotIn(PASSWORD, response_user)
 
-        # DBの状態を確認
+        # DBにUser,Playerが1つずつ作成されていることを確認
+        self.assertEqual(models.User.objects.count(), 1)
         self.assertEqual(models.Player.objects.count(), 1)
 
         # emailからplayerを取得できる/例外がraiseされないことを確認
         player: models.Player = models.Player.objects.get(
             user__email="testuser@example.com"
         )
-        self.assertEqual(player.user.email, "testuser@example.com")
+        # playerから取得したランダム文字列usernameのUserが実際にDBに存在するか確認
+        self.assertTrue(
+            models.User.objects.filter(username=player.user.username).exists()
+        )
 
     # -------------------------------------------------------------------------
     # エラーケース
@@ -86,5 +90,6 @@ class AccountsTests(test.APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(EMAIL, response_error)
 
-        # DBの状態を確認
+        # DBにUser,Playerが作成されていないことを確認
+        self.assertEqual(models.User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
