@@ -33,6 +33,9 @@ class CreateAccountTests(TestCase):
             # この関数ではerrorにならない想定
             raise AssertionError(self.mock_user_serializer.errors)
 
+    # -------------------------------------------------------------------------
+    # 正常ケース
+    # -------------------------------------------------------------------------
     def test_create_account_with_valid_user_serializer(self) -> None:
         """
         Userをmodelに設定した有効なUserSerializerを使ってアカウント作成できるかを確認する
@@ -47,3 +50,25 @@ class CreateAccountTests(TestCase):
 
         user: User = create_account_result.unwrap()
         self.assertEqual(user.username, "testuser")
+
+    def test_get_unique_random_username_string(self) -> None:
+        """
+        get_unique_random_username()のユニットテスト
+        文字数と、英数字からなるusernameが生成されていることを確認
+        """
+        random_username: str = create_account.get_unique_random_username()
+
+        self.assertEqual(len(random_username), create_account.USERNAME_LENGTH)
+        self.assertTrue(all(char.isalnum() for char in random_username))
+
+    def test_get_unique_random_username_unique(self) -> None:
+        """
+        get_unique_random_username()のユニットテスト
+        生成されたusernameがユニークであることを軽く確認
+        """
+        for _ in range(5):
+            random_username: str = create_account.get_unique_random_username()
+
+            self.assertFalse(
+                User.objects.filter(username=random_username).exists()
+            )
