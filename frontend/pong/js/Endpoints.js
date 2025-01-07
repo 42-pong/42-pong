@@ -1,6 +1,7 @@
 // TODO: バックエンドのエントポイントベースを環境変数からのものになるように改善
-const BASE_URL = new URL("http://localhost:8000");
-const WEBSOCKET_BASE_URL = new URL("ws://localhost:8000/ws/match/");
+const HOST = "localhost:8000";
+const BASE_URL = new URL(`http://${HOST}`);
+const WEBSOCKET_BASE_URL = new URL("/ws/match/", `ws://${HOST}`);
 
 export const Endpoints = Object.freeze({
   HEALTH: new URL("/api/health/", BASE_URL),
