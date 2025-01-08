@@ -10,6 +10,12 @@ UNIQUE: Final[str] = "unique"
 NULL: Final[str] = "null"
 
 
+# todo リファクタリング
+# - setUpで各クラスで必要なフィールドを定義する。（relations.pyの時も使用すると思うので、unitディレクトリの下で定義する方が良さそう）
+#   定数用ファイルで定義するのもありかも
+# - 共通のテストパターンはBaseSerializerTestCaseにまとめる
+
+
 class UserSerializerTestCase(TestCase):
     def setUp(self) -> None:
         """
@@ -146,7 +152,9 @@ class OAuth2SerializerTestCase(TestCase):
             "provider_id": "12345",
         }
 
-        serializer = self.Serializer(data=duplicate_data)
+        serializer: serializers.OAuth2Serializer = self.Serializer(
+            data=duplicate_data
+        )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["provider_id"][0].code, UNIQUE)
 
@@ -173,7 +181,9 @@ class OAuth2SerializerTestCase(TestCase):
         空のデータの場合、期待通りにエラーを返すかを確認するテスト
         """
         empty_data: dict = {}
-        serializer = self.Serializer(data=empty_data)
+        serializer: serializers.OAuth2Serializer = self.Serializer(
+            data=empty_data
+        )
         self.assertFalse(serializer.is_valid())
         expected_fields: list[str] = ["user", "provider", "provider_id"]
         for key in expected_fields:
@@ -214,7 +224,9 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             "refresh_token_expiry": "2025-01-01T00:00:00Z",
             "scope": "public",
         }
-        serializer = self.Serializer(data=token_data)
+        serializer: serializers.FortyTwoTokenSerializer = self.Serializer(
+            data=token_data
+        )
         # todo: datetimeについてのテストは時間がかかりそうなため後で書く
         #       - access_token_expiry
         #       - refresh_token_expiry
@@ -248,7 +260,9 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             "refresh_token_expiry": "2025-01-01T00:00:00Z",
             "scope": "public",
         }
-        serializer = self.Serializer(data=token_data)
+        serializer: serializers.FortyTwoTokenSerializer = self.Serializer(
+            data=token_data
+        )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["token_type"][0].code, INVALID)
 
