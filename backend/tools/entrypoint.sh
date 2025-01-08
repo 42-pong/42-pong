@@ -4,7 +4,7 @@
 set -eux
 
 migrate_db() {
-    # todo: makemigrationsなど
+    python3 manage.py makemigrations --noinput
     python3 manage.py migrate --noinput
 }
 
