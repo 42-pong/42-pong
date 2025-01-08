@@ -1,8 +1,11 @@
 # views.py
+from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 import requests
+from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
@@ -17,6 +20,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from pong import settings
+
+from . import models, serializers
 
 
 class OAuth2BaseView(APIView):
@@ -150,16 +155,81 @@ class OAuth2CallbackView(OAuth2BaseView):
             "client_id": settings.OAUTH2_CLIENT_ID,
             "client_secret": settings.OAUTH2_CLIENT_SECRET_KEY,
         }
-        response: requests.models.Response = requests.post(
+        token_response: requests.models.Response = requests.post(
             settings.OAUTH2_TOKEN_ENDPOINT,
             data=request_data,
         )
-        tokens = response.json()
+        tokens = token_response.json()
+        user_response = requests.get(
+            "https://api.intra.42.fr/v2/me",
+            headers={"Authorization": f"Bearer {tokens.get('access_token')}"},
+        )
+        user_info = user_response.json()
+
+        oauth2_user_data: dict[str, str] = {
+            # todo: 重複を防ぐget_random_stringのラッパー関数作成
+            "username": get_random_string(12),
+            "email": user_info.get("email"),
+            # todo; パスワードは必須のため(仮)
+            "password": "",
+        }
+        oauth2_user_serializer: serializers.UserSerializer = (
+            serializers.UserSerializer(data=oauth2_user_data)
+        )
+        oauth2_user_serializer.is_valid(raise_exception=True)
+        new_oauth2_user: User = oauth2_user_serializer.save()
+
+        oauth2_data = {
+            "user": new_oauth2_user.id,
+            "provider": "42",
+            "provider_id": user_info.get("id"),
+        }
+        oauth2_serializer: serializers.OAuth2Serializer = (
+            serializers.OAuth2Serializer(data=oauth2_data)
+        )
+        oauth2_serializer.is_valid(raise_exception=True)
+        new_oauth2: models.OAuth2 = oauth2_serializer.save()
+
+        forty_two_token_data = {
+            "oauth2": new_oauth2.id,
+            "access_token": tokens.get("access_token"),
+            "token_type": tokens.get("token_type"),
+            "access_token_expiry": datetime.now()
+            + timedelta(seconds=tokens.get("expires_in")),
+            "refresh_token": tokens.get("refresh_token"),
+            "refresh_token_expiry": datetime.fromtimestamp(
+                tokens.get("secret_valid_until")
+            ),
+            "scope": tokens.get("scope"),
+        }
+        forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
+            serializers.FortyTwoTokenSerializer(data=forty_two_token_data)
+        )
+        forty_two_token_serializer.is_valid(raise_exception=True)
+        new_forty_two_token: models.FortyTwoToken = (
+            forty_two_token_serializer.save()
+        )
+
         return Response(
             {
-                "token": tokens,
+                "user": {
+                    "id": new_oauth2_user.id,
+                    "username": new_oauth2_user.username,
+                    "email": new_oauth2_user.email,
+                },
+                "oauth2": {
+                    "id": new_oauth2.id,
+                    "user_id": new_oauth2.user_id,
+                    "provider": new_oauth2.provider,
+                    "provider_id": new_oauth2.provider_id,
+                },
+                "token": {
+                    "oauth2_id": new_forty_two_token.oauth2_id,
+                    "access_token": new_forty_two_token.access_token,
+                    "refresh_token": new_forty_two_token.refresh_token,
+                },
             },
-            status=response.status_code,
+            status=user_response.status_code,
         )
 
 
