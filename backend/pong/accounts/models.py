@@ -9,6 +9,7 @@ class Player(Model):
     Userモデルと1対1の関係を持つ
     """
 
+    # related_name: 紐づいている他のモデルから逆参照する際の名前(user.playerでPlayerを取得)
     user = OneToOneField(User, on_delete=CASCADE, related_name="player")
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)

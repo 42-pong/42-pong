@@ -1,9 +1,10 @@
+from django.contrib.auth.models import User
 from drf_spectacular import utils
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
 
-from . import constants, models, serializers
+from . import constants, create_account, serializers
 
 
 class AccountCreateView(views.APIView):
@@ -53,13 +54,13 @@ class AccountCreateView(views.APIView):
                 response={
                     "type": "object",
                     "properties": {
-                        "error": {"type": "string"},
+                        "error": {"type": ["string"]},
                     },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 400 response",
-                        value={"field": "error messages"},
+                        value={"error": {"field": ["error messages"]}},
                     ),
                 ],
             ),
@@ -71,27 +72,42 @@ class AccountCreateView(views.APIView):
     ) -> response.Response:
         """
         新規アカウントを作成するPOSTメソッド
-        requestをPlayerSerializerに渡してvalidationを行い、
+        requestをSerializerに渡してvalidationを行い、
         有効な場合はPlayerとUserを作成してDBに追加し、作成されたアカウント情報をresponseとして返す
         """
-        # requestをserializerに渡して変換とバリデーションを行う
-        player_serializer: serializers.PlayerSerializer = (
-            self.serializer_class(data=request.data)
+        # todo: pop()する前にrequestのfieldのvalidationが必要かも
+
+        # サインアップ専用のUserSerializerを作成
+        user_data: dict = request.data.pop(constants.PlayerFields.USER)
+        user_serializer: serializers.UserSerializer = (
+            serializers.UserSerializer(data=user_data)
         )
-        if not player_serializer.is_valid():
+        if not user_serializer.is_valid():
             return response.Response(
-                player_serializer.errors,
+                {"error": user_serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Account(PlayerとUser)を新規作成してDBに追加し、作成された情報を返す
-        player: models.Player = player_serializer.save()
+        # 作成したUserSerializerを使って新規アカウントを作成
+        create_account_result: create_account.CreateAccountResult = (
+            create_account.create_account(
+                user_serializer,
+                request.data,
+            )
+        )
+        if create_account_result.is_error:
+            return response.Response(
+                {"error": create_account_result.unwrap_error()},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user: User = create_account_result.unwrap()
         return response.Response(
             {
                 constants.PlayerFields.USER: {
-                    constants.UserFields.ID: player.user.id,
-                    constants.UserFields.USERNAME: player.user.username,
-                    constants.UserFields.EMAIL: player.user.email,
+                    constants.UserFields.ID: user.id,
+                    constants.UserFields.USERNAME: user.username,
+                    constants.UserFields.EMAIL: user.email,
                 }
             },
             status=status.HTTP_201_CREATED,

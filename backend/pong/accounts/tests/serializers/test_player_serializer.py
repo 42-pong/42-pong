@@ -1,5 +1,6 @@
 from typing import Final
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ... import constants, models, serializers
@@ -21,10 +22,37 @@ class PlayerSerializerTests(TestCase):
             EMAIL: "testuser_1@example.com",
             PASSWORD: "testpassword",
         }
-        # DB追加時に自動でセットされるID,CREATED_AT,UPDATED_ATは省略
-        self.player_data = {
-            USER: self.user_data,
+
+    def _create_user(self, user_data: dict) -> User:
+        """
+        Userを作成するヘルパーメソッド
+        """
+        user: User = User.objects.create_user(**user_data)
+        return user
+
+    def _create_player(self, player_data: dict) -> models.Player:
+        """
+        Playerを作成するヘルパーメソッド
+        """
+        player_serializer: serializers.PlayerSerializer = (
+            serializers.PlayerSerializer(data=player_data)
+        )
+        if not player_serializer.is_valid():
+            # この関数ではerrorにならない想定
+            raise AssertionError(player_serializer.errors)
+        player: models.Player = player_serializer.save()
+        return player
+
+    def _create_account(self, user_data: dict) -> models.Player:
+        """
+        Userと紐づくPlayerを作成するヘルパーメソッド
+        """
+        user: User = self._create_user(user_data)
+        player_data: dict = {
+            USER: user.id,
         }
+        player: models.Player = self._create_player(player_data)
+        return player
 
     # -------------------------------------------------------------------------
     # 正常ケース
@@ -33,8 +61,12 @@ class PlayerSerializerTests(TestCase):
         """
         正常なデータが渡された場合にエラーにならないことを確認する
         """
+        user: models.User = self._create_user(self.user_data)
+        player_data: dict = {
+            USER: user.id,
+        }
         serializer: serializers.PlayerSerializer = (
-            serializers.PlayerSerializer(data=self.player_data)
+            serializers.PlayerSerializer(data=player_data)
         )
 
         self.assertTrue(serializer.is_valid())
@@ -43,13 +75,7 @@ class PlayerSerializerTests(TestCase):
         """
         PlayerSerializerのcreate()メソッドが正常に動作することを確認する
         """
-        serializer: serializers.PlayerSerializer = (
-            serializers.PlayerSerializer(data=self.player_data)
-        )
-        if not serializer.is_valid():
-            # このテストではerrorにならない想定
-            raise AssertionError(serializer.errors)
-        player: models.Player = serializer.save()
+        player: models.Player = self._create_account(self.user_data)
 
         # todo: 現在Player独自のfieldがないため、紐づくUserのfieldのみ確認している
         #       今後Player独自のfieldが追加された時にテストも追加する
@@ -66,28 +92,19 @@ class PlayerSerializerTests(TestCase):
             EMAIL: "testuser_2@example.com",
             PASSWORD: "testpassword",
         }
-        player_data_2: dict = {
-            USER: user_data_2,
-        }
 
         # 2人共アカウントを作成し,正常に1対1で紐づいているか確認
-        for player_data in (self.player_data, player_data_2):
-            serializer: serializers.PlayerSerializer = (
-                serializers.PlayerSerializer(data=player_data)
-            )
-            if not serializer.is_valid():
-                # このテストではerrorにならない想定
-                raise AssertionError(serializer.errors)
-            player: models.Player = serializer.save()
+        for user_data in (self.user_data, user_data_2):
+            player: models.Player = self._create_account(user_data)
 
             # todo: Player独自のfieldが追加された時にテストも追加する
             self.assertEqual(
                 player.user.username,
-                player_data[USER][USERNAME],
+                user_data[USERNAME],
             )
             self.assertEqual(
                 player.user.email,
-                player_data[USER][EMAIL],
+                user_data[EMAIL],
             )
 
     # -------------------------------------------------------------------------
