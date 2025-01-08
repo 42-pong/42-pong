@@ -5,6 +5,7 @@ from django.test import TestCase
 from oauth2 import models, serializers
 
 REQUIRED: Final[str] = "required"
+INVALID: Final[str] = "invalid"
 UNIQUE: Final[str] = "unique"
 NULL: Final[str] = "null"
 
@@ -231,6 +232,25 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             self.assertEqual(serializer.data[key], expected_data[key])
         for key in ["access_token", "refresh_token"]:
             self.assertNotIn(key, serializer.data)
+
+    # todo: macの場合、FortyTwoTokenSerializerが正しく機能するかを確認するテスト
+
+    def test_invalid_token_type(self) -> None:
+        """
+        bearer, mac以外のトークンタイプが渡された場合、invalidのエラーコードを返すかどうかを確認
+        """
+        token_data: dict = {
+            "oauth2": self.oauth2.id,
+            "access_token": "valid_access_token",
+            "access_token_expiry": "2025-01-01T00:00:00Z",
+            "token_type": "type",
+            "refresh_token": "valid_refresh_token",
+            "refresh_token_expiry": "2025-01-01T00:00:00Z",
+            "scope": "public",
+        }
+        serializer = self.Serializer(data=token_data)
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.errors["token_type"][0].code, INVALID)
 
     def test_serializer_with_missing_required_field(self) -> None:
         """
