@@ -1,21 +1,21 @@
 .form-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
 }
 .form-container input {
-	margin: 10px 0;
-	padding: 10px;
-	width: 200px;
+  margin: 10px 0;
+  padding: 10px;
+  width: 200px;
 }
 .form-container button {
-	padding: 10px 20px;
-	margin-top: 20px;
+  padding: 10px 20px;
+  margin-top: 20px;
 }
 
 #login-form {
-	display: flex;
-	flex-direction: column;
-	align-items: centor;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
