@@ -76,14 +76,18 @@ class AccountCreateView(views.APIView):
         """
         # todo: pop()する前にrequestのfieldのvalidationが必要かも
 
+        def _create_user_serializer(
+            user_data: dict,
+        ) -> serializers.UserSerializer:
+            # usernameのみBEがランダムな文字列をセット
+            user_data[constants.UserFields.USERNAME] = (
+                create_account.get_unique_random_username()
+            )
+            return serializers.UserSerializer(data=user_data)
+
         # サインアップ専用のUserSerializerを作成
-        user_data: dict = request.data.pop(constants.PlayerFields.USER)
-        # usernameのみBEがランダムな文字列をセット
-        user_data[constants.UserFields.USERNAME] = (
-            create_account.get_unique_random_username()
-        )
-        user_serializer: serializers.UserSerializer = (
-            serializers.UserSerializer(data=user_data)
+        user_serializer: serializers.UserSerializer = _create_user_serializer(
+            request.data.pop(constants.PlayerFields.USER)
         )
         if not user_serializer.is_valid():
             return response.Response(
