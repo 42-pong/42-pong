@@ -38,7 +38,13 @@ class AccountsTests(test.APITestCase):
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
-        response_user: dict = response.data[USER]
+        # response.data == {
+        #     "status": "ok",
+        #     "data": {
+        #         "user": {...}
+        #     },
+        # }
+        response_user: dict = response.data["data"][USER]
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -77,11 +83,12 @@ class AccountsTests(test.APITestCase):
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
-        response_error: dict = response.data["error"]
+        response_error: dict = response.data["errors"]
 
         # responseの内容を確認
-        # response.data = {
-        #     "error": {
+        # response.data == {
+        #     "status": "error",
+        #     "errors": {
         #         "email": [
         #             ErrorDetail(string="Enter a valid email address.", code="invalid")
         #         ],

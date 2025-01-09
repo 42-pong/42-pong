@@ -7,6 +7,7 @@ from rest_framework import permissions, request, response, status, views
 from . import constants, create_account, serializers
 
 
+# todo: response形式は全app共通の形式のため、どこかにkey-valueを定義してそれを使用する
 class AccountCreateView(views.APIView):
     """
     新規アカウントを作成するビュー
@@ -40,11 +41,14 @@ class AccountCreateView(views.APIView):
                     utils.OpenApiExample(
                         "Example 201 response",
                         value={
-                            constants.PlayerFields.USER: {
-                                constants.UserFields.ID: 1,
-                                constants.UserFields.USERNAME: "username",
-                                constants.UserFields.EMAIL: "user@example.com",
-                            }
+                            "status": "ok",
+                            "data": {
+                                constants.PlayerFields.USER: {
+                                    constants.UserFields.ID: 1,
+                                    constants.UserFields.USERNAME: "username",
+                                    constants.UserFields.EMAIL: "user@example.com",
+                                },
+                            },
                         },
                     ),
                 ],
@@ -53,13 +57,17 @@ class AccountCreateView(views.APIView):
                 response={
                     "type": "object",
                     "properties": {
-                        "error": {"type": ["string"]},
+                        "status": {"type": ["string"]},
+                        "errors": {"type": ["dict"]},
                     },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 400 response",
-                        value={"error": {"field": ["error messages"]}},
+                        value={
+                            "status": "error",
+                            "errors": {"field": ["error messages"]},
+                        },
                     ),
                 ],
             ),
@@ -91,7 +99,7 @@ class AccountCreateView(views.APIView):
         )
         if not user_serializer.is_valid():
             return response.Response(
-                {"error": user_serializer.errors},
+                {"status": "error", "errors": user_serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -104,18 +112,24 @@ class AccountCreateView(views.APIView):
         )
         if create_account_result.is_error:
             return response.Response(
-                {"error": create_account_result.unwrap_error()},
+                {
+                    "status": "error",
+                    "errors": create_account_result.unwrap_error(),
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         user: User = create_account_result.unwrap()
         return response.Response(
             {
-                constants.PlayerFields.USER: {
-                    constants.UserFields.ID: user.id,
-                    constants.UserFields.USERNAME: user.username,
-                    constants.UserFields.EMAIL: user.email,
-                }
+                "status": "ok",
+                "data": {
+                    constants.PlayerFields.USER: {
+                        constants.UserFields.ID: user.id,
+                        constants.UserFields.USERNAME: user.username,
+                        constants.UserFields.EMAIL: user.email,
+                    }
+                },
             },
             status=status.HTTP_201_CREATED,
         )
