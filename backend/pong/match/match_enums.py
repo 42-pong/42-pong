@@ -16,8 +16,8 @@ class Stage(BaseEnum):
 
 
 class Mode(BaseEnum):
-    LOCAL: Final[str] = "local"
-    REMOTE: Final[str] = "remote"
+    LOCAL: Final[str] = "LOCAL"
+    REMOTE: Final[str] = "REMOTE"
 
 
 class Team(BaseEnum):
