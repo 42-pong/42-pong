@@ -74,7 +74,6 @@ class AccountCreateView(views.APIView):
         requestをSerializerに渡してvalidationを行い、
         有効な場合はPlayerとUserを作成してDBに追加し、作成されたアカウント情報をresponseとして返す
         """
-        # todo: pop()する前にrequestのfieldのvalidationが必要かも
 
         def _create_user_serializer(
             user_data: dict,
@@ -87,7 +86,8 @@ class AccountCreateView(views.APIView):
 
         # サインアップ専用のUserSerializerを作成
         user_serializer: serializers.UserSerializer = _create_user_serializer(
-            request.data.pop(constants.PlayerFields.USER)
+            # popしたいfieldが存在しない場合は空dictを渡し、UserSerializerでエラーになる
+            request.data.pop(constants.PlayerFields.USER, {})
         )
         if not user_serializer.is_valid():
             return response.Response(
