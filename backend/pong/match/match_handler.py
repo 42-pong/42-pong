@@ -305,6 +305,8 @@ class MatchHandler:
             delta = current_time - last_update
             if delta >= self.FPS:
                 self._update_match_state()
+                if self.stage == match_enums.Stage.END:
+                    break
                 game_state = self._build_message(
                     {
                         "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
