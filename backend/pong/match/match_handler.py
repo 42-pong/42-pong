@@ -20,11 +20,13 @@ class MatchHandler:
     # クラス定数
     HEIGHT: Final[int] = 400
     WIDTH: Final[int] = 600
+    PADDLE_POS_FROM_GOAL: Final[int] = WIDTH // 100
     PADDLE_HEIGHT: Final[int] = 60
     PADDLE_WIDTH: Final[int] = 10
     PADDLE_SPEED: Final[int] = 5
     BALL_SIZE: Final[int] = 10
     BALL_SPEED: Final[int] = 2
+    FPS: Final[float] = 1 / 60
 
     # クラス属性
     stage: Optional[match_enums.Stage]
@@ -294,16 +296,16 @@ class MatchHandler:
 
     async def _send_match_state(self) -> None:
         """
-        ゲーム状態を60FPSで定期的に送信する。
+        ゲーム状態を指定したFPSで定期的に送信する。
 
         ゲームが終了するまで繰り返し実行される。
         """
         last_update = asyncio.get_event_loop().time()
         while self.stage != match_enums.Stage.END:
-            await asyncio.sleep(1 / 60)
+            await asyncio.sleep(self.FPS)
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
-            if delta >= 1 / 60:
+            if delta >= self.FPS:
                 self._update_match_state()
                 game_state = self._build_message(
                     match_enums.Stage.PLAY,
@@ -318,7 +320,7 @@ class MatchHandler:
                 await self._send_to_group(game_state)
                 last_update = current_time
             else:
-                await asyncio.sleep(1 / 60 - delta)
+                await asyncio.sleep(self.FPS - delta)
 
         # ENDステージの処理
         await self._end_process()
@@ -366,10 +368,11 @@ class MatchHandler:
         """
         self.stage = None
         self.paddle1 = PosStruct(
-            x=10, y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2)
+            x=self.PADDLE_POS_FROM_GOAL,
+            y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2),
         )
         self.paddle2 = PosStruct(
-            x=self.WIDTH - self.PADDLE_WIDTH - 10,
+            x=self.WIDTH - self.PADDLE_WIDTH - self.PADDLE_POS_FROM_GOAL,
             y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2),
         )
         self._reset_ball()
