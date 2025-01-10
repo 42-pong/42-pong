@@ -163,8 +163,7 @@ class MatchHandler:
         ENDステージのメッセージが送られてきたときの処理
         プレーヤーがmatchを退出したときの処理を行う。
         """
-        await self.remove_from_group()
-        self._reset_state()  # 初期化
+        await self.cleanup()
 
     async def _end_process(self) -> None:
         """
@@ -181,10 +180,7 @@ class MatchHandler:
             {"win": win_team, "score1": self.score1, "score2": self.score2},
         )
         await self._send_to_group(message)
-        # matchが終わったのでグループから削除
-        await self.remove_from_group()
-        # 初期化
-        self._reset_state()
+        await self.cleanup()
 
     # ==============================
     # ゲームロジック関係のメソッド
@@ -337,7 +333,7 @@ class MatchHandler:
         """
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
-    async def remove_from_group(self) -> None:
+    async def _remove_from_group(self) -> None:
         """
         Consuerをグループから削除。
 
@@ -395,6 +391,15 @@ class MatchHandler:
         self.ball_speed: PosStruct = PosStruct(
             x=self.BALL_SPEED, y=self.BALL_SPEED
         )
+
+    async def cleanup(self) -> None:
+        """
+        ゲーム終了後のクリーンナップ処理
+        グループから削除し、状態を初期化する
+        """
+        if self.group_name != "":
+            await self._remove_from_group()
+        self._reset_state()
 
     def _build_message(self, data: dict) -> dict:
         """
