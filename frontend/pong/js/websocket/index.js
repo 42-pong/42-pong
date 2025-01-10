@@ -5,9 +5,7 @@ let globalWebSocket = null;
 
 const initWebSocket = () => {
   if (globalWebSocket !== null) return;
-  globalWebSocket = new WebSocketWrapper(
-    Endpoints.WEBSOCKET_BASE_URL,
-  );
+  globalWebSocket = new WebSocketWrapper(Endpoints.WEBSOCKET);
 };
 
 const getWebSocket = () => {

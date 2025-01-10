@@ -51,7 +51,7 @@ export class HomeView extends View {
     this.appendChild(status);
 
     const wsStatus = document.createElement("h2");
-    wsStatus.textContent = `${Endpoints.WEBSOCKET_BASE_URL.pathname}: ${this._getState().webSocketBaseStatus}`;
+    wsStatus.textContent = `${Endpoints.WEBSOCKET.pathname}: ${this._getState().webSocketBaseStatus}`;
     this.appendChild(wsStatus);
   }
 }
