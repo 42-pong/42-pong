@@ -100,6 +100,7 @@ class MatchHandler:
 
         # TODO: ステージごとのバリデーションも実装する必要あり
         # TODO: 適切なエラーハンドリングを実装
+        # TODO: ステージが順番通りに来ているか確認する処理必要
         if callable(handler):
             await handler(data)
 
@@ -121,7 +122,6 @@ class MatchHandler:
         # LOCALモードの場合teamやdisplay_nameは必要ない
         # TODO: ここら辺べた書きになっているから何か他にいい方法がないか
         message = self._build_message(
-            match_enums.Stage.INIT,
             {
                 match_enums.Team.key(): match_enums.Team.EMPTY.value,
                 "display_name1": "",
@@ -140,13 +140,12 @@ class MatchHandler:
         :param data: 準備状態に必要なデータ
         """
         self.stage = match_enums.Stage.READY
-        message = self._build_message(match_enums.Stage.READY, {})
+        message = self._build_message({})
         await self._send_to_group(message)
 
-        if self.stage == match_enums.Stage.READY:
-            # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
-            asyncio.create_task(self._send_match_state())
-            self.stage = match_enums.Stage.PLAY
+        # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
+        self.stage = match_enums.Stage.PLAY
+        asyncio.create_task(self._send_match_state())
 
     async def _handle_play(self, data: dict) -> None:
         """
@@ -175,7 +174,6 @@ class MatchHandler:
             else match_enums.Team.TWO.value
         )
         message = self._build_message(
-            match_enums.Stage.END,
             {"win": win_team, "score1": self.score1, "score2": self.score2},
         )
         await self._send_to_group(message)
@@ -308,7 +306,6 @@ class MatchHandler:
             if delta >= self.FPS:
                 self._update_match_state()
                 game_state = self._build_message(
-                    match_enums.Stage.PLAY,
                     {
                         "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
                         "paddle2": {"x": self.paddle2.x, "y": self.paddle2.y},
@@ -395,18 +392,19 @@ class MatchHandler:
             x=self.BALL_SPEED, y=self.BALL_SPEED
         )
 
-    def _build_message(self, stage: match_enums.Stage, data: dict) -> dict:
+    def _build_message(self, data: dict) -> dict:
         """
         プレーヤーに送るメッセージを作成。
 
-        :param stage: ステージ名
         :param data: ステージに関連するデータ
         :return: 作成したメッセージ
         """
         return {
             ws_constants.Category.key(): ws_constants.Category.MATCH.value,
             ws_constants.PAYLOAD_KEY: {
-                match_enums.Stage.key(): stage.value,
+                match_enums.Stage.key(): self.stage.value
+                if self.stage is not None
+                else "",
                 ws_constants.DATA_KEY: data,
             },
         }
