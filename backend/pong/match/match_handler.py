@@ -106,6 +106,7 @@ class MatchHandler:
 
     async def _handle_init(self, data: dict) -> None:
         """
+        INITステージのメッセージが送られてきたときの処理
         ゲームの初期化処理。
         初期配置情報などを送信する。
 
@@ -135,6 +136,7 @@ class MatchHandler:
 
     async def _handle_ready(self, data: dict) -> None:
         """
+        READYステージのメッセージが送られてきたときの処理
         プレイヤーの準備が整ったことがdataによってわかるので、ゲームを開始する。
 
         :param data: 準備状態に必要なデータ
@@ -149,6 +151,7 @@ class MatchHandler:
 
     async def _handle_play(self, data: dict) -> None:
         """
+        PLAYステージのメッセージが送られてきたときの処理
         プレーヤーのパドルの動きに基づいてゲーム状態を更新。
 
         :param data: パドルの移動情報
@@ -157,6 +160,7 @@ class MatchHandler:
 
     async def _handle_end(self) -> None:
         """
+        ENDステージのメッセージが送られてきたときの処理
         プレーヤーがmatchを退出したときの処理を行う。
         """
         await self.remove_from_group()
@@ -166,7 +170,7 @@ class MatchHandler:
         """
         ゲーム終了時の処理。
 
-        試合の結果を送信し、グループからの退出、ゲーム状態の初期化を行う。
+        ENDステージのメッセージを送信し、クリーンナップ処理を行う。
         """
         win_team: str = (
             match_enums.Team.ONE.value
