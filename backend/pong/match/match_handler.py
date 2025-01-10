@@ -14,7 +14,7 @@ class PosStruct:
 class MatchHandler:
     """
     Pongゲームのマッチロジックおよび通信を処理するクラス。
-    原点（0, 0）は左上
+    座標の原点（0, 0）は左上
     """
 
     # クラス定数
@@ -83,12 +83,14 @@ class MatchHandler:
             f"channel_layer={self.channel_layer}, channel_name={self.channel_name})"
         )
 
+    # ===================
     # ハンドラーメソッド
+    # ===================
     async def handle(self, payload: dict) -> None:
         """
         プレイヤーからの入力を受け取り、ステージごとに処理を振り分ける。
 
-        :param payload: プレイヤーからのデータを含むペイロード
+        :param payload: プレイヤーから送られてきたペイロード
         """
         data: dict = payload.get(ws_constants.DATA_KEY, {})
         stage: str = payload.get(match_enums.Stage.key(), "")
@@ -102,18 +104,19 @@ class MatchHandler:
     async def _handle_init(self, data: dict) -> None:
         """
         ゲームの初期化処理。
+        初期配置情報などを送信する。
 
         :param data: 初期化に必要なデータ
         """
         self.stage = match_enums.Stage.INIT
-        # プレイモードによって所属させるグループを返る
+        # プレイモードによって所属させるグループを変える
         if data.get(match_enums.Mode.key()) == match_enums.Mode.LOCAL.value:
             self.group_name = "solo_match"
 
         await self._add_to_group()
         # TODO: remoteの場合のグループ作成方法は別で考える
 
-        # localモードの場合teamやdisplay_nameは必要ない
+        # LOCALモードの場合teamやdisplay_nameは必要ない
         # TODO: ここら辺べた書きになっているから何か他にいい方法がないか
         message = self._build_message(
             match_enums.Stage.INIT,
@@ -130,7 +133,7 @@ class MatchHandler:
 
     async def _handle_ready(self, data: dict) -> None:
         """
-        ゲームの準備が整った状態で処理を行う。
+        プレイヤーの準備が整ったことがdataによってわかるので、ゲームを開始する。
 
         :param data: 準備状態に必要なデータ
         """
@@ -138,16 +141,16 @@ class MatchHandler:
         message = self._build_message(match_enums.Stage.READY, {})
         await self._send_to_group(message)
 
-        # ゲーム状況の更新をする非同期処理を並列で実行する
         if self.stage == match_enums.Stage.READY:
+            # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
             asyncio.create_task(self._send_match_state())
             self.stage = match_enums.Stage.PLAY
 
     async def _handle_play(self, data: dict) -> None:
         """
-        プレイヤーの動きに基づいてゲーム状態を更新。
+        プレーヤーのパドルの動きに基づいてゲーム状態を更新。
 
-        :param data: プレイヤーの移動情報
+        :param data: パドルの移動情報
         """
         self._move_paddle(paddle_move=data)
 
@@ -162,7 +165,7 @@ class MatchHandler:
         """
         ゲーム終了時の処理。
 
-        勝者を決定し、グループから退出し、ゲーム状態を初期化。
+        試合の結果を送信し、グループからの退出、ゲーム状態の初期化を行う。
         """
         win_team: str = (
             match_enums.Team.ONE.value
@@ -179,12 +182,14 @@ class MatchHandler:
         # 初期化
         self._reset_state()
 
+    # ==============================
     # ゲームロジック関係のメソッド
+    # ==============================
     def _move_paddle(self, paddle_move: dict) -> None:
         """
-        プレイヤーのパドルを移動させる。
+        プレイヤーの入力に合わせてパドルを移動させる。
 
-        :param paddle_move: プレイヤーの移動情報
+        :param paddle_move: パドルの移動情報
         """
         match paddle_move.get(match_enums.Move.key()):
             case match_enums.Move.UP.value:
@@ -318,18 +323,20 @@ class MatchHandler:
         # ENDステージの処理
         await self._end_process()
 
+    # ======================
     # グループ関係のメソッド
+    # ======================
     async def _add_to_group(self) -> None:
         """
-        マッチをグループに追加。
+        Consumerをグループに追加。
 
-        チャネル名を指定したグループに参加させる。
+        チャネル名を指定したグループに登録する。
         """
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
     async def remove_from_group(self) -> None:
         """
-        マッチをグループから削除。
+        Consuerをグループから削除。
 
         チャネル名を指定したグループから退出させる。
         """
@@ -347,15 +354,17 @@ class MatchHandler:
             self.group_name, {"type": "group.message", "message": message}
         )
 
+    # ==================
     # ヘルパーメソッド
+    # ==================
     def _reset_state(self) -> None:
         """
         ゲームの状態をリセット。
+        オブジェクトの座標が指す位置はすべて左上とする
 
-        ゲームのステージ、スコア、プレイヤーの位置、ボールの位置を初期状態に戻す。
+        ゲームのステージ、スコア、パドルの位置、ボールの位置を初期状態に戻す。
         """
         self.stage = None
-        # paddleの位置は左上とする
         self.paddle1 = PosStruct(
             x=10, y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2)
         )
@@ -385,7 +394,7 @@ class MatchHandler:
 
     def _build_message(self, stage: match_enums.Stage, data: dict) -> dict:
         """
-        メッセージを作成。
+        プレーヤーに送るメッセージを作成。
 
         :param stage: ステージ名
         :param data: ステージに関連するデータ
