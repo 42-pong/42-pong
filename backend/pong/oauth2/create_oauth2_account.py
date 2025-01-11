@@ -4,6 +4,7 @@ from accounts import create_account
 from . import models, serializers
 
 CreateOAuth2UserResult = utils.result.Result[models.User, dict]
+CreateOAuth2Result = utils.result.Result[models.OAuth2, dict]
 CreateFortyTwoAuthorizationResult = utils.result.Result[models.OAuth2, dict]
 
 
@@ -29,12 +30,7 @@ def create_oauth2_user(
     return CreateOAuth2UserResult.ok(oauth2_user)
 
 
-
-# todo: 汎用的な関数にできるかも
-def create_forty_two_authorization(
-    user_id: int, provider_id: str, tokens: dict
-) -> CreateFortyTwoAuthorizationResult:
-    # todo: oauth2の作成とforty_two_tokenの作成をトランザクションで処理する
+def _create_oauth2(user_id: int, provider_id: str) -> CreateOAuth2Result:
     oauth2_data = {
         "user": user_id,
         "provider": "42",
@@ -43,12 +39,30 @@ def create_forty_two_authorization(
     oauth2_serializer: serializers.OAuth2Serializer = (
         serializers.OAuth2Serializer(data=oauth2_data)
     )
-    oauth2_serializer.is_valid(raise_exception=True)
-    new_oauth2: models.OAuth2 = oauth2_serializer.save()
-    tokens["oauth2"] = new_oauth2.id
+    if not oauth2_serializer.is_valid():
+        return CreateOAuth2Result.error(oauth2_serializer.errors)
+    try:
+        oauth2: models.OAuth2 = oauth2_serializer.save()
+        return CreateOAuth2Result.ok(oauth2)
+    except Exception as e:
+        return CreateOAuth2Result.error({"Error": e})
+
+
+# todo: 汎用的な関数にできるかも
+def create_forty_two_authorization(
+    user_id: int, provider_id: str, tokens: dict
+) -> CreateFortyTwoAuthorizationResult:
+    # todo: oauth2の作成とforty_two_tokenの作成をトランザクションで処理する
+    oauth2_result: CreateOAuth2Result = _create_oauth2(user_id, provider_id)
+    if not oauth2_result.is_ok:
+        return CreateFortyTwoAuthorizationResult.error(
+            oauth2_result.unwrap_error()
+        )
+    oauth2: models.OAuth2 = oauth2_result.unwrap()
+    tokens["oauth2"] = oauth2.id
     forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
         serializers.FortyTwoTokenSerializer(data=tokens)
     )
     forty_two_token_serializer.is_valid(raise_exception=True)
     forty_two_token_serializer.save()
-    return CreateFortyTwoAuthorizationResult.ok(new_oauth2)
+    return CreateFortyTwoAuthorizationResult.ok(oauth2)
