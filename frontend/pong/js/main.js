@@ -1,10 +1,10 @@
 import "./components";
-import { homeRouter } from "./routers/homeRouter";
+import { appRouter } from "./routers/appRouter";
 import { initWebSocket } from "./websocket";
 
 function main() {
   const app = document.getElementById("app");
-  const router = homeRouter(app);
+  const router = appRouter(app);
   const updateWindowPath = () => {
     router.update(window.location.pathname);
   };

@@ -3,7 +3,7 @@ import { LoginView } from "../components/views/LoginView";
 import { Route } from "../core/Route";
 import { Router } from "../core/Router";
 
-export const homeRouter = (target) => {
+export const appRouter = (target) => {
   const routes = {
     "/": Route.defaultRoute(HomeView),
     "/login": Route.defaultRoute(LoginView),
