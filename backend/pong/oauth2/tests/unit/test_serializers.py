@@ -55,7 +55,7 @@ class UserSerializerTestCase(TestCase):
 
     def test_serializer_with_missing_required_field(self) -> None:
         """
-        必須フィールドが存在しない場合、期待通りにエラーを返すかを確認するテスト
+        一部の必須フィールドが存在しない場合、期待通りにエラーを返すかを確認するテスト
         """
         missing_required_fields_data: dict = {"username": "pong"}
         expected_fields: list[str] = [
@@ -71,10 +71,11 @@ class UserSerializerTestCase(TestCase):
         self.assertEqual(serializer.data, {"username": "pong"})
         for key in expected_fields:
             self.assertEqual(serializer.errors[key][0].code, REQUIRED)
+        self.assertNotIn("username", serializer.errors)
 
     def test_validate_empty_data(self) -> None:
         """
-        空のデータの場合、期待通りにエラーを返すかを確認するテスト
+        空のデータの場合（全部の必須フィールドが存在しない場合）、期待通りにエラーを返すかを確認するテスト
         """
         empty_data: dict = {}
         expected_fields: list[str] = [
@@ -160,7 +161,7 @@ class OAuth2SerializerTestCase(TestCase):
 
     def test_serializer_with_missing_required_field(self) -> None:
         """
-        必須フィールドが存在しない場合、期待通りにエラーを返すかを確認するテスト
+        一部の必須フィールドが存在しない場合、期待通りにエラーを返すかを確認するテスト
         """
         missing_required_fields_data: dict = {"provider": "42"}
         serializer: serializers.OAuth2Serializer = self.Serializer(
@@ -175,10 +176,11 @@ class OAuth2SerializerTestCase(TestCase):
         self.assertEqual(serializer.validated_data, {})
         for key in expected_fields:
             self.assertEqual(serializer.errors[key][0].code, REQUIRED)
+        self.assertNotIn("provider", serializer.errors)
 
     def test_validate_empty_data(self) -> None:
         """
-        空のデータの場合、期待通りにエラーを返すかを確認するテスト
+        空のデータの場合（全部の必須フィールドが存在しない場合）、期待通りにエラーを返すかを確認するテスト
         """
         empty_data: dict = {}
         serializer: serializers.OAuth2Serializer = self.Serializer(
@@ -288,6 +290,7 @@ class FortyTwoTokenSerializerTestCase(TestCase):
         self.assertEqual(serializer.data, {"scope": "public"})
         for key in expected_fields:
             self.assertEqual(serializer.errors[key][0].code, REQUIRED)
+        self.assertNotIn("scope", serializer.errors)
 
     def test_validate_empty_data(self) -> None:
         """
