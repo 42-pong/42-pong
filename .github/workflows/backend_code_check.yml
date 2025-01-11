@@ -14,6 +14,21 @@ jobs:
     # PR元が 'feature/backend/*' のブランチからの場合にトリガー
     if: startsWith(github.head_ref, 'feature-backend')
 
+    # 環境変数にデフォルト値が入っていないとmypyでエラーになってしまうので、
+    # pong/settings.pyで使用する環境変数は事前にここで設定する
+    env:
+      FRONT_SERVER_PORT: "${{ vars.FRONT_SERVER_PORT }}"
+      DEBUG: "${{ vars.DEBUG }}"
+      SECRET_KEY: "${{ secrets.SECRET_KEY }}"
+      OAUTH2_CLIENT_ID: "${{ secrets.OAUTH2_CLIENT_ID }}"
+      OAUTH2_CLIENT_SECRET_KEY: "${{ secrets.OAUTH2_CLIENT_SECRET_KEY }}"
+      PONG_ORIGIN: "${{ vars.PONG_ORIGIN }}"
+      OAUTH2_AUTHORIZATION_ENDPOINT: "${{ vars.OAUTH2_AUTHORIZATION_ENDPOINT }}"
+      OAUTH2_TOKEN_ENDPOINT: "${{ vars.OAUTH2_TOKEN_ENDPOINT }}"
+      DB_NAME: "${{ secrets.DB_NAME }}"
+      DB_USER: "${{ secrets.DB_USER }}"
+      DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
+
     steps:
       # ソースコードをチェックアウト
       - name: Checkout code
