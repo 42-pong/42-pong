@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 import requests
-from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from drf_spectacular.utils import (
@@ -19,6 +18,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts import create_account
 from pong import settings
 
 from . import models, serializers
@@ -177,61 +177,67 @@ class OAuth2CallbackView(OAuth2BaseView):
             serializers.UserSerializer(data=oauth2_user_data)
         )
         oauth2_user_serializer.is_valid(raise_exception=True)
-        new_oauth2_user: User = oauth2_user_serializer.save()
-
-        oauth2_data = {
-            "user": new_oauth2_user.id,
-            "provider": "42",
-            "provider_id": user_info.get("id"),
-        }
-        oauth2_serializer: serializers.OAuth2Serializer = (
-            serializers.OAuth2Serializer(data=oauth2_data)
-        )
-        oauth2_serializer.is_valid(raise_exception=True)
-        new_oauth2: models.OAuth2 = oauth2_serializer.save()
-
-        forty_two_token_data = {
-            "oauth2": new_oauth2.id,
-            "access_token": tokens.get("access_token"),
-            "token_type": tokens.get("token_type"),
-            "access_token_expiry": datetime.now()
-            + timedelta(seconds=tokens.get("expires_in")),
-            "refresh_token": tokens.get("refresh_token"),
-            "refresh_token_expiry": datetime.fromtimestamp(
-                tokens.get("secret_valid_until")
-            ),
-            "scope": tokens.get("scope"),
-        }
-        forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
-            serializers.FortyTwoTokenSerializer(data=forty_two_token_data)
-        )
-        forty_two_token_serializer.is_valid(raise_exception=True)
-        new_forty_two_token: models.FortyTwoToken = (
-            forty_two_token_serializer.save()
+        # todo: 42userのログイン名をplayer_dataに追加する
+        player_data: dict = {}
+        oauth2_user = create_account.create_account(
+            oauth2_user_serializer, player_data
         )
 
-        return Response(
-            {
-                "user": {
-                    "id": new_oauth2_user.id,
-                    "username": new_oauth2_user.username,
-                    "email": new_oauth2_user.email,
+        if oauth2_user.is_ok:
+            user: models.User = oauth2_user.unwrap()
+            # todo: user.idと必要な情報を使って、OAuth2とFortyTwoTokenのテーブルを作成する関数作成
+            oauth2_data = {
+                "user": user.id,
+                "provider": "42",
+                "provider_id": user_info.get("id"),
+            }
+            oauth2_serializer: serializers.OAuth2Serializer = (
+                serializers.OAuth2Serializer(data=oauth2_data)
+            )
+            oauth2_serializer.is_valid(raise_exception=True)
+            new_oauth2: models.OAuth2 = oauth2_serializer.save()
+            forty_two_token_data = {
+                "oauth2": new_oauth2.id,
+                "access_token": tokens.get("access_token"),
+                "token_type": tokens.get("token_type"),
+                "access_token_expiry": datetime.now()
+                + timedelta(seconds=tokens.get("expires_in")),
+                "refresh_token": tokens.get("refresh_token"),
+                "refresh_token_expiry": datetime.fromtimestamp(
+                    tokens.get("secret_valid_until")
+                ),
+                "scope": tokens.get("scope"),
+            }
+            forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
+                serializers.FortyTwoTokenSerializer(data=forty_two_token_data)
+            )
+            forty_two_token_serializer.is_valid(raise_exception=True)
+            new_forty_two_token: models.FortyTwoToken = (
+                forty_two_token_serializer.save()
+            )
+            # todo: 失敗した場合は、Userテーブルを削除する
+            return Response(
+                {
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                    },
+                    "oauth2": {
+                        "id": new_oauth2.id,
+                        "user_id": new_oauth2.user_id,
+                        "provider": new_oauth2.provider,
+                        "provider_id": new_oauth2.provider_id,
+                    },
+                    "token": {
+                        "oauth2_id": new_forty_two_token.oauth2_id,
+                        "access_token": new_forty_two_token.access_token,
+                        "refresh_token": new_forty_two_token.refresh_token,
+                    },
                 },
-                "oauth2": {
-                    "id": new_oauth2.id,
-                    "user_id": new_oauth2.user_id,
-                    "provider": new_oauth2.provider,
-                    "provider_id": new_oauth2.provider_id,
-                },
-                "token": {
-                    "oauth2_id": new_forty_two_token.oauth2_id,
-                    "access_token": new_forty_two_token.access_token,
-                    "refresh_token": new_forty_two_token.refresh_token,
-                },
-            },
-            status=user_response.status_code,
-        )
-
+                status=status.HTTP_200_OK,
+            )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 # todo: 以下のエンドポイントは後で実装する
 # - oauth2/refresh
