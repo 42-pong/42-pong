@@ -5,9 +5,13 @@ import { initWebSocket } from "./websocket";
 function main() {
   const app = document.getElementById("app");
   const router = homeRouter(app);
+  const updateWindowPath = () => {
+    router.update(window.location.pathname);
+  };
 
+  window.addEventListener("popstate", updateWindowPath);
   initWebSocket();
-  router.update(window.location.pathname);
+  updateWindowPath();
 }
 
 async function enableMocking() {
