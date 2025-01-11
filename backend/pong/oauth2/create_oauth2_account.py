@@ -4,6 +4,7 @@ from accounts import create_account
 from . import models, serializers
 
 CreateOAuth2UserResult = utils.result.Result[models.User, dict]
+CreateFortyTwoAuthorizationResult = utils.result.Result[models.OAuth2, dict]
 
 
 def create_oauth2_user(
@@ -26,3 +27,28 @@ def create_oauth2_user(
         CreateOAuth2UserResult.error(oauth2_account_result.unwrap_error())
     oauth2_user: models.User = oauth2_account_result.unwrap()
     return CreateOAuth2UserResult.ok(oauth2_user)
+
+
+
+# todo: 汎用的な関数にできるかも
+def create_forty_two_authorization(
+    user_id: int, provider_id: str, tokens: dict
+) -> CreateFortyTwoAuthorizationResult:
+    # todo: oauth2の作成とforty_two_tokenの作成をトランザクションで処理する
+    oauth2_data = {
+        "user": user_id,
+        "provider": "42",
+        "provider_id": provider_id,
+    }
+    oauth2_serializer: serializers.OAuth2Serializer = (
+        serializers.OAuth2Serializer(data=oauth2_data)
+    )
+    oauth2_serializer.is_valid(raise_exception=True)
+    new_oauth2: models.OAuth2 = oauth2_serializer.save()
+    tokens["oauth2"] = new_oauth2.id
+    forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
+        serializers.FortyTwoTokenSerializer(data=tokens)
+    )
+    forty_two_token_serializer.is_valid(raise_exception=True)
+    forty_two_token_serializer.save()
+    return CreateFortyTwoAuthorizationResult.ok(new_oauth2)

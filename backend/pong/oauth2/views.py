@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 
 from pong import settings
 
-from . import create_oauth2_account, models, serializers
+from . import create_oauth2_account, models
 
 
 class OAuth2BaseView(APIView):
@@ -169,106 +169,51 @@ class OAuth2CallbackView(OAuth2BaseView):
                 user_info.get("email"), user_info.get("login")
             )
         )
-        if oauth2_user_result.is_ok:
-            # todo: oauth2_user.idと必要な情報を使って、OAuth2とFortyTwoTokenのテーブルを作成する関数作成
-            oauth2_user: models.User = oauth2_user_result.unwrap()
-            oauth2_data = {
-                "user": oauth2_user.id,
-                "provider": "42",
-                "provider_id": user_info.get("id"),
-            }
-            oauth2_serializer: serializers.OAuth2Serializer = (
-                serializers.OAuth2Serializer(data=oauth2_data)
-            )
-            oauth2_serializer.is_valid(raise_exception=True)
-            new_oauth2: models.OAuth2 = oauth2_serializer.save()
-            forty_two_token_data = {
-                "oauth2": new_oauth2.id,
-                "access_token": tokens.get("access_token"),
-                "token_type": tokens.get("token_type"),
-                "access_token_expiry": datetime.now()
-                + timedelta(seconds=tokens.get("expires_in")),
-                "refresh_token": tokens.get("refresh_token"),
-                "refresh_token_expiry": datetime.fromtimestamp(
-                    tokens.get("secret_valid_until")
-                ),
-                "scope": tokens.get("scope"),
-            }
-            forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
-                serializers.FortyTwoTokenSerializer(data=forty_two_token_data)
-            )
-            forty_two_token_serializer.is_valid(raise_exception=True)
-            new_forty_two_token: models.FortyTwoToken = (
-                forty_two_token_serializer.save()
-            )
-            # todo: 失敗した場合は、Userテーブルを削除する
+        if not oauth2_user_result.is_ok:
             return Response(
-                {
-                    "user": {
-                        "id": oauth2_user.id,
-                        "username": oauth2_user.username,
-                        "email": oauth2_user.email,
-                    },
-                    "oauth2": {
-                        "id": new_oauth2.id,
-                        "user_id": new_oauth2.user_id,
-                        "provider": new_oauth2.provider,
-                        "provider_id": new_oauth2.provider_id,
-                    },
-                    "token": {
-                        "oauth2_id": new_forty_two_token.oauth2_id,
-                        "access_token": new_forty_two_token.access_token,
-                        "refresh_token": new_forty_two_token.refresh_token,
-                    },
-                },
-                status=status.HTTP_200_OK,
+                {"error": oauth2_user_result.unwrap_error()},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        # new_oauth2_user: User = oauth2_user_serializer.save()
-
-        # oauth2_data = {
-        #     "user": new_oauth2_oauth2_user.id,
-        #     "provider": "42",
-        #     "provider_id": user_info.get("id"),
-        # }
-        # oauth2_serializer: serializers.OAuth2Serializer = serializers.OAuth2Serializer(
-        #     data=oauth2_data
-        # )
-        # oauth2_serializer.is_valid(raise_exception=True)
-        # new_oauth2: models.OAuth2 = oauth2_serializer.save()
-
-        # forty_two_token_data = {
-        #     "oauth2": new_oauth2.id,
-        #     "access_token": tokens.get("access_token"),
-        #     "token_type": tokens.get("token_type"),
-        #     "access_token_expiry": datetime.now()
-        #     + timedelta(seconds=tokens.get("expires_in")),
-        #     "refresh_token": tokens.get("refresh_token"),
-        #     "refresh_token_expiry": datetime.fromtimestamp(
-        #         tokens.get("secret_valid_until")
-        #     ),
-        #     "scope": tokens.get("scope"),
-        # }
-        # forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
-        #     serializers.FortyTwoTokenSerializer(data=forty_two_token_data)
-        # )
-        # forty_two_token_serializer.is_valid(raise_exception=True)
-        # new_forty_two_token: models.FortyTwoToken = forty_two_token_serializer.save()
-
-        # return Response(
-        #     # {"ok": oauth2_user_result.unwrap()},
-        #     status=status.HTTP_200_OK,
-        # )
-        # if oauth2_user_result.is_ok:
-        #     return Response(
-        #         {"ok": oauth2_user_result.unwrap()},
-        #         status=status.HTTP_200_OK,
-        #     )
-        # return Response(
-        #     {"error": oauth2_user_result.unwrap_err()},
-        #     status=status.HTTP_400_BAD_REQUEST,
-        # )
+        oauth2_user: models.User = oauth2_user_result.unwrap()
+        forty_two_token_data = {
+            "access_token": tokens.get("access_token"),
+            "token_type": tokens.get("token_type"),
+            "access_token_expiry": datetime.now()
+            + timedelta(seconds=tokens.get("expires_in")),
+            "refresh_token": tokens.get("refresh_token"),
+            "refresh_token_expiry": datetime.fromtimestamp(
+                tokens.get("secret_valid_until")
+            ),
+            "scope": tokens.get("scope"),
+        }
+        oauth2_result: create_oauth2_account.CreateFortyTwoAuthorizationResult = create_oauth2_account.create_forty_two_authorization(
+            oauth2_user.id, user_info.get("id"), forty_two_token_data
+        )
+        # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
+        if not oauth2_result.is_ok:
+            oauth2_user.delete()
+            return Response(
+                {"error": oauth2_result.unwrap_error()},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        oauth2: models.OAuth2 = oauth2_result.unwrap()
+        # todo: oauth2_userをJWTに変換して返す
+        return Response(
+            {
+                "user": {
+                    "id": oauth2_user.id,
+                    "username": oauth2_user.username,
+                    "email": oauth2_user.email,
+                },
+                "oauth2": {
+                    "id": oauth2.id,
+                    "user_id": oauth2.user_id,
+                    "provider": oauth2.provider,
+                    "provider_id": oauth2.provider_id,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 # todo: 以下のエンドポイントは後で実装する
