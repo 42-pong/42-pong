@@ -37,6 +37,21 @@ class CreateOAuth2AccountTestCase(TestCase):
         )
         self.assertTrue(oauth2_user_result.is_ok)
 
+    def test_create_oauth2_user_failure_invalid_email(self) -> None:
+        """
+        不正なemailの形式の場合、OAuth2ユーザーの作成が失敗し、invalidを返すかどうかを確認するテスト
+        """
+        # todo: django の email バリデーションを調べてからそれをそのまま使うか、自分達で定義するか決める
+        oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
+            create_oauth2_account.create_oauth2_user(
+                "invalid--@gmail-com", "pong"
+            )
+        )
+        self.assertTrue(oauth2_user_result.is_error)
+        self.assertEqual(
+            oauth2_user_result.unwrap_error()["email"][0].code, "invalid"
+        )
+
     def test_create_oauth2_account(self) -> None:
         """
         OAuth2アカウントの作成が成功し、Userと関連付けられたOAuth2データが保存されることを確認するテスト。
