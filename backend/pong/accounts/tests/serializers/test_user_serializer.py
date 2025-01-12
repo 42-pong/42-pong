@@ -59,6 +59,42 @@ class UserSerializerTests(TestCase):
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
+    def test_user_serializer_none_field_username(self) -> None:
+        """
+        必須フィールド"username"が存在しない場合にエラーになることを確認する
+        """
+        self.user_data.pop(USERNAME)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(USERNAME, serializer.errors)
+
+    def test_user_serializer_none_field_email(self) -> None:
+        """
+        必須フィールド"email"が存在しない場合にエラーになることを確認する
+        """
+        self.user_data.pop(EMAIL)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(EMAIL, serializer.errors)
+
+    def test_user_serializer_none_field_password(self) -> None:
+        """
+        必須フィールド"password"が存在しない場合にエラーになることを確認する
+        """
+        self.user_data.pop(PASSWORD)
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(PASSWORD, serializer.errors)
+
     def test_user_serializer_empty_username(self) -> None:
         """
         必須フィールド"username"が空の場合にエラーになることを確認する
@@ -111,16 +147,24 @@ class UserSerializerTests(TestCase):
     def test_user_serializer_duplicate_username(self) -> None:
         """
         既に登録されているusernameが渡された場合にエラーになることを確認する
-        実装はしていない。UserModel関連のどこかで自動チェックしてくれている
+        実装はしていない。UserModelのUniqueValidatorで自動チェックしてくれている
         """
-        User.objects.create_user(
-            username=self.user_data[USERNAME],
-            email="non-exist-email@example.com",
-            password="testpassword",
-        )
-        serializer: serializers.UserSerializer = serializers.UserSerializer(
+        # 1人目のUserをDBに保存
+        serializer_1: serializers.UserSerializer = serializers.UserSerializer(
             data=self.user_data
         )
+        serializer_1.is_valid(raise_exception=True)
+        serializer_1.save()
 
-        self.assertFalse(serializer.is_valid())
-        self.assertIn(USERNAME, serializer.errors)
+        # 2人目のUserSerializerを作成
+        user_data_2: dict = {
+            USERNAME: self.user_data[USERNAME],  # 既に登録されているusername
+            EMAIL: "non-exist-email@example.com",
+            PASSWORD: "testpassword",
+        }
+        serializer_2: serializers.UserSerializer = serializers.UserSerializer(
+            data=user_data_2
+        )
+
+        self.assertFalse(serializer_2.is_valid())
+        self.assertIn(USERNAME, serializer_2.errors)
