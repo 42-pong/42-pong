@@ -24,7 +24,7 @@ def create_oauth2_user(
         oauth2_user_serializer, player_data
     )
     if not oauth2_account_result.is_ok:
-        CreateOAuth2UserResult.error(oauth2_account_result.unwrap_error())
+        return CreateOAuth2UserResult.error(oauth2_account_result.unwrap_error())
     oauth2_user: models.User = oauth2_account_result.unwrap()
     return CreateOAuth2UserResult.ok(oauth2_user)
 
