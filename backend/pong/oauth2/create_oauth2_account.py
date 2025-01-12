@@ -18,13 +18,16 @@ def create_oauth2_user(
     oauth2_user_serializer: serializers.UserSerializer = (
         serializers.UserSerializer(data=oauth2_user_data)
     )
-    oauth2_user_serializer.is_valid(raise_exception=True)
+    if not oauth2_user_serializer.is_valid():
+        return CreateOAuth2UserResult.error(oauth2_user_serializer.errors)
     player_data: dict = {"display_name": display_name}
     oauth2_account_result = create_account.create_account(
         oauth2_user_serializer, player_data
     )
     if not oauth2_account_result.is_ok:
-        return CreateOAuth2UserResult.error(oauth2_account_result.unwrap_error())
+        return CreateOAuth2UserResult.error(
+            oauth2_account_result.unwrap_error()
+        )
     oauth2_user: models.User = oauth2_account_result.unwrap()
     return CreateOAuth2UserResult.ok(oauth2_user)
 
