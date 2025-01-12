@@ -3,8 +3,10 @@ import logging
 from channels.generic.websocket import (  # type: ignore
     AsyncJsonWebsocketConsumer,
 )
+from rest_framework import serializers
 
 from . import match_handler, ws_constants
+from .serializers import ws_serializer
 
 logger = logging.getLogger("django")
 
@@ -23,8 +25,13 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, message: dict) -> None:
         try:
-            category: str = message[ws_constants.Category.key()]
-            payload: dict = message[ws_constants.PAYLOAD_KEY]
+            serializer = ws_serializer.WebsocketInputSerializer(data=message)
+            serializer.is_valid(raise_exception=True)
+
+            category: str = serializer.validated_data[
+                ws_constants.Category.key()
+            ]
+            payload: dict = serializer.validated_data[ws_constants.PAYLOAD_KEY]
 
             match category:
                 case ws_constants.Category.MATCH.value:
@@ -32,6 +39,9 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
                 case _:
                     logger.warning(f"Unknown category received: {category}")
 
+        except serializers.ValidationError as e:
+            # バリデーションエラーの時のエラーハンドリング
+            logger.warning(f"Invalid schema: {str(e)}, message: {message}")
         except Exception as e:
             # サーバー側の予期しないエラーが起きても切断したくないのでここで拾い、ログレベルerrorで出力する
             logger.error(

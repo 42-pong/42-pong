@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Final, Optional
 
 from . import match_enums, ws_constants
+from .serializers import match_serializer
 
 
 @dataclass
@@ -95,8 +96,10 @@ class MatchHandler:
 
         :param payload: プレイヤーから送られてきたペイロード
         """
-        data: dict = payload[ws_constants.DATA_KEY]
-        stage: str = payload[match_enums.Stage.key()]
+        serializer = match_serializer.MatchInputSerializer(data=payload)
+        serializer.is_valid(raise_exception=True)
+        data: dict = serializer.validated_data[ws_constants.DATA_KEY]
+        stage: str = serializer.validated_data[match_enums.Stage.key()]
         handler = self.stage_handlers[stage]
 
         # TODO: ステージごとのバリデーションも実装する必要あり
