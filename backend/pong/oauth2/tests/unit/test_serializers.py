@@ -6,6 +6,7 @@ from oauth2 import models, serializers
 
 REQUIRED: Final[str] = "required"
 INVALID: Final[str] = "invalid"
+MAX_LENGTH: Final[str] = "max_length"
 UNIQUE: Final[str] = "unique"
 NULL: Final[str] = "null"
 
@@ -278,6 +279,17 @@ class FortyTwoTokenSerializerTestCase(TestCase):
         )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["token_type"][0].code, INVALID)
+
+    def test_max_length_token_type(self) -> None:
+        """
+        6文字以上ののbearer, mac以外のトークンタイプが渡された場合、invalidのエラーコードを返すかどうかを確認
+        """
+        self.token_data["token_type"] = "max_length_type"
+        serializer: serializers.FortyTwoTokenSerializer = self.Serializer(
+            data=self.token_data
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(serializer.errors["token_type"][0].code, MAX_LENGTH)
 
     def test_serializer_with_missing_required_field(self) -> None:
         """
