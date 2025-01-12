@@ -22,7 +22,7 @@ class UserSerializerTestCase(TestCase):
         unittest.TestCaseのsetUpメソッドをオーバーライドして、テスト実行前に必要な初期設定を行う関数
 
         初期設定
-        - self.SerializerにUserSerializerのインスタンスを代入
+        - self.SerializerにUserSerializerのクラスを代入
         """
         self.Serializer = serializers.UserSerializer
 
@@ -103,6 +103,14 @@ class UserSerializerTestCase(TestCase):
 
 
 class OAuth2SerializerTestCase(TestCase):
+    """
+    unittest.TestCaseのsetUpメソッドをオーバーライドして、テスト実行前に必要な初期設定を行う関数
+
+    初期設定
+    - self.userにUserモデルのインスタンスを作成
+    - self.SerializerにOAuth2Serializerのクラスを代入
+    """
+
     def setUp(self) -> None:
         self.user = models.User.objects.create_user(
             username="pong", email="pong@example.com", password=""
@@ -205,6 +213,15 @@ class OAuth2SerializerTestCase(TestCase):
 
 
 class FortyTwoTokenSerializerTestCase(TestCase):
+    """
+    unittest.TestCaseのsetUpメソッドをオーバーライドして、テスト実行前に必要な初期設定を行う関数
+
+    初期設定
+    - self.userにUserモデルのインスタンスを作成
+    - self.oauth2にOAuth2モデルのインスタンスを作成
+    - self.SerializerにFortyTwoTokenSerializerのクラスを代入
+    """
+
     def setUp(self) -> None:
         self.user: models.User = models.User.objects.create_user(
             username="pong", email="pong@example.com", password=""
