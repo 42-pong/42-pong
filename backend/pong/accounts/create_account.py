@@ -2,7 +2,7 @@ from typing import Final
 
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
-from rest_framework import serializers as def_serializers
+from rest_framework import serializers as drf_serializers
 
 import utils.result
 
@@ -61,7 +61,7 @@ def _create_user_related_player_serializer(
 
 # todo: トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
 def create_account(
-    user_serializer: def_serializers.ModelSerializer, player_data: dict
+    user_serializer: drf_serializers.ModelSerializer, player_data: dict
 ) -> CreateAccountResult:
     """
     UserとPlayerを新規作成してDBに追加し、作成されたアカウント情報を返す
