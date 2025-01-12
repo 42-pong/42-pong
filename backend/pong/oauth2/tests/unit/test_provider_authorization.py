@@ -54,3 +54,7 @@ class CreateProviderAuthorizationTestCase(TestCase):
         self.assertEqual(
             forty_two_token.access_token, self.tokens["access_token"]
         )
+
+    # todo: 以下のテストケースは後で実装する
+    #   - トークンのバリデーション失敗時のケース
+    #   - OAuth2作成失敗時のケース

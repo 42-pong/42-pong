@@ -146,6 +146,8 @@ class OAuth2CallbackView(OAuth2BaseView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # todo: TOKEN_ENDPOINTとmeのエンドポイントの失敗時の処理追加する
         request_data: dict[str, str] = {
             "code": code,
             "grant_type": "authorization_code",
