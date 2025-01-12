@@ -36,27 +36,3 @@ class CreateOAuth2AccountTestCase(TestCase):
             create_oauth2_account.create_oauth2_user("pong@gmail.com", "pong")
         )
         self.assertTrue(oauth2_user_result.is_ok)
-
-    def test_create_forty_two_authorization(self) -> None:
-        """
-        User, OAuth2, FortyTwoTokenが正しく関連付けられ、作成が成功することを確認するテスト
-        """
-        forty_two_authorization_result: create_oauth2_account.CreateFortyTwoAuthorizationResult = create_oauth2_account.create_forty_two_authorization(
-            self.user.id, self.provider_id, self.tokens
-        )
-
-        self.assertTrue(forty_two_authorization_result.is_ok)
-        oauth2: models.OAuth2 = forty_two_authorization_result.unwrap()
-
-        self.assertEqual(oauth2.user.id, self.user.id)
-        self.assertEqual(oauth2.provider, "42")
-        self.assertEqual(oauth2.provider_id, self.provider_id)
-
-        # todo: fortytwotokenの全パラメータが存在するかどうか
-        forty_two_token: models.FortyTwoToken = (
-            models.FortyTwoToken.objects.get(oauth2=oauth2)
-        )
-        self.assertEqual(forty_two_token.oauth2.id, oauth2.id)
-        self.assertEqual(
-            forty_two_token.access_token, self.tokens["access_token"]
-        )

@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 
 from pong import settings
 
-from . import create_oauth2_account, models
+from . import create_oauth2_account, models, providers
 
 
 class OAuth2BaseView(APIView):
@@ -137,7 +137,7 @@ class OAuth2CallbackView(OAuth2BaseView):
         この関数は認可エンドポイント(`/api/oauth2/authorize`)のレスポンスを受け取り、認可コードを取得するために使用する。
         そのため、このエンドポイントはFEから呼ばれることはありません。
         """
-        # todo Optional[str]?
+        # todo リファクタリング
         code = request.GET.get("code")
         if not code:
             return Response(
@@ -186,8 +186,8 @@ class OAuth2CallbackView(OAuth2BaseView):
             ),
             "scope": tokens.get("scope"),
         }
-        oauth2_result: create_oauth2_account.CreateFortyTwoAuthorizationResult = create_oauth2_account.create_forty_two_authorization(
-            oauth2_user.id, user_info.get("id"), forty_two_token_data
+        oauth2_result: providers.forty_two_authorization.CreateFortyTwoAuthorizationResult = providers.forty_two_authorization.create_forty_two_authorization(
+            oauth2_user.id, "42", user_info.get("id"), forty_two_token_data
         )
         # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
         if not oauth2_result.is_ok:
