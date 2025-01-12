@@ -27,6 +27,7 @@ class MatchHandler:
     BALL_SIZE: Final[int] = 10
     BALL_SPEED: Final[int] = 2
     FPS: Final[float] = 1 / 60
+    WINNING_SCORE: Final[int] = 5
 
     # クラス属性
     stage: Optional[match_enums.Stage]
@@ -247,7 +248,10 @@ class MatchHandler:
             self._reset_ball()
 
         # 勝利判定
-        if self.score1 >= 5 or self.score2 >= 5:
+        if (
+            self.score1 >= self.WINNING_SCORE
+            or self.score2 >= self.WINNING_SCORE
+        ):
             self.stage = match_enums.Stage.END
 
     def _process_ball_paddle_collision(
