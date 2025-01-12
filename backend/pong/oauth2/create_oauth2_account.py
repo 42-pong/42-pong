@@ -5,6 +5,7 @@ from . import models, serializers
 
 CreateOAuth2UserResult = utils.result.Result[models.User, dict]
 CreateOAuth2Result = utils.result.Result[models.OAuth2, dict]
+CreateFortyTwoTokenResult = utils.result.Result[models.FortyTwoToken, dict]
 CreateFortyTwoAuthorizationResult = utils.result.Result[models.OAuth2, dict]
 
 
@@ -48,6 +49,23 @@ def _create_oauth2(user_id: int, provider_id: str) -> CreateOAuth2Result:
         return CreateOAuth2Result.error({"Error": e})
 
 
+def _create_forty_two_token(tokens: dict) -> CreateFortyTwoTokenResult:
+    forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
+        serializers.FortyTwoTokenSerializer(data=tokens)
+    )
+    if not forty_two_token_serializer.is_valid():
+        return CreateFortyTwoTokenResult.error(
+            forty_two_token_serializer.errors
+        )
+    try:
+        forty_two_token: models.FortyTwoToken = (
+            forty_two_token_serializer.save()
+        )
+        return CreateFortyTwoTokenResult.ok(forty_two_token)
+    except Exception as e:
+        return CreateFortyTwoTokenResult.error({"Error": e})
+
+
 # todo: 汎用的な関数にできるかも
 def create_forty_two_authorization(
     user_id: int, provider_id: str, tokens: dict
@@ -60,9 +78,12 @@ def create_forty_two_authorization(
         )
     oauth2: models.OAuth2 = oauth2_result.unwrap()
     tokens["oauth2"] = oauth2.id
-    forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
-        serializers.FortyTwoTokenSerializer(data=tokens)
+    forty_two_token_result: CreateFortyTwoTokenResult = (
+        _create_forty_two_token(tokens)
     )
-    forty_two_token_serializer.is_valid(raise_exception=True)
-    forty_two_token_serializer.save()
+    if not forty_two_token_result.is_ok:
+        oauth2.delete()
+        return CreateFortyTwoAuthorizationResult.error(
+            forty_two_token_result.unwrap_error()
+        )
     return CreateFortyTwoAuthorizationResult.ok(oauth2)
