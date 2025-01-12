@@ -42,6 +42,7 @@ class OAuth2Serializer(serializers.ModelSerializer):
         ]
 
     # todo: より詳細なvalidationの実装
+    # - 同じproviderの場合はprovider_id が既に存在するかかどうか検証
     def validate(self, data: dict) -> dict:
         return data
 

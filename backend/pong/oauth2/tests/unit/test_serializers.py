@@ -264,8 +264,6 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             self.assertEqual(serializer.validated_data[key], expected_value)
         for key in ["token_type", "scope"]:
             self.assertEqual(serializer.data[key], expected_data[key])
-        for key in ["access_token", "refresh_token"]:
-            self.assertNotIn(key, serializer.data)
 
     # todo: macの場合、FortyTwoTokenSerializerが正しく機能するかを確認するテスト
 
@@ -290,6 +288,17 @@ class FortyTwoTokenSerializerTestCase(TestCase):
         )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["token_type"][0].code, MAX_LENGTH)
+
+    def test_serializer_excludes_access_and_refresh_tokens(self) -> None:
+        """
+        FortyTwoTokenSerializerのextra_kwargsで定義した"access_token", "refresh_token"がdataに含まれないことを確認するテスト
+        """
+        serializer: serializers.FortyTwoTokenSerializer = self.Serializer(
+            data=self.token_data
+        )
+        self.assertTrue(serializer.is_valid())
+        for key in ["access_token", "refresh_token"]:
+            self.assertNotIn(key, serializer.data)
 
     def test_serializer_with_missing_required_field(self) -> None:
         """
