@@ -25,7 +25,7 @@ export class Router {
 
   #findRoute(path) {
     if (path && this.#routes[path]) return this.#routes[path];
-    return Route.defaultRoute(this.#DefaultView);
+    return Route.createRoute(this.#DefaultView, path);
   }
 
   #mountView() {
