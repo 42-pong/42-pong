@@ -341,6 +341,6 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             data=None
         )
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(serializer.errors["non_field_errors"][0].code, "null")
+        self.assertEqual(serializer.errors["non_field_errors"][0].code, NULL)
 
     # todo: invalidなserializerのテストを書く
