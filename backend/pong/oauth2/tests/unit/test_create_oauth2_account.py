@@ -36,3 +36,40 @@ class CreateOAuth2AccountTestCase(TestCase):
             create_oauth2_account.create_oauth2_user("pong@gmail.com", "pong")
         )
         self.assertTrue(oauth2_user_result.is_ok)
+
+    def test_create_oauth2_account(self) -> None:
+        """
+        OAuth2アカウントの作成が成功し、Userと関連付けられたOAuth2データが保存されることを確認するテスト。
+        """
+        oauth2_result = create_oauth2_account.create_oauth2(
+            self.user.id, "42", self.provider_id
+        )
+        self.assertTrue(oauth2_result.is_ok)
+        oauth2 = oauth2_result.unwrap()
+        self.assertEqual(oauth2.user.id, self.user.id)
+        self.assertEqual(oauth2.provider, "42")
+        self.assertEqual(oauth2.provider_id, self.provider_id)
+
+    def test_create_oauth2_account_failure_user_not_found(self) -> None:
+        """
+        存在しないユーザーIDを指定した場合にOAuth2アカウント作成が失敗し、does_not_existを返すか確認するテスト。
+        """
+        invalid_user_id = 99999
+        oauth2_result = create_oauth2_account.create_oauth2(
+            invalid_user_id, "42", self.provider_id
+        )
+        self.assertTrue(oauth2_result.is_error)
+        self.assertTrue(
+            oauth2_result.unwrap_error()["user"][0].code, "does_not_exist"
+        )
+
+    # todo: OAuth2Serializerのvalidate関数で42以外のプロバイダーを弾く関数を作成する
+    # def test_create_oauth2_account_failure_invalid_provider(self) -> None:
+    #     """
+    #     42以外のプロバイダー情報でOAuth2アカウント作成が失敗することを確認するテスト。
+    #     """
+    #     oauth2_result = create_oauth2_account.create_oauth2(
+    #         self.user.id, "", self.provider_id
+    #     )
+    #     self.assertFalse(oauth2_result.is_ok)
+    #     self.assertIn("provider", oauth2_result.unwrap_error())

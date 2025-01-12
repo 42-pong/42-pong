@@ -61,6 +61,7 @@ class OAuth2Serializer(serializers.ModelSerializer):
             )
 
     # todo: より詳細なvalidationの実装
+    # todo: OAuth2Serializerのvalidate関数で42以外のプロバイダーを弾く関数を作成する
     def validate(self, data: dict) -> dict:
         self._validate_provider_id(data)
         return data
