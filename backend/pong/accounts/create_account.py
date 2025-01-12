@@ -34,6 +34,30 @@ def get_unique_random_username() -> str:
     return random_str
 
 
+def _assert_user_serializer(
+    user_serializer: drf_serializers.ModelSerializer,
+) -> None:
+    """
+    ModelSerializerを継承したSerializerの検証を行う
+    実装上UserModelに対応していることを想定しているため、満たしていない場合はAssertionError
+
+    Args:
+        user_serializer: UserModelに対応している、ModelSerializerを継承したSerializerのインスタンス
+
+    Raises:
+        AssertionError: UserModelに対応していない場合
+    """
+    # Meta.modelが存在しUserであれば、UserModelに対応しているserializerと判定する
+    if (
+        not hasattr(user_serializer, "Meta")
+        or not hasattr(user_serializer.Meta, "model")
+        or user_serializer.Meta.model is not User
+    ):
+        raise AssertionError(
+            "UserSerializer should be a ModelSerializer for User model"
+        )
+
+
 def _create_user_related_player_serializer(
     player_data: dict, user_id: int
 ) -> CreatePlayerSerializerResult:
@@ -73,6 +97,9 @@ def create_account(
     Returns:
         CreateAccountResult: 作成されたUserのResult
     """
+    # UserSerializerが引数として正しくない場合にassertを発生させる
+    _assert_user_serializer(user_serializer)
+
     # User作成
     user: User = user_serializer.save()
 
