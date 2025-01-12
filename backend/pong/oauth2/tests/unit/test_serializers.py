@@ -230,13 +230,7 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             user=self.user, provider="42", provider_id="12345"
         )
         self.Serializer = serializers.FortyTwoTokenSerializer
-
-    def test_valid_serializer(self) -> None:
-        """
-        正しいデータの場合、FortyTwoTokenSerializerが正しく機能するかを確認するテスト
-        """
-        # todo: 本来アクセサトークンとリフレッシュトークンの値はランダムのためよそれ用のテストする必要あるかも
-        token_data: dict = {
+        self.token_data: dict = {
             "oauth2": self.oauth2.id,
             "access_token": "valid_access_token",
             "access_token_expiry": "2025-01-01T00:00:00Z",
@@ -245,8 +239,14 @@ class FortyTwoTokenSerializerTestCase(TestCase):
             "refresh_token_expiry": "2025-01-01T00:00:00Z",
             "scope": "public",
         }
+
+    def test_valid_serializer(self) -> None:
+        """
+        正しいデータの場合、FortyTwoTokenSerializerが正しく機能するかを確認するテスト
+        """
+        # todo: 本来アクセサトークンとリフレッシュトークンの値はランダムのためよそれ用のテストする必要あるかも
         serializer: serializers.FortyTwoTokenSerializer = self.Serializer(
-            data=token_data
+            data=self.token_data
         )
         # todo: datetimeについてのテストは時間がかかりそうなため後で書く
         #       - access_token_expiry
@@ -270,19 +270,11 @@ class FortyTwoTokenSerializerTestCase(TestCase):
 
     def test_invalid_token_type(self) -> None:
         """
-        bearer, mac以外のトークンタイプが渡された場合、invalidのエラーコードを返すかどうかを確認
+        6文字以内のbearer, mac以外のトークンタイプが渡された場合、invalidのエラーコードを返すかどうかを確認
         """
-        token_data: dict = {
-            "oauth2": self.oauth2.id,
-            "access_token": "valid_access_token",
-            "access_token_expiry": "2025-01-01T00:00:00Z",
-            "token_type": "type",
-            "refresh_token": "valid_refresh_token",
-            "refresh_token_expiry": "2025-01-01T00:00:00Z",
-            "scope": "public",
-        }
+        self.token_data["token_type"] = "type"
         serializer: serializers.FortyTwoTokenSerializer = self.Serializer(
-            data=token_data
+            data=self.token_data
         )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["token_type"][0].code, INVALID)
