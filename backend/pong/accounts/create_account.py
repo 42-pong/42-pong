@@ -6,15 +6,13 @@ from rest_framework import serializers as drf_serializers
 
 import utils.result
 
-from . import constants, serializers
+from . import constants, models, serializers
 
 # 定数
 USERNAME_LENGTH: Final[int] = 7
 
 # 関数の結果用のResult型の型エイリアス
-CreatePlayerSerializerResult = utils.result.Result[
-    serializers.PlayerSerializer, dict
-]
+SavePlayerResult = utils.result.Result[models.Player, dict]
 CreateAccountResult = utils.result.Result[User, dict]
 
 
@@ -58,18 +56,19 @@ def _assert_user_serializer(
         )
 
 
-def _create_user_related_player_serializer(
+def _save_player_related_with_user(
     player_data: dict, user_id: int
-) -> CreatePlayerSerializerResult:
+) -> SavePlayerResult:
     """
-    player_dataとUserを紐づけ、PlayerSerializerを新規作成する
+    player_dataとUserを紐づけてPlayerSerializerを新規作成し、PlayerをDBに保存する
+    app間で共通のPlayerSerializerを使用する
 
     Args:
-        user_id: UserのPK
         player_data: PlayerSerializerに渡すdata
+        user_id: UserのPK
 
     Returns:
-        CreatePlayerSerializerResult: PlayerSerializerのResult
+        SavePlayerResult: DBに保存されたPlayerのResult
     """
     # PKであるuser.idを"user"フィールドにセットしUserとPlayerを紐づける
     player_data[constants.PlayerFields.USER] = user_id
@@ -79,8 +78,11 @@ def _create_user_related_player_serializer(
         serializers.PlayerSerializer(data=player_data)
     )
     if not player_serializer.is_valid():
-        return CreatePlayerSerializerResult.error(player_serializer.errors)
-    return CreatePlayerSerializerResult.ok(player_serializer)
+        return SavePlayerResult.error(player_serializer.errors)
+
+    # DBに保存
+    player: models.Player = player_serializer.save()
+    return SavePlayerResult.ok(player)
 
 
 # todo: トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
@@ -103,19 +105,12 @@ def create_account(
     # User作成
     user: User = user_serializer.save()
 
-    # app間で共通のPlayerSerializer作成
-    player_serializer_result: CreatePlayerSerializerResult = (
-        _create_user_related_player_serializer(player_data, user.id)
+    # Player作成
+    save_player_result: SavePlayerResult = _save_player_related_with_user(
+        player_data, user.id
     )
-    if player_serializer_result.is_error:
-        return CreateAccountResult.error(
-            player_serializer_result.unwrap_error()
-        )
-    player_serializer: serializers.PlayerSerializer = (
-        player_serializer_result.unwrap()
-    )
-
-    # User作成の後にPlayer作成
-    player_serializer.save()
+    if save_player_result.is_error:
+        return CreateAccountResult.error(save_player_result.unwrap_error())
+    # save_player_result.unwrap()でPlayerを取得できるが、使わないため呼ばない
 
     return CreateAccountResult.ok(user)
