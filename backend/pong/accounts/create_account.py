@@ -12,6 +12,7 @@ from . import constants, models, serializers
 USERNAME_LENGTH: Final[int] = 7
 
 # 関数の結果用のResult型の型エイリアス
+SaveUserResult = utils.result.Result[User, dict]
 SavePlayerResult = utils.result.Result[models.Player, dict]
 CreateAccountResult = utils.result.Result[User, dict]
 
@@ -54,6 +55,26 @@ def _assert_user_serializer(
         raise AssertionError(
             "UserSerializer should be a ModelSerializer for User model"
         )
+
+
+def _save_user(
+    user_serializer: drf_serializers.ModelSerializer,
+) -> SaveUserResult:
+    """
+    引数のSerializerを使い、UserをDBに保存する
+
+    Args:
+        user_serializer: UserSerializerのインスタンス
+
+    Returns:
+        SaveUserResult: DBに保存されたUserのResult
+    """
+    if not user_serializer.is_valid():
+        return SaveUserResult.error(user_serializer.errors)
+
+    # DBに保存
+    user: User = user_serializer.save()
+    return SaveUserResult.ok(user)
 
 
 def _save_player_related_with_user(
@@ -103,7 +124,10 @@ def create_account(
     _assert_user_serializer(user_serializer)
 
     # User作成
-    user: User = user_serializer.save()
+    save_user_result: SaveUserResult = _save_user(user_serializer)
+    if save_user_result.is_error:
+        return CreateAccountResult.error(save_user_result.unwrap_error())
+    user: User = save_user_result.unwrap()
 
     # Player作成
     save_player_result: SavePlayerResult = _save_player_related_with_user(
