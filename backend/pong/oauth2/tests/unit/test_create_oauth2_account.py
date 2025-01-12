@@ -5,7 +5,11 @@ from django.test import TestCase
 from ... import create_oauth2_account, models
 
 
-class OAuth2AccountFunctionTestCase(TestCase):
+class CreateOAuth2AccountTestCase(TestCase):
+    """
+    OAuth2アカウント関連の機能をテストするクラス。
+    """
+
     def setUp(self) -> None:
         self.user = models.User.objects.create(
             username="pong", email="pong@example.com", password=""
@@ -24,13 +28,19 @@ class OAuth2AccountFunctionTestCase(TestCase):
             "token_type": "bearer",
         }
 
-    def test_success_create_oauth2_user(self) -> None:
+    def test_create_oauth2_user(self) -> None:
+        """
+        OAuth2ユーザーの作成が成功することを確認するテスト
+        """
         oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
             create_oauth2_account.create_oauth2_user("pong@gmail.com", "pong")
         )
         self.assertTrue(oauth2_user_result.is_ok)
 
-    def test_success_create_forty_two_authorization(self) -> None:
+    def test_create_forty_two_authorization(self) -> None:
+        """
+        User, OAuth2, FortyTwoTokenが正しく関連付けられ、作成が成功することを確認するテスト
+        """
         forty_two_authorization_result: create_oauth2_account.CreateFortyTwoAuthorizationResult = create_oauth2_account.create_forty_two_authorization(
             self.user.id, self.provider_id, self.tokens
         )
