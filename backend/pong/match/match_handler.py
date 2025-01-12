@@ -403,7 +403,7 @@ class MatchHandler:
         ゲーム終了後のクリーンナップ処理
         グループから削除し、状態を初期化する
         """
-        if self.group_name != "":
+        if self.group_name:
             await self._remove_from_group()
         self._reset_state()
 
