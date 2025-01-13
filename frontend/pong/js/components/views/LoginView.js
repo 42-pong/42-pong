@@ -79,57 +79,57 @@ export class LoginView extends View {
 
     // TODO 各ボタンの条件分岐でAPIエンドポイントにフェッチ(以下からのコードはBEのエントポイントと連携するため、レビューしない)
     // "api/signin/"　へfetchする
-    this.#form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const email = this.#form.elements.email.value;
-      const password = this.#form.elements.password.value;
-      console.log("Email", email);
-      console.log("Password", password);
+    // this.#form.addEventListener("submit", async (event) => {
+    //   event.preventDefault();
+    //   const email = this.#form.elements.email.value;
+    //   const password = this.#form.elements.password.value;
+    //   console.log("Email", email);
+    //   console.log("Password", password);
 
-      try {
-        const response = await fetch(
-          "http://localhost:8000/api/signin/",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-          },
-        );
+    //   try {
+    //     const response = await fetch(
+    //       "http://localhost:8000/api/signin/",
+    //       {
+    //         method: "POST",
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //         },
+    //         body: JSON.stringify({ email, password }),
+    //       },
+    //     );
 
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
+    //     if (!response.ok) {
+    //       throw new Error("Network response was not ok");
+    //     }
 
-        const data = await response.json();
-        console.log("Success:", data);
-        // ここで成功時の処理を追加できます
-      } catch (error) {
-        console.error("Error:", error);
-        // ここでエラーハンドリングを追加できます
-      }
-    });
+    //     const data = await response.json();
+    //     console.log("Success:", data);
+    //     // ここで成功時の処理を追加できます
+    //   } catch (error) {
+    //     console.error("Error:", error);
+    //     // ここでエラーハンドリングを追加できます
+    //   }
+    // });
 
     // "api/oauth2/authorize/”　へfetchする
-    this.#form.addEventListener("42oauth", async (event) => {
-      event.preventDefault();
-      try {
-        const response = await fetch(
-          "http://localhost:8000/api/oauth2/authorize/",
-          {
-            method: "GET",
-          },
-        );
-        if (!response.ok) {
-          throw new Error("Oauth2 response was not ok");
-        }
+    // this.#form.addEventListener("42oauth", async (event) => {
+    //   event.preventDefault();
+    //   try {
+    //     const response = await fetch(
+    //       "http://localhost:8000/api/oauth2/authorize/",
+    //       {
+    //         method: "GET",
+    //       },
+    //     );
+    //     if (!response.ok) {
+    //       throw new Error("Oauth2 response was not ok");
+    //     }
 
-        const data = await response.json();
-        console.log("Success", data);
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    });
+    //     const data = await response.json();
+    //     console.log("Success", data);
+    //   } catch (error) {
+    //     console.error("Error:", error);
+    //   }
+    // });
   }
 }
