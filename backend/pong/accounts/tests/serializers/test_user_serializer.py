@@ -39,7 +39,8 @@ class UserSerializerTests(TestCase):
 
     def test_create_user(self) -> None:
         """
-        UserSerializerのcreate()メソッドが正常に動作することを確認する
+        UserSerializerのcreate_user()が、正常にUserを作成できることを確認する
+        usernameはそのまま、emailはnormalizeされ、passwordはハッシュ化されて保存される
         """
         serializer: serializers.UserSerializer = serializers.UserSerializer(
             data=self.user_data
@@ -134,7 +135,8 @@ class UserSerializerTests(TestCase):
     def test_error_invalid_email_format(self) -> None:
         """
         emailの形式が不正な場合にエラーになることを確認する
-        実装はしていない。models.EmailField()が自動でチェックしてくれている
+        実装はしていない。EmailField()が自動でチェックしてくれている
+        todo: 自動でチェックされている形式を調べてそのまま使うか独自で定義するか決めたらテストも変更
         """
         self.user_data[EMAIL] = "invalid_email@none"
         serializer: serializers.UserSerializer = serializers.UserSerializer(
