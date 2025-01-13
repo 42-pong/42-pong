@@ -1,9 +1,14 @@
 import unittest
+from typing import Final
 
 from parameterized import parameterized  # type: ignore
 from rest_framework import serializers
 
 from match.serializers.ws_serializer import WebsocketInputSerializer
+
+REQUIRED: Final[str] = "required"
+INVALID: Final[str] = "invalid"
+INVALID_CHOICE: Final[str] = "invalid_choice"
 
 
 class TestWebsocketSerializer(unittest.TestCase):
@@ -42,7 +47,7 @@ class TestWebsocketSerializer(unittest.TestCase):
                     "category": "INVALID_CATEGORY",
                     "payload": {},
                 },
-                "invalid_choice",
+                INVALID_CHOICE,
             ),
             (
                 "スキーマの必須keyがない",
@@ -50,7 +55,7 @@ class TestWebsocketSerializer(unittest.TestCase):
                     "category": "MATCH",
                     "invalid_key": {},
                 },
-                "required",
+                REQUIRED,
             ),
             (
                 "スキーマに加えて余計なdataが入っている",
@@ -59,7 +64,7 @@ class TestWebsocketSerializer(unittest.TestCase):
                     "payload": {},
                     "waste": {"waste_key": "waste_data"},
                 },
-                "invalid",
+                INVALID,
             ),
         ]
     )

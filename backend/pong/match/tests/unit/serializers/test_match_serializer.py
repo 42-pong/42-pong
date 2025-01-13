@@ -1,10 +1,14 @@
-import sys
 import unittest
+from typing import Final
 
 from parameterized import parameterized  # type: ignore
 from rest_framework import serializers
 
 from match.serializers.match_serializer import MatchInputSerializer
+
+REQUIRED: Final[str] = "required"
+INVALID: Final[str] = "invalid"
+INVALID_CHOICE: Final[str] = "invalid_choice"
 
 
 class TestMatchSerializer(unittest.TestCase):
@@ -76,12 +80,12 @@ class TestMatchSerializer(unittest.TestCase):
                     "data": {},
                     "waste": {"waste_key": "waste_data"},
                 },
-                "invalid",
+                INVALID,
             ),
             (
                 "INITステージの中身が空",
                 {"stage": "INIT", "data": {}},
-                "required",
+                REQUIRED,
             ),
             (
                 "INITステージの中身に余計なものが入っている",
@@ -89,17 +93,17 @@ class TestMatchSerializer(unittest.TestCase):
                     "stage": "INIT",
                     "data": {"mode": "LOCAL", "waste_key": "waste_data"},
                 },
-                "invalid",
+                INVALID,
             ),
             (
                 "INITステージのkeyが不正",
                 {"stage": "INIT", "data": {"MoDe": "REMOTE"}},
-                "required",
+                REQUIRED,
             ),
             (
                 "INITステージのmode keyの値が空",
                 {"stage": "INIT", "data": {"mode": ""}},
-                "invalid_choice",
+                INVALID_CHOICE,
             ),
             (
                 "READYステージの中身に余計なものが入っている",
@@ -107,20 +111,12 @@ class TestMatchSerializer(unittest.TestCase):
                     "stage": "READY",
                     "data": {"waste_key": "waste_data"},
                 },
-                "invalid",
-            ),
-            (
-                "READYステージの中身に余計なものが入っている",
-                {
-                    "stage": "READY",
-                    "data": {"waste_key": "waste_data"},
-                },
-                "invalid",
+                INVALID,
             ),
             (
                 "PLAYステージのkeyが不正",
                 {"stage": "PLAY", "data": {"move": "UP", "TeAm": "1"}},
-                "required",
+                REQUIRED,
             ),
             (
                 "PLAYステージのteam keyの値が不正",
@@ -128,7 +124,7 @@ class TestMatchSerializer(unittest.TestCase):
                     "stage": "PLAY",
                     "data": {"move": "DOWN", "team": "-1"},
                 },
-                "invalid_choice",
+                INVALID_CHOICE,
             ),
             (
                 "PLAYステージのteam keyの値が不正",
@@ -136,7 +132,7 @@ class TestMatchSerializer(unittest.TestCase):
                     "stage": "END",
                     "data": {"waste_key": "waste_data"},
                 },
-                "invalid",
+                INVALID,
             ),
         ]
     )
