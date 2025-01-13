@@ -168,3 +168,27 @@ class UserSerializerTests(TestCase):
 
         self.assertFalse(serializer_2.is_valid())
         self.assertIn(USERNAME, serializer_2.errors)
+
+    def test_user_serializer_duplicate_email(self) -> None:
+        """
+        既に登録されているemailが渡された場合にエラーになることを確認する
+        """
+        # 1人目のUserをDBに保存
+        serializer_1: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+        serializer_1.is_valid(raise_exception=True)
+        serializer_1.save()
+
+        # 2人目のUserSerializerを作成
+        user_data_2: dict = {
+            USERNAME: "non-exist-user",
+            EMAIL: self.user_data[EMAIL],  # 既に登録されているemail
+            PASSWORD: "testpassword",
+        }
+        serializer_2: serializers.UserSerializer = serializers.UserSerializer(
+            data=user_data_2
+        )
+
+        self.assertFalse(serializer_2.is_valid())
+        self.assertIn(EMAIL, serializer_2.errors)
