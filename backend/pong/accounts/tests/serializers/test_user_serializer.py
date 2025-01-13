@@ -27,7 +27,7 @@ class UserSerializerTests(TestCase):
     # -------------------------------------------------------------------------
     # 正常ケース
     # -------------------------------------------------------------------------
-    def test_user_serializer_valid_data(self) -> None:
+    def test_valid_data(self) -> None:
         """
         正常なデータが渡された場合にエラーにならないことを確認する
         """
@@ -37,7 +37,7 @@ class UserSerializerTests(TestCase):
 
         self.assertTrue(serializer.is_valid())
 
-    def test_user_serializer_create(self) -> None:
+    def test_create_user(self) -> None:
         """
         UserSerializerのcreate()メソッドが正常に動作することを確認する
         """
@@ -59,7 +59,7 @@ class UserSerializerTests(TestCase):
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
-    def test_user_serializer_none_field_username(self) -> None:
+    def test_error_none_field_username(self) -> None:
         """
         必須フィールド"username"が存在しない場合にエラーになることを確認する
         """
@@ -71,7 +71,7 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(USERNAME, serializer.errors)
 
-    def test_user_serializer_none_field_email(self) -> None:
+    def test_error_none_field_email(self) -> None:
         """
         必須フィールド"email"が存在しない場合にエラーになることを確認する
         """
@@ -83,7 +83,7 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(EMAIL, serializer.errors)
 
-    def test_user_serializer_none_field_password(self) -> None:
+    def test_error_none_field_password(self) -> None:
         """
         必須フィールド"password"が存在しない場合にエラーになることを確認する
         """
@@ -95,7 +95,7 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(PASSWORD, serializer.errors)
 
-    def test_user_serializer_empty_username(self) -> None:
+    def test_error_empty_username(self) -> None:
         """
         必須フィールド"username"が空の場合にエラーになることを確認する
         """
@@ -107,7 +107,7 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(USERNAME, serializer.errors)
 
-    def test_user_serializer_empty_email(self) -> None:
+    def test_error_empty_email(self) -> None:
         """
         必須フィールド"email"が空の場合にエラーになることを確認する
         """
@@ -119,7 +119,7 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(EMAIL, serializer.errors)
 
-    def test_user_serializer_empty_password(self) -> None:
+    def test_error_empty_password(self) -> None:
         """
         必須フィールド"password"が空の場合にエラーになることを確認する
         """
@@ -131,7 +131,7 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(PASSWORD, serializer.errors)
 
-    def test_user_serializer_invalid_email_format(self) -> None:
+    def test_error_invalid_email_format(self) -> None:
         """
         emailの形式が不正な場合にエラーになることを確認する
         実装はしていない。models.EmailField()が自動でチェックしてくれている
@@ -144,7 +144,7 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(EMAIL, serializer.errors)
 
-    def test_user_serializer_duplicate_username(self) -> None:
+    def test_error_duplicate_username(self) -> None:
         """
         既に登録されているusernameが渡された場合にエラーになることを確認する
         実装はしていない。UserModelのUniqueValidatorで自動チェックしてくれている
@@ -169,7 +169,7 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer_2.is_valid())
         self.assertIn(USERNAME, serializer_2.errors)
 
-    def test_user_serializer_duplicate_email(self) -> None:
+    def test_error_duplicate_email(self) -> None:
         """
         既に登録されているemailが渡された場合にエラーになることを確認する
         """
