@@ -1,5 +1,5 @@
 import { ws } from "msw";
-import { Endpoints } from "../../Endpoints";
+import { Endpoints } from "../../constants/Endpoints";
 import { WebSocketEnums } from "../../enums/WebSocketEnums";
 import { matchPayloadHandler } from "../utils/websocket/matchPayloadHandler";
 

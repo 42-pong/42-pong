@@ -1,4 +1,4 @@
-import { Endpoints } from "../../Endpoints";
+import { Endpoints } from "../../constants/Endpoints";
 import { View } from "../../core/View";
 import { isOpenWebSocket } from "../../websocket";
 
