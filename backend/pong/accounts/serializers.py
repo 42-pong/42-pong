@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
     Userモデルの作成・バリデーションを行う
     """
 
-    # EmailField: デフォルトがallow_blank=False
+    # EmailField: デフォルトがrequired=True, allow_blank=False
     # todo: max_length、min_lengthの設定
     email = serializers.EmailField(
         # UniqueValidator: emailをユニークにする
@@ -26,7 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
             constants.UserFields.PASSWORD,
         )
         extra_kwargs = {
-            constants.UserFields.EMAIL: {"required": True},
             constants.UserFields.PASSWORD: {"write_only": True},
         }
 
