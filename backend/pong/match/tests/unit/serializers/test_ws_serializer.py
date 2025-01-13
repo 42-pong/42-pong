@@ -86,4 +86,9 @@ class TestWebsocketSerializer(unittest.TestCase):
             serializer.is_valid(raise_exception=True)
 
         # ValidationErrorが発生した場合、そのエラーコードを確認
-        self.assertTrue(error_code, context.exception.get_codes())
+        # error_dictの型が複雑（dictの中にlistや文字列がある）ので、strに変換して確認
+        error_dict = context.exception.get_codes()
+        self.assertTrue(
+            error_code in str(error_dict),
+            f"'{error_code}' not found in {error_dict}",
+        )

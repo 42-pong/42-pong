@@ -1,3 +1,4 @@
+import sys
 import unittest
 
 from parameterized import parameterized  # type: ignore
@@ -161,4 +162,21 @@ class TestMatchSerializer(unittest.TestCase):
             serializer.is_valid(raise_exception=True)
 
         # ValidationErrorが発生した場合、そのエラーコードを確認
-        self.assertTrue(error_code, context.exception.get_codes())
+        print(
+            "get_codes type: ",
+            type(context.exception.get_codes()),
+            file=sys.stderr,
+        )
+        print(
+            "get_codes content ",
+            context.exception.get_codes(),
+            file=sys.stderr,
+        )
+
+        # ValidationErrorが発生した場合、そのエラーコードを確認
+        # error_dictの型が複雑（dictの中にlistや文字列がある）ので、strに変換して確認
+        error_dict = context.exception.get_codes()
+        self.assertTrue(
+            error_code in str(error_dict),
+            f"'{error_code}' not found in {error_dict}",
+        )
