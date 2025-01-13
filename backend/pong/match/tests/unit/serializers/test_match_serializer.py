@@ -82,6 +82,7 @@ class TestMatchSerializer(unittest.TestCase):
                 },
                 INVALID,
             ),
+            # INITステージ
             (
                 "INITステージの中身が空",
                 {"stage": "INIT", "data": {}},
@@ -96,7 +97,7 @@ class TestMatchSerializer(unittest.TestCase):
                 INVALID,
             ),
             (
-                "INITステージのkeyが不正",
+                "INITステージのmode keyが不正",
                 {"stage": "INIT", "data": {"MoDe": "REMOTE"}},
                 REQUIRED,
             ),
@@ -105,6 +106,7 @@ class TestMatchSerializer(unittest.TestCase):
                 {"stage": "INIT", "data": {"mode": ""}},
                 INVALID_CHOICE,
             ),
+            # READYステージ
             (
                 "READYステージの中身に余計なものが入っている",
                 {
@@ -113,10 +115,23 @@ class TestMatchSerializer(unittest.TestCase):
                 },
                 INVALID,
             ),
+            # PLAYステージ
             (
                 "PLAYステージのkeyが不正",
                 {"stage": "PLAY", "data": {"move": "UP", "TeAm": "1"}},
                 REQUIRED,
+            ),
+            (
+                "PLAYステージにの値に不要なものが入っている",
+                {
+                    "stage": "PLAY",
+                    "data": {
+                        "move": "UP",
+                        "team": "1",
+                        "waste_key": "waste_data",
+                    },
+                },
+                INVALID,
             ),
             (
                 "PLAYステージのteam keyの値が不正",
@@ -126,8 +141,9 @@ class TestMatchSerializer(unittest.TestCase):
                 },
                 INVALID_CHOICE,
             ),
+            # ENDステージ
             (
-                "PLAYステージのteam keyの値が不正",
+                "ENDステージのteam keyの値が不正",
                 {
                     "stage": "END",
                     "data": {"waste_key": "waste_data"},
@@ -156,18 +172,6 @@ class TestMatchSerializer(unittest.TestCase):
         # 例外が発生することを確認
         with self.assertRaises(serializers.ValidationError) as context:
             serializer.is_valid(raise_exception=True)
-
-        # ValidationErrorが発生した場合、そのエラーコードを確認
-        print(
-            "get_codes type: ",
-            type(context.exception.get_codes()),
-            file=sys.stderr,
-        )
-        print(
-            "get_codes content ",
-            context.exception.get_codes(),
-            file=sys.stderr,
-        )
 
         # ValidationErrorが発生した場合、そのエラーコードを確認
         # error_dictの型が複雑（dictの中にlistや文字列がある）ので、strに変換して確認
