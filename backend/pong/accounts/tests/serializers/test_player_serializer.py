@@ -57,7 +57,7 @@ class PlayerSerializerTests(TestCase):
     # -------------------------------------------------------------------------
     # 正常ケース
     # -------------------------------------------------------------------------
-    def test_player_serializer_valid_data(self) -> None:
+    def test_valid_data(self) -> None:
         """
         正常なデータが渡された場合にエラーにならないことを確認する
         """
@@ -71,9 +71,9 @@ class PlayerSerializerTests(TestCase):
 
         self.assertTrue(serializer.is_valid())
 
-    def test_player_serializer_create(self) -> None:
+    def test_create(self) -> None:
         """
-        PlayerSerializerのcreate()メソッドが正常に動作することを確認する
+        PlayerSerializerのcreate()が、正常にPlayerを作成できることを確認する
         """
         player: models.Player = self._create_account(self.user_data)
 
@@ -82,9 +82,10 @@ class PlayerSerializerTests(TestCase):
         self.assertEqual(player.user.username, self.user_data[USERNAME])
         self.assertEqual(player.user.email, self.user_data[EMAIL])
 
-    def test_player_serializer_multi_create(self) -> None:
+    def test_multi_create(self) -> None:
         """
-        PlayerSerializerのcreate()メソッドが複数回呼ばれた場合に正常に動作することを確認する
+        PlayerSerializerのcreate()メソッドが複数回呼ばれた場合に、
+        正常に全てのPlayerが作成されることを確認する
         """
         # 2人目のアカウント情報
         user_data_2: dict = {
@@ -93,7 +94,7 @@ class PlayerSerializerTests(TestCase):
             PASSWORD: "testpassword",
         }
 
-        # 2人共アカウントを作成し,正常に1対1で紐づいているか確認
+        # 2人共アカウントを作成し,UserとPlayerが正常に1対1で紐づいているか確認
         for user_data in (self.user_data, user_data_2):
             player: models.Player = self._create_account(user_data)
 
