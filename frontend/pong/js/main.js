@@ -1,4 +1,5 @@
 import "./components";
+import { PongEvents } from "./constants/PongEvents";
 import { appRouter } from "./routers/appRouter";
 import { initWebSocket } from "./websocket";
 
@@ -9,6 +10,11 @@ function main() {
     router.update(window.location.pathname);
   };
 
+  app.addEventListener(PongEvents.UPDATE_ROUTER.type, (event) => {
+    const { path } = event.detail;
+    const isUpdated = router.update(path);
+    if (isUpdated) window.history.pushState({}, "", path);
+  });
   window.addEventListener("popstate", updateWindowPath);
   initWebSocket();
   updateWindowPath();
