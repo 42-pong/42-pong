@@ -156,14 +156,21 @@ class OAuth2SerializerTestCase(TestCase):
         oauth2: models.OAuth2 = models.OAuth2.objects.create(
             user=self.user, provider="42", provider_id="12345"
         )
-        duplicate_data: dict = {
-            "user": oauth2.user.id,
+
+        # 同じproviderで、既に存在するprovider_idを持つuserを作成
+        duplicated_user = models.User.objects.create_user(
+            username="dup", email="dup@example.com", password=""
+        )
+        duplicated_data: dict = {
+            "user": duplicated_user.id,
             "provider": "42",
             "provider_id": "12345",
         }
+        self.assertEqual(oauth2.provider, duplicated_data["provider"])
+        self.assertEqual(oauth2.provider_id, duplicated_data["provider_id"])
 
         serializer: serializers.OAuth2Serializer = self.Serializer(
-            data=duplicate_data
+            data=duplicated_data
         )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["provider_id"][0].code, UNIQUE)
