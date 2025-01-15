@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
                     "access_token",
                     models.CharField(max_length=255, unique=True),
                 ),
-                ("token_type", models.CharField(max_length=6)),
+                ("token_type", models.CharField(max_length=255)),
                 ("access_token_expiry", models.DateTimeField()),
                 (
                     "refresh_token",

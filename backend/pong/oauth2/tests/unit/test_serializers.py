@@ -269,25 +269,14 @@ class FortyTwoTokenSerializerTestCase(TestCase):
 
     def test_invalid_token_type(self) -> None:
         """
-        6文字以内のbearer, mac以外のトークンタイプが渡された場合、invalidのエラーコードを返すかどうかを確認
+        bearer, mac以外のトークンタイプが渡された場合、invalidのエラーコードを返すかどうかを確認
         """
-        self.token_data["token_type"] = "type"
+        self.token_data["token_type"] = "invalid_token_type"
         serializer: serializers.FortyTwoTokenSerializer = self.Serializer(
             data=self.token_data
         )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["token_type"][0].code, INVALID)
-
-    def test_max_length_token_type(self) -> None:
-        """
-        6文字以上ののbearer, mac以外のトークンタイプが渡された場合、invalidのエラーコードを返すかどうかを確認
-        """
-        self.token_data["token_type"] = "max_length_type"
-        serializer: serializers.FortyTwoTokenSerializer = self.Serializer(
-            data=self.token_data
-        )
-        self.assertFalse(serializer.is_valid())
-        self.assertEqual(serializer.errors["token_type"][0].code, MAX_LENGTH)
 
     def test_serializer_excludes_access_and_refresh_tokens(self) -> None:
         """
