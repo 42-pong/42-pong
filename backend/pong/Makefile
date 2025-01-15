@@ -44,7 +44,13 @@ typecheck:
 # -------------------------------------------------------
 .PHONY: unit-test
 unit-test:
-	@python manage.py test -v2
+	@if [ -z "$(APP)" ]; then \
+		echo "Running all tests..."; \
+		python manage.py test -v2; \
+	else \
+		echo "Running tests for app: $(APP)..."; \
+		python manage.py test $(APP) -v2; \
+	fi
 
 # -------------------------------------------------------
 # migration
