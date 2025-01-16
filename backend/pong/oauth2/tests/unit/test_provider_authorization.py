@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 
 from django.test import TestCase
 
-from ... import models, providers
+from ... import models
+from ...providers import forty_two_authorization
 
 
 # todo: 各プロバイダのテストケースが多くなったら、それぞれのテストクラスを作成する
@@ -35,7 +36,7 @@ class CreateProviderAuthorizationTestCase(TestCase):
         """
         User, OAuth2, FortyTwoTokenが正しく関連付けられ、作成が成功することを確認するテスト
         """
-        forty_two_authorization_result: providers.forty_two_authorization.CreateFortyTwoAuthorizationResult = providers.forty_two_authorization.create_forty_two_authorization(
+        forty_two_authorization_result: forty_two_authorization.CreateFortyTwoAuthorizationResult = forty_two_authorization.create_forty_two_authorization(
             self.user.id, self.provider, self.provider_id, self.tokens
         )
 

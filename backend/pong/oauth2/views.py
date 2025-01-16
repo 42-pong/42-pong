@@ -19,7 +19,8 @@ from rest_framework.views import APIView
 
 from pong import settings
 
-from . import create_oauth2_account, models, providers
+from . import create_oauth2_account, models
+from .providers import forty_two_authorization
 
 
 class OAuth2BaseView(APIView):
@@ -188,7 +189,7 @@ class OAuth2CallbackView(OAuth2BaseView):
             ),
             "scope": tokens.get("scope"),
         }
-        oauth2_result: providers.forty_two_authorization.CreateFortyTwoAuthorizationResult = providers.forty_two_authorization.create_forty_two_authorization(
+        oauth2_result: forty_two_authorization.CreateFortyTwoAuthorizationResult = forty_two_authorization.create_forty_two_authorization(
             oauth2_user.id, "42", user_info.get("id"), forty_two_token_data
         )
         # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
