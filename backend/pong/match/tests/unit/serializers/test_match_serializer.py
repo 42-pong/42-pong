@@ -74,7 +74,7 @@ class TestMatchSerializer(unittest.TestCase):
             # 不正なスキーマのテストケース
             # ============================
             (
-                "正しいmatchスキーマに加えて余計なdataが入っている",
+                "正しいmatchスキーマに加えて余計なデータが入っている",
                 {
                     "stage": "READY",
                     "data": {},

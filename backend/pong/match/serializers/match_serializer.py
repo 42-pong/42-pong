@@ -52,6 +52,12 @@ class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
     """
     MATCHイベントで共通のメッセージスキーマをバリデーションするために使うクラス
     Stageごとに各Stageのシリアライザ―に処理を移譲する
+
+    is_valid()
+        Return:
+            bool: validationが通ればTrue, 通らなければFalse
+        Raise:
+            raise_exception=Trueであれば、rest_framework.serializers.ValidationErrorを投げる
     """
 
     stage = serializers.ChoiceField(
@@ -62,7 +68,9 @@ class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
 
     def validate_data(self, value: dict[str, Any]) -> dict[str, Any]:
         """
-        dataのバリデーションを行うメソッド
+        dataフィールドのバリデーションを行うメソッド
+
+        この関数内で例外が投げられても'is_valid()'が必ずcatchする。
         """
         stage: str = self.initial_data[match_enums.Stage.key()]
         data: dict = self.initial_data[ws_constants.DATA_KEY]
