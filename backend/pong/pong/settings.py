@@ -14,22 +14,11 @@ from pathlib import Path
 
 # todo mypyが型対応していない3rdパーティのライブラリも型対応できるようにする
 import environ  # type: ignore
+from django.core.exceptions import ImproperlyConfigured
 
-# 環境変数のスキーマを定義
-env = environ.Env(
-    DEBUG=(bool, False),
-    SECRET_KEY=(str, "your-default-secret-key"),
-    DB_NAME=(str, "db_name"),
-    DB_USER=(str, "db_user"),
-    DB_PASSWORD=(str, "db_password"),
-    OAUTH2_CLIENT_ID=(str, "client_id"),
-    OAUTH2_CLIENT_SECRET_KEY=(str, "client_secret_key"),
-    PONG_ORIGIN=(str, "api"),
-    OAUTH2_AUTHORIZATION_ENDPOINT=(str, "authorization_endpoint"),
-    OAUTH2_TOKEN_ENDPOINT=(str, "token_endpoint"),
-    # todo: デフォルトは設定せず、空文字はエラーにする
-    FRONT_SERVER_PORT=(str, "8080"),
-)
+# Environment variables
+
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,12 +27,53 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env_file = Path(BASE_DIR) / ".env"
 environ.Env.read_env(env_file)
 
+
+def get_valid_str_env(key: str) -> str:
+    """
+    環境変数をstrとして取得し、値が不正な場合はエラーを発生させる
+
+    Returns:
+        str: 取得した環境変数の値
+
+    Raises:
+        ImproperlyConfigured: .envに環境変数が設定されていないまたは空文字列の場合
+    """
+    # 環境変数の取得に失敗/存在しない場合、env.str()はImproperlyConfiguredを発生させる
+    value: str = env.str(key)
+    if not value:
+        # 空文字列の場合
+        raise ImproperlyConfigured(f"Set the {key} environment variable")
+    return value
+
+
+# NOTE: django内で使う環境変数を追加する際は、以下も一緒に行ったか確認する
+#   - .env.exampleに追加
+#   - .envに追加
+#   - Notionの.env共有を更新
+#   - github actions用
+#     - githubサイトのSettings/Secrets and variablesに追加
+#     - .github/workflows/backend_code_check.ymlのenvに追加
+#     - .github/workflows/backend_unit_test.ymlのCreate .env fileに追加
+# 使用する環境変数を全て取得
+DB_NAME = get_valid_str_env("DB_NAME")
+DB_USER = get_valid_str_env("DB_USER")
+DB_PASSWORD = get_valid_str_env("DB_PASSWORD")
+OAUTH2_CLIENT_ID = get_valid_str_env("OAUTH2_CLIENT_ID")
+OAUTH2_CLIENT_SECRET_KEY = get_valid_str_env("OAUTH2_CLIENT_SECRET_KEY")
+PONG_ORIGIN = get_valid_str_env("PONG_ORIGIN")
+OAUTH2_AUTHORIZATION_ENDPOINT = get_valid_str_env(
+    "OAUTH2_AUTHORIZATION_ENDPOINT"
+)
+OAUTH2_TOKEN_ENDPOINT = get_valid_str_env("OAUTH2_TOKEN_ENDPOINT")
+FRONT_SERVER_PORT = get_valid_str_env("FRONT_SERVER_PORT")
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-DEBUG = env("DEBUG")
+DEBUG = env.bool("DEBUG", False)
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = get_valid_str_env("SECRET_KEY")
 
 ALLOWED_HOSTS: list[str] = []
 
@@ -109,9 +139,9 @@ WSGI_APPLICATION = "pong.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
         "HOST": "db",  # compose.yamlのDBのservice名
         "PORT": "5432",  # postgresのデフォルトポート
     }
@@ -200,20 +230,11 @@ CHANNEL_LAYERS = {
 ASGI_APPLICATION = "pong.asgi.application"
 
 
-# OAuth2.0
-
-OAUTH2_CLIENT_ID = env("OAUTH2_CLIENT_ID")
-OAUTH2_CLIENT_SECRET_KEY = env("OAUTH2_CLIENT_SECRET_KEY")
-PONG_ORIGIN = env("PONG_ORIGIN")
-OAUTH2_AUTHORIZATION_ENDPOINT = env("OAUTH2_AUTHORIZATION_ENDPOINT")
-OAUTH2_TOKEN_ENDPOINT = env("OAUTH2_TOKEN_ENDPOINT")
-
-
 # Django CORS headers
 # https://github.com/adamchainz/django-cors-headers
 
 # リストに追加することでオリジンを許可する
 CORS_ALLOWED_ORIGINS = [
-    f"http://localhost:{env("FRONT_SERVER_PORT")}",  # frontendコンテナ
+    f"http://localhost:{FRONT_SERVER_PORT}",  # frontendコンテナ
 ]
 # todo: CORS_ALLOW_CREDENTIALS, CSRFについての設定は必要になり次第追加

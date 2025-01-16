@@ -1,0 +1,94 @@
+from typing import Final
+
+from django.contrib.auth.models import User
+from django.utils.crypto import get_random_string
+from rest_framework import serializers as def_serializers
+
+import utils.result
+
+from . import constants, serializers
+
+# 定数
+USERNAME_LENGTH: Final[int] = 7
+
+# 関数の結果用のResult型の型エイリアス
+CreatePlayerSerializerResult = utils.result.Result[
+    serializers.PlayerSerializer, dict
+]
+CreateAccountResult = utils.result.Result[User, dict]
+
+
+def get_unique_random_username() -> str:
+    """
+    ユニークかつランダムな文字列のusernameを生成する
+    UserModelのusernameとして使用する
+    ランダム文字列は英子文字・英大文字・数字の計62文字の組み合わせ
+
+    Returns:
+        str: ランダム文字列かつ、DBに存在しないusername
+    """
+    while True:
+        random_str: str = get_random_string(length=USERNAME_LENGTH)
+        if not User.objects.filter(username=random_str).exists():
+            break
+    return random_str
+
+
+def _create_user_related_player_serializer(
+    player_data: dict, user_id: int
+) -> CreatePlayerSerializerResult:
+    """
+    player_dataとUserを紐づけ、PlayerSerializerを新規作成する
+
+    Args:
+        user_id: UserのPK
+        player_data: PlayerSerializerに渡すdata
+
+    Returns:
+        CreatePlayerSerializerResult: PlayerSerializerのResult
+    """
+    # PKであるuser.idを"user"フィールドにセットしUserとPlayerを紐づける
+    player_data[constants.PlayerFields.USER] = user_id
+
+    # PlayerSerializer作成
+    player_serializer: serializers.PlayerSerializer = (
+        serializers.PlayerSerializer(data=player_data)
+    )
+    if not player_serializer.is_valid():
+        return CreatePlayerSerializerResult.error(player_serializer.errors)
+    return CreatePlayerSerializerResult.ok(player_serializer)
+
+
+# todo: トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
+def create_account(
+    user_serializer: def_serializers.ModelSerializer, player_data: dict
+) -> CreateAccountResult:
+    """
+    UserとPlayerを新規作成してDBに追加し、作成されたアカウント情報を返す
+
+    Args:
+        user_serializer: UserSerializerのインスタンス
+        player_data: PlayerSerializerに渡すdata
+
+    Returns:
+        CreateAccountResult: 作成されたUserのResult
+    """
+    # User作成
+    user: User = user_serializer.save()
+
+    # app間で共通のPlayerSerializer作成
+    player_serializer_result: CreatePlayerSerializerResult = (
+        _create_user_related_player_serializer(player_data, user.id)
+    )
+    if player_serializer_result.is_error:
+        return CreateAccountResult.error(
+            player_serializer_result.unwrap_error()
+        )
+    player_serializer: serializers.PlayerSerializer = (
+        player_serializer_result.unwrap()
+    )
+
+    # User作成の後にPlayer作成
+    player_serializer.save()
+
+    return CreateAccountResult.ok(user)

@@ -31,7 +31,6 @@ class AccountsTests(test.APITestCase):
         """
         account_data: dict = {
             "user": {
-                USERNAME: "testuser",
                 EMAIL: "testuser@example.com",
                 PASSWORD: "testpassword12345",
             }
@@ -39,57 +38,65 @@ class AccountsTests(test.APITestCase):
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
-        response_user: dict = response.data[USER]
+        # response.data == {
+        #     "status": "ok",
+        #     "data": {
+        #         "user": {...}
+        #     },
+        # }
+        response_user: dict = response.data["data"][USER]
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response_user[USERNAME], "testuser")
         self.assertEqual(response_user[EMAIL], "testuser@example.com")
         # passwordは返されない
         self.assertNotIn(PASSWORD, response_user)
 
-        # DBの状態を確認
+        # DBにUser,Playerが1つずつ作成されていることを確認
+        self.assertEqual(models.User.objects.count(), 1)
         self.assertEqual(models.Player.objects.count(), 1)
+
+        # emailからplayerを取得できる/例外がraiseされないことを確認
         player: models.Player = models.Player.objects.get(
-            user__username="testuser"
+            user__email="testuser@example.com"
         )
-        self.assertEqual(player.user.email, "testuser@example.com")
+        # playerから取得したランダム文字列usernameのUserが実際にDBに存在するか確認
+        self.assertTrue(
+            models.User.objects.filter(username=player.user.username).exists()
+        )
 
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
-    def test_create_account_with_invalid_data(self) -> None:
+    def test_create_account_with_invalid_email(self) -> None:
         """
-        無効なデータでアカウントを作成するテスト
+        不正なemailの形式でアカウントを作成するテスト
         status 400 が返されることを確認
-        ErrorDetail に username, email が含まれることを確認
+        ErrorDetail に email が含まれることを確認
         """
         account_data: dict = {
             "user": {
-                USERNAME: "",  # 空のusername
-                EMAIL: "invalid-email@none",  # 不正なemail
+                EMAIL: "invalid-email@none",  # 不正なemail形式
                 PASSWORD: "testpassword12345",
             }
         }
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
-        response_user: dict = response.data[USER]
+        response_error: dict = response.data["errors"]
 
         # responseの内容を確認
-        # response.data = {
-        #     "user": {
-        #         "username": [
-        #             ErrorDetail(string="This field may not be blank.", code="blank")
-        #         ],
+        # response.data == {
+        #     "status": "error",
+        #     "errors": {
         #         "email": [
         #             ErrorDetail(string="Enter a valid email address.", code="invalid")
         #         ],
         #     }
         # }
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(USERNAME, response_user)
-        self.assertIn(EMAIL, response_user)
+        self.assertIn(EMAIL, response_error)
 
-        # DBの状態を確認
+        # DBにUser,Playerが作成されていないことを確認
+        self.assertEqual(models.User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
