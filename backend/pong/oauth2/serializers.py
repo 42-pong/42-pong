@@ -14,6 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
             "password",
         )
         extra_kwargs = {
+            "email": {"required": True},
             "password": {"write_only": True, "allow_blank": True},
         }
 
@@ -40,29 +41,9 @@ class OAuth2Serializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def _validate_provider_id(self, data: dict) -> None:
-        """
-        providerとprovider_idの組み合わせがすでに存在するかどうかを検証する関数
-
-        Args:
-            data (dict): `provider`と`provider_id`のキーを含む辞書。
-
-        Raises:
-            - serializers.ValidationError: `provider`と`provider_id`の組み合わせが
-            既に存在する場合
-        """
-        if models.OAuth2.objects.filter(
-            provider=data["provider"], provider_id=data["provider_id"]
-        ).exists():
-            raise serializers.ValidationError(
-                {
-                    "provider_id": "This provider and provider_id combination already exists."
-                }
-            )
-
     # todo: より詳細なvalidationの実装
+    # - 同じproviderの場合はprovider_id が既に存在するかかどうか検証
     def validate(self, data: dict) -> dict:
-        self._validate_provider_id(data)
         return data
 
 
@@ -91,18 +72,18 @@ class FortyTwoTokenSerializer(serializers.ModelSerializer):
             "refresh_token": {"write_only": True},
         }
 
-    def _validate_token_type(self, data: dict) -> None:
+    def _validate_token_type(self, token_type: str) -> None:
         """
         トークンタイプが有効な値であるかを検証する関数。
 
         Args:
-            data (dict): トークン情報を含む辞書。`token_type`キーを必須で含む。
+            token_type (str): トークンタイプ
 
         Raises:
             serializers.ValidationError: `token_type`が有効な値でない場合
         """
         valid_token_types = ["bearer", "mac"]
-        if data["token_type"] not in valid_token_types:
+        if token_type not in valid_token_types:
             raise serializers.ValidationError(
                 {
                     "token_type": f"Invalid token_type. Must be one of {valid_token_types}."
@@ -111,5 +92,5 @@ class FortyTwoTokenSerializer(serializers.ModelSerializer):
 
     # todo: より詳細なvalidationの実装
     def validate(self, data: dict) -> dict:
-        self._validate_token_type(data)
+        self._validate_token_type(data["token_type"])
         return data
