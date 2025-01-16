@@ -33,6 +33,7 @@ def get_unique_random_username() -> str:
     return random_str
 
 
+# todo: 以下の関数は全てcreate_account()内でのみ使われる想定のため、まとめてクラス化すると良さそう
 def _assert_user_serializer(
     user_serializer: drf_serializers.ModelSerializer,
 ) -> None:
