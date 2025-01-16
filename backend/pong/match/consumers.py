@@ -2,7 +2,7 @@ from channels.generic.websocket import (  # type: ignore
     AsyncJsonWebsocketConsumer,
 )
 
-from . import match_handler
+from . import match_handler, ws_constants
 
 
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
@@ -15,14 +15,14 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code: int) -> None:
-        pass
+        await self.match_handler.cleanup()
 
     async def receive_json(self, message: dict) -> None:
-        category: str = message.get("category", "")
-        payload: dict = message.get("payload", {})
+        category: str = message.get(ws_constants.Category.key(), "")
+        payload: dict = message.get(ws_constants.PAYLOAD_KEY, {})
 
         match category:
-            case "MATCH":
+            case ws_constants.Category.MATCH.value:
                 await self.match_handler.handle(payload)
             case _:
                 pass

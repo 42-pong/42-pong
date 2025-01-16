@@ -1,15 +1,8 @@
 import asyncio
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Final
+from typing import Any, Final, Optional
 
-
-class Stage(Enum):
-    INIT = 1
-    READY = 2
-    PLAY = 3
-    END = 4
-    NONE = 5
+from . import match_enums, ws_constants
 
 
 @dataclass
@@ -21,22 +14,25 @@ class PosStruct:
 class MatchHandler:
     """
     Pongゲームのマッチロジックおよび通信を処理するクラス。
-    原点（0, 0）は左上
+    座標の原点（0, 0）は左上
     """
 
     # クラス定数
     HEIGHT: Final[int] = 400
     WIDTH: Final[int] = 600
-    PLAYER_HEIGHT: Final[int] = 60
-    PLAYER_WIDTH: Final[int] = 10
-    PLAYER_SPEED: Final[int] = 5
-    BALL_RADIUS: Final[int] = 10
+    PADDLE_POS_FROM_GOAL: Final[int] = WIDTH // 100
+    PADDLE_HEIGHT: Final[int] = 60
+    PADDLE_WIDTH: Final[int] = 10
+    PADDLE_SPEED: Final[int] = 5
+    BALL_SIZE: Final[int] = 10
     BALL_SPEED: Final[int] = 2
+    FPS: Final[float] = 1 / 60
+    WINNING_SCORE: Final[int] = 5
 
     # クラス属性
-    stage: Stage
-    player1: PosStruct
-    player2: PosStruct
+    stage: Optional[match_enums.Stage]
+    paddle1: PosStruct
+    paddle2: PosStruct
     ball: PosStruct
     ball_speed: PosStruct
     score1: int
@@ -54,10 +50,10 @@ class MatchHandler:
         :param channel_name: チャネル名
         """
         self.stage_handlers = {
-            "INIT": self._handle_init,
-            "READY": self._handle_ready,
-            "PLAY": self._handle_play,
-            "END": self._handle_end,
+            match_enums.Stage.INIT.value: self._handle_init,
+            match_enums.Stage.READY.value: self._handle_ready,
+            match_enums.Stage.PLAY.value: self._handle_play,
+            match_enums.Stage.END.value: self._handle_end,
         }
         self.channel_layer = channel_layer
         self.channel_name = channel_name
@@ -71,7 +67,7 @@ class MatchHandler:
         """
         return (
             f"MatchHandler(stage={self.stage}, "
-            f"player1={self.player1}, player2={self.player2}, "
+            f"paddle1={self.paddle1}, paddle2={self.paddle2}, "
             f"ball={self.ball}, score1={self.score1}, score2={self.score2})"
         )
 
@@ -83,53 +79,57 @@ class MatchHandler:
         """
         return (
             f"MatchHandler(stage={self.stage}, "
-            f"player1={self.player1}, player2={self.player2}, "
+            f"paddle1={self.paddle1}, paddle2={self.paddle2}, "
             f"ball={self.ball}, ball_speed={self.ball_speed}, "
             f"score1={self.score1}, score2={self.score2}, "
             f"local_play={self.local_play}, group_name={self.group_name}, "
             f"channel_layer={self.channel_layer}, channel_name={self.channel_name})"
         )
 
+    # ===================
     # ハンドラーメソッド
+    # ===================
     async def handle(self, payload: dict) -> None:
         """
         プレイヤーからの入力を受け取り、ステージごとに処理を振り分ける。
 
-        :param payload: プレイヤーからのデータを含むペイロード
+        :param payload: プレイヤーから送られてきたペイロード
         """
-        data: dict = payload.get("data", {})
-        stage: str = payload.get("stage", "")
+        data: dict = payload.get(ws_constants.DATA_KEY, {})
+        stage: str = payload.get(match_enums.Stage.key(), "")
         handler = self.stage_handlers.get(stage)
 
         # TODO: ステージごとのバリデーションも実装する必要あり
         # TODO: 適切なエラーハンドリングを実装
+        # TODO: ステージが順番通りに来ているか確認する処理必要
         if callable(handler):
             await handler(data)
 
     async def _handle_init(self, data: dict) -> None:
         """
+        INITステージのメッセージが送られてきたときの処理
         ゲームの初期化処理。
+        初期配置情報などを送信する。
 
         :param data: 初期化に必要なデータ
         """
-        self.stage = Stage.INIT
-        # プレイモードによって所属させるグループを返る
-        if data.get("mode") == "local":
+        self.stage = match_enums.Stage.INIT
+        # プレイモードによって所属させるグループを変える
+        if data.get(match_enums.Mode.key()) == match_enums.Mode.LOCAL.value:
             self.group_name = "solo_match"
 
         await self._add_to_group()
         # TODO: remoteの場合のグループ作成方法は別で考える
 
-        # localモードの場合teamやdisplay_nameは必要ない
+        # LOCALモードの場合teamやdisplay_nameは必要ない
         # TODO: ここら辺べた書きになっているから何か他にいい方法がないか
         message = self._build_message(
-            "INIT",
             {
-                "team": "",
+                match_enums.Team.key(): match_enums.Team.EMPTY.value,
                 "display_name1": "",
                 "display_name2": "",
-                "paddle1": {"x": self.player1.x, "y": self.player1.y},
-                "paddle2": {"x": self.player2.x, "y": self.player2.y},
+                "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
+                "paddle2": {"x": self.paddle2.x, "y": self.paddle2.y},
                 "ball": {"x": self.ball.x, "y": self.ball.y},
             },
         )
@@ -137,69 +137,89 @@ class MatchHandler:
 
     async def _handle_ready(self, data: dict) -> None:
         """
-        ゲームの準備が整った状態で処理を行う。
+        READYステージのメッセージが送られてきたときの処理
+        プレイヤーの準備が整ったことがdataによってわかるので、ゲームを開始する。
 
         :param data: 準備状態に必要なデータ
         """
-        self.stage = Stage.READY
-        message = self._build_message("READY", {})
+        self.stage = match_enums.Stage.READY
+        message = self._build_message({})
         await self._send_to_group(message)
 
-        # ゲーム状況の更新をする非同期処理を並列で実行する
-        if self.stage == Stage.READY:
-            asyncio.create_task(self._send_match_state())
-            self.stage = Stage.PLAY
+        # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
+        self.stage = match_enums.Stage.PLAY
+        asyncio.create_task(self._send_match_state())
 
     async def _handle_play(self, data: dict) -> None:
         """
-        プレイヤーの動きに基づいてゲーム状態を更新。
+        PLAYステージのメッセージが送られてきたときの処理
+        プレーヤーのパドルの動きに基づいてゲーム状態を更新。
 
-        :param data: プレイヤーの移動情報
+        :param data: パドルの移動情報
         """
-        self._move_paddle(player_move=data)
+        self._move_paddle(paddle_move=data)
 
     async def _handle_end(self) -> None:
         """
+        ENDステージのメッセージが送られてきたときの処理
+        プレーヤーがmatchを退出したときの処理を行う。
+        """
+        await self.cleanup()
+
+    async def _end_process(self) -> None:
+        """
         ゲーム終了時の処理。
 
-        勝者を決定し、グループから退出し、ゲーム状態を初期化。
+        ENDステージのメッセージを送信し、クリーンナップ処理を行う。
         """
-        win_player: str = "1" if self.score1 > self.score2 else "2"
+        win_team: str = (
+            match_enums.Team.ONE.value
+            if self.score1 > self.score2
+            else match_enums.Team.TWO.value
+        )
         message = self._build_message(
-            "END",
-            {"win": win_player, "score1": self.score1, "score2": self.score2},
+            {"win": win_team, "score1": self.score1, "score2": self.score2},
         )
         await self._send_to_group(message)
-        # matchが終わったのでグループから削除
-        await self._remove_from_group()
-        # 初期化
-        self._reset_state()
+        await self.cleanup()
 
+    # ==============================
     # ゲームロジック関係のメソッド
-    def _move_paddle(self, player_move: dict) -> None:
+    # ==============================
+    def _move_paddle(self, paddle_move: dict) -> None:
         """
-        プレイヤーのパドルを移動させる。
+        プレイヤーの入力に合わせてパドルを移動させる。
 
-        :param player_move: プレイヤーの移動情報
+        :param paddle_move: パドルの移動情報
         """
-        match player_move.get("move"):
-            case "UP":
-                if player_move.get("team") == "1" and self.player1.y > 0:
-                    self.player1.y -= self.PLAYER_SPEED
-                elif player_move.get("team") == "2" and self.player2.y > 0:
-                    self.player2.y -= self.PLAYER_SPEED
-
-            case "DOWN":
+        match paddle_move.get(match_enums.Move.key()):
+            case match_enums.Move.UP.value:
                 if (
-                    player_move.get("team") == "1"
-                    and self.player1.y + self.PLAYER_HEIGHT < self.HEIGHT
+                    paddle_move.get(match_enums.Team.key())
+                    == match_enums.Team.ONE.value
+                    and self.paddle1.y > 0
                 ):
-                    self.player1.y += self.PLAYER_SPEED
+                    self.paddle1.y -= self.PADDLE_SPEED
                 elif (
-                    player_move.get("team") == "2"
-                    and self.player2.y + self.PLAYER_HEIGHT < self.HEIGHT
+                    paddle_move.get(match_enums.Team.key())
+                    == match_enums.Team.TWO.value
+                    and self.paddle2.y > 0
                 ):
-                    self.player2.y += self.PLAYER_SPEED
+                    self.paddle2.y -= self.PADDLE_SPEED
+
+            case match_enums.Move.DOWN.value:
+                if (
+                    paddle_move.get(match_enums.Team.key())
+                    == match_enums.Team.ONE.value
+                    and self.paddle1.y + self.PADDLE_HEIGHT < self.HEIGHT
+                ):
+                    self.paddle1.y += self.PADDLE_SPEED
+                elif (
+                    paddle_move.get(match_enums.Team.key())
+                    == match_enums.Team.TWO.value
+                    and self.paddle2.y + self.PADDLE_HEIGHT < self.HEIGHT
+                ):
+                    self.paddle2.y += self.PADDLE_SPEED
 
     def _update_match_state(self) -> None:
         """
@@ -210,87 +230,91 @@ class MatchHandler:
         self.ball.y += self.ball_speed.y
 
         # 上下の壁との衝突判定
-        if self.ball.y - self.BALL_RADIUS <= 0:
+        if self.ball.y - self.BALL_SIZE <= 0:
             self.ball_speed.y = abs(self.ball_speed.y)
-        elif self.ball.y + self.BALL_RADIUS >= self.HEIGHT:
+        elif self.ball.y + self.BALL_SIZE >= self.HEIGHT:
             self.ball_speed.y = -abs(self.ball_speed.y)
 
         # パドルとの衝突判定
-        self._process_ball_paddle_collision(self.player1, True)
-        self._process_ball_paddle_collision(self.player2, False)
+        self._process_ball_paddle_collision(self.paddle1, True)
+        self._process_ball_paddle_collision(self.paddle2, False)
 
         # 得点判定
-        if self.ball.x + self.BALL_RADIUS <= 0:
+        if self.ball.x + self.BALL_SIZE <= 0:
             self.score2 += 1
             self._reset_ball()
-        elif self.ball.x - self.BALL_RADIUS >= self.WIDTH:
+        elif self.ball.x - self.BALL_SIZE >= self.WIDTH:
             self.score1 += 1
             self._reset_ball()
 
         # 勝利判定
-        if self.score1 >= 5 or self.score2 >= 5:
-            self.stage = Stage.END
+        if (
+            self.score1 >= self.WINNING_SCORE
+            or self.score2 >= self.WINNING_SCORE
+        ):
+            self.stage = match_enums.Stage.END
 
     def _process_ball_paddle_collision(
-        self, player_pos: PosStruct, is_player1: bool
+        self, paddle_pos: PosStruct, is_paddle1: bool
     ) -> None:
         """
         ボールとパドルの衝突判定と衝突時の処理
 
         Args:
-            player_pos (PosStruct): プレーヤーの位置
-            is_player1 (bool): プレイヤー1のパドルかどうか
+            paddle_pos (PosStruct): パドルの位置
+            is_paddle1 (bool): パドルがteam1のものかどうか
         """
         # 衝突判定
         if (
-            self.ball.x - self.BALL_RADIUS <= player_pos.x + self.PLAYER_WIDTH
-            and self.ball.x + self.BALL_RADIUS >= player_pos.x
-            and self.ball.y - self.BALL_RADIUS
-            <= player_pos.y + self.PLAYER_HEIGHT
-            and self.ball.y + self.BALL_RADIUS >= player_pos.y
+            self.ball.x - self.BALL_SIZE <= paddle_pos.x + self.PADDLE_WIDTH
+            and self.ball.x + self.BALL_SIZE >= paddle_pos.x
+            and self.ball.y - self.BALL_SIZE
+            <= paddle_pos.y + self.PADDLE_HEIGHT
+            and self.ball.y + self.BALL_SIZE >= paddle_pos.y
         ):
             # ボールのx座標がパドルの側面に当たった場合
             # ボールの中心がパドルの端よりも自陣側に過ぎていたらx軸方向に跳ね返さない
             if (
-                self.ball.y >= player_pos.y
-                and self.ball.y <= player_pos.y + self.PLAYER_HEIGHT
+                self.ball.y >= paddle_pos.y
+                and self.ball.y <= paddle_pos.y + self.PADDLE_HEIGHT
             ):
                 if (
-                    is_player1
-                    and self.ball.x > player_pos.x + self.PLAYER_WIDTH
+                    is_paddle1
+                    and self.ball.x > paddle_pos.x + self.PADDLE_WIDTH
                 ):
                     self.ball_speed.x = abs(self.ball_speed.x)
-                elif self.ball.x < player_pos.x:
+                elif self.ball.x < paddle_pos.x:
                     self.ball_speed.x = -abs(self.ball_speed.x)
 
             # ボールのy座標がパドルの上下面に当たった場合
             if (
-                self.ball.x >= player_pos.x
-                and self.ball.x <= player_pos.x + self.PLAYER_WIDTH
+                self.ball.x >= paddle_pos.x
+                and self.ball.x <= paddle_pos.x + self.PADDLE_WIDTH
             ):
-                if self.ball.y <= player_pos.y:
+                if self.ball.y <= paddle_pos.y:
                     self.ball_speed.y = -abs(self.ball_speed.y)
-                elif self.ball.y >= player_pos.y + self.PLAYER_HEIGHT:
+                elif self.ball.y >= paddle_pos.y + self.PADDLE_HEIGHT:
                     self.ball_speed.y = abs(self.ball_speed.y)
 
     async def _send_match_state(self) -> None:
         """
-        ゲーム状態を60FPSで定期的に送信する。
+        ゲーム状態を指定したFPSで定期的に送信する。
 
         ゲームが終了するまで繰り返し実行される。
         """
         last_update = asyncio.get_event_loop().time()
-        while self.stage != Stage.END:
-            await asyncio.sleep(1 / 60)
+        while self.stage != match_enums.Stage.END:
+            await asyncio.sleep(self.FPS)
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
-            if delta >= 1 / 60:
+            if delta >= self.FPS:
                 self._update_match_state()
+                if self.stage == match_enums.Stage.END:
+                    break
                 game_state = self._build_message(
-                    "PLAY",
                     {
-                        "paddle1": {"x": self.player1.x, "y": self.player1.y},
-                        "paddle2": {"x": self.player2.x, "y": self.player2.y},
+                        "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
+                        "paddle2": {"x": self.paddle2.x, "y": self.paddle2.y},
                         "ball": {"x": self.ball.x, "y": self.ball.y},
                         "score1": self.score1,
                         "score2": self.score2,
@@ -299,23 +323,25 @@ class MatchHandler:
                 await self._send_to_group(game_state)
                 last_update = current_time
             else:
-                await asyncio.sleep(1 / 60 - delta)
+                await asyncio.sleep(self.FPS - delta)
 
         # ENDステージの処理
-        await self._handle_end()
+        await self._end_process()
 
+    # ======================
     # グループ関係のメソッド
+    # ======================
     async def _add_to_group(self) -> None:
         """
-        マッチをグループに追加。
+        Consumerをグループに追加。
 
-        チャネル名を指定したグループに参加させる。
+        チャネル名を指定したグループに登録する。
         """
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
     async def _remove_from_group(self) -> None:
         """
-        マッチをグループから削除。
+        Consuerをグループから削除。
 
         チャネル名を指定したグループから退出させる。
         """
@@ -333,21 +359,24 @@ class MatchHandler:
             self.group_name, {"type": "group.message", "message": message}
         )
 
+    # ==================
     # ヘルパーメソッド
+    # ==================
     def _reset_state(self) -> None:
         """
         ゲームの状態をリセット。
+        オブジェクトの座標が指す位置はすべて左上とする
 
-        ゲームのステージ、スコア、プレイヤーの位置、ボールの位置を初期状態に戻す。
+        ゲームのステージ、スコア、パドルの位置、ボールの位置を初期状態に戻す。
         """
-        self.stage = Stage.NONE
-        # playerの位置は左上とする
-        self.player1 = PosStruct(
-            x=10, y=int(self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2)
+        self.stage = None
+        self.paddle1 = PosStruct(
+            x=self.PADDLE_POS_FROM_GOAL,
+            y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2),
         )
-        self.player2 = PosStruct(
-            x=self.WIDTH - self.PLAYER_WIDTH - 10,
-            y=int(self.HEIGHT / 2 - self.PLAYER_HEIGHT / 2),
+        self.paddle2 = PosStruct(
+            x=self.WIDTH - self.PADDLE_WIDTH - self.PADDLE_POS_FROM_GOAL,
+            y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2),
         )
         self._reset_ball()
         self.score1 = 0
@@ -362,18 +391,35 @@ class MatchHandler:
         ボールを中央に配置し、速度を設定する。
         """
         self.ball: PosStruct = PosStruct(
-            x=int(self.WIDTH / 2), y=int(self.HEIGHT / 2)
+            x=int(self.WIDTH / 2 - self.BALL_SIZE / 2),
+            y=int(self.HEIGHT / 2 - self.BALL_SIZE / 2),
         )
         self.ball_speed: PosStruct = PosStruct(
             x=self.BALL_SPEED, y=self.BALL_SPEED
         )
 
-    def _build_message(self, stage: str, data: dict) -> dict:
+    async def cleanup(self) -> None:
         """
-        メッセージを作成。
+        ゲーム終了後のクリーンナップ処理
+        グループから削除し、状態を初期化する
+        """
+        if self.group_name:
+            await self._remove_from_group()
+        self._reset_state()
 
-        :param stage: ステージ名
+    def _build_message(self, data: dict) -> dict:
+        """
+        プレーヤーに送るメッセージを作成。
+
         :param data: ステージに関連するデータ
         :return: 作成したメッセージ
         """
-        return {"category": "MATCH", "payload": {"stage": stage, "data": data}}
+        return {
+            ws_constants.Category.key(): ws_constants.Category.MATCH.value,
+            ws_constants.PAYLOAD_KEY: {
+                match_enums.Stage.key(): self.stage.value
+                if self.stage is not None
+                else "",
+                ws_constants.DATA_KEY: data,
+            },
+        }
