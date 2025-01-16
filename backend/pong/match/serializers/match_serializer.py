@@ -13,7 +13,6 @@ class MatchInputINITSerializer(ws_serializer.BaseWebsocketSerializer):
 
     mode = serializers.ChoiceField(
         choices=[(mode.value, mode.name) for mode in match_enums.Mode],
-        required=True,
     )
 
 
@@ -32,11 +31,9 @@ class MatchInputPLAYSerializer(ws_serializer.BaseWebsocketSerializer):
 
     team = serializers.ChoiceField(
         choices=[(team.value, team.name) for team in match_enums.Team],
-        required=True,
     )
     move = serializers.ChoiceField(
         choices=[(move.value, move.name) for move in match_enums.Move],
-        required=True,
     )
 
 
@@ -61,10 +58,9 @@ class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
     """
 
     stage = serializers.ChoiceField(
-        choices=[(stage.value, stage.name) for stage in match_enums.Stage],
-        required=True,
+        choices=[(stage.value, stage.name) for stage in match_enums.Stage]
     )
-    data = serializers.JSONField(required=True)  # type: ignore
+    data = serializers.JSONField()  # type: ignore
 
     def validate_data(self, value: dict[str, Any]) -> dict[str, Any]:
         """
@@ -75,7 +71,7 @@ class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
         stage: str = self.initial_data[match_enums.Stage.key()]
         data: dict = self.initial_data[ws_constants.DATA_KEY]
 
-        serializer_map: dict[
+        stage_serializer: dict[
             str, type[ws_serializer.BaseWebsocketSerializer]
         ] = {
             match_enums.Stage.INIT.value: MatchInputINITSerializer,
@@ -84,10 +80,10 @@ class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
             match_enums.Stage.END.value: MatchInputENDSerializer,
         }
 
-        serializer_class = serializer_map.get(stage)
+        serializer_class = stage_serializer.get(stage)
         if not serializer_class:
             raise serializers.ValidationError(
-                f"Invalid stage '{stage}' provided. Expected one of: {', '.join(serializer_map.keys())}"
+                f"Invalid stage '{stage}' provided. Expected one of: {', '.join(stage_serializer.keys())}"
             )
 
         # ステージシリアライザをインスタンス化してバリデーション

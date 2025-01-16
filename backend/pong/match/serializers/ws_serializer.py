@@ -34,6 +34,5 @@ class WebsocketInputSerializer(BaseWebsocketSerializer):
             (category.value, category.name)
             for category in ws_constants.Category
         ],
-        required=True,
     )
-    payload = serializers.JSONField(required=True)  # type: ignore
+    payload = serializers.JSONField()  # type: ignore
