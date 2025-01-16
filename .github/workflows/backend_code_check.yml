@@ -2,17 +2,14 @@ name: Backend Code Check
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
+    paths:
+      - 'backend/pong/**'
+      - '.github/workflows/backend_code_check.yml'
 
 jobs:
   backend-code-check:
     runs-on: ubuntu-latest  # GitHub Actionsで使用する環境
     timeout-minutes: 30
-    # PR元が 'feature/backend/*' のブランチからの場合にトリガー
-    if: startsWith(github.head_ref, 'feature-backend')
 
     # 環境変数にデフォルト値が入っていないとmypyでエラーになってしまうので、
     # pong/settings.pyで使用する環境変数は事前にここで設定する
