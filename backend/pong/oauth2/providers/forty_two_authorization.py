@@ -14,13 +14,8 @@ def _create_forty_two_token(tokens: dict) -> CreateFortyTwoTokenResult:
         return CreateFortyTwoTokenResult.error(
             forty_two_token_serializer.errors
         )
-    try:
-        forty_two_token: models.FortyTwoToken = (
-            forty_two_token_serializer.save()
-        )
-        return CreateFortyTwoTokenResult.ok(forty_two_token)
-    except Exception as e:
-        return CreateFortyTwoTokenResult.error({"Error": e})
+    forty_two_token: models.FortyTwoToken = forty_two_token_serializer.save()
+    return CreateFortyTwoTokenResult.ok(forty_two_token)
 
 
 def create_forty_two_authorization(

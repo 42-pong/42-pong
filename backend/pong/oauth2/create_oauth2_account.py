@@ -45,8 +45,5 @@ def create_oauth2(
     )
     if not oauth2_serializer.is_valid():
         return CreateOAuth2Result.error(oauth2_serializer.errors)
-    try:
-        oauth2: models.OAuth2 = oauth2_serializer.save()
-        return CreateOAuth2Result.ok(oauth2)
-    except Exception as e:
-        return CreateOAuth2Result.error({"Error": e})
+    oauth2: models.OAuth2 = oauth2_serializer.save()
+    return CreateOAuth2Result.ok(oauth2)
