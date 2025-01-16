@@ -139,6 +139,15 @@ class OAuth2CallbackView(OAuth2BaseView):
         そのため、このエンドポイントはFEから呼ばれることはありません。
         """
         # todo リファクタリング
+        # - get関数の指定方法
+        # - response の形式を定義する
+        # - dataの渡し方（dictで渡すか、パラメータごとで渡すか）
+        # - 分けれるところは関数で定義
+
+        # todo: 実装
+        # - oauth2のresultによる処理をoauth2/view.py以外にかく
+        # - TOKEN_ENDPOINTとmeのエンドポイントの失敗時の処理追加する
+        # - 42APIのリクエスト、レスポンス例外処理
         code = request.GET.get("code")
         if not code:
             return Response(
@@ -148,7 +157,6 @@ class OAuth2CallbackView(OAuth2BaseView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # todo: TOKEN_ENDPOINTとmeのエンドポイントの失敗時の処理追加する
         request_data: dict[str, str] = {
             "code": code,
             "grant_type": "authorization_code",

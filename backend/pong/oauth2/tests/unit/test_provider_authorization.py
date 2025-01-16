@@ -5,6 +5,8 @@ from django.test import TestCase
 from ... import models
 from ...providers import forty_two_authorization
 
+# todo: provider/tests.py移動する
+
 
 # todo: 各プロバイダのテストケースが多くなったら、それぞれのテストクラスを作成する
 class CreateProviderAuthorizationTestCase(TestCase):
