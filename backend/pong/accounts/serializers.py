@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework import relations, serializers
+from rest_framework import relations, serializers, validators
 
 from . import constants, models
 
@@ -8,8 +8,14 @@ class UserSerializer(serializers.ModelSerializer):
     """
     Userモデルのシリアライザ
     Userモデルの作成・バリデーションを行う
-    PlayerSerializerが呼ばれると、このUserSerializerも呼ばれる
     """
+
+    # EmailField: デフォルトがrequired=True, allow_blank=False
+    # todo: max_length、min_lengthの設定
+    email = serializers.EmailField(
+        # UniqueValidator: emailをユニークにする
+        validators=[validators.UniqueValidator(queryset=User.objects.all())],
+    )
 
     class Meta:
         model = User
@@ -20,20 +26,8 @@ class UserSerializer(serializers.ModelSerializer):
             constants.UserFields.PASSWORD,
         )
         extra_kwargs = {
-            constants.UserFields.EMAIL: {
-                "allow_blank": False,
-                "required": True,
-            },
             constants.UserFields.PASSWORD: {"write_only": True},
         }
-
-    # PlayerSerializerのuser_serializer.is_valid()の内部で呼ばれる
-    def validate(self, data: dict) -> dict:
-        """
-        バリデーションを行うvalidate()のオーバーライド
-        """
-        # todo: emailの重複を許可しないバリデーションを追加
-        return data
 
     # PlayerSerializerのuser_serializer.save()の内部で呼ばれる
     def create(self, validated_data: dict) -> User:
