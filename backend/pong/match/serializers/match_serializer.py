@@ -81,7 +81,7 @@ class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
         }
 
         serializer_class = stage_serializer.get(stage)
-        if not serializer_class:
+        if serializer_class is None:
             raise serializers.ValidationError(
                 f"Invalid stage '{stage}' provided. Expected one of: {', '.join(stage_serializer.keys())}"
             )
