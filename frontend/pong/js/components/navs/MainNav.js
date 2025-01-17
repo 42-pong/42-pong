@@ -8,6 +8,7 @@ export class MainNav extends Component {
   static links = Object.freeze([
     { name: "ホーム", path: Paths.HOME },
     { name: "チャット", path: Paths.CHAT },
+    { name: "ユーザー一覧", path: Paths.USERS },
   ]);
 
   _onConnect() {

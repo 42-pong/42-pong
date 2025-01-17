@@ -5,6 +5,7 @@ import { HomeView } from "./views/HomeView";
 import { LoginView } from "./views/LoginView";
 import { MainView } from "./views/MainView";
 import { NotFoundView } from "./views/NotFoundView";
+import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
 customElements.define("main-nav", MainNav, {});
@@ -13,3 +14,4 @@ customElements.define("home-view", HomeView, {});
 customElements.define("login-view", LoginView, {});
 customElements.define("main-view", MainView, {});
 customElements.define("not-found-view", NotFoundView, {});
+customElements.define("users-view", UsersView, {});
