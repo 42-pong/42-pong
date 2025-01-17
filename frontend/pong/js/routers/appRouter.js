@@ -10,6 +10,10 @@ export const appRouter = (target) => {
     [Paths.HOME]: Route.createRoute(MainView, MainView.Paths.HOME),
     [Paths.CHAT]: Route.createRoute(MainView, MainView.Paths.CHAT),
     [Paths.USERS]: Route.createRoute(MainView, MainView.Paths.USERS),
+    [Paths.FRIENDS]: Route.createRoute(
+      MainView,
+      MainView.Paths.FRIENDS,
+    ),
   };
   const defaultRoute = Route.createRoute(
     MainView,

@@ -9,6 +9,7 @@ export class MainNav extends Component {
     { name: "ホーム", path: Paths.HOME },
     { name: "チャット", path: Paths.CHAT },
     { name: "ユーザー一覧", path: Paths.USERS },
+    { name: "フレンド一覧", path: Paths.FRIENDS },
   ]);
 
   _onConnect() {
