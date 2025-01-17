@@ -65,8 +65,8 @@ class TestMatchSerializer(unittest.TestCase):
             # 例外が発生した場合、エラーメッセージを出力してアサート
             self.fail(f"Validation failed: {str(e)}")
         else:
-            # 例外が発生しなかった場合、成功とみなす
-            self.assertTrue(True)
+            # 例外が発生せずにvalidation後のデータが入っていれば成功とみなす
+            self.assertTrue(serializer.validated_data)
 
     @parameterized.expand(
         [
