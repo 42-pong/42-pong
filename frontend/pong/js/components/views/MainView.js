@@ -14,6 +14,7 @@ export class MainView extends View {
     USERS: "/users",
     FRIENDS: "/friends",
     MYPAGE: "/mypage",
+    TOURNAMENTS: "/tournaments",
     NOT_FOUND: "/not-found",
   });
 

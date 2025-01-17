@@ -7,6 +7,7 @@ import { LoginView } from "./views/LoginView";
 import { MainView } from "./views/MainView";
 import { MyPageView } from "./views/MyPageView";
 import { NotFoundView } from "./views/NotFoundView";
+import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
@@ -18,4 +19,5 @@ customElements.define("login-view", LoginView, {});
 customElements.define("main-view", MainView, {});
 customElements.define("my-page-view", MyPageView, {});
 customElements.define("not-found-view", NotFoundView, {});
+customElements.define("tournaments-view", TournamentsView, {});
 customElements.define("users-view", UsersView, {});

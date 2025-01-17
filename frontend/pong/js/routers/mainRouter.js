@@ -4,6 +4,7 @@ import { HomeView } from "../components/views/HomeView";
 import { MainView } from "../components/views/MainView";
 import { MyPageView } from "../components/views/MyPageView";
 import { NotFoundView } from "../components/views/NotFoundView";
+import { TournamentsView } from "../components/views/TournamentsView";
 import { UsersView } from "../components/views/UsersView";
 import { Route } from "../core/Route";
 import { Router } from "../core/Router";
@@ -15,6 +16,7 @@ export const mainRouter = (target) => {
     [MainView.Paths.USERS]: Route.defaultRoute(UsersView),
     [MainView.Paths.FRIENDS]: Route.defaultRoute(FriendsView),
     [MainView.Paths.MYPAGE]: Route.defaultRoute(MyPageView),
+    [MainView.Paths.TOURNAMENTS]: Route.defaultRoute(TournamentsView),
     [MainView.Paths.NOT_FOUND]: Route.defaultRoute(NotFoundView),
   };
   const defaultRoute = Route.defaultRoute(NotFoundView);

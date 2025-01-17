@@ -18,6 +18,10 @@ export const appRouter = (target) => {
       MainView,
       MainView.Paths.MYPAGE,
     ),
+    [Paths.TOURNAMENTS]: Route.createRoute(
+      MainView,
+      MainView.Paths.TOURNAMENTS,
+    ),
   };
   const defaultRoute = Route.createRoute(
     MainView,

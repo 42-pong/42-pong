@@ -5,4 +5,5 @@ export const Paths = Object.freeze({
   USERS: "/users",
   FRIENDS: "/friends",
   MYPAGE: "/mypage",
+  TOURNAMENTS: "/tournaments",
 });
