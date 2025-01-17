@@ -13,6 +13,7 @@ export class MainView extends View {
     CHAT: "/chat",
     USERS: "/users",
     FRIENDS: "/friends",
+    MYPAGE: "/mypage",
     NOT_FOUND: "/not-found",
   });
 

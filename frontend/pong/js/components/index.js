@@ -5,6 +5,7 @@ import { FriendsView } from "./views/FriendsView";
 import { HomeView } from "./views/HomeView";
 import { LoginView } from "./views/LoginView";
 import { MainView } from "./views/MainView";
+import { MyPageView } from "./views/MyPageView";
 import { NotFoundView } from "./views/NotFoundView";
 import { UsersView } from "./views/UsersView";
 
@@ -15,5 +16,6 @@ customElements.define("friends-view", FriendsView, {});
 customElements.define("home-view", HomeView, {});
 customElements.define("login-view", LoginView, {});
 customElements.define("main-view", MainView, {});
+customElements.define("my-page-view", MyPageView, {});
 customElements.define("not-found-view", NotFoundView, {});
 customElements.define("users-view", UsersView, {});

@@ -4,4 +4,5 @@ export const Paths = Object.freeze({
   CHAT: "/chat",
   USERS: "/users",
   FRIENDS: "/friends",
+  MYPAGE: "/mypage",
 });

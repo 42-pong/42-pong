@@ -14,6 +14,10 @@ export const appRouter = (target) => {
       MainView,
       MainView.Paths.FRIENDS,
     ),
+    [Paths.MYPAGE]: Route.createRoute(
+      MainView,
+      MainView.Paths.MYPAGE,
+    ),
   };
   const defaultRoute = Route.createRoute(
     MainView,

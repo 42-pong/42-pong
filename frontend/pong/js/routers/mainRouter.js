@@ -2,6 +2,7 @@ import { ChatView } from "../components/views/ChatView";
 import { FriendsView } from "../components/views/FriendsView";
 import { HomeView } from "../components/views/HomeView";
 import { MainView } from "../components/views/MainView";
+import { MyPageView } from "../components/views/MyPageView";
 import { NotFoundView } from "../components/views/NotFoundView";
 import { UsersView } from "../components/views/UsersView";
 import { Route } from "../core/Route";
@@ -13,6 +14,7 @@ export const mainRouter = (target) => {
     [MainView.Paths.CHAT]: Route.defaultRoute(ChatView),
     [MainView.Paths.USERS]: Route.defaultRoute(UsersView),
     [MainView.Paths.FRIENDS]: Route.defaultRoute(FriendsView),
+    [MainView.Paths.MYPAGE]: Route.defaultRoute(MyPageView),
     [MainView.Paths.NOT_FOUND]: Route.defaultRoute(NotFoundView),
   };
   const defaultRoute = Route.defaultRoute(NotFoundView);
