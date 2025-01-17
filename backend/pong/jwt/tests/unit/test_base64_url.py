@@ -19,3 +19,12 @@ class Base64Url(TestCase):
         )
         encoded_data = self.base64_url_handler.encode(data)
         self.assertEqual(encoded_data, expected_encoded_data)
+
+    def test_decode(self) -> None:
+        """
+        utf-8の文字フォーマットの=なしのエンコードのデータから期待してるデータに変換しているかどうか確認するテスト
+        """
+        encoded_data = "dGVzdF9kYXRh"
+        expected_decoded_data = b"test_data"
+        decoded_data = self.base64_url_handler.decode(encoded_data)
+        self.assertEqual(decoded_data, expected_decoded_data)
