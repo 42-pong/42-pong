@@ -6,8 +6,8 @@ const Stage = {
 };
 
 const Mode = {
-  LOCAL: "local",
-  REMOTE: "remote",
+  LOCAL: "LOCAL",
+  REMOTE: "REMOTE",
 };
 
 const Team = {
