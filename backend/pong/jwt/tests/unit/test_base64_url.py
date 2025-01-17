@@ -28,3 +28,12 @@ class Base64Url(TestCase):
         expected_decoded_data = b"test_data"
         decoded_data = self.base64_url_handler.decode(encoded_data)
         self.assertEqual(decoded_data, expected_decoded_data)
+
+    def test_encode_decode_round_trip(self) -> None:
+        """Base64エンコードしたデータをデコードして元のデータに戻ることを確認するテスト"""
+        data = b"test_round_trip"
+        encoded_data = self.base64_url_handler.encode(data)
+        decoded_data = self.base64_url_handler.decode(encoded_data)
+        self.assertEqual(decoded_data, data)
+
+        self.assertEqual(decoded_data, data)
