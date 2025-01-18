@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ... import constants
-from ...user import serializers
+from .. import serializers
 
 ID: Final[str] = constants.UserFields.ID
 USERNAME: Final[str] = constants.UserFields.USERNAME
