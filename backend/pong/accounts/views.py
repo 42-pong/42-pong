@@ -4,10 +4,11 @@ from drf_spectacular import utils
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
 
+from pong.response import response as custom_response
+
 from . import constants, create_account, serializers
 
 
-# todo: response形式は全app共通の形式のため、どこかにkey-valueを定義してそれを使用する
 class AccountCreateView(views.APIView):
     """
     新規アカウントを作成するビュー
@@ -98,8 +99,8 @@ class AccountCreateView(views.APIView):
             request.data.pop(constants.PlayerFields.USER, {})
         )
         if not user_serializer.is_valid():
-            return response.Response(
-                {"status": "error", "errors": user_serializer.errors},
+            return custom_response.Response(
+                errors=user_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -111,25 +112,19 @@ class AccountCreateView(views.APIView):
             )
         )
         if create_account_result.is_error:
-            return response.Response(
-                {
-                    "status": "error",
-                    "errors": create_account_result.unwrap_error(),
-                },
+            return custom_response.Response(
+                errors=create_account_result.unwrap_error(),
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         user: User = create_account_result.unwrap()
-        return response.Response(
-            {
-                "status": "ok",
-                "data": {
-                    constants.PlayerFields.USER: {
-                        constants.UserFields.ID: user.id,
-                        constants.UserFields.USERNAME: user.username,
-                        constants.UserFields.EMAIL: user.email,
-                    }
-                },
+        return custom_response.Response(
+            data={
+                constants.PlayerFields.USER: {
+                    constants.UserFields.ID: user.id,
+                    constants.UserFields.USERNAME: user.username,
+                    constants.UserFields.EMAIL: user.email,
+                }
             },
             status=status.HTTP_201_CREATED,
         )
