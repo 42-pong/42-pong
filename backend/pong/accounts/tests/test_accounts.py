@@ -4,8 +4,8 @@ from django.urls import reverse
 from rest_framework import response as drf_response
 from rest_framework import status, test
 
-from ... import constants
-from ...player import models
+from .. import constants
+from ..player import models
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
