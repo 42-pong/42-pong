@@ -1,5 +1,5 @@
+import { Endpoints } from "../../Endpoints";
 import { View } from "../../core/View";
-import endpoints from "../../endpoints";
 
 export class HomeView extends View {
   _onConnect() {
@@ -8,7 +8,7 @@ export class HomeView extends View {
     const getHealthStatus = async () => {
       let healthStatus;
       try {
-        const res = await fetch(endpoints.health.href);
+        const res = await fetch(Endpoints.HEALTH.href);
         const json = await res.json();
         healthStatus = json.status;
       } catch (error) {
@@ -29,7 +29,7 @@ export class HomeView extends View {
     this.appendChild(title);
 
     const status = document.createElement("h2");
-    status.textContent = `${endpoints.health.pathname}: ${this._getState().healthStatus}`;
+    status.textContent = `${Endpoints.HEALTH.pathname}: ${this._getState().healthStatus}`;
     this.appendChild(status);
   }
 }
