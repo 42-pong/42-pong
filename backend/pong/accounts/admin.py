@@ -3,7 +3,8 @@ from django.contrib.admin import ModelAdmin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
-from . import constants, models
+from . import constants
+from .player import models
 
 
 # todo: Userモデルに関するカスタマイズは専用のファイルに移動した方が良いのかも

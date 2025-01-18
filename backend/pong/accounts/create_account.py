@@ -6,7 +6,8 @@ from rest_framework import serializers as drf_serializers
 
 import utils.result
 
-from . import constants, models, serializers
+from . import constants, serializers
+from .player import models
 
 # 定数
 USERNAME_LENGTH: Final[int] = 7

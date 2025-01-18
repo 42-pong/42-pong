@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import relations, serializers, validators
 
-from . import constants, models
+from . import constants
+from .player import models
 
 
 class UserSerializer(serializers.ModelSerializer):
