@@ -4,12 +4,17 @@ from django.urls import reverse
 from rest_framework import response as drf_response
 from rest_framework import status, test
 
+from pong.response import response as custom_response
+
 from ... import constants, models
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
 PASSWORD: Final[str] = constants.UserFields.PASSWORD
 USER: Final[str] = constants.PlayerFields.USER
+
+DATA: Final[str] = custom_response.DATA
+ERRORS: Final[str] = custom_response.ERRORS
 
 
 # todo: 認証付きのテスト追加？
@@ -30,7 +35,7 @@ class AccountsTests(test.APITestCase):
         status 201, username, email が返されることを確認
         """
         account_data: dict = {
-            "user": {
+            USER: {
                 EMAIL: "testuser@example.com",
                 PASSWORD: "testpassword12345",
             }
@@ -44,7 +49,7 @@ class AccountsTests(test.APITestCase):
         #         "user": {...}
         #     },
         # }
-        response_user: dict = response.data["data"][USER]
+        response_user: dict = response.data[DATA][USER]
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -72,10 +77,10 @@ class AccountsTests(test.APITestCase):
         """
         不正なemailの形式でアカウントを作成するテスト
         status 400 が返されることを確認
-        ErrorDetail に email が含まれることを確認
+        errorsにemailが含まれることを確認
         """
         account_data: dict = {
-            "user": {
+            USER: {
                 EMAIL: "invalid-email@none",  # 不正なemail形式
                 PASSWORD: "testpassword12345",
             }
@@ -83,7 +88,7 @@ class AccountsTests(test.APITestCase):
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
-        response_error: dict = response.data["errors"]
+        response_error: dict = response.data[ERRORS]
 
         # responseの内容を確認
         # response.data == {
