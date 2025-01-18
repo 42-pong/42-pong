@@ -3,8 +3,8 @@ from typing import Final
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from ... import constants, serializers
-from ...player import models
+from ... import constants
+from ...player import models, serializers
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
