@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework import relations, serializers
+from rest_framework import serializers
 
 from .. import constants
 from . import models
@@ -13,8 +13,8 @@ class PlayerSerializer(serializers.ModelSerializer):
 
     # PrimaryKeyRelatedField: 紐づくターゲットをそのPKを使用して表現する
     # 同じ変数名(user)をfieldsに指定する必要がある
-    user: relations.PrimaryKeyRelatedField[User] = (
-        relations.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user: serializers.PrimaryKeyRelatedField[User] = (
+        serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     )
 
     class Meta:
