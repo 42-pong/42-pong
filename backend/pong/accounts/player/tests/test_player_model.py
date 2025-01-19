@@ -1,0 +1,46 @@
+from typing import cast
+
+from django.contrib.auth.models import User
+from django.test import TestCase
+
+from .. import models
+
+
+# todo: PlayerModelにフィールドが追加された際にテストも追加
+class PlayerModelTestCase(TestCase):
+    def setUp(self) -> None:
+        """
+        TestCaseのsetUpメソッドのオーバーライド
+        各テストメソッドの実行前に毎回自動実行される
+        """
+        # User作成
+        self.user: User = User.objects.create_user(
+            username="testuser",
+            email="testuser@example.com",
+            password="testpassword",
+        )
+        # Player作成
+        self.player: models.Player = models.Player.objects.create(
+            user=self.user
+        )
+
+    def test_create_player_and_user(self) -> None:
+        """
+        PlayerとUserが1つずつ作成されたことを確認
+        """
+        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(models.Player.objects.count(), 1)
+
+    def test_related_user_data(self) -> None:
+        """
+        作成したPlayerとUserが紐づいていることを確認
+        """
+        # playerに紐づくuser_idからUserを取得できることを確認
+        user_id: int = self.player.user.id
+        tmp_user: User | None = User.objects.filter(id=user_id).first()
+        self.assertIsNotNone(tmp_user)
+        user: User = cast(User, tmp_user)
+
+        # 取得したUserの情報が一致することを確認
+        self.assertEqual(user.username, "testuser")
+        self.assertEqual(user.email, "testuser@example.com")
