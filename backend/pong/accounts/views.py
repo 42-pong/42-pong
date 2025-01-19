@@ -4,7 +4,8 @@ from drf_spectacular import utils
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
 
-from . import constants, create_account
+from . import constants
+from .create_account import create_account
 from .player import serializers as player_serializers
 from .user import serializers as user_serializers
 
