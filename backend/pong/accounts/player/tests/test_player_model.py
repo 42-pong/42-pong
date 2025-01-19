@@ -44,3 +44,27 @@ class PlayerModelTestCase(TestCase):
         # 取得したUserの情報が一致することを確認
         self.assertEqual(user.username, "testuser")
         self.assertEqual(user.email, "testuser@example.com")
+
+    def test_delete_player(self) -> None:
+        """
+        Playerを削除し、紐づくUserは削除されないことを確認
+        """
+        user_id: int = self.player.user.id
+        # Player削除
+        self.player.delete()
+
+        # Playerが削除されていることを確認
+        self.assertEqual(models.Player.objects.count(), 0)
+        # Userが削除されていないことを確認
+        self.assertTrue(User.objects.filter(id=user_id).exists())
+
+    def test_delete_related_user(self) -> None:
+        """
+        Playerに紐づくUserを削除すると、UserとPlayerが削除されることを確認
+        """
+        # User削除
+        self.user.delete()
+
+        # UserとPlayerが両方削除されていることを確認
+        self.assertEqual(User.objects.count(), 0)
+        self.assertEqual(models.Player.objects.count(), 0)
