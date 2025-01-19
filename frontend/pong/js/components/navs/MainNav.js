@@ -16,7 +16,11 @@ export class MainNav extends Component {
       const anchor = document.createElement("a");
       anchor.textContent = link.name;
       anchor.href = link.path;
-      ul.appendChild(anchor);
+
+      const li = document.createElement("li");
+      li.appendChild(anchor);
+
+      ul.appendChild(li);
     }
 
     this.#nav = document.createElement("nav");
@@ -32,7 +36,8 @@ export class MainNav extends Component {
         justify-content: flex-start;
         align-items: center;
       }
-      nav ul a{
+      nav ul li{
+        list-style: none;
         margin: 5px;
       }
     </style>`;
