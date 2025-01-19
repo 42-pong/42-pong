@@ -2,7 +2,7 @@ import base64
 
 from django.test import TestCase
 
-from jwt import base64_url
+from tmp_jwt import base64_url
 
 
 class Base64Url(TestCase):

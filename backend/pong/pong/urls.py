@@ -26,8 +26,8 @@ urlpatterns = [
     path("api/schema/", include("swagger_ui.urls")),
     # health check
     path("api/health/", health_check, name="health_check"),
-    # jwt
-    path("api/token/", include("jwt.urls")),
+    # tmp_jwt
+    path("api/token/", include("tmp_jwt.urls")),
     # oauth2
     path("api/oauth2/", include("oauth2.urls")),
     # accounts

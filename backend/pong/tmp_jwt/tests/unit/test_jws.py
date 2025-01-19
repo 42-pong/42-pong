@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from jwt import jws
+from tmp_jwt import jws
 
 
 class JsonWebSignatureFunctionTestCase(TestCase):

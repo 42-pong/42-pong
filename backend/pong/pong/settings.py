@@ -94,7 +94,7 @@ INSTALLED_APPS = [
     "channels",
     "corsheaders",  # for CORS
     # apps
-    "jwt",
+    "tmp_jwt",
     "oauth2",
     "accounts",
     "match",

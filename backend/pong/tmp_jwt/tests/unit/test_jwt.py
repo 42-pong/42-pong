@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from jwt import jwt
+from tmp_jwt import jwt
 
 
 class JsonWebTokenFunctionTestCase(TestCase):
