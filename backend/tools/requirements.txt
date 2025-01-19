@@ -65,7 +65,7 @@ djangorestframework==3.15.2
     #   -r requirements.in
     #   djangorestframework-simplejwt
     #   drf-spectacular
-djangorestframework-simplejwt==5.3.1
+djangorestframework-simplejwt==5.4.0
     # via -r requirements.in
 djangorestframework-stubs==3.15.2
     # via -r requirements.in
@@ -94,6 +94,8 @@ mypy==1.13.0
     # via -r requirements.in
 mypy-extensions==1.0.0
     # via mypy
+parameterized==0.9.0
+    # via -r requirements.in
 psycopg2-binary==2.9.10
     # via -r requirements.in
 pyasn1==0.6.1
