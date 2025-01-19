@@ -5,7 +5,7 @@ from django.test import TestCase
 from tmp_jwt import base64_url
 
 
-class Base64Url(TestCase):
+class Base64UrlTestCase(TestCase):
     def setUp(self) -> None:
         self.base64_url_handler = base64_url.Base64Url()
 
@@ -48,6 +48,12 @@ class Base64Url(TestCase):
         non_ascii_data: str = "日本語テキスト"
         with self.assertRaises(ValueError):
             self.base64_url_handler.decode(non_ascii_data)
+
+    def test_decode_invalid_urlsafe_base64_characters(self) -> None:
+        """URLセーフ形式のBase64に不正な文字が含まれる場合、ValueErrorを投げることを確認するテスト"""
+        invalid_urlsafe_base64_data: str = "invalid!@#$"
+        with self.assertRaises(ValueError):
+            self.base64_url_handler.decode(invalid_urlsafe_base64_data)
 
     def test_encode_decode_round_trip(self) -> None:
         """Base64エンコードしたデータをデコードして元のデータに戻ることを確認するテスト"""
