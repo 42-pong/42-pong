@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Final, Optional
 
 from . import match_enums, ws_constants
+from .serializers import match_serializer
 
 
 @dataclass
@@ -95,9 +96,11 @@ class MatchHandler:
 
         :param payload: プレイヤーから送られてきたペイロード
         """
-        data: dict = payload.get(ws_constants.DATA_KEY, {})
-        stage: str = payload.get(match_enums.Stage.key(), "")
-        handler = self.stage_handlers.get(stage)
+        serializer = match_serializer.MatchInputSerializer(data=payload)
+        serializer.is_valid(raise_exception=True)
+        data: dict = serializer.validated_data[ws_constants.DATA_KEY]
+        stage: str = serializer.validated_data[match_enums.Stage.key()]
+        handler = self.stage_handlers[stage]
 
         # TODO: ステージごとのバリデーションも実装する必要あり
         # TODO: 適切なエラーハンドリングを実装
@@ -115,8 +118,10 @@ class MatchHandler:
         """
         self.stage = match_enums.Stage.INIT
         # プレイモードによって所属させるグループを変える
-        if data.get(match_enums.Mode.key()) == match_enums.Mode.LOCAL.value:
+        if data[match_enums.Mode.key()] == match_enums.Mode.LOCAL.value:
             self.group_name = "solo_match"
+        elif data[match_enums.Mode.key()] == match_enums.Mode.REMOTE.value:
+            self.group_name = "remote_match"
 
         await self._add_to_group()
         # TODO: remoteの場合のグループ作成方法は別で考える
@@ -159,7 +164,7 @@ class MatchHandler:
         """
         self._move_paddle(paddle_move=data)
 
-    async def _handle_end(self) -> None:
+    async def _handle_end(self, data: dict) -> None:
         """
         ENDステージのメッセージが送られてきたときの処理
         プレーヤーがmatchを退出したときの処理を行う。
@@ -192,16 +197,16 @@ class MatchHandler:
 
         :param paddle_move: パドルの移動情報
         """
-        match paddle_move.get(match_enums.Move.key()):
+        match paddle_move[match_enums.Move.key()]:
             case match_enums.Move.UP.value:
                 if (
-                    paddle_move.get(match_enums.Team.key())
+                    paddle_move[match_enums.Team.key()]
                     == match_enums.Team.ONE.value
                     and self.paddle1.y > 0
                 ):
                     self.paddle1.y -= self.PADDLE_SPEED
                 elif (
-                    paddle_move.get(match_enums.Team.key())
+                    paddle_move[match_enums.Team.key()]
                     == match_enums.Team.TWO.value
                     and self.paddle2.y > 0
                 ):
@@ -209,13 +214,13 @@ class MatchHandler:
 
             case match_enums.Move.DOWN.value:
                 if (
-                    paddle_move.get(match_enums.Team.key())
+                    paddle_move[match_enums.Team.key()]
                     == match_enums.Team.ONE.value
                     and self.paddle1.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
                     self.paddle1.y += self.PADDLE_SPEED
                 elif (
-                    paddle_move.get(match_enums.Team.key())
+                    paddle_move[match_enums.Team.key()]
                     == match_enums.Team.TWO.value
                     and self.paddle2.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):

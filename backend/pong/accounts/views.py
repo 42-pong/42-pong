@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from drf_spectacular import utils
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
@@ -117,14 +116,8 @@ class AccountCreateView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user: User = create_account_result.unwrap()
+        user_serializer_data: dict = create_account_result.unwrap()
         return custom_response.Response(
-            data={
-                constants.PlayerFields.USER: {
-                    constants.UserFields.ID: user.id,
-                    constants.UserFields.USERNAME: user.username,
-                    constants.UserFields.EMAIL: user.email,
-                }
-            },
+            data={constants.PlayerFields.USER: user_serializer_data},
             status=status.HTTP_201_CREATED,
         )
