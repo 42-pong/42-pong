@@ -3,8 +3,6 @@
 # - JWS(RFC7515)の概要を読む
 # - DRFを使ってどうユーザーの認証を行うのかについて
 # 実装
-#   def verify_jws(self, jws: str) -> bool:
-# - 検証する関数実装
 # - JWSのペイロード内の`exp`クレームを検証して、有効期限を確認するを実装
 #   def validate_jws_expiration(self, payload: dict) -> bool:
 import hashlib
@@ -55,3 +53,19 @@ class JWS:
         ).digest()
         signature_encoded: str = self.base64_url_handler.encode(signature)
         return signature_encoded
+
+    def verify(self, jwt: str) -> bool:
+        """JWTの署名が正しいか検証する"""
+        try:
+            header_encoded, payload_encoded, signature_received = jwt.split(
+                "."
+            )
+        except ValueError:
+            raise ValueError(
+                "Invalid JWS format. Must be 'header.payload.signature'."
+            )
+        signature_calculated = self.sign(header_encoded, payload_encoded)
+        if signature_calculated != signature_received:
+            raise ValueError("Invalid signature.")
+        # todo: ペイロードの検証？
+        return True

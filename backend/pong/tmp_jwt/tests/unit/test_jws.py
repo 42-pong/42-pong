@@ -67,3 +67,10 @@ class JsonWebSignatureFunctionTestCase(TestCase):
         invalid_payload: str = "!"
         with self.assertRaises(ValueError):
             self.jws_handler.sign(invalid_header, invalid_payload)
+
+    def test_verify(self) -> None:
+        """
+        JWTの署名が正しい場合、Trueが返されることを確認するテスト
+        """
+        jwt: str = f"{self.header_encoded}.{self.payload_encoded}.wELfrcYgcf8pyBxSMOCRINRj8QXlxP360D0T3E_bq3U"
+        self.assertTrue(self.jws_handler.verify(jwt))
