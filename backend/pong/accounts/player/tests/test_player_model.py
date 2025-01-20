@@ -1,5 +1,3 @@
-from typing import cast
-
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -37,9 +35,7 @@ class PlayerModelTestCase(TestCase):
         """
         # playerに紐づくuser_idからUserを取得できることを確認
         user_id: int = self.player.user.id
-        tmp_user: User | None = User.objects.filter(id=user_id).first()
-        self.assertIsNotNone(tmp_user)
-        user: User = cast(User, tmp_user)
+        user: User = User.objects.get(id=user_id)
 
         # 取得したUserの情報が一致することを確認
         self.assertEqual(user.username, "testuser")
