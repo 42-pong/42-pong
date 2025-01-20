@@ -42,3 +42,28 @@ class JsonWebSignatureFunctionTestCase(TestCase):
         """
         with self.assertRaises(ValueError):
             self.jws_handler.sign("", "")
+
+    def test_sign_invalid_base64_header(self) -> None:
+        """
+        無効なURLセーフBase64エンコード形式のヘッダーが渡された場合に、ValueErrorが発生することを確認するテスト
+        """
+        invalid_header: str = "#"
+        with self.assertRaises(ValueError):
+            self.jws_handler.sign(invalid_header, self.payload_encoded)
+
+    def test_sign_invalid_base64_payload(self) -> None:
+        """
+        無効なURLセーフBase64エンコード形式のペイロードが渡された場合に、ValueErrorが発生することを確認するテスト
+        """
+        invalid_payload: str = "!"
+        with self.assertRaises(ValueError):
+            self.jws_handler.sign(self.header_encoded, invalid_payload)
+
+    def test_sign_invalid_base64_header_and_payload(self) -> None:
+        """
+        無効なURLセーフBase64エンコード形式のヘッダーとペイロードが渡された場合に、ValueErrorが発生することを確認するテスト
+        """
+        invalid_header: str = "#"
+        invalid_payload: str = "!"
+        with self.assertRaises(ValueError):
+            self.jws_handler.sign(invalid_header, invalid_payload)

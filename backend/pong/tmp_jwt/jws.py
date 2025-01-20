@@ -9,6 +9,7 @@
 #   def validate_jws_expiration(self, payload: dict) -> bool:
 import hashlib
 import hmac
+import re
 
 from pong import settings
 
@@ -37,6 +38,13 @@ class JWS:
         """エンコードされたヘッダーとペイロードを基に、エンコードされたシグネチャを生成する"""
         if not header_encoded or not payload_encoded:
             raise ValueError("Both header and payload must be provided.")
+        # URLセーフBase64形式の有効性を確認する正規表現
+        if not re.match(r"^[A-Za-z0-9\-_]*$", header_encoded) or not re.match(
+            r"^[A-Za-z0-9\-_]*$", payload_encoded
+        ):
+            raise ValueError(
+                "Invalid characters found in Base64-encoded input. Ensure only alphanumeric characters, '-' and '_' are used."
+            )
         signing_input: str = f"{header_encoded}.{payload_encoded}"
         # ハッシュアルゴリズムを引数で受け取る場合はValueErrorを対応する必要あり
         # https://github.com/python/cpython/blob/main/Lib/hmac.py#L38
