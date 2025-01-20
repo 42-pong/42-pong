@@ -1,5 +1,3 @@
-import base64
-
 from django.test import TestCase
 
 from tmp_jwt import base64_url
@@ -14,9 +12,7 @@ class Base64UrlTestCase(TestCase):
         データをBase64エンコードし、URLセーフな形式に変換後、末尾の'='パディングを取り除いたUTF-8文字列に変換されていることを確認するテスト。
         """
         data: bytes = b"test_data"
-        expected_encoded_data = (
-            base64.urlsafe_b64encode(data).rstrip(b"=").decode("utf-8")
-        )
+        expected_encoded_data: str = "dGVzdF9kYXRh"
         encoded_data: str = self.base64_url_handler.encode(data)
         self.assertEqual(encoded_data, expected_encoded_data)
 
