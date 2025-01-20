@@ -3,7 +3,7 @@ from drf_spectacular import utils
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
 
-from pong.response import response as custom_response
+from pong.custom_response import custom_response
 
 from . import constants, create_account, serializers
 
@@ -98,7 +98,7 @@ class AccountCreateView(views.APIView):
             request.data.pop(constants.PlayerFields.USER, {})
         )
         if not user_serializer.is_valid():
-            return custom_response.Response(
+            return custom_response.CustomResponse(
                 errors=user_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -111,13 +111,13 @@ class AccountCreateView(views.APIView):
             )
         )
         if create_account_result.is_error:
-            return custom_response.Response(
+            return custom_response.CustomResponse(
                 errors=create_account_result.unwrap_error(),
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         user_serializer_data: dict = create_account_result.unwrap()
-        return custom_response.Response(
+        return custom_response.CustomResponse(
             data={constants.PlayerFields.USER: user_serializer_data},
             status=status.HTTP_201_CREATED,
         )

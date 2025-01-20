@@ -3,7 +3,7 @@ from typing import Final
 from django import test
 from rest_framework import status
 
-from . import response as custom_response
+from . import custom_response
 
 STATUS: Final[str] = custom_response.STATUS
 DATA: Final[str] = custom_response.DATA
@@ -21,7 +21,9 @@ class ResponseTests(test.TestCase):
         """
         引数なしで呼ばれた際に、デフォルトのレスポンスが返されることを確認
         """
-        response: custom_response.Response = custom_response.Response()
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse()
+        )
 
         self.assertEqual(response.status, status.HTTP_200_OK)
         self.assertEqual(response.data, {STATUS: STATUS_OK, DATA: {}})
@@ -30,8 +32,10 @@ class ResponseTests(test.TestCase):
         """
         201で呼ばれた際に、成功レスポンスが形式に沿って返されることを確認
         """
-        response: custom_response.Response = custom_response.Response(
-            data={"key": "value"}, status=status.HTTP_201_CREATED
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                data={"key": "value"}, status=status.HTTP_201_CREATED
+            )
         )
 
         self.assertEqual(response.status, status.HTTP_201_CREATED)
@@ -43,9 +47,11 @@ class ResponseTests(test.TestCase):
         """
         400で呼ばれた際に、エラーレスポンスが形式に沿って返されることを確認
         """
-        response: custom_response.Response = custom_response.Response(
-            errors={"key": "value"},
-            status=status.HTTP_400_BAD_REQUEST,
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                errors={"key": "value"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         )
 
         self.assertEqual(response.status, status.HTTP_400_BAD_REQUEST)
@@ -62,7 +68,7 @@ class ResponseTests(test.TestCase):
         100-599以外のステータスコードが渡された場合に例外が発生することを確認
         """
         with self.assertRaises(ValueError):
-            custom_response.Response(status=99)
+            custom_response.CustomResponse(status=99)
 
         with self.assertRaises(ValueError):
-            custom_response.Response(status=600)
+            custom_response.CustomResponse(status=600)

@@ -14,7 +14,7 @@ class Status:
     ERROR: str = "error"
 
 
-class Response(response.Response):
+class CustomResponse(response.Response):
     """
     全appでレスポンスの形式を統一するためのクラス
 

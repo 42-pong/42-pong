@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework import response as drf_response
 from rest_framework import status, test
 
-from pong.response import response as custom_response
+from pong.custom_response import custom_response
 
 from ... import constants, models
 
