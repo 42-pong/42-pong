@@ -25,8 +25,8 @@ class JWS:
     """
 
     def __init__(self) -> None:
-        self.base64_url_handler = base64_url.Base64Url()
-        self.secret_key = settings.JWS_SECRET_KEY
+        self.base64_url_handler: base64_url.Base64Url = base64_url.Base64Url()
+        self.secret_key: str = settings.JWS_SECRET_KEY
 
         if not self.secret_key:
             raise ValueError(
@@ -43,5 +43,5 @@ class JWS:
             signing_input.encode("utf-8"),
             hashlib.sha256,
         ).digest()
-        signature_encoded = self.base64_url_handler.encode(signature)
+        signature_encoded: str = self.base64_url_handler.encode(signature)
         return signature_encoded
