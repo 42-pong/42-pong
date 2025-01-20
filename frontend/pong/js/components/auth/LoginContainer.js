@@ -1,3 +1,5 @@
+import { Paths } from "../../constants/Paths";
+import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 
 //ユーザーが入力するID、PWを保持する箱を入れる
@@ -67,6 +69,12 @@ export class LoginContainer extends Component {
     this.#container = container;
     this.#title = title;
     this.#form = form;
+
+    // TODO: "submit" ハンドリングの更新
+    this._attachEventListener("submit", (event) => {
+      event.preventDefault();
+      this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
+    });
   }
 
   _render() {
