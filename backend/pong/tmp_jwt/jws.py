@@ -35,6 +35,8 @@ class JWS:
 
     def sign(self, header_encoded: str, payload_encoded: str) -> str:
         """エンコードされたヘッダーとペイロードを基に、エンコードされたシグネチャを生成する"""
+        if not header_encoded or not payload_encoded:
+            raise ValueError("Both header and payload must be provided.")
         signing_input: str = f"{header_encoded}.{payload_encoded}"
         # ハッシュアルゴリズムを引数で受け取る場合はValueErrorを対応する必要あり
         # https://github.com/python/cpython/blob/main/Lib/hmac.py#L38

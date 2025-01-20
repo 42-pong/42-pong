@@ -22,3 +22,23 @@ class JsonWebSignatureFunctionTestCase(TestCase):
         )
         self.assertEqual(signature_encoded, expected_signature)
 
+    def test_sign_empty_header(self) -> None:
+        """
+        sign関数の引数であるヘッダーが空の場合、ValueErrorが発生することを確認するテスト
+        """
+        with self.assertRaises(ValueError):
+            self.jws_handler.sign("", self.payload_encoded)
+
+    def test_sign_empty_payload(self) -> None:
+        """
+        sign関数の引数であるペイロードが空の場合、ValueErrorが発生することを確認するテスト。
+        """
+        with self.assertRaises(ValueError):
+            self.jws_handler.sign(self.header_encoded, "")
+
+    def test_sign_empty_header_and_payload(self) -> None:
+        """
+        sign関数の引数であるヘッダーとペイロードが空の場合、ValueErrorが発生することを確認するテスト。
+        """
+        with self.assertRaises(ValueError):
+            self.jws_handler.sign("", "")
