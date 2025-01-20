@@ -15,7 +15,7 @@ USERNAME_LENGTH: Final[int] = 7
 # 関数の結果用のResult型の型エイリアス
 SaveUserResult = utils.result.Result[User, dict]
 SavePlayerResult = utils.result.Result[models.Player, dict]
-CreateAccountResult = utils.result.Result[User, dict]
+CreateAccountResult = utils.result.Result[dict, dict]
 
 
 def get_unique_random_username() -> str:
@@ -139,4 +139,4 @@ def create_account(
         return CreateAccountResult.error(save_player_result.unwrap_error())
     # save_player_result.unwrap()でPlayerを取得できるが、使わないため呼ばない
 
-    return CreateAccountResult.ok(user)
+    return CreateAccountResult.ok(user_serializer.data)
