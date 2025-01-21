@@ -7,11 +7,14 @@
 #   def validate_jws_expiration(self, payload: dict) -> bool:
 import hashlib
 import hmac
+import logging
 import re
 
 from pong import settings
 
 from . import base64_url
+
+logger = logging.getLogger(__name__)
 
 
 class JWS:
@@ -60,12 +63,12 @@ class JWS:
             encoded_header, encoded_payload, provided_signature = jwt.split(
                 "."
             )
-        except ValueError:
-            raise ValueError(
-                "Invalid JWS format. Must be 'header.payload.signature'."
-            )
-        calculated_signature = self.sign(encoded_header, encoded_payload)
-        if calculated_signature != provided_signature:
-            raise ValueError("Invalid signature.")
+            calculated_signature = self.sign(encoded_header, encoded_payload)
+        except ValueError as e:
+            logger.debug(e)
+            return False
         # todo: ペイロードの検証？
+        if calculated_signature != provided_signature:
+            logger.debug("Signature verification failed.")
+            return False
         return True

@@ -1,6 +1,16 @@
+import logging
+
 from django.test import TestCase
 
 from tmp_jwt import jws
+
+# todo: basicConfigの位置を決める
+logging.basicConfig(
+    # DEBUG以上のログを出力
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 class JsonWebSignatureFunctionTestCase(TestCase):
@@ -73,4 +83,12 @@ class JsonWebSignatureFunctionTestCase(TestCase):
         JWTの署名が正しい場合、Trueが返されることを確認するテスト
         """
         jwt: str = f"{self.encoded_header}.{self.encoded_payload}.wELfrcYgcf8pyBxSMOCRINRj8QXlxP360D0T3E_bq3U"
-        self.assertTrue(self.jws_handler.verify(jwt))
+        is_verify: bool = self.jws_handler.verify(jwt)
+        self.assertTrue(is_verify)
+
+    def test_verify_invalid_format(self) -> None:
+        """JWTの形式が不正な場合、Falseを返すことを確認するテスト"""
+        invalid_jwt: str = "invalid.jwt"
+        is_verify: bool = self.jws_handler.verify(invalid_jwt)
+        self.assertFalse(is_verify)
+
