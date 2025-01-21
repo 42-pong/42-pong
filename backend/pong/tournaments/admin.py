@@ -16,3 +16,8 @@ class TournamentAdmin(ModelAdmin):
         constants.TournamentFields.STATUS,
         constants.TournamentFields.CREATED_AT,
     )
+    search_fields: tuple = (constants.TournamentFields.ID,)
+    list_filter: tuple = (constants.TournamentFields.STATUS,)
+    ordering: tuple = (
+        "-" + constants.TournamentFields.CREATED_AT,
+    )  # 降順に表示
