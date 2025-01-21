@@ -92,3 +92,24 @@ class JsonWebSignatureFunctionTestCase(TestCase):
         is_verify: bool = self.jws_handler.verify(invalid_jwt)
         self.assertFalse(is_verify)
 
+    def test_verify_empty_jwt(self) -> None:
+        """JWTが空の場合、Falseを返すことを確認するテスト"""
+        empty_jwt: str = ""
+        is_verify: bool = self.jws_handler.verify(empty_jwt)
+        self.assertFalse(is_verify)
+
+    def test_verify_signature_mismatch(self) -> None:
+        """JWTの署名が一致しない場合、Falseを返すことを確認するテスト"""
+        invalid_signature_jwt: str = (
+            f"{self.encoded_header}.{self.encoded_payload}.invalid_signature"
+        )
+        is_verify: bool = self.jws_handler.verify(invalid_signature_jwt)
+        self.assertFalse(is_verify)
+
+    def test_verify_empty_signature(self) -> None:
+        """JWTの署名が空の場合、Falseを返すことを確認するテスト"""
+        empty_signature_jwt: str = (
+            f"{self.encoded_header}.{self.encoded_payload}."
+        )
+        is_verify: bool = self.jws_handler.verify(empty_signature_jwt)
+        self.assertFalse(is_verify)
