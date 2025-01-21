@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     "oauth2",
     "accounts",
     "match",
+    "tournaments",
 ]
 
 MIDDLEWARE = [
