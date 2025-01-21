@@ -6,7 +6,8 @@ from rest_framework import status, test
 
 from pong.custom_response import custom_response
 
-from ... import constants, models
+from .. import constants
+from ..player import models
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL

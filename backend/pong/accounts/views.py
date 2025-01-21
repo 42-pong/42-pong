@@ -5,7 +5,10 @@ from rest_framework import permissions, request, response, status, views
 
 from pong.custom_response import custom_response
 
-from . import constants, create_account, serializers
+from . import constants
+from .create_account import create_account
+from .player import serializers as player_serializers
+from .user import serializers as user_serializers
 
 
 class AccountCreateView(views.APIView):
@@ -13,15 +16,15 @@ class AccountCreateView(views.APIView):
     新規アカウントを作成するビュー
     """
 
-    serializer_class: type[serializers.PlayerSerializer] = (
-        serializers.PlayerSerializer
+    serializer_class: type[player_serializers.PlayerSerializer] = (
+        player_serializers.PlayerSerializer
     )
     # todo: 認証機能を実装したら多分IsAuthenticatedに変更
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
         request=utils.OpenApiRequest(
-            serializers.PlayerSerializer,
+            player_serializers.PlayerSerializer,
             examples=[
                 utils.OpenApiExample(
                     "Example request",
@@ -36,7 +39,7 @@ class AccountCreateView(views.APIView):
         ),
         responses={
             201: utils.OpenApiResponse(
-                response=serializers.PlayerSerializer,
+                response=player_serializers.PlayerSerializer,
                 examples=[
                     utils.OpenApiExample(
                         "Example 201 response",
@@ -85,15 +88,15 @@ class AccountCreateView(views.APIView):
 
         def _create_user_serializer(
             user_data: dict,
-        ) -> serializers.UserSerializer:
+        ) -> user_serializers.UserSerializer:
             # usernameのみBEがランダムな文字列をセット
             user_data[constants.UserFields.USERNAME] = (
                 create_account.get_unique_random_username()
             )
-            return serializers.UserSerializer(data=user_data)
+            return user_serializers.UserSerializer(data=user_data)
 
         # サインアップ専用のUserSerializerを作成
-        user_serializer: serializers.UserSerializer = _create_user_serializer(
+        user_serializer: user_serializers.UserSerializer = _create_user_serializer(
             # popしたいfieldが存在しない場合は空dictを渡し、UserSerializerでエラーになる
             request.data.pop(constants.PlayerFields.USER, {})
         )

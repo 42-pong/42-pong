@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework import serializers
 
-from ... import create_account
+from . import create_account
 
 
 # test用にUserをmodelに設定したSerializer
