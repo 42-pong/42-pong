@@ -32,18 +32,18 @@ class JWS:
                 "JWS_SECRET_KEY is not defined in the environment variables."
             )
 
-    def sign(self, header_encoded: str, payload_encoded: str) -> str:
+    def sign(self, encoded_header: str, encoded_payload: str) -> str:
         """エンコードされたヘッダーとペイロードを基に、エンコードされたシグネチャを生成する"""
-        if not header_encoded or not payload_encoded:
+        if not encoded_header or not encoded_payload:
             raise ValueError("Both header and payload must be provided.")
         # URLセーフBase64形式の有効性を確認する正規表現
-        if not re.match(r"^[A-Za-z0-9\-_]*$", header_encoded) or not re.match(
-            r"^[A-Za-z0-9\-_]*$", payload_encoded
+        if not re.match(r"^[A-Za-z0-9\-_]*$", encoded_header) or not re.match(
+            r"^[A-Za-z0-9\-_]*$", encoded_payload
         ):
             raise ValueError(
                 "Invalid characters found in Base64-encoded input. Ensure only alphanumeric characters, '-' and '_' are used."
             )
-        signing_input: str = f"{header_encoded}.{payload_encoded}"
+        signing_input: str = f"{encoded_header}.{encoded_payload}"
         # ハッシュアルゴリズムを引数で受け取る場合はValueErrorを対応する必要あり
         # https://github.com/python/cpython/blob/main/Lib/hmac.py#L38
         signature: bytes = hmac.new(
@@ -57,15 +57,15 @@ class JWS:
     def verify(self, jwt: str) -> bool:
         """JWTの署名が正しいか検証する"""
         try:
-            header_encoded, payload_encoded, signature_received = jwt.split(
+            encoded_header, encoded_payload, provided_signature = jwt.split(
                 "."
             )
         except ValueError:
             raise ValueError(
                 "Invalid JWS format. Must be 'header.payload.signature'."
             )
-        signature_calculated = self.sign(header_encoded, payload_encoded)
-        if signature_calculated != signature_received:
+        calculated_signature = self.sign(encoded_header, encoded_payload)
+        if calculated_signature != provided_signature:
             raise ValueError("Invalid signature.")
         # todo: ペイロードの検証？
         return True
