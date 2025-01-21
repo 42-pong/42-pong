@@ -5,7 +5,14 @@ from tournaments import constants
 
 class Tournament(models.Model):
     """
-    Tournamentのモデル
+    トーナメントを管理するモデル
+
+    Attributes:
+        status: トーナメントの現在の状態を表す
+            - matching: 参加者募集中
+            - playing: 進行中
+            - end: 終了済み
+        created_at: トーナメント作成日時
     """
 
     status = models.CharField(
@@ -15,6 +22,7 @@ class Tournament(models.Model):
             for status in constants.TournamentFields.StatusEnum
         ],
         default=constants.TournamentFields.StatusEnum.MATCHING,
+        # TODO: db_index=Trueを必要によって追加
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
