@@ -8,7 +8,6 @@
 import hashlib
 import hmac
 import logging
-import re
 
 from pong import settings
 
@@ -39,13 +38,16 @@ class JWS:
         """エンコードされたヘッダーとペイロードを基に、エンコードされたシグネチャを生成する"""
         if not encoded_header or not encoded_payload:
             raise ValueError("Both header and payload must be provided.")
-        # URLセーフBase64形式の有効性を確認する正規表現
-        if not re.match(r"^[A-Za-z0-9\-_]*$", encoded_header) or not re.match(
-            r"^[A-Za-z0-9\-_]*$", encoded_payload
-        ):
-            raise ValueError(
-                "Invalid characters found in Base64-encoded input. Ensure only alphanumeric characters, '-' and '_' are used."
-            )
+        for name, encoded_data in [
+            ("header", encoded_header),
+            ("payload", encoded_payload),
+        ]:
+            try:
+                self.base64_url_handler.decode(encoded_data)
+            except ValueError:
+                raise ValueError(
+                    f"Invalid characters found in Base64-encoded input {name}."
+                )
         signing_input: str = f"{encoded_header}.{encoded_payload}"
         # ハッシュアルゴリズムを引数で受け取る場合はValueErrorを対応する必要あり
         # https://github.com/python/cpython/blob/main/Lib/hmac.py#L38
