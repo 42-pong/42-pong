@@ -28,3 +28,6 @@ class Tournament(models.Model):
 
     class Meta:
         db_table = "tournaments"
+
+    def __str__(self) -> str:
+        return f"{self.id}"
