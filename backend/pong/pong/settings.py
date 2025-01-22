@@ -239,3 +239,33 @@ CORS_ALLOWED_ORIGINS = [
     f"http://localhost:{FRONT_SERVER_PORT}",  # frontendコンテナ
 ]
 # todo: CORS_ALLOW_CREDENTIALS, CSRFについての設定は必要になり次第追加
+
+# Django logging
+# 詳細: https://docs.djangoproject.com/ja/5.1/topics/logging/
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "custom": {
+            # (例) 2025-01-22 15:06:40 - tmp_jwt.jws - DEBUG - Signature verification failed.
+            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    "handlers": {
+        # todo: ログレベルの設定は必要に応じて追加する
+        "warning": {
+            "level": "WARNING",
+            "class": "logging.StreamHandler",
+            "formatter": "custom",
+        },
+        # todo: fileにログを出力する場合は追加する
+    },
+    # todo: アプリごとにログレベルを設定する場合は追加する
+    # 詳細: https://docs.python.org/ja/3/library/logging.config.html#dictionary-schema-details
+    "root": {
+        "handlers": ["warning"],
+        # todo: DEBUGがTrueの場合はDEBUGレベルのログを出力するようにする？
+        "level": "WARNING",
+    },
+}

@@ -1,16 +1,6 @@
-import logging
-
 from django.test import TestCase
 
 from tmp_jwt import jws
-
-# todo: basicConfigの位置を決める
-logging.basicConfig(
-    # DEBUG以上のログを出力
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
 
 
 class JsonWebSignatureFunctionTestCase(TestCase):

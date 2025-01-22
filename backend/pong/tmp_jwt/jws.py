@@ -65,10 +65,10 @@ class JWS:
             )
             calculated_signature = self.sign(encoded_header, encoded_payload)
         except ValueError as e:
-            logger.debug(e)
+            logger.warning(e)
             return False
         # todo: ペイロードの検証？
         if calculated_signature != provided_signature:
-            logger.debug("Signature verification failed.")
+            logger.warning("Signature verification failed.")
             return False
         return True
