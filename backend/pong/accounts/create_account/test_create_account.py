@@ -1,3 +1,5 @@
+import dataclasses
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework import serializers
@@ -5,13 +7,19 @@ from rest_framework import serializers
 from . import create_account
 
 
+@dataclasses.dataclass(frozen=True)
+class MockUserField:
+    username: str = "username"
+    password: str = "password"
+
+
 # test用にUserをmodelに設定したSerializer
 class MockUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "username",
-            "password",
+            MockUserField.username,
+            MockUserField.password,
         )
 
 
@@ -23,8 +31,8 @@ class CreateAccountTests(TestCase):
         各テストメソッドの実行前に毎回自動実行される
         """
         self.user_data = {
-            "username": "testuser",
-            "password": "testpassword",
+            MockUserField.username: "testuser",
+            MockUserField.password: "testpassword",
         }
         self.mock_user_serializer: MockUserSerializer = MockUserSerializer(
             data=self.user_data
@@ -46,10 +54,12 @@ class CreateAccountTests(TestCase):
                 self.mock_user_serializer, player_data
             )
         )
-        self.assertEqual(create_account_result.is_ok, True)
+        self.assertTrue(create_account_result.is_ok)
 
         user_serializer_data: dict = create_account_result.unwrap()
-        self.assertEqual(user_serializer_data["username"], "testuser")
+        self.assertEqual(
+            user_serializer_data[MockUserField.username], "testuser"
+        )
 
     def test_get_unique_random_username_string(self) -> None:
         """
