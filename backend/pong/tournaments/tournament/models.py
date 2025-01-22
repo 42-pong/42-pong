@@ -21,7 +21,7 @@ class Tournament(models.Model):
             (status.value, status.name)
             for status in constants.TournamentFields.StatusEnum
         ],
-        default=constants.TournamentFields.StatusEnum.MATCHING,
+        default=constants.TournamentFields.StatusEnum.MATCHING.value,
         # TODO: db_index=Trueを必要によって追加
     )
     created_at = models.DateTimeField(auto_now_add=True)
