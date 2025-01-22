@@ -1,9 +1,11 @@
 import dataclasses
+import unittest
 
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework import serializers
 
+from ..player import models
 from . import create_account
 
 
@@ -82,3 +84,45 @@ class CreateAccountTests(TestCase):
             self.assertFalse(
                 User.objects.filter(username=random_username).exists()
             )
+
+    # -------------------------------------------------------------------------
+    # エラーケース
+    # -------------------------------------------------------------------------
+    def test_transaction_fail_to_save_user(self) -> None:
+        """
+        Userの保存に失敗した場合にトランザクションがロールバックされ、
+        UserとPlayerが保存されていないことを確認
+        """
+        # userの保存に失敗するuser_serializerを用意
+        self.user_data[MockUserField.password] = ""  # passwordが空だとエラー
+        mock_user_serializer: MockUserSerializer = MockUserSerializer(
+            data=self.user_data
+        )
+        # account作成
+        player_data: dict = {}
+        create_account_result: create_account.CreateAccountResult = (
+            create_account.create_account(mock_user_serializer, player_data)
+        )
+
+        self.assertFalse(create_account_result.is_ok)
+        self.assertEqual(User.objects.count(), 0)
+        self.assertEqual(models.Player.objects.count(), 0)
+
+    # todo: 実装されたらskipを外す
+    @unittest.skip("display_nameがplayerフィールドに追加されたら通るテスト")
+    def test_transaction_fail_to_save_player(self) -> None:
+        """
+        Userは正しく保存されるが、Playerの保存に失敗した場合にトランザクションがロールバックされ、
+        UserとPlayerが保存されていないことを確認
+        """
+        # Playerの保存に失敗するplayer_dataを用意してaccount作成
+        player_data: dict = {"display_name": "over-15-characters"}
+        create_account_result: create_account.CreateAccountResult = (
+            create_account.create_account(
+                self.mock_user_serializer, player_data
+            )
+        )
+
+        self.assertFalse(create_account_result.is_ok)
+        self.assertEqual(User.objects.count(), 0)
+        self.assertEqual(models.Player.objects.count(), 0)
