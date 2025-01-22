@@ -16,7 +16,7 @@ from . import models, serializers
         operation_id="tournaments_list",  # 明示的にoperationIdを設定
         parameters=[
             OpenApiParameter(
-                name="player_id",
+                name="player-id",
                 description="playerテーブルのID",
                 required=False,
                 type=int,
