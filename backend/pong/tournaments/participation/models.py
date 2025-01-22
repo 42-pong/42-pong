@@ -1,0 +1,40 @@
+from django.db import models
+
+import accounts
+from tournaments.tournament import models as tournament_models
+
+
+class Participation(models.Model):
+    """
+    PlayerのTournament参加情報モデル
+    TournamentとPlayerに対して多対一の関係を持つ
+
+    Attributes:
+        id: 識別子
+        tournament_id: トーナメントテーブルの外部キー
+        player_id: プレーヤーテーブルの外部キー
+        participation_name: 参加したトーナメントにおける表示名
+        joined_at: トーナメント参加日時
+        ranking: 参加したトーナメントにおける最終順位
+    """
+
+    id = models.AutoField(primary_key=True)
+    tournament = models.ForeignKey(
+        tournament_models.Tournament,
+        related_name="participants",  # Tournamentsからこのテーブルにアクセスするときにエイリアス名
+        on_delete=models.CASCADE,
+    )
+    player = models.ForeignKey(
+        accounts.models.Player,
+        related_name="participations",  # Playersからこのテーブルにアクセスするときにエイリアス名
+        on_delete=models.CASCADE,
+    )
+    participation_name = models.CharField(max_length=255)
+    joined_at = models.DateTimeField(auto_now_add=True)
+    ranking = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = "tournament_participations"
+
+    def __str__(self) -> str:
+        return self.participation_name
