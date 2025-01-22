@@ -1,0 +1,12 @@
+import { MainView } from "../components/views/MainView";
+import { Paths } from "../constants/Paths";
+import { Route } from "../core/Route";
+import { Router } from "../core/Router";
+
+export const appRouter = (target) => {
+  const routes = {
+    [Paths.HOME]: Route.createRoute(MainView, MainView.Paths.HOME),
+    [Paths.CHAT]: Route.createRoute(MainView, MainView.Paths.CHAT),
+  };
+  return new Router(target, MainView, routes);
+};

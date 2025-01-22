@@ -1,4 +1,4 @@
-import { Endpoints } from "../../Endpoints";
+import { Endpoints } from "../../constants/Endpoints";
 import { View } from "../../core/View";
 import { isOpenWebSocket } from "../../websocket";
 
@@ -42,15 +42,15 @@ export class HomeView extends View {
   }
 
   _render() {
-    const title = document.createElement("h1");
+    const title = document.createElement("h2");
     title.textContent = "Hello World";
     this.appendChild(title);
 
-    const status = document.createElement("h2");
+    const status = document.createElement("h3");
     status.textContent = `${Endpoints.HEALTH.pathname}: ${this._getState().healthStatus}`;
     this.appendChild(status);
 
-    const wsStatus = document.createElement("h2");
+    const wsStatus = document.createElement("h3");
     wsStatus.textContent = `${Endpoints.WEBSOCKET.pathname}: ${this._getState().webSocketBaseStatus}`;
     this.appendChild(wsStatus);
   }
