@@ -1,9 +1,11 @@
+import { LoginContainer } from "./auth/LoginContainer";
 import { MainNav } from "./navs/MainNav";
 import { ChatView } from "./views/ChatView";
 import { HomeView } from "./views/HomeView";
 import { LoginView } from "./views/LoginView";
 import { MainView } from "./views/MainView";
 
+customElements.define("login-container", LoginContainer, {});
 customElements.define("main-nav", MainNav, {});
 customElements.define("chat-view", ChatView, {});
 customElements.define("home-view", HomeView, {});
