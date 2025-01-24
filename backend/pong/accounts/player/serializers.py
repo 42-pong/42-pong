@@ -11,10 +11,15 @@ class PlayerSerializer(serializers.ModelSerializer):
     Playerモデルの作成・バリデーションを行う
     """
 
+    # 変数名と同じ名前をfieldsに指定する必要がある
+
     # PrimaryKeyRelatedField: 紐づくターゲットをそのPKを使用して表現する
-    # 同じ変数名(user)をfieldsに指定する必要がある
     user: serializers.PrimaryKeyRelatedField[User] = (
         serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    )
+    # display_nameが渡されなかった場合、"default"という文字列をデフォルト値として設定する
+    display_name: serializers.CharField = serializers.CharField(
+        max_length=15, default="default"
     )
 
     class Meta:
@@ -29,5 +34,3 @@ class PlayerSerializer(serializers.ModelSerializer):
             constants.PlayerFields.CREATED_AT: {"read_only": True},
             constants.PlayerFields.UPDATED_AT: {"read_only": True},
         }
-
-    # todo: Playerモデルにfieldが追加されたらvalidate(),create()を作成する

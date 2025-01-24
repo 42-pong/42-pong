@@ -10,6 +10,7 @@ USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
 PASSWORD: Final[str] = constants.UserFields.PASSWORD
 USER: Final[str] = constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
 
 
 class PlayerSerializerTests(TestCase):
@@ -108,6 +109,14 @@ class PlayerSerializerTests(TestCase):
                 player.user.email,
                 user_data[EMAIL],
             )
+
+    def test_default_display_name(self) -> None:
+        """
+        display_nameが指定されていない場合、初期値の"default"が自動で設定されることを確認
+        """
+        player: models.Player = self._create_account(self.user_data)
+
+        self.assertEqual(player.display_name, "default")
 
     # -------------------------------------------------------------------------
     # エラーケース
