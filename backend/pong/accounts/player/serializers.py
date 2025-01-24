@@ -21,6 +21,7 @@ class PlayerSerializer(serializers.ModelSerializer):
         model = models.Player
         fields = (
             constants.PlayerFields.USER,
+            constants.PlayerFields.DISPLAY_NAME,
             constants.PlayerFields.CREATED_AT,
             constants.PlayerFields.UPDATED_AT,
         )

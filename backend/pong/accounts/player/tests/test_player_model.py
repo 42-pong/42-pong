@@ -64,3 +64,22 @@ class PlayerModelTestCase(TestCase):
         # UserとPlayerが両方削除されていることを確認
         self.assertEqual(User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
+
+    def test_set_valid_display_name(self) -> None:
+        """
+        max_length以下の正しいdisplay_nameが指定されている場合、
+        Playerのdisplay_nameにその値が設定されていることを確認
+        """
+        # setUp()とは別のUserを作成
+        user: User = User.objects.create_user(
+            username="testuser_2",
+            email="testuser_2@example.com",
+            password="testpassword",
+        )
+        # Player作成
+        player: models.Player = models.Player.objects.create(
+            user=user,
+            display_name="valid_name",  # 正しいdisplay_name
+        )
+
+        self.assertEqual(player.display_name, "valid_name")

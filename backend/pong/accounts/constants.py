@@ -12,5 +12,6 @@ class UserFields:
 @dataclasses.dataclass(frozen=True)
 class PlayerFields:
     USER: str = "user"
+    DISPLAY_NAME: str = "display_name"
     CREATED_AT: str = "created_at"
     UPDATED_AT: str = "updated_at"
