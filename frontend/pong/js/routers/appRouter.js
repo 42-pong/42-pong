@@ -10,7 +10,7 @@ export const appRouter = (target) => {
   };
   const defaultRoute = Route.createRoute(
     MainView,
-    MainView.Paths.HOME,
+    MainView.Paths.NOT_FOUND,
   );
   return new Router(target, defaultRoute, routes);
 };
