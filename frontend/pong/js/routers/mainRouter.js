@@ -10,5 +10,6 @@ export const mainRouter = (target) => {
     [MainView.Paths.HOME]: Route.defaultRoute(HomeView),
     [MainView.Paths.CHAT]: Route.defaultRoute(ChatView),
   };
-  return new Router(target, NotFoundView, routes);
+  const defaultRoute = Route.defaultRoute(NotFoundView);
+  return new Router(target, defaultRoute, routes);
 };
