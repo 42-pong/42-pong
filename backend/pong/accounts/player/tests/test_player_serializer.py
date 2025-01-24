@@ -1,5 +1,6 @@
 from typing import Final
 
+import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -121,4 +122,31 @@ class PlayerSerializerTests(TestCase):
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
-    # todo: PlayerSerializer独自のバリデーションが追加された場合にテストを追加する
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列のdisplay_name", ""),
+            ("max_lengthを超えるdisplay_name", "a" * 16),
+        ]
+    )
+    def test_invalid_display_name(
+        self, testcase_name: str, display_name: str
+    ) -> None:
+        """
+        不正なdisplay_nameが渡された場合に、エラーになることを確認
+        正しいdisplay_name:
+            - 1文字以上、15文字以下
+
+        Args:
+            testcase_name: テストケースの説明
+            display_name: display_nameにセットする値
+        """
+        player_data: dict = {
+            USER: self._create_user(self.user_data).id,
+            DISPLAY_NAME: display_name,  # 不正なdisplay_name
+        }
+        player_serializer: serializers.PlayerSerializer = (
+            serializers.PlayerSerializer(data=player_data)
+        )
+
+        self.assertFalse(player_serializer.is_valid())
+        self.assertIn(DISPLAY_NAME, player_serializer.errors)
