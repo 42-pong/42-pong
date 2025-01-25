@@ -1,7 +1,8 @@
 import dataclasses
-import unittest
+from unittest import mock
 
 from django.contrib.auth.models import User
+from django.db import DatabaseError
 from django.test import TestCase
 from rest_framework import serializers
 
@@ -88,15 +89,18 @@ class CreateAccountTests(TestCase):
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
-    def test_transaction_fail_to_save_user(self) -> None:
+    @mock.patch("accounts.user.serializers.UserSerializer")
+    def test_transaction_fail_to_save_user(
+        self, mock_user_serializer: mock.Mock
+    ) -> None:
         """
         Userの保存に失敗した場合にトランザクションがロールバックされ、
         UserとPlayerが保存されていないことを確認
         """
-        # userの保存に失敗するuser_serializerを用意
-        self.user_data[MockUserField.password] = ""  # passwordが空だとエラー
-        mock_user_serializer: MockUserSerializer = MockUserSerializer(
-            data=self.user_data
+        # userの保存に失敗するuser_serializerのmockを用意
+        mock_user_serializer.Meta.model = User
+        mock_user_serializer.save.side_effect = DatabaseError(
+            "Failed to save user"
         )
         # account作成
         player_data: dict = {}
@@ -108,15 +112,18 @@ class CreateAccountTests(TestCase):
         self.assertEqual(User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
 
-    # todo: 実装されたらskipを外す
-    @unittest.skip("display_nameがplayerフィールドに追加されたら通るテスト")
-    def test_transaction_fail_to_save_player(self) -> None:
+    @mock.patch("accounts.create_account.create_account._save_player")
+    def test_transaction_fail_to_save_player(
+        self, mock_save_player: mock.Mock
+    ) -> None:
         """
         Userは正しく保存されるが、Playerの保存に失敗した場合にトランザクションがロールバックされ、
         UserとPlayerが保存されていないことを確認
         """
-        # Playerの保存に失敗するplayer_dataを用意してaccount作成
-        player_data: dict = {"display_name": "over-15-characters"}
+        # Playerの保存に失敗する_save_player()のmockを用意
+        mock_save_player.side_effect = DatabaseError("Failed to save player")
+        # account作成
+        player_data: dict = {}
         create_account_result: create_account.CreateAccountResult = (
             create_account.create_account(
                 self.mock_user_serializer, player_data
