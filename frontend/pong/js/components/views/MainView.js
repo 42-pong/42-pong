@@ -11,6 +11,7 @@ export class MainView extends View {
   static Paths = Object.freeze({
     HOME: "/",
     CHAT: "/chat",
+    NOT_FOUND: "/not-found",
   });
 
   _onConnect() {
