@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -34,3 +36,14 @@ class PlayerSerializer(serializers.ModelSerializer):
             constants.PlayerFields.CREATED_AT: {"read_only": True},
             constants.PlayerFields.UPDATED_AT: {"read_only": True},
         }
+
+    def validate_display_name(self, value: str) -> str:
+        """
+        display_nameフィールドのバリデーション
+        英文字・数字・記号(-_.~)のみを許可する
+        """
+        if not re.match(r"^[a-zA-Z0-9-_.~]+$", value):
+            raise serializers.ValidationError(
+                "display_name must be alphanumeric or some symbols(-_.~)"
+            )
+        return value

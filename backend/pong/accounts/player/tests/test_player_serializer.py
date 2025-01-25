@@ -119,6 +119,18 @@ class PlayerSerializerTests(TestCase):
 
         self.assertEqual(player.display_name, "default")
 
+    def test_valid_display_name(self) -> None:
+        """
+        使用可能な文字列から構成される正常なdisplay_nameが渡された場合に、その値でPlayerが作成されることを確認
+        """
+        player_data: dict = {
+            USER: self._create_user(self.user_data).id,
+            DISPLAY_NAME: "abcDEF12345-_.~",  # 正常な15文字のdisplay_name
+        }
+        player: models.Player = self._create_player(player_data)
+
+        self.assertEqual(player.display_name, player_data[DISPLAY_NAME])
+
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
@@ -126,6 +138,8 @@ class PlayerSerializerTests(TestCase):
         [
             ("空文字列のdisplay_name", ""),
             ("max_lengthを超えるdisplay_name", "a" * 16),
+            ("不正な文字が含まれるdisplay_name", "あ"),
+            ("不正な記号が含まれるdisplay_name", "/"),
         ]
     )
     def test_invalid_display_name(
@@ -135,6 +149,7 @@ class PlayerSerializerTests(TestCase):
         不正なdisplay_nameが渡された場合に、エラーになることを確認
         正しいdisplay_name:
             - 1文字以上、15文字以下
+            - 使用可能な文字である英文字・数字・記号(-_.~)で構成される
 
         Args:
             testcase_name: テストケースの説明
