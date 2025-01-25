@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ... import constants
-from .. import models, serializers
+from .. import serializers
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
@@ -68,7 +68,7 @@ class PlayerSerializerTests(TestCase):
         """
         正常なデータが渡された場合にエラーにならないことを確認する
         """
-        user: models.User = self._create_user(self.user_data)
+        user: User = self._create_user(self.user_data)
         player_data: dict = {
             USER: user.id,
         }
