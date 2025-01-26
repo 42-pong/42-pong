@@ -1,6 +1,5 @@
-import re
-
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 from .. import constants
@@ -21,7 +20,15 @@ class PlayerSerializer(serializers.ModelSerializer):
     )
     # display_nameが渡されなかった場合、"default"という文字列をデフォルト値として設定する
     display_name: serializers.CharField = serializers.CharField(
-        max_length=15, default="default"
+        max_length=15,
+        default="default",
+        validators=[
+            # 使用可能文字列を指定: 英子文字・英大文字・数字・記号(-_.~)
+            RegexValidator(
+                regex=r"^[a-zA-Z0-9-_.~]+$",
+                message="Must contain only alphanumeric characters or some symbols(-_.~)",
+            )
+        ],
     )
 
     class Meta:
@@ -36,14 +43,3 @@ class PlayerSerializer(serializers.ModelSerializer):
             constants.PlayerFields.CREATED_AT: {"read_only": True},
             constants.PlayerFields.UPDATED_AT: {"read_only": True},
         }
-
-    def validate_display_name(self, value: str) -> str:
-        """
-        display_nameフィールドのバリデーション
-        英文字・数字・記号(-_.~)のみを許可する
-        """
-        if not re.match(r"^[a-zA-Z0-9-_.~]+$", value):
-            raise serializers.ValidationError(
-                "display_name must be alphanumeric or some symbols(-_.~)"
-            )
-        return value
