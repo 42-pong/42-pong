@@ -1,3 +1,4 @@
+from django.db.models.query import QuerySet
 from drf_spectacular import utils
 from rest_framework import (
     permissions,
@@ -7,7 +8,11 @@ from rest_framework import (
     views,
 )
 
+from accounts import constants
+from accounts.player import models
 from pong.custom_response import custom_response
+
+from . import serializers
 
 
 class UsersListView(views.APIView):
@@ -23,7 +28,7 @@ class UsersListView(views.APIView):
         responses={
             200: utils.OpenApiResponse(
                 description="A list of user profiles",
-                response={"type": "object"},  # todo: serializerに変える
+                response=serializers.UsersSerializer(many=True),
                 examples=[
                     utils.OpenApiExample(
                         "Example 200 response",
@@ -48,8 +53,21 @@ class UsersListView(views.APIView):
             ),
         },
     )
+    # todo: try-exceptで全体を囲って500を返す？
     def get(self, request: request.Request) -> response.Response:
         """
         ユーザープロフィール一覧を取得するGETメソッド
         """
-        return custom_response.CustomResponse(status=status.HTTP_200_OK)
+        # Userに紐づくPlayer全てのQuerySetを取得
+        all_players_with_users: QuerySet[models.Player] = (
+            models.Player.objects.select_related(
+                constants.PlayerFields.USER
+            ).all()
+        )
+        # 複数のオブジェクトをシリアライズ
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            all_players_with_users, many=True
+        )
+        return custom_response.CustomResponse(
+            data=serializer.data, status=status.HTTP_200_OK
+        )
