@@ -4,7 +4,6 @@
 # - JWT(RFC7519)の概要を読む
 # - DRFを使ってどうユーザーの認証を行うのかについて
 # 実装
-# - .envでJWT_SECRET_KEYで秘密鍵を定義
 # - JWTを生成する関数実装
 # - payloadを取得する関数実装
 
@@ -26,7 +25,7 @@ class JWT:
     https://datatracker.ietf.org/doc/html/rfc7519
     """
 
-    def __init__(self, payload: Optional[dict] = None):
+    def __init__(self, payload: Optional[dict] = None) -> None:
         """
         JWTクラスのインスタンスを初期化。
 
@@ -36,5 +35,4 @@ class JWT:
         # todo: アルゴリズムも選べるようにする？
         self.header: dict = {"typ": "JWT", "alg": "HS256"}
         self.payload: dict = payload or {}
-        # todo: JWT_SECRET_KEYは.envから読み込むようにする
         self.jws: jws.JWS = jws.JWS()
