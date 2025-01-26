@@ -35,9 +35,9 @@ class Base64UrlTestCase(TestCase):
     def test_decode_empty_data(self) -> None:
         """空のデータをデコードした場合、バイト型の空文字を返すことを確認するテスト"""
         empty_data: str = ""
-        expected_decoded_data: bytes = b""
+        expected_decoded_empty_data: bytes = b""
         decoded_data: bytes = self.base64_url_handler.decode(empty_data)
-        self.assertEqual(decoded_data, expected_decoded_data)
+        self.assertEqual(decoded_data, expected_decoded_empty_data)
 
     def test_decode_non_ascii_data(self) -> None:
         """非ASCII文字を含むデータをデコードした場合、ValueErrorを投げることを確認するテスト"""
