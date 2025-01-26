@@ -136,3 +136,54 @@ class CreateAccountTests(TestCase):
         self.assertIn("DatabaseError", create_account_result.unwrap_error())
         self.assertEqual(User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
+
+    @mock.patch("accounts.user.serializers.UserSerializer")
+    def test_transaction_rollback_on_user_validation_failure(
+        self, mock_user_serializer: mock.Mock
+    ) -> None:
+        """
+        Userのバリデーションに失敗した場合にトランザクションがロールバックされ、
+        UserとPlayerが保存されていないことを確認
+        """
+        # userのバリデーションに失敗するuser_serializerのmockを用意
+        mock_user_serializer.Meta.model = User
+        mock_user_serializer.is_valid.side_effect = (
+            serializers.ValidationError(
+                {"username": ["This field is required."]}
+            )
+        )
+        # account作成
+        player_data: dict = {}
+        create_account_result: create_account.CreateAccountResult = (
+            create_account.create_account(mock_user_serializer, player_data)
+        )
+
+        self.assertFalse(create_account_result.is_ok)
+        self.assertIn("username", create_account_result.unwrap_error())
+        self.assertEqual(User.objects.count(), 0)
+        self.assertEqual(models.Player.objects.count(), 0)
+
+    @mock.patch("accounts.create_account.create_account._save_player")
+    def test_transaction_rollback_on_player_validation_failure(
+        self, mock_save_player: mock.Mock
+    ) -> None:
+        """
+        Playerのバリデーションに失敗した場合にトランザクションがロールバックされ、
+        UserとPlayerが保存されていないことを確認
+        """
+        # Playerのバリデーションに失敗する_save_player()のmockを用意
+        mock_save_player.side_effect = serializers.ValidationError(
+            {"display_name": ["This field is required."]}
+        )
+        # account作成
+        player_data: dict = {}
+        create_account_result: create_account.CreateAccountResult = (
+            create_account.create_account(
+                self.mock_user_serializer, player_data
+            )
+        )
+
+        self.assertFalse(create_account_result.is_ok)
+        self.assertIn("display_name", create_account_result.unwrap_error())
+        self.assertEqual(User.objects.count(), 0)
+        self.assertEqual(models.Player.objects.count(), 0)
