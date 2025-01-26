@@ -16,6 +16,7 @@ class MockUserField:
     password: str = "password"
 
 
+# todo: 正常ケースもunittest.mockに置き換えられたら置き換える
 # test用にUserをmodelに設定したSerializer
 class MockUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -90,7 +91,7 @@ class CreateAccountTests(TestCase):
     # エラーケース
     # -------------------------------------------------------------------------
     @mock.patch("accounts.user.serializers.UserSerializer")
-    def test_transaction_fail_to_save_user(
+    def test_transaction_rollback_on_user_save_failure(
         self, mock_user_serializer: mock.Mock
     ) -> None:
         """
@@ -109,11 +110,12 @@ class CreateAccountTests(TestCase):
         )
 
         self.assertFalse(create_account_result.is_ok)
+        self.assertIn("DatabaseError", create_account_result.unwrap_error())
         self.assertEqual(User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
 
     @mock.patch("accounts.create_account.create_account._save_player")
-    def test_transaction_fail_to_save_player(
+    def test_transaction_rollback_on_player_save_failure(
         self, mock_save_player: mock.Mock
     ) -> None:
         """
@@ -131,5 +133,6 @@ class CreateAccountTests(TestCase):
         )
 
         self.assertFalse(create_account_result.is_ok)
+        self.assertIn("DatabaseError", create_account_result.unwrap_error())
         self.assertEqual(User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
