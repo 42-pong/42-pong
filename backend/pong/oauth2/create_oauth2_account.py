@@ -1,5 +1,5 @@
 import utils.result
-from accounts import create_account
+from accounts.create_account import create_account
 
 from . import models, serializers
 
@@ -28,7 +28,11 @@ def create_oauth2_user(
         return CreateOAuth2UserResult.error(
             oauth2_account_result.unwrap_error()
         )
-    oauth2_user: models.User = oauth2_account_result.unwrap()
+    # todo: typecehckingが通らないため、一旦getで取得
+    oauth2_user: models.User = models.User.objects.get(
+        id=oauth2_account_result.unwrap()["id"]
+    )
+    # oauth2_user: models.User = oauth2_account_result.unwrap()
     return CreateOAuth2UserResult.ok(oauth2_user)
 
 
