@@ -15,7 +15,6 @@ NULL: Final[str] = "null"
 # - setUpで各クラスで必要なフィールドを定義する。（relations.pyの時も使用すると思うので、unitディレクトリの下で定義する方が良さそう）
 #   定数用ファイルで定義するのもありかも
 # - 共通のテストパターンはBaseSerializerTestCaseにまとめる
-# - test 内でのみ使う定数を tests/ 内の専用ファイルに定義する
 
 
 class UserSerializerTestCase(TestCase):

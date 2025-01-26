@@ -42,13 +42,11 @@ class OAuth2Serializer(serializers.ModelSerializer):
         ]
 
     # todo: より詳細なvalidationの実装
-    # - OAuth2Serializerのvalidate関数で42以外のプロバイダーを弾く関数を作成する
     # - 同じproviderの場合はprovider_id が既に存在するかかどうか検証
     def validate(self, data: dict) -> dict:
         return data
 
 
-# todo: provider/serialzier.py移動する
 class FortyTwoTokenSerializer(serializers.ModelSerializer):
     oauth2 = serializers.PrimaryKeyRelatedField(
         queryset=models.OAuth2.objects.all()

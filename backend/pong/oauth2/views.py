@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 import requests
+from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
@@ -19,8 +21,7 @@ from rest_framework.views import APIView
 
 from pong import settings
 
-from . import create_oauth2_account, models
-from .providers import forty_two_authorization
+from . import models, serializers
 
 
 class OAuth2BaseView(APIView):
@@ -138,16 +139,7 @@ class OAuth2CallbackView(OAuth2BaseView):
         この関数は認可エンドポイント(`/api/oauth2/authorize`)のレスポンスを受け取り、認可コードを取得するために使用する。
         そのため、このエンドポイントはFEから呼ばれることはありません。
         """
-        # todo リファクタリング
-        # - get関数の指定方法
-        # - response の形式を定義する
-        # - dataの渡し方（dictで渡すか、パラメータごとで渡すか）
-        # - 分けれるところは関数で定義
-
-        # todo: 実装
-        # - oauth2のresultによる処理をoauth2/view.py以外にかく
-        # - TOKEN_ENDPOINTとmeのエンドポイントの失敗時の処理追加する
-        # - 42APIのリクエスト、レスポンス例外処理
+        # todo Optional[str]?
         code = request.GET.get("code")
         if not code:
             return Response(
@@ -156,7 +148,6 @@ class OAuth2CallbackView(OAuth2BaseView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         request_data: dict[str, str] = {
             "code": code,
             "grant_type": "authorization_code",
@@ -175,18 +166,32 @@ class OAuth2CallbackView(OAuth2BaseView):
         )
         user_info = user_response.json()
 
-        oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
-            create_oauth2_account.create_oauth2_user(
-                user_info.get("email"), user_info.get("login")
-            )
+        oauth2_user_data: dict[str, str] = {
+            # todo: 重複を防ぐget_random_stringのラッパー関数作成
+            "username": get_random_string(12),
+            "email": user_info.get("email"),
+            # todo; パスワードは必須のため(仮)
+            "password": "",
+        }
+        oauth2_user_serializer: serializers.UserSerializer = (
+            serializers.UserSerializer(data=oauth2_user_data)
         )
-        if not oauth2_user_result.is_ok:
-            return Response(
-                {"error": oauth2_user_result.unwrap_error()},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        oauth2_user: models.User = oauth2_user_result.unwrap()
+        oauth2_user_serializer.is_valid(raise_exception=True)
+        new_oauth2_user: User = oauth2_user_serializer.save()
+
+        oauth2_data = {
+            "user": new_oauth2_user.id,
+            "provider": "42",
+            "provider_id": user_info.get("id"),
+        }
+        oauth2_serializer: serializers.OAuth2Serializer = (
+            serializers.OAuth2Serializer(data=oauth2_data)
+        )
+        oauth2_serializer.is_valid(raise_exception=True)
+        new_oauth2: models.OAuth2 = oauth2_serializer.save()
+
         forty_two_token_data = {
+            "oauth2": new_oauth2.id,
             "access_token": tokens.get("access_token"),
             "token_type": tokens.get("token_type"),
             "access_token_expiry": datetime.now()
@@ -197,33 +202,34 @@ class OAuth2CallbackView(OAuth2BaseView):
             ),
             "scope": tokens.get("scope"),
         }
-        oauth2_result: forty_two_authorization.CreateFortyTwoAuthorizationResult = forty_two_authorization.create_forty_two_authorization(
-            oauth2_user.id, "42", user_info.get("id"), forty_two_token_data
+        forty_two_token_serializer: serializers.FortyTwoTokenSerializer = (
+            serializers.FortyTwoTokenSerializer(data=forty_two_token_data)
         )
-        # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
-        if not oauth2_result.is_ok:
-            oauth2_user.delete()
-            return Response(
-                {"error": oauth2_result.unwrap_error()},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        oauth2: models.OAuth2 = oauth2_result.unwrap()
-        # todo: oauth2_userをJWTに変換して返す
+        forty_two_token_serializer.is_valid(raise_exception=True)
+        new_forty_two_token: models.FortyTwoToken = (
+            forty_two_token_serializer.save()
+        )
+
         return Response(
             {
                 "user": {
-                    "id": oauth2_user.id,
-                    "username": oauth2_user.username,
-                    "email": oauth2_user.email,
+                    "id": new_oauth2_user.id,
+                    "username": new_oauth2_user.username,
+                    "email": new_oauth2_user.email,
                 },
                 "oauth2": {
-                    "id": oauth2.id,
-                    "user_id": oauth2.user_id,
-                    "provider": oauth2.provider,
-                    "provider_id": oauth2.provider_id,
+                    "id": new_oauth2.id,
+                    "user_id": new_oauth2.user_id,
+                    "provider": new_oauth2.provider,
+                    "provider_id": new_oauth2.provider_id,
+                },
+                "token": {
+                    "oauth2_id": new_forty_two_token.oauth2_id,
+                    "access_token": new_forty_two_token.access_token,
+                    "refresh_token": new_forty_two_token.refresh_token,
                 },
             },
-            status=status.HTTP_200_OK,
+            status=user_response.status_code,
         )
 
 

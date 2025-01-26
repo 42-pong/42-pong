@@ -19,7 +19,6 @@ class OAuth2(models.Model):
         return self.provider
 
 
-# todo: provider/models.py移動する
 class FortyTwoToken(models.Model):
     oauth2 = models.OneToOneField(
         OAuth2, on_delete=models.CASCADE, related_name="forty_two_token"
