@@ -1,4 +1,4 @@
-import { Endpoints } from "../Endpoints";
+import { Endpoints } from "../constants/Endpoints";
 import { WebSocketWrapper } from "./WebSocketWrapper";
 
 let globalWebSocket = null;

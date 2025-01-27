@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework import serializers
 
-from ... import create_account
+from . import create_account
 
 
 # test用にUserをmodelに設定したSerializer
@@ -48,8 +48,8 @@ class CreateAccountTests(TestCase):
         )
         self.assertEqual(create_account_result.is_ok, True)
 
-        user: User = create_account_result.unwrap()
-        self.assertEqual(user.username, "testuser")
+        user_serializer_data: dict = create_account_result.unwrap()
+        self.assertEqual(user_serializer_data["username"], "testuser")
 
     def test_get_unique_random_username_string(self) -> None:
         """

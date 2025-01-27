@@ -1,13 +1,23 @@
 import "./components";
-import { homeRouter } from "./routers/homeRouter";
+import { PongEvents } from "./constants/PongEvents";
+import { appRouter } from "./routers/appRouter";
 import { initWebSocket } from "./websocket";
 
 function main() {
   const app = document.getElementById("app");
-  const router = homeRouter(app);
+  const router = appRouter(app);
+  const updateWindowPath = () => {
+    router.update(window.location.pathname);
+  };
 
+  app.addEventListener(PongEvents.UPDATE_ROUTER.type, (event) => {
+    const { path } = event.detail;
+    const isUpdated = router.update(path);
+    if (isUpdated) window.history.pushState({}, "", path);
+  });
+  window.addEventListener("popstate", updateWindowPath);
   initWebSocket();
-  router.update(window.location.pathname);
+  updateWindowPath();
 }
 
 async function enableMocking() {

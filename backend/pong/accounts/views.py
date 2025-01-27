@@ -1,27 +1,30 @@
-from django.contrib.auth.models import User
 from drf_spectacular import utils
 
 # todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
 
-from . import constants, create_account, serializers
+from pong.custom_response import custom_response
+
+from . import constants
+from .create_account import create_account
+from .player import serializers as player_serializers
+from .user import serializers as user_serializers
 
 
-# todo: response形式は全app共通の形式のため、どこかにkey-valueを定義してそれを使用する
 class AccountCreateView(views.APIView):
     """
     新規アカウントを作成するビュー
     """
 
-    serializer_class: type[serializers.PlayerSerializer] = (
-        serializers.PlayerSerializer
+    serializer_class: type[player_serializers.PlayerSerializer] = (
+        player_serializers.PlayerSerializer
     )
     # todo: 認証機能を実装したら多分IsAuthenticatedに変更
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
         request=utils.OpenApiRequest(
-            serializers.PlayerSerializer,
+            player_serializers.PlayerSerializer,
             examples=[
                 utils.OpenApiExample(
                     "Example request",
@@ -36,7 +39,7 @@ class AccountCreateView(views.APIView):
         ),
         responses={
             201: utils.OpenApiResponse(
-                response=serializers.PlayerSerializer,
+                response=player_serializers.PlayerSerializer,
                 examples=[
                     utils.OpenApiExample(
                         "Example 201 response",
@@ -85,21 +88,21 @@ class AccountCreateView(views.APIView):
 
         def _create_user_serializer(
             user_data: dict,
-        ) -> serializers.UserSerializer:
+        ) -> user_serializers.UserSerializer:
             # usernameのみBEがランダムな文字列をセット
             user_data[constants.UserFields.USERNAME] = (
                 create_account.get_unique_random_username()
             )
-            return serializers.UserSerializer(data=user_data)
+            return user_serializers.UserSerializer(data=user_data)
 
         # サインアップ専用のUserSerializerを作成
-        user_serializer: serializers.UserSerializer = _create_user_serializer(
+        user_serializer: user_serializers.UserSerializer = _create_user_serializer(
             # popしたいfieldが存在しない場合は空dictを渡し、UserSerializerでエラーになる
             request.data.pop(constants.PlayerFields.USER, {})
         )
         if not user_serializer.is_valid():
-            return response.Response(
-                {"status": "error", "errors": user_serializer.errors},
+            return custom_response.CustomResponse(
+                errors=user_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -111,25 +114,13 @@ class AccountCreateView(views.APIView):
             )
         )
         if create_account_result.is_error:
-            return response.Response(
-                {
-                    "status": "error",
-                    "errors": create_account_result.unwrap_error(),
-                },
+            return custom_response.CustomResponse(
+                errors=create_account_result.unwrap_error(),
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        user: User = create_account_result.unwrap()
-        return response.Response(
-            {
-                "status": "ok",
-                "data": {
-                    constants.PlayerFields.USER: {
-                        constants.UserFields.ID: user.id,
-                        constants.UserFields.USERNAME: user.username,
-                        constants.UserFields.EMAIL: user.email,
-                    }
-                },
-            },
+        user_serializer_data: dict = create_account_result.unwrap()
+        return custom_response.CustomResponse(
+            data={constants.PlayerFields.USER: user_serializer_data},
             status=status.HTTP_201_CREATED,
         )
