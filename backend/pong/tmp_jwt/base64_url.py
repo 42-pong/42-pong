@@ -1,13 +1,22 @@
 import base64
+import json
 import re
 
 
 class Base64Url:
     @staticmethod
-    def encode(data: bytes) -> str:
+    def encode_bytes(data: bytes) -> str:
         """データをBase64のurlセーフな形式にエンコードする関数"""
         # bはバイト列を表す
         return base64.urlsafe_b64encode(data).rstrip(b"=").decode("utf-8")
+
+    @staticmethod
+    def encode_dict(data: dict) -> str:
+        """ヘッダーをurlセーフ形式のBase64エンコードする関数"""
+        # dictからJSON文字列に変換して、bytesにエンコード
+        data_json: str = json.dumps(data)
+        data_bytes: bytes = data_json.encode("utf-8")
+        return Base64Url.encode_bytes(data_bytes)
 
     @staticmethod
     def decode(data: str) -> bytes:

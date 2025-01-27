@@ -56,7 +56,9 @@ class JWS:
             signing_input.encode("utf-8"),
             hashlib.sha256,
         ).digest()
-        signature_encoded: str = self.base64_url_handler.encode(signature)
+        signature_encoded: str = self.base64_url_handler.encode_bytes(
+            signature
+        )
         return signature_encoded
 
     def verify(self, jwt: str) -> bool:

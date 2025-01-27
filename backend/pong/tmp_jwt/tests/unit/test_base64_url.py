@@ -7,20 +7,20 @@ class Base64UrlTestCase(TestCase):
     def setUp(self) -> None:
         self.base64_url_handler = base64_url.Base64Url()
 
-    def test_encode(self) -> None:
+    def test_encode_bytes(self) -> None:
         """
         データをBase64エンコードし、URLセーフな形式に変換後、末尾の'='パディングを取り除いたUTF-8文字列に変換されていることを確認するテスト。
         """
         data: bytes = b"test_data"
         expected_encoded_data: str = "dGVzdF9kYXRh"
-        encoded_data: str = self.base64_url_handler.encode(data)
+        encoded_data: str = self.base64_url_handler.encode_bytes(data)
         self.assertEqual(encoded_data, expected_encoded_data)
 
     def test_encode_empty_data(self) -> None:
         """空のデータをエンコードした場合、str型の空文字を返すことを確認するテスト"""
         empty_data: bytes = b""
         expected_encoded_data: str = ""
-        encode_data: str = self.base64_url_handler.encode(empty_data)
+        encode_data: str = self.base64_url_handler.encode_bytes(empty_data)
         self.assertEqual(encode_data, expected_encoded_data)
 
     def test_decode(self) -> None:
@@ -54,6 +54,6 @@ class Base64UrlTestCase(TestCase):
     def test_encode_decode_round_trip(self) -> None:
         """Base64エンコードしたデータをデコードして元のデータに戻ることを確認するテスト"""
         data: bytes = b"test_round_trip"
-        encoded_data: str = self.base64_url_handler.encode(data)
+        encoded_data: str = self.base64_url_handler.encode_bytes(data)
         decoded_data: bytes = self.base64_url_handler.decode(encoded_data)
         self.assertEqual(decoded_data, data)
