@@ -18,7 +18,7 @@ class Participation(models.Model):
         ranking: 参加したトーナメントにおける最終順位
     """
 
-    id = models.AutoField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     tournament = models.ForeignKey(
         tournament_models.Tournament,
         related_name="participants",  # Tournamentsからこのテーブルにアクセスするときにエイリアス名
