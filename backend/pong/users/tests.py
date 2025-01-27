@@ -67,3 +67,19 @@ class UsersSerializerTests(TestCase):
         ):
             self.assertIn(username, serializer_data_usernames)
             # todo: display_nameも確認する
+
+    def test_non_users(self) -> None:
+        """
+        ユーザーが存在しない場合に、エラーにならずdataが空であることを確認
+        """
+        # User,紐づくPlayerを全て削除
+        User.objects.all().delete()
+
+        all_players_with_users: QuerySet[models.Player] = (
+            models.Player.objects.select_related(USER).all()
+        )
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            all_players_with_users, many=True
+        )
+
+        self.assertEqual(serializer.data, [])
