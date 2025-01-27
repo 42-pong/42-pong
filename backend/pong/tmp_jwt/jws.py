@@ -43,7 +43,7 @@ class JWS:
             ("payload", encoded_payload),
         ]:
             try:
-                self.base64_url_handler.decode(encoded_data)
+                self.base64_url_handler.decode_bytes(encoded_data)
             except ValueError:
                 raise ValueError(
                     f"Invalid characters found in Base64-encoded input {name}."

@@ -19,7 +19,7 @@ class Base64Url:
         return Base64Url.encode_bytes(data_bytes)
 
     @staticmethod
-    def decode(data: str) -> bytes:
+    def decode_bytes(data: str) -> bytes:
         """Base64のurlセーフ形式のデータをデコードする関数"""
         # URLセーフBase64形式の有効性を確認する正規表現
         if not re.match(r"^[A-Za-z0-9\-_]*$", data):
@@ -27,3 +27,9 @@ class Base64Url:
         # paddingはエンコードされたデータの長さが 4 の倍数になるように補完するために使用する
         padding: str = "=" * (-len(data) % 4)
         return base64.urlsafe_b64decode(data + padding)
+
+    @staticmethod
+    def decode_dict(data: str) -> dict:
+        """Base64のurlセーフ形式のデータをデコードする関数"""
+        data_bytes: bytes = Base64Url.decode_bytes(data)
+        return json.loads(data_bytes)
