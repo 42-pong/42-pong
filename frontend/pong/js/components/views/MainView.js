@@ -25,10 +25,6 @@ export class MainView extends View {
   }
 
   _render() {
-    const title = document.createElement("h1");
-    title.textContent = "🚧 Pong";
-    this.appendChild(title);
-
     const path = this._getPath();
     this.#router.update(path);
 
