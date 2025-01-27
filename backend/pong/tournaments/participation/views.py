@@ -33,7 +33,7 @@ from . import models, serializers
     ),
     retrieve=extend_schema(
         description="指定されたIDのParticipationレコードの詳細を取得する。",
-        operation_id="tournaments_retrieve_by_id",  # 明示的にoperationIdを設定
+        operation_id="participations_retrieve_by_id",  # 明示的にoperationIdを設定
     ),
     create=extend_schema(
         description="新しいParticipationレコードを作成する。",
