@@ -1,6 +1,7 @@
 import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
+import { createElement } from "../../utils/elements/createElement";
 
 export class MainNav extends Component {
   #nav;
@@ -14,19 +15,9 @@ export class MainNav extends Component {
   ]);
 
   _onConnect() {
-    const ul = document.createElement("ul");
-    for (const link of MainNav.links) {
-      const anchor = document.createElement("a");
-      anchor.textContent = link.name;
-      anchor.href = link.path;
+    const ul = getNavItemsList(MainNav.links);
 
-      const li = document.createElement("li");
-      li.appendChild(anchor);
-
-      ul.appendChild(li);
-    }
-
-    this.#nav = document.createElement("nav");
+    this.#nav = createElement("nav");
     // TODO: [DELETE] 一時的なスタイル指定
     this.#nav.innerHTML += `
     <style>
@@ -61,3 +52,25 @@ export class MainNav extends Component {
     this.appendChild(this.#nav);
   }
 }
+
+const getNavItemsList = (links) => {
+  const ul = createElement("ul");
+
+  for (const link of MainNav.links) {
+    const anchor = createElement(
+      "a",
+      {
+        textContent: link.name,
+      },
+      {
+        href: link.path,
+      },
+    );
+
+    const li = createElement("li");
+    li.appendChild(anchor);
+
+    ul.appendChild(li);
+  }
+  return ul;
+};
