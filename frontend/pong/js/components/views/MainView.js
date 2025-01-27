@@ -20,7 +20,7 @@ export class MainView extends View {
 
   _onConnect() {
     this.#nav = new MainNav();
-    this.#main = document.createElement("div");
+    this.#main = createElement("div");
     this.#router = mainRouter(this.#main);
   }
 
