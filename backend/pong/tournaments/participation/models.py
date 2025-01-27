@@ -25,7 +25,7 @@ class Participation(models.Model):
         on_delete=models.CASCADE,
     )
     player = models.ForeignKey(
-        accounts.models.Player,
+        accounts.player.models.Player,
         related_name="participations",  # Playersからこのテーブルにアクセスするときにエイリアス名
         on_delete=models.CASCADE,
     )
