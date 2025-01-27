@@ -1,11 +1,12 @@
 import { View } from "../../core/View";
 import { mainRouter } from "../../routers/mainRouter";
+import { createElement } from "../../utils/elements/createElement";
 import { MainNav } from "../navs/MainNav";
 
 export class MainView extends View {
-  #router;
   #nav;
   #main;
+  #mainRouter;
 
   // MainView の対応中のパスを列挙
   static Paths = Object.freeze({
@@ -21,19 +22,21 @@ export class MainView extends View {
   _onConnect() {
     this.#nav = new MainNav();
     this.#main = createElement("div");
-    this.#router = mainRouter(this.#main);
+    this.#mainRouter = mainRouter(this.#main);
+  }
+
+  #updateMain() {
+    const path = this._getPath();
+    this.#mainRouter.update(path);
   }
 
   _render() {
-    const path = this._getPath();
-    this.#router.update(path);
-
+    this.#updateMain();
     this.appendChild(this.#nav);
     this.appendChild(this.#main);
   }
 
   _update() {
-    const path = this._getPath();
-    this.#router.update(path);
+    this.#updateMain();
   }
 }
