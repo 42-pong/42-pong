@@ -1,10 +1,10 @@
 import { View } from "../../core/View";
 import { mainRouter } from "../../routers/mainRouter";
 import { createElement } from "../../utils/elements/createElement";
-import { MainNav } from "../navs/MainNav";
+import { MainNavbar } from "../navigation/MainNavbar";
 
 export class MainView extends View {
-  #nav;
+  #navbar;
   #main;
   #mainRouter;
 
@@ -20,7 +20,7 @@ export class MainView extends View {
   });
 
   _onConnect() {
-    this.#nav = new MainNav();
+    this.#navbar = new MainNavbar();
     this.#main = createElement("div");
     this.#mainRouter = mainRouter(this.#main);
   }
@@ -32,7 +32,7 @@ export class MainView extends View {
 
   _render() {
     this.#updateMain();
-    this.appendChild(this.#nav);
+    this.appendChild(this.#navbar);
     this.appendChild(this.#main);
   }
 

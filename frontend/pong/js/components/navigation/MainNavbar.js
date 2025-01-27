@@ -3,8 +3,8 @@ import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { createDefaultNavbar } from "../../utils/elements/nav/createDefaultNavbar";
 
-export class MainNav extends Component {
-  #nav;
+export class MainNavbar extends Component {
+  #navbar;
 
   static links = Object.freeze([
     { name: "ホーム", path: Paths.HOME },
@@ -15,7 +15,7 @@ export class MainNav extends Component {
   ]);
 
   _onConnect() {
-    this.#nav = createDefaultNavbar(MainNav.links);
+    this.#navbar = createDefaultNavbar(MainNavbar.links);
 
     this._attachEventListener("click", (event) => {
       event.preventDefault();
@@ -29,6 +29,6 @@ export class MainNav extends Component {
   }
 
   _render() {
-    this.appendChild(this.#nav);
+    this.appendChild(this.#navbar);
   }
 }
