@@ -7,7 +7,11 @@
 # - JWTを生成する関数実装
 # - payloadを取得する関数実装
 
+import logging
+
 from . import base64_url, jws
+
+logger = logging.getLogger(__name__)
 
 
 class JWT:
@@ -32,7 +36,7 @@ class JWT:
         """
         # todo: アルゴリズムも選べるようにする？
         self.header: dict = {"typ": "JWT", "alg": "HS256"}
-        self.jws: jws.JWS = jws.JWS()
+        self.jws_handler: jws.JWS = jws.JWS()
         self.base64_url_handler: base64_url.Base64Url = base64_url.Base64Url()
 
     def encode(self, payload: dict) -> str:
@@ -60,17 +64,35 @@ class JWT:
         # todo: payloadの検証
         encoded_header: str = self.base64_url_handler.encode_dict(self.header)
         encoded_payload: str = self.base64_url_handler.encode_dict(payload)
-        encoded_signature: str = self.jws.sign(encoded_header, encoded_payload)
+        encoded_signature: str = self.jws_handler.sign(
+            encoded_header, encoded_payload
+        )
         return f"{encoded_header}.{encoded_payload}.{encoded_signature}"
 
-    # @staticmethod
-    # def decode(token: str, secret_key: str) -> dict:
-    #     """
-    #     JWTトークンをデコードする。
-    #     """
-    #     try:
-    #         return jwt.decode(token, secret_key, algorithms=["HS256"])
-    #     except jwt.ExpiredSignatureError:
-    #         raise ValueError("JWTの有効期限が切れています。")
-    #     except jwt.InvalidTokenError:
-    #         raise ValueError("無効なJWTトークンです。")
+    def decode(self, jwt: str) -> dict:
+        """
+        引数で渡されたJWTを検証し、有効期限が保証されたペイロードをデコードして取得します。
+        Args:
+            jwt (str): 検証対象のJWT。
+
+        Returns:
+            dict: 有効期限が保証されたデコード済みのペイロード。
+
+        Raises:
+            ValueError:
+                - JWTトークンが無効な場合。
+                - トークンが有効期限切れの場合。
+            KeyError: ペイロードに'exp'クレームが含まれていない場合。
+        """
+        if self.jws_handler.verify(jwt):
+            _, encoded_payload, _ = jwt.split(".")
+            payload: dict = self.base64_url_handler.decode_dict(
+                encoded_payload
+            )
+            # todo: payloadの有効期限が切れていないかどうか
+            return payload
+        else:
+            logger.error(f"{jwt}")
+            raise ValueError(
+                "JWT Signature verification failed: Invalid or tampered signature"
+            )

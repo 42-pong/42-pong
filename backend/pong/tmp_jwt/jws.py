@@ -67,7 +67,9 @@ class JWS:
             encoded_header, encoded_payload, provided_signature = jwt.split(
                 "."
             )
-            calculated_signature = self.sign(encoded_header, encoded_payload)
+            calculated_signature: str = self.sign(
+                encoded_header, encoded_payload
+            )
         except ValueError as e:
             logger.warning(e)
             return False
