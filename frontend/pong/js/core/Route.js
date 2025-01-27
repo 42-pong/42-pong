@@ -22,8 +22,4 @@ export class Route {
   static defaultRoute(View) {
     return Route.createRoute(View, View._defaultPath);
   }
-
-  static defaultRoutes(View) {
-    return { [View._defaultPath]: Route.defaultRoute(View) };
-  }
 }
