@@ -4,20 +4,19 @@ export class Router {
   #target;
   #view;
   #routes;
-  #DefaultView;
+  #defaultRoute;
 
-  constructor(target, DefaultView, routes = {}) {
+  constructor(target, defaultRoute, routes = {}) {
     this.#target = target;
 
     this.#view = null;
 
-    this.#routes = Route.defaultRoutes(DefaultView);
-    Object.assign(this.#routes, routes);
+    this.#routes = routes;
 
-    this.#DefaultView = DefaultView;
+    this.#defaultRoute = defaultRoute;
   }
 
-  update(path = this.#DefaultView._defaultPath) {
+  update(path) {
     const route = this.#findRoute(path);
     const isUpdated = this.#render(route);
     return isUpdated;
@@ -25,7 +24,7 @@ export class Router {
 
   #findRoute(path) {
     if (path && this.#routes[path]) return this.#routes[path];
-    return Route.defaultRoute(this.#DefaultView);
+    return this.#defaultRoute;
   }
 
   #mountView() {
