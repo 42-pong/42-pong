@@ -61,3 +61,11 @@ class Base64UrlTestCase(TestCase):
             encoded_data
         )
         self.assertEqual(decoded_data, data)
+
+    def test_decode_dict_invalid_json(self) -> None:
+        """
+        Base64デコード後のデータが無効なJSON形式の場合のテスト。
+        """
+        base64_data = "aW52YWxpZF9qc29u"
+        with self.assertRaises(ValueError):
+            self.base64_url_handler.decode_dict(base64_data)

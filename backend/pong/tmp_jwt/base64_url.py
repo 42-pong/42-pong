@@ -1,6 +1,9 @@
 import base64
 import json
+import logging
 import re
+
+logger = logging.getLogger(__name__)
 
 
 class Base64Url:
@@ -32,4 +35,8 @@ class Base64Url:
     def decode_dict(data: str) -> dict:
         """Base64のurlセーフ形式のデータをデコードする関数"""
         data_bytes: bytes = Base64Url.decode_bytes(data)
-        return json.loads(data_bytes)
+        try:
+            return json.loads(data_bytes)
+        except json.JSONDecodeError as e:
+            logger.error(f"{data_bytes.decode("utf-8")}")
+            raise ValueError("Invalid JSON format") from e
