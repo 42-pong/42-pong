@@ -2,8 +2,9 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any, Final, Optional
 
-from . import match_enums, ws_constants
-from .serializers import match_serializer
+from ..share import constants as ws_constants
+from . import constants as match_constants
+from . import serializers as match_serializers
 
 
 @dataclass
@@ -31,7 +32,7 @@ class MatchHandler:
     WINNING_SCORE: Final[int] = 5
 
     # クラス属性
-    stage: Optional[match_enums.Stage]
+    stage: Optional[match_constants.Stage]
     paddle1: PosStruct
     paddle2: PosStruct
     ball: PosStruct
@@ -51,10 +52,10 @@ class MatchHandler:
         :param channel_name: チャネル名
         """
         self.stage_handlers = {
-            match_enums.Stage.INIT.value: self._handle_init,
-            match_enums.Stage.READY.value: self._handle_ready,
-            match_enums.Stage.PLAY.value: self._handle_play,
-            match_enums.Stage.END.value: self._handle_end,
+            match_constants.Stage.INIT.value: self._handle_init,
+            match_constants.Stage.READY.value: self._handle_ready,
+            match_constants.Stage.PLAY.value: self._handle_play,
+            match_constants.Stage.END.value: self._handle_end,
         }
         self.channel_layer = channel_layer
         self.channel_name = channel_name
@@ -96,10 +97,10 @@ class MatchHandler:
 
         :param payload: プレイヤーから送られてきたペイロード
         """
-        serializer = match_serializer.MatchInputSerializer(data=payload)
+        serializer = match_serializers.MatchInputSerializer(data=payload)
         serializer.is_valid(raise_exception=True)
         data: dict = serializer.validated_data[ws_constants.DATA_KEY]
-        stage: str = serializer.validated_data[match_enums.Stage.key()]
+        stage: str = serializer.validated_data[match_constants.Stage.key()]
         handler = self.stage_handlers[stage]
 
         # TODO: ステージごとのバリデーションも実装する必要あり
@@ -116,11 +117,17 @@ class MatchHandler:
 
         :param data: 初期化に必要なデータ
         """
-        self.stage = match_enums.Stage.INIT
+        self.stage = match_constants.Stage.INIT
         # プレイモードによって所属させるグループを変える
-        if data[match_enums.Mode.key()] == match_enums.Mode.LOCAL.value:
+        if (
+            data[match_constants.Mode.key()]
+            == match_constants.Mode.LOCAL.value
+        ):
             self.group_name = "solo_match"
-        elif data[match_enums.Mode.key()] == match_enums.Mode.REMOTE.value:
+        elif (
+            data[match_constants.Mode.key()]
+            == match_constants.Mode.REMOTE.value
+        ):
             self.group_name = "remote_match"
 
         await self._add_to_group()
@@ -130,7 +137,7 @@ class MatchHandler:
         # TODO: ここら辺べた書きになっているから何か他にいい方法がないか
         message = self._build_message(
             {
-                match_enums.Team.key(): match_enums.Team.EMPTY.value,
+                match_constants.Team.key(): match_constants.Team.EMPTY.value,
                 "display_name1": "",
                 "display_name2": "",
                 "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
@@ -147,12 +154,12 @@ class MatchHandler:
 
         :param data: 準備状態に必要なデータ
         """
-        self.stage = match_enums.Stage.READY
+        self.stage = match_constants.Stage.READY
         message = self._build_message({})
         await self._send_to_group(message)
 
         # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
-        self.stage = match_enums.Stage.PLAY
+        self.stage = match_constants.Stage.PLAY
         asyncio.create_task(self._send_match_state())
 
     async def _handle_play(self, data: dict) -> None:
@@ -178,9 +185,9 @@ class MatchHandler:
         ENDステージのメッセージを送信し、クリーンナップ処理を行う。
         """
         win_team: str = (
-            match_enums.Team.ONE.value
+            match_constants.Team.ONE.value
             if self.score1 > self.score2
-            else match_enums.Team.TWO.value
+            else match_constants.Team.TWO.value
         )
         message = self._build_message(
             {"win": win_team, "score1": self.score1, "score2": self.score2},
@@ -197,31 +204,31 @@ class MatchHandler:
 
         :param paddle_move: パドルの移動情報
         """
-        match paddle_move[match_enums.Move.key()]:
-            case match_enums.Move.UP.value:
+        match paddle_move[match_constants.Move.key()]:
+            case match_constants.Move.UP.value:
                 if (
-                    paddle_move[match_enums.Team.key()]
-                    == match_enums.Team.ONE.value
+                    paddle_move[match_constants.Team.key()]
+                    == match_constants.Team.ONE.value
                     and self.paddle1.y > 0
                 ):
                     self.paddle1.y -= self.PADDLE_SPEED
                 elif (
-                    paddle_move[match_enums.Team.key()]
-                    == match_enums.Team.TWO.value
+                    paddle_move[match_constants.Team.key()]
+                    == match_constants.Team.TWO.value
                     and self.paddle2.y > 0
                 ):
                     self.paddle2.y -= self.PADDLE_SPEED
 
-            case match_enums.Move.DOWN.value:
+            case match_constants.Move.DOWN.value:
                 if (
-                    paddle_move[match_enums.Team.key()]
-                    == match_enums.Team.ONE.value
+                    paddle_move[match_constants.Team.key()]
+                    == match_constants.Team.ONE.value
                     and self.paddle1.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
                     self.paddle1.y += self.PADDLE_SPEED
                 elif (
-                    paddle_move[match_enums.Team.key()]
-                    == match_enums.Team.TWO.value
+                    paddle_move[match_constants.Team.key()]
+                    == match_constants.Team.TWO.value
                     and self.paddle2.y + self.PADDLE_HEIGHT < self.HEIGHT
                 ):
                     self.paddle2.y += self.PADDLE_SPEED
@@ -257,7 +264,7 @@ class MatchHandler:
             self.score1 >= self.WINNING_SCORE
             or self.score2 >= self.WINNING_SCORE
         ):
-            self.stage = match_enums.Stage.END
+            self.stage = match_constants.Stage.END
 
     def _process_ball_paddle_collision(
         self, paddle_pos: PosStruct, is_paddle1: bool
@@ -308,13 +315,13 @@ class MatchHandler:
         ゲームが終了するまで繰り返し実行される。
         """
         last_update = asyncio.get_event_loop().time()
-        while self.stage != match_enums.Stage.END:
+        while self.stage != match_constants.Stage.END:
             await asyncio.sleep(self.FPS)
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
             if delta >= self.FPS:
                 self._update_match_state()
-                if self.stage == match_enums.Stage.END:
+                if self.stage == match_constants.Stage.END:
                     break
                 game_state = self._build_message(
                     {
@@ -422,7 +429,7 @@ class MatchHandler:
         return {
             ws_constants.Category.key(): ws_constants.Category.MATCH.value,
             ws_constants.PAYLOAD_KEY: {
-                match_enums.Stage.key(): self.stage.value
+                match_constants.Stage.key(): self.stage.value
                 if self.stage is not None
                 else "",
                 ws_constants.DATA_KEY: data,

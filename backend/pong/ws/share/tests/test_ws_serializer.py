@@ -4,7 +4,7 @@ from typing import Final
 from parameterized import parameterized  # type: ignore
 from rest_framework import serializers
 
-from match.serializers.ws_serializer import WebsocketInputSerializer
+from ..serializers import WebsocketInputSerializer
 
 REQUIRED: Final[str] = "required"
 INVALID: Final[str] = "invalid"
