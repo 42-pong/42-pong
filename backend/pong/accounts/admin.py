@@ -41,12 +41,14 @@ class AccountAdmin(ModelAdmin):
     list_display: tuple = (
         "user_id",
         "username",
+        constants.PlayerFields.DISPLAY_NAME,
         constants.PlayerFields.CREATED_AT,
         constants.PlayerFields.UPDATED_AT,
     )
     list_filter: tuple = (constants.PlayerFields.UPDATED_AT,)
     search_fields: tuple = (
         f"{constants.PlayerFields.USER}__{constants.UserFields.USERNAME}",
+        constants.PlayerFields.DISPLAY_NAME,
     )
 
     def user_id(self, obj: models.Player) -> int:

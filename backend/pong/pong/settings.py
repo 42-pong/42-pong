@@ -99,7 +99,7 @@ INSTALLED_APPS = [
     "oauth2",
     "accounts",
     "users",
-    "match",
+    "ws",
     "tournaments",
 ]
 

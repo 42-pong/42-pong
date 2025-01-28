@@ -11,6 +11,10 @@ export class MainView extends View {
   static Paths = Object.freeze({
     HOME: "/",
     CHAT: "/chat",
+    USERS: "/users",
+    FRIENDS: "/friends",
+    MYPAGE: "/mypage",
+    TOURNAMENTS: "/tournaments",
     NOT_FOUND: "/not-found",
   });
 

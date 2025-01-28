@@ -2,21 +2,22 @@ from typing import Any
 
 from rest_framework import serializers
 
-from .. import match_enums, ws_constants
-from . import ws_serializer
+from ..share import constants as ws_constants
+from ..share import serializers as ws_serializers
+from . import constants as match_constants
 
 
-class MatchInputINITSerializer(ws_serializer.BaseWebsocketSerializer):
+class MatchInputINITSerializer(ws_serializers.BaseWebsocketSerializer):
     """
     MATCHイベントのINITステージのメッセージスキーマをバリデーションするために使うクラス
     """
 
     mode = serializers.ChoiceField(
-        choices=[(mode.value, mode.name) for mode in match_enums.Mode],
+        choices=[(mode.value, mode.name) for mode in match_constants.Mode],
     )
 
 
-class MatchInputREADYSerializer(ws_serializer.BaseWebsocketSerializer):
+class MatchInputREADYSerializer(ws_serializers.BaseWebsocketSerializer):
     """
     MATCHイベントのREADYステージのメッセージスキーマをバリデーションするために使うクラス
     """
@@ -24,20 +25,20 @@ class MatchInputREADYSerializer(ws_serializer.BaseWebsocketSerializer):
     pass  # READYステージは空のスキーマ
 
 
-class MatchInputPLAYSerializer(ws_serializer.BaseWebsocketSerializer):
+class MatchInputPLAYSerializer(ws_serializers.BaseWebsocketSerializer):
     """
     MATCHイベントのPLAYステージのメッセージスキーマをバリデーションするために使うクラス
     """
 
     team = serializers.ChoiceField(
-        choices=[(team.value, team.name) for team in match_enums.Team],
+        choices=[(team.value, team.name) for team in match_constants.Team],
     )
     move = serializers.ChoiceField(
-        choices=[(move.value, move.name) for move in match_enums.Move],
+        choices=[(move.value, move.name) for move in match_constants.Move],
     )
 
 
-class MatchInputENDSerializer(ws_serializer.BaseWebsocketSerializer):
+class MatchInputENDSerializer(ws_serializers.BaseWebsocketSerializer):
     """
     MATCHイベントのENDステージのメッセージスキーマをバリデーションするために使うクラス
     """
@@ -45,7 +46,7 @@ class MatchInputENDSerializer(ws_serializer.BaseWebsocketSerializer):
     pass  # ENDステージは空のスキーマ
 
 
-class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
+class MatchInputSerializer(ws_serializers.BaseWebsocketSerializer):
     """
     MATCHイベントで共通のメッセージスキーマをバリデーションするために使うクラス
     Stageごとに各Stageのシリアライザ―に処理を移譲する
@@ -58,7 +59,7 @@ class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
     """
 
     stage = serializers.ChoiceField(
-        choices=[(stage.value, stage.name) for stage in match_enums.Stage]
+        choices=[(stage.value, stage.name) for stage in match_constants.Stage]
     )
     data = serializers.JSONField()  # type: ignore
 
@@ -68,16 +69,16 @@ class MatchInputSerializer(ws_serializer.BaseWebsocketSerializer):
 
         この関数内で例外が投げられても'is_valid()'が必ずcatchする。
         """
-        stage: str = self.initial_data[match_enums.Stage.key()]
+        stage: str = self.initial_data[match_constants.Stage.key()]
         data: dict = self.initial_data[ws_constants.DATA_KEY]
 
         stage_serializer: dict[
-            str, type[ws_serializer.BaseWebsocketSerializer]
+            str, type[ws_serializers.BaseWebsocketSerializer]
         ] = {
-            match_enums.Stage.INIT.value: MatchInputINITSerializer,
-            match_enums.Stage.READY.value: MatchInputREADYSerializer,
-            match_enums.Stage.PLAY.value: MatchInputPLAYSerializer,
-            match_enums.Stage.END.value: MatchInputENDSerializer,
+            match_constants.Stage.INIT.value: MatchInputINITSerializer,
+            match_constants.Stage.READY.value: MatchInputREADYSerializer,
+            match_constants.Stage.PLAY.value: MatchInputPLAYSerializer,
+            match_constants.Stage.END.value: MatchInputENDSerializer,
         }
 
         serializer_class = stage_serializer.get(stage)

@@ -1,15 +1,17 @@
 from typing import Final
 
+import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ... import constants
-from .. import models, serializers
+from .. import serializers
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
 PASSWORD: Final[str] = constants.UserFields.PASSWORD
 USER: Final[str] = constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
 
 
 class PlayerSerializerTests(TestCase):
@@ -31,7 +33,9 @@ class PlayerSerializerTests(TestCase):
         user: User = User.objects.create_user(**user_data)
         return user
 
-    def _create_player(self, player_data: dict) -> models.Player:
+    def _create_player(
+        self, player_data: dict
+    ) -> serializers.PlayerSerializer:
         """
         Playerを作成するヘルパーメソッド
         """
@@ -41,10 +45,10 @@ class PlayerSerializerTests(TestCase):
         if not player_serializer.is_valid():
             # この関数ではerrorにならない想定
             raise AssertionError(player_serializer.errors)
-        player: models.Player = player_serializer.save()
-        return player
+        player_serializer.save()
+        return player_serializer
 
-    def _create_account(self, user_data: dict) -> models.Player:
+    def _create_account(self, user_data: dict) -> serializers.PlayerSerializer:
         """
         Userと紐づくPlayerを作成するヘルパーメソッド
         """
@@ -52,8 +56,10 @@ class PlayerSerializerTests(TestCase):
         player_data: dict = {
             USER: user.id,
         }
-        player: models.Player = self._create_player(player_data)
-        return player
+        player_serializer: serializers.PlayerSerializer = self._create_player(
+            player_data
+        )
+        return player_serializer
 
     # -------------------------------------------------------------------------
     # 正常ケース
@@ -62,7 +68,7 @@ class PlayerSerializerTests(TestCase):
         """
         正常なデータが渡された場合にエラーにならないことを確認する
         """
-        user: models.User = self._create_user(self.user_data)
+        user: User = self._create_user(self.user_data)
         player_data: dict = {
             USER: user.id,
         }
@@ -76,12 +82,16 @@ class PlayerSerializerTests(TestCase):
         """
         PlayerSerializerのcreate()が、正常にPlayerを作成できることを確認する
         """
-        player: models.Player = self._create_account(self.user_data)
+        player_serializer: serializers.PlayerSerializer = self._create_account(
+            self.user_data
+        )
 
         # todo: 現在Player独自のfieldがないため、紐づくUserのfieldのみ確認している
         #       今後Player独自のfieldが追加された時にテストも追加する
-        self.assertEqual(player.user.username, self.user_data[USERNAME])
-        self.assertEqual(player.user.email, self.user_data[EMAIL])
+        self.assertEqual(
+            str(player_serializer.validated_data[constants.PlayerFields.USER]),
+            self.user_data[USERNAME],
+        )
 
     def test_multi_create(self) -> None:
         """
@@ -97,19 +107,80 @@ class PlayerSerializerTests(TestCase):
 
         # 2人共アカウントを作成し,UserとPlayerが正常に1対1で紐づいているか確認
         for user_data in (self.user_data, user_data_2):
-            player: models.Player = self._create_account(user_data)
+            player_serializer: serializers.PlayerSerializer = (
+                self._create_account(user_data)
+            )
 
             # todo: Player独自のfieldが追加された時にテストも追加する
             self.assertEqual(
-                player.user.username,
+                str(
+                    player_serializer.validated_data[
+                        constants.PlayerFields.USER
+                    ]
+                ),
                 user_data[USERNAME],
             )
-            self.assertEqual(
-                player.user.email,
-                user_data[EMAIL],
-            )
+
+    def test_default_display_name(self) -> None:
+        """
+        display_nameが指定されていない場合、初期値の"default"が自動で設定されることを確認
+        """
+        player_serializer: serializers.PlayerSerializer = self._create_account(
+            self.user_data
+        )
+
+        self.assertEqual(
+            player_serializer.validated_data[DISPLAY_NAME], "default"
+        )
+
+    def test_valid_display_name(self) -> None:
+        """
+        使用可能な文字列から構成される正常なdisplay_nameが渡された場合に、その値でPlayerが作成されることを確認
+        """
+        player_data: dict = {
+            USER: self._create_user(self.user_data).id,
+            DISPLAY_NAME: "abcDEF12345-_.~",  # 正常な15文字のdisplay_name
+        }
+        player_serializer: serializers.PlayerSerializer = self._create_player(
+            player_data
+        )
+
+        self.assertEqual(
+            player_serializer.validated_data[DISPLAY_NAME],
+            player_data[DISPLAY_NAME],
+        )
 
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
-    # todo: PlayerSerializer独自のバリデーションが追加された場合にテストを追加する
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列のdisplay_name", ""),
+            ("max_lengthを超えるdisplay_name", "a" * 16),
+            ("不正な文字が含まれるdisplay_name", "あ"),
+            ("不正な記号が含まれるdisplay_name", "/"),
+        ]
+    )
+    def test_invalid_display_name(
+        self, testcase_name: str, display_name: str
+    ) -> None:
+        """
+        不正なdisplay_nameが渡された場合に、エラーになることを確認
+        正しいdisplay_name:
+            - 1文字以上、15文字以下
+            - 使用可能な文字である英文字・数字・記号(-_.~)で構成される
+
+        Args:
+            testcase_name: テストケースの説明
+            display_name: display_nameにセットする値
+        """
+        player_data: dict = {
+            USER: self._create_user(self.user_data).id,
+            DISPLAY_NAME: display_name,  # 不正なdisplay_name
+        }
+        player_serializer: serializers.PlayerSerializer = (
+            serializers.PlayerSerializer(data=player_data)
+        )
+
+        self.assertFalse(player_serializer.is_valid())
+        self.assertIn(DISPLAY_NAME, player_serializer.errors)
