@@ -12,6 +12,13 @@ export const createNavbarNavList = (links) => {
   return navList;
 };
 
+// 引数 link は、次のような形を前提にしています。
+// {
+//   name: <表示名>,
+//   path: <移動先のパス>,
+//   ...
+// }
+// ex) { name: "ホーム", path: "/", ...}
 const createNavbarNavListItem = (link) => {
   const linkAnchor = createElement(
     "a",
