@@ -1,13 +1,15 @@
+import { setClassNames } from "../../utils/elements/setClassNames";
+
 const setNavbarExpand = (element) => {
-  element.classList.add("navbar", "navbar-expand");
+  return setClassNames(element, "navbar", "navbar-expand");
 };
 
 const setNavbarBrand = (element) => {
-  element.classList.add("navbar-brand");
+  return setClassNames(element, "navbar-brand");
 };
 
 const setNavbarNav = (element) => {
-  element.classList.add("navbar-nav");
+  return setClassNames(element, "navbar-nav");
 };
 
 export const BootstrapNavbar = {

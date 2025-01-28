@@ -1,5 +1,7 @@
+import { setClassNames } from "../../utils/elements/setClassNames";
+
 const setFluid = (containerElement) => {
-  containerElement.classList.add("container-fluid");
+  return setClassNames(containerElement, "container-fluid");
 };
 
 export const BootstrapContainers = {

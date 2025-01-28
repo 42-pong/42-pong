@@ -1,13 +1,15 @@
+import { setClassNames } from "../../utils/elements/setClassNames";
+
 const setNav = (element) => {
-  element.classList.add("nav");
+  return setClassNames(element, "nav");
 };
 
 const setNavItem = (element) => {
-  element.classList.add("nav-item");
+  return setClassNames(element, "nav-item");
 };
 
 const setNavLink = (element) => {
-  element.classList.add("nav-link");
+  return setClassNames(element, "nav-link");
 };
 
 export const BootstrapNavsTabs = {
