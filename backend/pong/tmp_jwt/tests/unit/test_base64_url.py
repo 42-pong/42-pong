@@ -10,7 +10,7 @@ class Base64UrlTestCase(TestCase):
 
     def test_encode_bytes(self) -> None:
         """
-        データをBase64エンコードし、URLセーフな形式に変換後、末尾の'='パディングを取り除いたUTF-8文字列に変換されていることを確認するテスト。
+        bytes型のデータが期待したBase64のURLセーフな形式にエンコードされてるかどうかを確認するテスト。
         """
         data: bytes = b"test_data"
         expected_encoded_data: str = "dGVzdF9kYXRh"
@@ -48,7 +48,7 @@ class Base64UrlTestCase(TestCase):
     def test_encode_dict(
         self, testcase_name: str, data: dict, expected_encoded_data: str
     ) -> None:
-        """正常なデータがBase64でエンコードされるかをテスト
+        """正常なデータがBase64でdict型のデータにエンコードされるかをテスト
 
         Args:
             testcase_name: テストケースの説明
@@ -66,7 +66,7 @@ class Base64UrlTestCase(TestCase):
 
     def test_decode_bytes(self) -> None:
         """
-        utf-8の文字フォーマットの=なしのエンコードのデータから期待してるデータに変換しているかどうか確認するテスト
+        utf-8の文字フォーマットの=なしのエンコードのデータからbytes型のデータに変換しているかどうか確認するテスト
         """
         encoded_data: str = "dGVzdF9kYXRh"
         expected_decoded_data: bytes = b"test_data"
@@ -89,7 +89,7 @@ class Base64UrlTestCase(TestCase):
             self.base64_url_handler.decode_bytes(non_ascii_data)
 
     def test_decode_invalid_urlsafe_base64_characters(self) -> None:
-        """URLセーフ形式のBase64に不正な文字が含まれる場合、ValueErrorを投げることを確認するテスト"""
+        """不正なBase64URLセーフ形式の文字が含まれる場合、ValueErrorを投げることを確認するテスト"""
         invalid_urlsafe_base64_data: str = "invalid!@#$"
         with self.assertRaises(ValueError):
             self.base64_url_handler.decode_bytes(invalid_urlsafe_base64_data)
@@ -112,7 +112,7 @@ class Base64UrlTestCase(TestCase):
 
     def test_decode_dict_invalid_json(self) -> None:
         """
-        Base64デコード後のデータが無効なJSON形式の場合のテスト。
+        Base64URLセーフ形式のデータをdict型のデータにデコードした後に、そのデータが無効なJSON形式の場合、ValueErrorかどうか確認するテスト。
         """
         encoded_invalid_json_data: str = "aW52YWxpZF9qc29u"
         with self.assertRaises(ValueError):
