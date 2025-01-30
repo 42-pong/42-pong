@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         db_column="player_id",
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="participations",
+                        related_name="tournament_participations",
                         to="accounts.player",
                     ),
                 ),

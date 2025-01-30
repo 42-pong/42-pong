@@ -27,7 +27,7 @@ class Participation(models.Model):
     )
     player_id = models.ForeignKey(
         accounts.player.models.Player,
-        related_name="participations",  # Playersからこのテーブルにアクセスするときにエイリアス名
+        related_name="tournament_participations",  # Playersからこのテーブルにアクセスするときにエイリアス名
         on_delete=models.CASCADE,
         db_column="player_id",
     )
