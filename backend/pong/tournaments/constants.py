@@ -17,8 +17,8 @@ class TournamentFields:
 @dataclasses.dataclass(frozen=True)
 class ParticipationFields:
     ID: str = "id"
-    TOURNAMENT_ID: str = "tournament"
-    PLAYER_ID: str = "player"
+    TOURNAMENT_ID: str = "tournament_id"
+    PLAYER_ID: str = "player_id"
     PARTICIPATION_NAME: str = "participation_name"
     JOINED_AT: str = "joined_at"
     RANKING: str = "ranking"

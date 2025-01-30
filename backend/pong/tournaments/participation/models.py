@@ -19,15 +19,17 @@ class Participation(models.Model):
     """
 
     id = models.BigAutoField(primary_key=True)
-    tournament = models.ForeignKey(
+    tournament_id = models.ForeignKey(
         tournament_models.Tournament,
         related_name="participants",  # Tournamentsからこのテーブルにアクセスするときにエイリアス名
         on_delete=models.CASCADE,
+        db_column="tournament_id",
     )
-    player = models.ForeignKey(
+    player_id = models.ForeignKey(
         accounts.player.models.Player,
         related_name="participations",  # Playersからこのテーブルにアクセスするときにエイリアス名
         on_delete=models.CASCADE,
+        db_column="player_id",
     )
     participation_name = models.CharField(max_length=255)
     joined_at = models.DateTimeField(auto_now_add=True)
