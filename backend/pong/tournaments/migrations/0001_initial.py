@@ -48,7 +48,10 @@ class Migration(migrations.Migration):
                 ("id", models.BigAutoField(primary_key=True, serialize=False)),
                 ("participation_name", models.CharField(max_length=255)),
                 ("joined_at", models.DateTimeField(auto_now_add=True)),
-                ("ranking", models.IntegerField(blank=True, null=True)),
+                (
+                    "ranking",
+                    models.PositiveIntegerField(blank=True, null=True),
+                ),
                 (
                     "player_id",
                     models.ForeignKey(

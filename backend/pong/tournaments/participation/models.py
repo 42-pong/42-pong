@@ -33,7 +33,7 @@ class Participation(models.Model):
     )
     participation_name = models.CharField(max_length=255)
     joined_at = models.DateTimeField(auto_now_add=True)
-    ranking = models.IntegerField(null=True, blank=True)
+    ranking = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         db_table = "tournament_participations"
