@@ -1,5 +1,5 @@
 import { LoginContainer } from "./auth/LoginContainer";
-import { MainNav } from "./navs/MainNav";
+import { MainNavbar } from "./navigation/MainNavbar";
 import { ChatView } from "./views/ChatView";
 import { FriendsView } from "./views/FriendsView";
 import { HomeView } from "./views/HomeView";
@@ -11,7 +11,7 @@ import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
-customElements.define("main-nav", MainNav, {});
+customElements.define("main-navbar", MainNavbar, {});
 customElements.define("chat-view", ChatView, {});
 customElements.define("friends-view", FriendsView, {});
 customElements.define("home-view", HomeView, {});
