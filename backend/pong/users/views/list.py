@@ -12,7 +12,7 @@ from accounts import constants
 from accounts.player import models
 from pong.custom_response import custom_response
 
-from . import serializers
+from .. import serializers
 
 
 class UsersListView(views.APIView):
