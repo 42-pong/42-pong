@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-import accounts
+from accounts import constants
+from accounts.player import models
 
 
 class UsersSerializer(serializers.Serializer):
@@ -15,9 +16,9 @@ class UsersSerializer(serializers.Serializer):
     # todo: こことfieldにavatar追加
 
     class Meta:
-        model = accounts.player.models.Player
+        model = models.Player
         fields = (
-            accounts.constants.UserFields.ID,
-            accounts.constants.UserFields.USERNAME,
-            accounts.constants.PlayerFields.DISPLAY_NAME,
+            constants.UserFields.ID,
+            constants.UserFields.USERNAME,
+            constants.PlayerFields.DISPLAY_NAME,
         )
