@@ -38,12 +38,14 @@ class UsersListView(views.APIView):
                                 {
                                     "id": 2,
                                     "username": "username1",
-                                    # todo: display_name,avatar追加
+                                    "display_name": "display_name1",
+                                    # todo: avatar追加
                                 },
                                 {
                                     "id": 3,
                                     "username": "username2",
-                                    # todo: display_name,avatar追加
+                                    "display_name": "display_name2",
+                                    # todo: avatar追加
                                 },
                                 {"...", "..."},
                             ],

@@ -11,12 +11,13 @@ class UsersSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(source="user.id")
     username = serializers.CharField(source="user.username")
-    # todo: fieldにdisplay_name,avatar追加
-    # display_name = serializers.CharField()
+    display_name = serializers.CharField()
+    # todo: こことfieldにavatar追加
 
     class Meta:
         model = accounts.player.models.Player
         fields = (
             accounts.constants.UserFields.ID,
             accounts.constants.UserFields.USERNAME,
+            accounts.constants.PlayerFields.DISPLAY_NAME,
         )
