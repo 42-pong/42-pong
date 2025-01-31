@@ -63,7 +63,6 @@ class UsersRetrieveView(views.APIView):
             ),
         },
     )
-    # todo: try-exceptで囲って500を返す
     def get(self, request: request.Request, user_id: int) -> response.Response:
         """
         特定のuser_idのユーザープロフィールを取得するGETメソッド
@@ -86,4 +85,10 @@ class UsersRetrieveView(views.APIView):
             return custom_response.CustomResponse(
                 errors={"user_id": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            # MultipleObjectsReturnedなどの場合
+            return custom_response.CustomResponse(
+                errors={"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
