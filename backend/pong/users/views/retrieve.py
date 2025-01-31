@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from drf_spectacular import utils
 from rest_framework import (
     permissions,
@@ -41,8 +42,28 @@ class UsersRetrieveView(views.APIView):
                     ),
                 ],
             ),
+            404: utils.OpenApiResponse(
+                description="The user does not exist.",
+                response={
+                    "type": "object",
+                    "properties": {
+                        "status": {"type": "string"},
+                        "errors": {"type": "dict"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 404 response",
+                        value={
+                            "status": "error",
+                            "errors": {"user_id": "The user does not exist."},
+                        },
+                    ),
+                ],
+            ),
         },
     )
+    # todo: try-exceptで囲って500を返す
     def get(self, request: request.Request, user_id: int) -> response.Response:
         """
         特定のuser_idのユーザープロフィールを取得するGETメソッド
@@ -50,13 +71,19 @@ class UsersRetrieveView(views.APIView):
         Args:
             user_id: URLから取得したユーザーのID
         """
-        # todo: try-exceptで囲って404を返す
-        # user_idに紐づくPlayerを取得
-        player: models.Player = models.Player.objects.get(user_id=user_id)
-        users_serializer: serializers.UsersSerializer = (
-            serializers.UsersSerializer(player)
-        )
-        return custom_response.CustomResponse(
-            data=users_serializer.data,
-            status=status.HTTP_200_OK,
-        )
+        try:
+            # user_idに紐づくPlayerを取得
+            player: models.Player = models.Player.objects.get(user_id=user_id)
+            users_serializer: serializers.UsersSerializer = (
+                serializers.UsersSerializer(player)
+            )
+            return custom_response.CustomResponse(
+                data=users_serializer.data,
+                status=status.HTTP_200_OK,
+            )
+        except ObjectDoesNotExist:
+            # user_idに紐づくPlayerが存在しない場合
+            return custom_response.CustomResponse(
+                errors={"user_id": "The user does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )

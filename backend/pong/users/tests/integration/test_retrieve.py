@@ -17,6 +17,7 @@ USER: Final[str] = constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
 
 DATA: Final[str] = custom_response.DATA
+ERRORS: Final[str] = custom_response.ERRORS
 
 
 class UsersRetrieveViewTests(test.APITestCase):
@@ -98,3 +99,14 @@ class UsersRetrieveViewTests(test.APITestCase):
             self.assertEqual(
                 response_data[DISPLAY_NAME], player_data[DISPLAY_NAME]
             )
+
+    def test_get_user_returns_404_with_nonexistent_user_id(self) -> None:
+        """
+        存在しないuser_idを指定した場合に、エラーが返されることを確認
+        """
+        not_exist_user_id: int = 1000
+        url: str = self._create_url(not_exist_user_id)
+        response: drf_response.Response = self.client.get(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("user_id", response.data[ERRORS])
