@@ -17,15 +17,10 @@ export class MainNavbar extends Component {
   _onConnect() {
     this.#navbar = createDefaultNavbar(MainNavbar.links);
 
-    this._attachEventListener("click", (event) => {
-      event.preventDefault();
-      const link = event.target;
-      if (link?.pathname === undefined) return;
-
-      link.dispatchEvent(
-        PongEvents.UPDATE_ROUTER.create(link.pathname),
-      );
-    });
+    this._attachEventListener(
+      "click",
+      PongEvents.UPDATE_ROUTER.trigger,
+    );
   }
 
   _render() {
