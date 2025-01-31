@@ -185,7 +185,7 @@ class OAuth2CallbackView(OAuth2BaseView):
                 {"error": oauth2_user_result.unwrap_error()},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        oauth2_user: models.User = oauth2_user_result.unwrap()
+        oauth2_user: dict = oauth2_user_result.unwrap()
         forty_two_token_data = {
             "access_token": tokens.get("access_token"),
             "token_type": tokens.get("token_type"),
@@ -198,29 +198,29 @@ class OAuth2CallbackView(OAuth2BaseView):
             "scope": tokens.get("scope"),
         }
         oauth2_result: forty_two_authorization.CreateFortyTwoAuthorizationResult = forty_two_authorization.create_forty_two_authorization(
-            oauth2_user.id, "42", user_info.get("id"), forty_two_token_data
+            oauth2_user["id"], "42", user_info["id"], forty_two_token_data
         )
         # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
         if not oauth2_result.is_ok:
-            oauth2_user.delete()
+            models.User.objects.get(id=oauth2_user["id"]).delete()
             return Response(
                 {"error": oauth2_result.unwrap_error()},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        oauth2: models.OAuth2 = oauth2_result.unwrap()
+        oauth2: dict = oauth2_result.unwrap()
         # todo: oauth2_userをJWTに変換して返す
         return Response(
             {
                 "user": {
-                    "id": oauth2_user.id,
-                    "username": oauth2_user.username,
-                    "email": oauth2_user.email,
+                    "id": oauth2_user["id"],
+                    "username": oauth2_user["username"],
+                    "email": oauth2_user["email"],
                 },
                 "oauth2": {
-                    "id": oauth2.id,
-                    "user_id": oauth2.user_id,
-                    "provider": oauth2.provider,
-                    "provider_id": oauth2.provider_id,
+                    "id": oauth2["id"],
+                    "user_id": oauth2["user_id"],
+                    "provider": oauth2["provider"],
+                    "provider_id": oauth2["provider_id"],
                 },
             },
             status=status.HTTP_200_OK,

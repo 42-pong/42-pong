@@ -60,10 +60,10 @@ class CreateOAuth2AccountTestCase(TestCase):
             self.user.id, "42", self.provider_id
         )
         self.assertTrue(oauth2_result.is_ok)
-        oauth2 = oauth2_result.unwrap()
-        self.assertEqual(oauth2.user.id, self.user.id)
-        self.assertEqual(oauth2.provider, "42")
-        self.assertEqual(oauth2.provider_id, self.provider_id)
+        oauth2: dict = oauth2_result.unwrap()
+        self.assertEqual(oauth2["user"], self.user.id)
+        self.assertEqual(oauth2["provider"], "42")
+        self.assertEqual(oauth2["provider_id"], self.provider_id)
 
     def test_create_oauth2_account_failure_user_not_found(self) -> None:
         """
