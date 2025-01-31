@@ -1,0 +1,65 @@
+from typing import Final
+
+from django.contrib.auth.models import User
+from django.urls import reverse
+from rest_framework import test
+
+from accounts import constants
+from accounts.player import models
+
+USERNAME: Final[str] = constants.UserFields.USERNAME
+EMAIL: Final[str] = constants.UserFields.EMAIL
+PASSWORD: Final[str] = constants.UserFields.PASSWORD
+USER: Final[str] = constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
+
+
+class UsersListViewTests(test.APITestCase):
+    def setUp(self) -> None:
+        """
+        APITestCaseのsetUpメソッドのオーバーライド
+        setUp()毎にuser_idが増えるため、実際にユーザーを作成するのは各テストメソッド内
+        """
+        self.url: str = reverse("users:list")
+
+        # 1人目のユーザーデータ
+        self.user_data1: dict = {
+            USERNAME: "testuser1",
+            EMAIL: "testuser1@example.com",
+            PASSWORD: "password",
+        }
+        self.player_data1: dict = {
+            DISPLAY_NAME: "display_name1",
+        }
+        # 2人目のユーザーデータ
+        self.user_data2: dict = {
+            USERNAME: "testuser2",
+            EMAIL: "testuser2@example.com",
+            PASSWORD: "password",
+        }
+        self.player_data2: dict = {
+            DISPLAY_NAME: "display_name2",
+        }
+
+    def _create_user_and_related_player(
+        self, user_data: dict, player_data: dict
+    ) -> User:
+        user: User = User.objects.create_user(**user_data)
+        player_data[USER] = user
+        models.Player.objects.create(**player_data)
+        return user
+
+    def test_create_user(self) -> None:
+        """
+        setUp()の情報で2人のユーザーを作成できることを確認
+        """
+        # 2人のユーザーを作成
+        user1: User = self._create_user_and_related_player(
+            self.user_data1, self.player_data1
+        )
+        user2: User = self._create_user_and_related_player(
+            self.user_data2, self.player_data2
+        )
+
+        self.assertTrue(User.objects.filter(id=user1.id).exists())
+        self.assertTrue(User.objects.filter(id=user2.id).exists())
