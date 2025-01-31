@@ -1,9 +1,23 @@
+import { BootstrapDisplay } from "../../bootstrap/utilities/display";
+import { BootstrapFlex } from "../../bootstrap/utilities/flex";
+import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { Endpoints } from "../../constants/Endpoints";
 import { View } from "../../core/View";
 import { isOpenWebSocket } from "../../websocket";
 
 export class HomeView extends View {
+  
+  #setStyle() {
+    BootstrapDisplay.setFlex(this);
+    BootstrapFlex.setFlexColumn(this);
+    BootstrapFlex.setJustifyContentCenter(this);
+    BootstrapFlex.setAlignItemsCenter(this);
+    BootstrapSizing.setWidth100(this);
+    BootstrapSizing.setHeight100(this);
+  }
+
   _onConnect() {
+    this.#setStyle();
     Object.assign(this._state, {
       healthStatus: "...",
       webSocketBaseStatus: "...",
