@@ -1,8 +1,14 @@
 from django.contrib.auth.models import User
-from django.db.models import CASCADE, DateTimeField, Model, OneToOneField
+from django.db.models import (
+    CASCADE,
+    CharField,
+    DateTimeField,
+    Model,
+    OneToOneField,
+)
 
 
-# todo: 表示名・アバター画像PATHなどがfieldに追加される予定
+# todo: アバター画像PATHがfieldに追加される予定
 class Player(Model):
     """
     Playerモデル
@@ -11,6 +17,7 @@ class Player(Model):
 
     # related_name: 紐づいている他のモデルから逆参照する際の名前(user.playerでPlayerを取得)
     user = OneToOneField(User, on_delete=CASCADE, related_name="player")
+    display_name = CharField(max_length=255)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
 

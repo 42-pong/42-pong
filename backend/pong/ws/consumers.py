@@ -5,8 +5,9 @@ from channels.generic.websocket import (  # type: ignore
 )
 from rest_framework import serializers
 
-from . import match_handler, ws_constants
-from .serializers import ws_serializer
+from .match import handler as match_handler
+from .share import constants as ws_constants
+from .share import serializers as ws_serializers
 
 logger = logging.getLogger("django")
 
@@ -25,7 +26,7 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive_json(self, message: dict) -> None:
         try:
-            serializer = ws_serializer.WebsocketInputSerializer(data=message)
+            serializer = ws_serializers.WebsocketInputSerializer(data=message)
             serializer.is_valid(raise_exception=True)
 
             category: str = serializer.validated_data[

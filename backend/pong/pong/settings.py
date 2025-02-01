@@ -98,7 +98,8 @@ INSTALLED_APPS = [
     "tmp_jwt",
     "oauth2",
     "accounts",
-    "match",
+    "users",
+    "ws",
     "tournaments",
 ]
 
