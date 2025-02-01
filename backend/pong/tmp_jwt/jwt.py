@@ -77,10 +77,17 @@ class JWT:
 
         Raises:
             ValueError:
+            - .の数が2個未満のJWTの形式の場合
             - JWTの検証が失敗した場合
             - JWTが有効期限切れの場合。
         """
-        header, payload, signature = jwt.split(".")
+        try:
+            header, payload, signature = jwt.split(".")
+        except ValueError:
+            logger.error({jwt})
+            raise ValueError(
+                "Invalid JWT format: must contain exactly two dots"
+            )
         if self.jws_handler.verify(header, payload, signature):
             decoded_payload: dict = self.base64_url_handler.decode_dict(
                 payload
@@ -88,7 +95,7 @@ class JWT:
             # todo: payloadの有効期限が切れていないかどうか
             return decoded_payload
         else:
-            logger.error(f"{jwt}")
+            logger.error({jwt})
             raise ValueError(
                 "JWT Signature verification failed: Invalid or tampered signature"
             )

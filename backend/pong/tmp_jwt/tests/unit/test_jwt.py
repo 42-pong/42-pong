@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+import parameterized  # type: ignore[import-untyped]
 from django.test import TestCase
 
 from tmp_jwt import jws, jwt
@@ -43,3 +44,22 @@ class JsonWebTokenFunctionTestCase(TestCase):
         expected_decoded_payload: dict = {"sub": "1234567890"}
         result: dict = self.jwt_handler.decode(expected_jwt)
         self.assertEqual(result, expected_decoded_payload)
+
+    @parameterized.parameterized.expand(
+        [
+            (
+                "空文字の場合",
+                "",
+            ),
+            (
+                ".の数が2個未満のJWTの形式の場合",
+                "invalid_header.invalid_payload",
+            ),
+        ]
+    )
+    def test_encode_invalid_jwt(
+        self, testcase_name: str, invalid_jwt: str
+    ) -> None:
+        print({testcase_name})
+        with self.assertRaises(ValueError):
+            self.jwt_handler.decode(invalid_jwt)
