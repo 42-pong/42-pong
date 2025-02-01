@@ -61,20 +61,15 @@ class JWS:
         )
         return signature_encoded
 
-    def verify(self, jwt: str) -> bool:
+    def verify(self, header: str, payload: str, signature: str) -> bool:
         """JWTの署名が正しいか検証する"""
         try:
-            encoded_header, encoded_payload, provided_signature = jwt.split(
-                "."
-            )
-            calculated_signature: str = self.sign(
-                encoded_header, encoded_payload
-            )
+            calculated_signature: str = self.sign(header, payload)
         except ValueError as e:
             logger.warning(e)
             return False
         # todo: ペイロードの検証？
-        if calculated_signature != provided_signature:
+        if calculated_signature != signature:
             logger.warning("Signature verification failed.")
             return False
         return True

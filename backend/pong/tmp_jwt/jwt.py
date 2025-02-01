@@ -84,13 +84,13 @@ class JWT:
                 - トークンが有効期限切れの場合。
             KeyError: ペイロードに'exp'クレームが含まれていない場合。
         """
-        if self.jws_handler.verify(jwt):
-            _, encoded_payload, _ = jwt.split(".")
-            payload: dict = self.base64_url_handler.decode_dict(
-                encoded_payload
+        header, payload, signature = jwt.split(".")
+        if self.jws_handler.verify(header, payload, signature):
+            decoded_payload: dict = self.base64_url_handler.decode_dict(
+                payload
             )
             # todo: payloadの有効期限が切れていないかどうか
-            return payload
+            return decoded_payload
         else:
             logger.error(f"{jwt}")
             raise ValueError(
