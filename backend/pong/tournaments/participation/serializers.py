@@ -11,3 +11,4 @@ class ParticipationSerializer(serializers.ModelSerializer):
     # TODO: rankingに渡される値が正確かどうかのバリデーション実装
     # TODO: rankingをrequired=False, default=Noneを追加
     # TODO: participation_nameが空だったらエラー
+    # TODO: UniqueTogetherValidatorを追加

@@ -37,6 +37,12 @@ class Participation(models.Model):
 
     class Meta:
         db_table = "tournament_participations"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tournament_id", "player_id"],
+                name="unique_tournament_participation",
+            )
+        ]
 
     def __str__(self) -> str:
         return self.participation_name
