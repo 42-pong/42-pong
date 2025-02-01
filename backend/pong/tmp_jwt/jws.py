@@ -44,7 +44,7 @@ class JWS:
 
         Raises:
             ValueError:
-                encodingが対応していないエンコーディング方式名の場合
+            - encodingが対応していないエンコーディング方式名の場合
         """
         base64_url_handler: base64_url.Base64Url = base64_url.Base64Url()
         # todo: JWSの引数にstr型encodingを受け取って、エンコーディングの方式を決める仕様にする
@@ -60,7 +60,13 @@ class JWS:
         self.decoder: Callable[[str], bytes] = encoders[encoding]["decode"]
 
     def sign(self, encoded_header: str, encoded_payload: str) -> str:
-        """エンコードされたヘッダーとペイロードを基に、エンコードされたシグネチャを生成する"""
+        """エンコードされたヘッダーとペイロードを基に、エンコードされたシグネチャを生成する
+
+        Raises:
+            ValueError:
+            - encoded_header, encoded_payloadが空文字の場合
+            - encoded_header, encoded_payloadが無効なエンコーディング方式の場合
+        """
         if not encoded_header or not encoded_payload:
             raise ValueError("Both header and payload must be provided.")
         for name, encoded_data in [
@@ -85,7 +91,12 @@ class JWS:
         return signature_encoded
 
     def verify(self, header: str, payload: str, signature: str) -> bool:
-        """JWTの署名が正しいか検証する"""
+        """JWTの署名が正しいか検証する
+
+        Raises:
+            ValueError:
+            - sign関数の例外
+        """
         try:
             calculated_signature: str = self.sign(header, payload)
         except ValueError as e:

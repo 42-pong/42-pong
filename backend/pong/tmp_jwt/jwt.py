@@ -36,6 +36,7 @@ class JWT:
         """
         # todo: アルゴリズムも選べるようにする？
         self.header: dict = {"typ": "JWT", "alg": "HS256"}
+        # todo:　エンコーディング方式をbase64urlに指定する
         self.jws_handler: jws.JWS = jws.JWS()
         self.base64_url_handler: base64_url.Base64Url = base64_url.Base64Url()
 
@@ -53,13 +54,9 @@ class JWT:
 
         Raises:
             ValueError:
-            todo: validate_payload関数作成
             - ペイロードが空である場合
             - ペイロード内の必須フィールドが不足している場合
             - ...
-
-            sign
-            - 有効な文字: 英字 (A-Z, a-z), 数字 (0-9), ハイフン (-), アンダースコア (_) 以外の文字が含まれている場合
         """
         # todo: payloadの検証
         encoded_header: str = self.base64_url_handler.encode_dict(self.header)
@@ -80,9 +77,8 @@ class JWT:
 
         Raises:
             ValueError:
-                - JWTトークンが無効な場合。
-                - トークンが有効期限切れの場合。
-            KeyError: ペイロードに'exp'クレームが含まれていない場合。
+            - JWTの検証が失敗した場合
+            - JWTが有効期限切れの場合。
         """
         header, payload, signature = jwt.split(".")
         if self.jws_handler.verify(header, payload, signature):

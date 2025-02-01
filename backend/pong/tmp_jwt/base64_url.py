@@ -15,7 +15,14 @@ class Base64Url:
 
     @staticmethod
     def encode_dict(data: dict) -> str:
-        """dict型のデータをBase64のurlセーフな形式にエンコードする関数"""
+        """dict型のデータをBase64のurlセーフな形式にエンコードする関数
+
+        Raises:
+            TypeError:
+            - dataがシリアライズ可能なJSON形式ではない場合
+                詳細: dumpのパラメータにあるdefaultの部分
+                https://docs.python.org/ja/3.13/library/json.html#json.dumps
+        """
         # dictからJSON文字列に変換して、bytesにエンコード
         data_json: str = json.dumps(data)
         data_bytes: bytes = data_json.encode("utf-8")
@@ -23,7 +30,12 @@ class Base64Url:
 
     @staticmethod
     def decode_bytes(data: str) -> bytes:
-        """Base64のurlセーフ形式のデータをbytes型のデータにデコードする関数"""
+        """Base64のurlセーフ形式のデータをbytes型のデータにデコードする関数
+
+        Raises:
+            ValueError:
+            - dataが無効なURLセーフBase64形式の場合
+        """
         # URLセーフBase64形式の有効性を確認する正規表現
         if not re.match(r"^[A-Za-z0-9\-_]*$", data):
             raise ValueError("Invalid Base64 characters found in input")
@@ -33,7 +45,13 @@ class Base64Url:
 
     @staticmethod
     def decode_dict(data: str) -> dict:
-        """Base64のurlセーフ形式のデータdict型のデータにデコードする関数"""
+        """Base64のurlセーフ形式のデータdict型のデータにデコードする関数
+
+        Raises:
+            ValueError:
+            - dataが無効なURLセーフBase64形式の場合
+            - data_bytesが無効なJSON形式の場合
+        """
         data_bytes: bytes = Base64Url.decode_bytes(data)
         try:
             return json.loads(data_bytes)
