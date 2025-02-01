@@ -35,11 +35,12 @@ class ParticipationAdmin(ModelAdmin):
         constants.ParticipationFields.TOURNAMENT_ID,
         constants.ParticipationFields.PLAYER_ID,
         constants.ParticipationFields.PARTICIPATION_NAME,
-        constants.ParticipationFields.JOINED_AT,
         constants.ParticipationFields.RANKING,
+        constants.ParticipationFields.CREATED_AT,
+        constants.ParticipationFields.UPDATED_AT,
     )
     search_fields: tuple = (constants.ParticipationFields.PARTICIPATION_NAME,)
     list_filter: tuple = (constants.ParticipationFields.RANKING,)
     ordering: tuple = (
-        "-" + constants.ParticipationFields.JOINED_AT,
+        "-" + constants.ParticipationFields.CREATED_AT,
     )  # 降順に表示

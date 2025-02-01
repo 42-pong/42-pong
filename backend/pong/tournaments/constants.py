@@ -20,5 +20,6 @@ class ParticipationFields:
     TOURNAMENT_ID: str = "tournament_id"
     PLAYER_ID: str = "player_id"
     PARTICIPATION_NAME: str = "participation_name"
-    JOINED_AT: str = "joined_at"
     RANKING: str = "ranking"
+    CREATED_AT: str = "created_at"
+    UPDATED_AT: str = "updated_at"

@@ -14,7 +14,8 @@ class Participation(models.Model):
         tournament_id: トーナメントテーブルの外部キー
         player_id: プレーヤーテーブルの外部キー
         participation_name: 参加したトーナメントにおける表示名
-        joined_at: トーナメント参加日時
+        created_at: トーナメント参加日時
+        updated_at: トーナメント順位更新日時
         ranking: 参加したトーナメントにおける最終順位
     """
 
@@ -32,8 +33,9 @@ class Participation(models.Model):
         db_column="player_id",
     )
     participation_name = models.CharField(max_length=255)
-    joined_at = models.DateTimeField(auto_now_add=True)
     ranking = models.PositiveIntegerField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "tournament_participations"
