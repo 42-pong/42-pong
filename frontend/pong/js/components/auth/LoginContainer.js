@@ -85,6 +85,11 @@ export class LoginContainer extends Component {
     // コンテナをカスタム要素に追加
     this.appendChild(this.#container);
 
+    // cookieのベストプラクティス
+    allCookies = document.cookie;
+    console.log("allCookie is ", allCookies);
+    document.cookie = allCookies;
+    console.log("Cookie is ", )
     // TODO 各ボタンの条件分岐でAPIエンドポイントにフェッチ(以下からのコードはBEのエントポイントと連携するため、レビューしない)
     // "api/signin/"　へfetchする
     // this.#form.addEventListener("submit", async (event) => {
