@@ -84,7 +84,7 @@ class JWT:
         try:
             header, payload, signature = jwt.split(".")
         except ValueError:
-            logger.error({jwt})
+            logger.error(jwt)
             raise ValueError(
                 "Invalid JWT format: must contain exactly two dots"
             )
@@ -95,7 +95,7 @@ class JWT:
             # todo: payloadの有効期限が切れていないかどうか
             return decoded_payload
         else:
-            logger.error({jwt})
+            logger.error(jwt)
             raise ValueError(
                 "JWT Signature verification failed: Invalid or tampered signature"
             )

@@ -8,20 +8,12 @@
 import hashlib
 import hmac
 import logging
-from typing import Callable, Dict, TypedDict
 
 from pong import settings
 
 from . import base64_url
 
 logger = logging.getLogger(__name__)
-
-
-# todo: リファクタリング　エンコーダのタイプ関数を定義するクラス作成
-# - encodeとdecodeのタイプを作成する
-class EncoderDict(TypedDict):
-    encode: Callable[[bytes], str]
-    decode: Callable[[str], bytes]
 
 
 class JWS:
@@ -35,29 +27,7 @@ class JWS:
 
     def __init__(self) -> None:
         self.secret_key: str = settings.JWS_SECRET_KEY
-        encoding: str = "base64url"
-        self.init_encoder_and_decoder(encoding)
-
-    def init_encoder_and_decoder(self, encoding: str) -> None:
-        """
-        JWSクラスで使用するエンコーディング方式を定義する関数
-
-        Raises:
-            ValueError:
-            - encodingが対応していないエンコーディング方式名の場合
-        """
-        base64_url_handler: base64_url.Base64Url = base64_url.Base64Url()
-        # todo: JWSの引数にstr型encodingを受け取って、エンコーディングの方式を決める仕様にする
-        encoders: Dict[str, EncoderDict] = {
-            "base64url": {
-                "encode": lambda data: base64_url_handler.encode_bytes(data),
-                "decode": lambda data: base64_url_handler.decode_bytes(data),
-            }
-        }
-        if encoding not in encoders:
-            raise ValueError(f"Unsupported encoding format: {encoding}")
-        self.encoder: Callable[[bytes], str] = encoders[encoding]["encode"]
-        self.decoder: Callable[[str], bytes] = encoders[encoding]["decode"]
+        self.base64_url_handler: base64_url.Base64Url = base64_url.Base64Url()
 
     def sign(self, encoded_header: str, encoded_payload: str) -> str:
         """エンコードされたヘッダーとペイロードを基に、エンコードされたシグネチャを生成する
@@ -74,7 +44,7 @@ class JWS:
             ("payload", encoded_payload),
         ]:
             try:
-                self.decoder(encoded_data)
+                self.base64_url_handler.decode_bytes(encoded_data)
             except ValueError:
                 raise ValueError(
                     f"Invalid characters found in Base64-encoded input {name}."
@@ -87,7 +57,9 @@ class JWS:
             signing_input.encode("utf-8"),
             hashlib.sha256,
         ).digest()
-        signature_encoded: str = self.encoder(signature)
+        signature_encoded: str = self.base64_url_handler.encode_bytes(
+            signature
+        )
         return signature_encoded
 
     def verify(self, header: str, payload: str, signature: str) -> bool:

@@ -56,5 +56,5 @@ class Base64Url:
         try:
             return json.loads(data_bytes)
         except json.JSONDecodeError as e:
-            logger.error(f"{data_bytes.decode("utf-8")}")
+            logger.error(data_bytes.decode("utf-8"))
             raise ValueError("Invalid JSON format") from e
