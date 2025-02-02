@@ -1,39 +1,56 @@
+import { BootstrapDisplay } from "../../bootstrap/utilities/display";
+import { BootstrapFlex } from "../../bootstrap/utilities/flex";
+import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
+import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { View } from "../../core/View";
 import { mainRouter } from "../../routers/mainRouter";
-import { MainNav } from "../navs/MainNav";
+import { createElement } from "../../utils/elements/createElement";
+import { MainNavbar } from "../navigation/MainNavbar";
 
 export class MainView extends View {
-  #router;
-  #nav;
+  #navbar;
   #main;
+  #mainRouter;
 
   // MainView の対応中のパスを列挙
   static Paths = Object.freeze({
     HOME: "/",
     CHAT: "/chat",
+    USERS: "/users",
+    FRIENDS: "/friends",
+    MYPAGE: "/mypage",
+    TOURNAMENTS: "/tournaments",
     NOT_FOUND: "/not-found",
   });
 
+  #setStyle() {
+    BootstrapDisplay.setFlex(this);
+    BootstrapFlex.setFlexColumn(this);
+    BootstrapSizing.setViewportHeight100(this);
+    BootstrapSpacing.setPadding(this);
+
+    BootstrapFlex.setFlexGrow1(this.#main);
+  }
+
   _onConnect() {
-    this.#nav = new MainNav();
-    this.#main = document.createElement("div");
-    this.#router = mainRouter(this.#main);
+    this.#navbar = new MainNavbar();
+    this.#main = createElement("div");
+    this.#mainRouter = mainRouter(this.#main);
+    this.#setStyle();
+  }
+
+  #updateMain() {
+    const path = this._getPath();
+    this.#mainRouter.update(path);
   }
 
   _render() {
-    const title = document.createElement("h1");
-    title.textContent = "🚧 Pong";
-    this.appendChild(title);
-
-    const path = this._getPath();
-    this.#router.update(path);
-
-    this.appendChild(this.#nav);
+    this.#updateMain();
+    this.appendChild(this.#navbar);
     this.appendChild(this.#main);
   }
 
   _update() {
-    const path = this._getPath();
-    this.#router.update(path);
+    this.#updateMain();
   }
 }
