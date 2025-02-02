@@ -16,8 +16,9 @@ from . import models, serializers
         operation_id="tournaments_list",  # 明示的にoperationIdを設定
         parameters=[
             OpenApiParameter(
-                name="player-id",
-                description="playerテーブルのID",
+                # 実際には、user_idからplayer_idを取得してフィルタリングする。
+                name="user-id",
+                description="userテーブルのID",
                 required=False,
                 type=int,
                 location=OpenApiParameter.QUERY,
