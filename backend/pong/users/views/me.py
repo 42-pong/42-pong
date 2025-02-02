@@ -41,6 +41,29 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
+            # todo: 現在Djangoが自動で返している401のスキーマも書く？
+            # todo: 404ではないかも
+            404: utils.OpenApiResponse(
+                description="The user does not exist.",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.ERRORS: {"type": "dict"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 404 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.ERRORS: {
+                                "user": "The user does not exist."
+                            },
+                        },
+                    ),
+                ],
+            ),
         },
     )
     # todo: try-exceptで全体を囲って500を返す？
@@ -50,6 +73,15 @@ class UsersMeView(views.APIView):
         """
         # リクエストのtokenからuserを取得
         user: User | AnonymousUser = request.user
+
+        # AnonymousUserの場合はget()に入る前にpermission_classesで弾かれるが、
+        # AnonymousUserだとuser.playerが使えずmypyでエラーになるため、事前にチェックが必要
+        if not hasattr(user, "player"):
+            return custom_response.CustomResponse(
+                errors={"user": "The user does not exist."},
+                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
+            )
+
         users_serializer: serializers.UsersSerializer = (
             serializers.UsersSerializer(user.player)
         )
