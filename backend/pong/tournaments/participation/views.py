@@ -169,35 +169,10 @@ from . import models, serializers
             ),
         },
     ),
-    destroy=extend_schema(
-        description="指定されたIDのParticipationレコードを削除する。",
-        responses={
-            204: OpenApiResponse(
-                response={"type": "object"},  # todo: serializerに変える
-                examples=[
-                    OpenApiExample(
-                        "Example 204 response",
-                        value={
-                            "status": "ok",
-                            "data": {
-                                "id": 1,
-                                "participation_name": "player_x",
-                                "ranking": 1,
-                                "created_at": "2025-01-01T00:00:00.000000+09:00",
-                                "updated_at": "2025-01-01T00:30:00.000000+09:00",
-                                "tournament_id": 2,
-                                "user_id": 3,
-                            },
-                        },
-                    ),
-                ],
-            ),
-        },
-    ),
 )
 class ParticipationViewSet(viewsets.ModelViewSet):
     queryset = models.Participation.objects.all()
     serializer_class = serializers.ParticipationSerializer
 
     # 使用できるHTTPメソッドを制限
-    http_method_names = ["get", "post", "patch", "delete"]
+    http_method_names = ["get", "post", "patch"]
