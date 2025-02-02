@@ -35,6 +35,7 @@ class UsersMeView(views.APIView):
                             custom_response.DATA: {
                                 constants.UserFields.ID: 1,
                                 constants.UserFields.USERNAME: "username1",
+                                constants.UserFields.EMAIL: "username1@example.com",
                                 constants.PlayerFields.DISPLAY_NAME: "display_name1",
                             },
                         },
@@ -83,7 +84,15 @@ class UsersMeView(views.APIView):
             )
 
         users_serializer: serializers.UsersSerializer = (
-            serializers.UsersSerializer(user.player)
+            serializers.UsersSerializer(
+                user.player,
+                fields=(
+                    constants.UserFields.ID,
+                    constants.UserFields.USERNAME,
+                    constants.UserFields.EMAIL,
+                    constants.PlayerFields.DISPLAY_NAME,
+                ),
+            )
         )
         return custom_response.CustomResponse(
             data=users_serializer.data,

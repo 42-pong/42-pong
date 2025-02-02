@@ -99,6 +99,7 @@ class UsersRetrieveViewTests(test.APITestCase):
             self.assertEqual(
                 response_data[DISPLAY_NAME], player_data[DISPLAY_NAME]
             )
+            self.assertNotIn(EMAIL, response_data)
 
     def test_get_user_returns_404_with_nonexistent_user_id(self) -> None:
         """

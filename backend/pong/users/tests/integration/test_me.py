@@ -65,6 +65,7 @@ class UsersMeViewTests(test.APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data: dict = response.data[DATA]
         self.assertEqual(response_data[USERNAME], self.user_data[USERNAME])
+        self.assertEqual(response_data[EMAIL], self.user_data[EMAIL])
         self.assertEqual(
             response_data[DISPLAY_NAME], self.player_data[DISPLAY_NAME]
         )
