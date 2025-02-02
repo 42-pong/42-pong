@@ -88,14 +88,11 @@ class JWT:
             raise ValueError(
                 "Invalid JWT format: must contain exactly two dots"
             )
-        if self.jws_handler.verify(header, payload, signature):
-            decoded_payload: dict = self.base64_url_handler.decode_dict(
-                payload
-            )
-            # todo: payloadの有効期限が切れていないかどうか
-            return decoded_payload
-        else:
+        if not self.jws_handler.verify(header, payload, signature):
             logger.error(jwt)
             raise ValueError(
                 "JWT Signature verification failed: Invalid or tampered signature"
             )
+        decoded_payload: dict = self.base64_url_handler.decode_dict(payload)
+        # todo: payloadの有効期限が切れていないかどうか
+        return decoded_payload
