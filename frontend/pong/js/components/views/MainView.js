@@ -1,3 +1,7 @@
+import { BootstrapDisplay } from "../../bootstrap/utilities/display";
+import { BootstrapFlex } from "../../bootstrap/utilities/flex";
+import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
+import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { View } from "../../core/View";
 import { mainRouter } from "../../routers/mainRouter";
 import { createElement } from "../../utils/elements/createElement";
@@ -19,10 +23,20 @@ export class MainView extends View {
     NOT_FOUND: "/not-found",
   });
 
+  #setStyle() {
+    BootstrapDisplay.setFlex(this);
+    BootstrapFlex.setFlexColumn(this);
+    BootstrapSizing.setViewportHeight100(this);
+    BootstrapSpacing.setPadding(this);
+
+    BootstrapFlex.setFlexGrow1(this.#main);
+  }
+
   _onConnect() {
     this.#navbar = new MainNavbar();
     this.#main = createElement("div");
     this.#mainRouter = mainRouter(this.#main);
+    this.#setStyle();
   }
 
   #updateMain() {
