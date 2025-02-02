@@ -147,32 +147,10 @@ from . import models, serializers
             ),
         },
     ),
-    destroy=extend_schema(
-        description="指定されたIDのTournamentレコードを削除する。",
-        responses={
-            204: OpenApiResponse(
-                response={"type": "object"},  # todo: serializerに変える
-                examples=[
-                    OpenApiExample(
-                        "Example 204 response",
-                        value={
-                            "status": "ok",
-                            "data": {
-                                "id": 1,
-                                "status": "matching",
-                                "created_at": "2025-01-01T00:00:00.000000+09:00",
-                                "updated_at": "2025-01-01T00:00:00.000000+09:00",
-                            },
-                        },
-                    ),
-                ],
-            ),
-        },
-    ),
 )
 class TournamentViewSet(viewsets.ModelViewSet):
     queryset = models.Tournament.objects.all()
     serializer_class = serializers.TournamentSerializer
 
     # 使用できるHTTPメソッドを制限
-    http_method_names = ["get", "post", "patch", "delete"]
+    http_method_names = ["get", "post", "patch"]
