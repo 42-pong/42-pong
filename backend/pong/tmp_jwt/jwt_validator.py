@@ -61,4 +61,15 @@ class JWTValidator:
             )
             logger.error(error_message)
             raise ValueError(error_message)
-        """
+
+        iat = payload.get("iat")
+        if not isinstance(iat, int):
+            error_message = "'iat' must be an integer."
+            logger.error(error_message)
+            raise ValueError(error_message)
+        if iat > now:
+            error_message = (
+                "'iat' must be less than or equal to the current time."
+            )
+            logger.error(error_message)
+            raise ValueError(error_message)

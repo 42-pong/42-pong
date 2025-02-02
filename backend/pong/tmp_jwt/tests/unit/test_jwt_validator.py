@@ -59,3 +59,19 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
         invalid_payload["exp"] = exp_value
         with self.assertRaises(ValueError):
             self.jwt_validator._validate_payload(invalid_payload)
+
+    @parameterized.parameterized.expand(
+        [
+            ("'iat'が整数でない場合", "not_integer"),
+            (
+                "'iat'が現在時刻より未来の場合",
+                int(datetime.utcnow().timestamp()) + 3600,
+            ),
+        ]
+    )
+    def test_invalid_iat(self, _: str, iat_value: str | int) -> None:
+        """'iat'が無効な場合にValueErrorを投げることを確認するテスト"""
+        invalid_payload = self.payload
+        invalid_payload["iat"] = iat_value
+        with self.assertRaises(ValueError):
+            self.jwt_validator._validate_payload(invalid_payload)
