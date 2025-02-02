@@ -9,6 +9,19 @@ export const appRouter = (target) => {
     [Paths.LOGIN]: Route.defaultRoute(LoginView),
     [Paths.HOME]: Route.createRoute(MainView, MainView.Paths.HOME),
     [Paths.CHAT]: Route.createRoute(MainView, MainView.Paths.CHAT),
+    [Paths.USERS]: Route.createRoute(MainView, MainView.Paths.USERS),
+    [Paths.FRIENDS]: Route.createRoute(
+      MainView,
+      MainView.Paths.FRIENDS,
+    ),
+    [Paths.MYPAGE]: Route.createRoute(
+      MainView,
+      MainView.Paths.MYPAGE,
+    ),
+    [Paths.TOURNAMENTS]: Route.createRoute(
+      MainView,
+      MainView.Paths.TOURNAMENTS,
+    ),
   };
   const defaultRoute = Route.createRoute(
     MainView,

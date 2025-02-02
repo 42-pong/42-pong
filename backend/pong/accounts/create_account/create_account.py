@@ -1,6 +1,7 @@
 from typing import Final
 
 from django.contrib.auth.models import User
+from django.db import DatabaseError, transaction
 from django.utils.crypto import get_random_string
 from rest_framework import serializers as drf_serializers
 
@@ -13,8 +14,6 @@ from ..player import models, serializers
 USERNAME_LENGTH: Final[int] = 7
 
 # 関数の結果用のResult型の型エイリアス
-SaveUserResult = utils.result.Result[User, dict]
-SavePlayerResult = utils.result.Result[models.Player, dict]
 CreateAccountResult = utils.result.Result[dict, dict]
 
 
@@ -59,29 +58,27 @@ def _assert_user_serializer(
         )
 
 
-def _save_user(
-    user_serializer: drf_serializers.ModelSerializer,
-) -> SaveUserResult:
+def _save_user(user_serializer: drf_serializers.ModelSerializer) -> User:
     """
     引数のSerializerを使い、UserをDBに保存する
 
     Args:
-        user_serializer: UserSerializerのインスタンス
+        user_serializer: UserのSerializerのインスタンス
 
     Returns:
-        SaveUserResult: DBに保存されたUserのResult
-    """
-    if not user_serializer.is_valid():
-        return SaveUserResult.error(user_serializer.errors)
+        User: DBに保存されたUser
 
+    Raises:
+        drf_serializers.ValidationError: Serializerのデータが不正な場合
+        DatabaseError: DBへの保存に失敗した場合
+    """
+    user_serializer.is_valid(raise_exception=True)
     # DBに保存
     user: User = user_serializer.save()
-    return SaveUserResult.ok(user)
+    return user
 
 
-def _save_player_related_with_user(
-    player_data: dict, user_id: int
-) -> SavePlayerResult:
+def _save_player(player_data: dict, user_id: int) -> models.Player:
     """
     player_dataとUserを紐づけてPlayerSerializerを新規作成し、PlayerをDBに保存する
     app間で共通のPlayerSerializerを使用する
@@ -91,7 +88,11 @@ def _save_player_related_with_user(
         user_id: UserのPK
 
     Returns:
-        SavePlayerResult: DBに保存されたPlayerのResult
+        Player: DBに保存されたPlayer
+
+    Raises:
+        drf_serializers.ValidationError: Serializerのデータが不正な場合
+        DatabaseError: DBへの保存に失敗した場合
     """
     # PKであるuser.idを"user"フィールドにセットしUserとPlayerを紐づける
     player_data[constants.PlayerFields.USER] = user_id
@@ -100,15 +101,12 @@ def _save_player_related_with_user(
     player_serializer: serializers.PlayerSerializer = (
         serializers.PlayerSerializer(data=player_data)
     )
-    if not player_serializer.is_valid():
-        return SavePlayerResult.error(player_serializer.errors)
-
+    player_serializer.is_valid(raise_exception=True)
     # DBに保存
     player: models.Player = player_serializer.save()
-    return SavePlayerResult.ok(player)
+    return player
 
 
-# todo: トランザクションの処理が必要。User,Playerのどちらかが作成されなかった場合はロールバック
 def create_account(
     user_serializer: drf_serializers.ModelSerializer, player_data: dict
 ) -> CreateAccountResult:
@@ -120,23 +118,23 @@ def create_account(
         player_data: PlayerSerializerに渡すdata
 
     Returns:
-        CreateAccountResult: 作成されたUserのResult
+        CreateAccountResult: 作成されたUserのシリアライズ後のデータのResult
     """
     # UserSerializerが引数として正しくない場合にassertを発生させる
     _assert_user_serializer(user_serializer)
 
-    # User作成
-    save_user_result: SaveUserResult = _save_user(user_serializer)
-    if save_user_result.is_error:
-        return CreateAccountResult.error(save_user_result.unwrap_error())
-    user: User = save_user_result.unwrap()
-
-    # Player作成
-    save_player_result: SavePlayerResult = _save_player_related_with_user(
-        player_data, user.id
-    )
-    if save_player_result.is_error:
-        return CreateAccountResult.error(save_player_result.unwrap_error())
-    # save_player_result.unwrap()でPlayerを取得できるが、使わないため呼ばない
+    try:
+        with transaction.atomic():
+            user: User = _save_user(user_serializer)
+            _save_player(player_data, user.id)
+    except drf_serializers.ValidationError as e:
+        # e.detail: list or dictのためmypy用にlistの処理も書いているが、ほぼdictだと思われる
+        if isinstance(e.detail, list):
+            return CreateAccountResult.error({"ValidationError": e.detail})
+        return CreateAccountResult.error(e.detail)
+    except DatabaseError as e:
+        return CreateAccountResult.error(
+            {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
+        )
 
     return CreateAccountResult.ok(user_serializer.data)

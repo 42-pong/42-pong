@@ -32,4 +32,8 @@ urlpatterns = [
     path("api/oauth2/", include("oauth2.urls")),
     # accounts
     path("api/accounts/", include("accounts.urls")),
+    # users
+    path("api/users/", include("users.urls")),
+    # tournaments
+    path("api/tournaments/", include("tournaments.urls")),
 ]
