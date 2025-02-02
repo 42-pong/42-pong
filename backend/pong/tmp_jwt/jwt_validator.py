@@ -1,5 +1,6 @@
 import logging
 import re
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,19 @@ class JWTValidator:
             raise ValueError(error_message)
         if not re.fullmatch(r"[A-Za-z0-9]{7}", sub):
             error_message = "'sub' must be exactly 7 alphanumeric characters."
+            logger.error(error_message)
+            raise ValueError(error_message)
+
+        now = int(datetime.utcnow().timestamp())
+        exp = payload.get("exp")
+        if not isinstance(exp, int):
+            error_message = "'exp' must be an integer."
+            logger.error(error_message)
+            raise ValueError(error_message)
+        if exp < now:
+            error_message = (
+                "'exp' must be greater than or equal to the current time."
+            )
             logger.error(error_message)
             raise ValueError(error_message)
         """
