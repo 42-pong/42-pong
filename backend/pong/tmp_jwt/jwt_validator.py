@@ -1,4 +1,5 @@
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +32,19 @@ class JWTValidator:
         allowed_claims = {"sub", "exp", "iat"}
         extra_claims = set(payload.keys()) - allowed_claims
         if extra_claims:
-            error_message: str = (
+            error_message = (
                 f"Unexpected claims found: {', '.join(extra_claims)}"
             )
+            logger.error(error_message)
+            raise ValueError(error_message)
+
+        sub = payload.get("sub")
+        if not isinstance(sub, str):
+            error_message = "'sub' must be a string."
+            logger.error(error_message)
+            raise ValueError(error_message)
+        if not re.fullmatch(r"[A-Za-z0-9]{7}", sub):
+            error_message = "'sub' must be exactly 7 alphanumeric characters."
             logger.error(error_message)
             raise ValueError(error_message)
         """

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import parameterized  # type: ignore[import-untyped]
 from django.test import TestCase
 
 from tmp_jwt import jwt_validator
@@ -23,7 +24,22 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
 
     def test_invalid_extra_claim(self) -> None:
         """sub, exp, iat以外のクレームを含むペイロードの場合、ValueErrorを投げることを確認するテスト"""
-        invalid_payload = self.payload
+        invalid_payload: dict = self.payload
         invalid_payload["aud"] = "pong"
+        with self.assertRaises(ValueError):
+            self.jwt_validator._validate_payload(invalid_payload)
+
+    @parameterized.parameterized.expand(
+        [
+            ("subがstr型でない場合", 123),
+            ("subの長さが7文字未満の場合", "abc12"),
+            ("subの長さが8文字以上の場合", "abc1234567"),
+            ("subが英数字以外の文字を含む場合", "abc!@#"),
+        ]
+    )
+    def test_invalid_sub(self, _: str, invalid_sub: str | int) -> None:
+        """'sub'が無効な場合にValueErrorを投げることを確認するテスト"""
+        invalid_payload = self.payload
+        invalid_payload["sub"] = invalid_sub
         with self.assertRaises(ValueError):
             self.jwt_validator._validate_payload(invalid_payload)
