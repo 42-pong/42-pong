@@ -99,6 +99,85 @@ class UsersMeView(views.APIView):
             status=status.HTTP_200_OK,
         )
 
+    @utils.extend_schema(
+        request=utils.OpenApiRequest(
+            serializers.UsersSerializer,
+            examples=[
+                utils.OpenApiExample(
+                    "Example request",
+                    value={
+                        constants.PlayerFields.DISPLAY_NAME: "new_name",
+                    },
+                ),
+            ],
+        ),
+        responses={
+            200: utils.OpenApiResponse(
+                description="My user profile",
+                response=serializers.UsersSerializer,
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 200 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: {
+                                constants.UserFields.ID: 1,
+                                constants.UserFields.USERNAME: "username1",
+                                constants.UserFields.EMAIL: "username1@example.com",
+                                constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                            },
+                        },
+                    ),
+                ],
+            ),
+            400: utils.OpenApiResponse(
+                description="Validation error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.ERRORS: {"type": "dict"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 400 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.ERRORS: {
+                                constants.PlayerFields.DISPLAY_NAME: [
+                                    "This field may not to be blank."
+                                ],
+                            },
+                        },
+                    ),
+                ],
+            ),
+            # todo: 現在Djangoが自動で返している401のスキーマも書く？
+            # todo: 404ではないかも
+            404: utils.OpenApiResponse(
+                description="The user does not exist.",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.ERRORS: {"type": "dict"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 404 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.ERRORS: {
+                                "user": "The user does not exist."
+                            },
+                        },
+                    ),
+                ],
+            ),
+        },
+    )
     # todo: try-exceptで全体を囲って500を返す
     def patch(self, request: request.Request) -> response.Response:
         """
