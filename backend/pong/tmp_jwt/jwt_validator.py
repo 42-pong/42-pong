@@ -44,11 +44,11 @@ class JWTValidator:
             - iatが整数でない場合
             - iatが現在時刻より未来の場合
         """
-        allowed_claims = {"sub", "exp", "iat", "typ"}
-        extra_claims = set(payload.keys()) - allowed_claims
-        if extra_claims:
+        allowed_claims: set[str] = {"sub", "exp", "iat", "typ"}
+        missing_claims: set[str] = set(payload.keys()) - allowed_claims
+        if missing_claims:
             error_message = (
-                f"Unexpected claims found: {', '.join(extra_claims)}"
+                f"Unexpected claims found: {', '.join(missing_claims)}"
             )
             logger.error(error_message)
             raise ValueError(error_message)
@@ -63,7 +63,7 @@ class JWTValidator:
             logger.error(error_message)
             raise ValueError(error_message)
 
-        now = int(datetime.utcnow().timestamp())
+        now: int = int(datetime.utcnow().timestamp())
         exp = payload.get("exp")
         if not isinstance(exp, int):
             error_message = "'exp' must be an integer."

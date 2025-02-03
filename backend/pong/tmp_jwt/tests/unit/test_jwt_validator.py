@@ -32,6 +32,26 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
 
     @parameterized.parameterized.expand(
         [
+            ("'sub' が不足している場合", {"exp", "iat", "typ"}),
+            ("'exp' が不足している場合", {"sub", "iat", "typ"}),
+            ("'iat' が不足している場合", {"sub", "exp", "typ"}),
+            ("'typ' が不足している場合", {"sub", "exp", "iat"}),
+        ]
+    )
+    def test_invalid_missing_required_claims(
+        self, _: str, missing_claims: set[str]
+    ) -> None:
+        """必須クレームが不足しているペイロードの場合に ValueError を投げることを確認するテスト"""
+        invalid_payload: dict = {
+            key: value
+            for key, value in self.payload.items()
+            if key not in missing_claims
+        }
+        with self.assertRaises(ValueError):
+            self.jwt_validator._validate_payload(invalid_payload)
+
+    @parameterized.parameterized.expand(
+        [
             ("subがstr型でない場合", 123),
             ("subの長さが7文字未満の場合", "abc12"),
             ("subの長さが8文字以上の場合", "abc1234567"),
