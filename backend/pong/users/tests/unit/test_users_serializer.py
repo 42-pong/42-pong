@@ -90,3 +90,21 @@ class UsersSerializerTests(TestCase):
         )
 
         self.assertEqual(serializer.data, [])
+
+    def test_update_with_valid_display_name(self) -> None:
+        """
+        正しいdisplay_nameでupdate()が呼ばれた際に、正常にDBのdisplay_nameを更新できることを確認
+        """
+        player: models.Player = models.Player.objects.get(user=self.user_1)
+        # 新しいdisplay_name
+        new_valid_display_name: str = "new_name"
+        request_data: dict = {
+            constants.PlayerFields.DISPLAY_NAME: new_valid_display_name,
+        }
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            player, data=request_data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()  # update()が呼ばれる
+
+        self.assertEqual(player.display_name, new_valid_display_name)
