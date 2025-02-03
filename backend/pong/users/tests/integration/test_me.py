@@ -1,5 +1,6 @@
 from typing import Final
 
+import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import response as drf_response
@@ -16,6 +17,7 @@ USER: Final[str] = constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
 
 DATA: Final[str] = custom_response.DATA
+ERRORS: Final[str] = custom_response.ERRORS
 
 
 class UsersMeViewTests(test.APITestCase):
@@ -99,3 +101,26 @@ class UsersMeViewTests(test.APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data: dict = response.data[DATA]
         self.assertEqual(response_data[DISPLAY_NAME], new_valid_display_name)
+
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列のdisplay_name", ""),
+            ("max_lengthを超えるdisplay_name", "a" * 16),
+            ("不正な文字が含まれるdisplay_name", "あ"),
+            ("不正な記号が含まれるdisplay_name", "/"),
+        ]
+    )
+    def test_patch_400_update_invalid_display_name(
+        self, testcase_name: str, new_invalid_display_name: str
+    ) -> None:
+        """
+        不正なdisplay_nameを送ると、自分のdisplay_nameを更新せずエラーになることを確認
+        """
+        response: drf_response.Response = self.client.patch(
+            self.url,
+            {DISPLAY_NAME: new_invalid_display_name},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(DISPLAY_NAME, response.data[ERRORS])
