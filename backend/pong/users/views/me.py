@@ -99,4 +99,41 @@ class UsersMeView(views.APIView):
             status=status.HTTP_200_OK,
         )
 
-    # todo: PATCHメソッドを追加
+    # todo: try-exceptで全体を囲って500を返す
+    def patch(self, request: request.Request) -> response.Response:
+        """
+        自分のユーザープロフィールを更新するPATCHメソッド
+        """
+        # リクエストのtokenからuserを取得
+        user: User | AnonymousUser = request.user
+        if not hasattr(user, "player"):
+            return custom_response.CustomResponse(
+                errors={"user": "The user does not exist."},
+                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
+            )
+        # serializer作成
+        users_serializer: serializers.UsersSerializer = (
+            serializers.UsersSerializer(
+                user.player,
+                data=request.data,
+                partial=True,  # 部分的な更新を許可
+                fields=(
+                    constants.UserFields.ID,
+                    constants.UserFields.USERNAME,
+                    constants.UserFields.EMAIL,
+                    constants.PlayerFields.DISPLAY_NAME,
+                ),
+            )
+        )
+        # 更新対象データ(request.data)のバリデーションを確認
+        if not users_serializer.is_valid():
+            return custom_response.CustomResponse(
+                errors=users_serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        # 更新
+        users_serializer.save()
+        return custom_response.CustomResponse(
+            data=users_serializer.data,
+            status=status.HTTP_200_OK,
+        )
