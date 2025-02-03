@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from accounts import constants
 from accounts.player import models
+from accounts.player import serializers as player_serializers
 
 
 class UsersSerializer(serializers.Serializer):
@@ -13,7 +14,10 @@ class UsersSerializer(serializers.Serializer):
     id = serializers.IntegerField(source="user.id")
     username = serializers.CharField(source="user.username")
     email = serializers.EmailField(source="user.email")
-    display_name = serializers.CharField()
+    # todo: 別のserializerをネストする方法で他に良い書き方があれば変更する
+    display_name = player_serializers.PlayerSerializer().fields[
+        constants.PlayerFields.DISPLAY_NAME
+    ]
     # todo: こことfieldにavatar追加
 
     class Meta:
@@ -37,3 +41,15 @@ class UsersSerializer(serializers.Serializer):
             existing: set[str] = set(self.fields)
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
+
+    def update(
+        self, player: models.Player, validated_data: dict
+    ) -> models.Player:
+        """
+        Playerインスタンスを更新するupdate()のオーバーライド
+        """
+        player.display_name = validated_data.get(
+            constants.PlayerFields.DISPLAY_NAME, player.display_name
+        )
+        # todo: avatarも新しいものを代入
+        return player
