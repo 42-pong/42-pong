@@ -7,7 +7,7 @@ from django.test import TestCase
 from accounts import constants
 from accounts.player import models
 
-from . import serializers
+from ... import serializers
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL

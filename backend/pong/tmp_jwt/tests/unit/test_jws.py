@@ -1,3 +1,4 @@
+import parameterized  # type: ignore[import-untyped]
 from django.test import TestCase
 
 from tmp_jwt import jws
@@ -72,34 +73,43 @@ class JsonWebSignatureFunctionTestCase(TestCase):
         """
         JWTの署名が正しい場合、Trueが返されることを確認するテスト
         """
-        jwt: str = f"{self.encoded_header}.{self.encoded_payload}.wELfrcYgcf8pyBxSMOCRINRj8QXlxP360D0T3E_bq3U"
-        is_verify: bool = self.jws_handler.verify(jwt)
+        is_verify: bool = self.jws_handler.verify(
+            self.encoded_header,
+            self.encoded_payload,
+            "wELfrcYgcf8pyBxSMOCRINRj8QXlxP360D0T3E_bq3U",
+        )
         self.assertTrue(is_verify)
 
-    def test_verify_invalid_format(self) -> None:
-        """JWTの形式が不正な場合、Falseを返すことを確認するテスト"""
-        invalid_jwt: str = "invalid.jwt"
-        is_verify: bool = self.jws_handler.verify(invalid_jwt)
-        self.assertFalse(is_verify)
-
-    def test_verify_empty_jwt(self) -> None:
-        """JWTが空の場合、Falseを返すことを確認するテスト"""
-        empty_jwt: str = ""
-        is_verify: bool = self.jws_handler.verify(empty_jwt)
-        self.assertFalse(is_verify)
-
-    def test_verify_signature_mismatch(self) -> None:
-        """JWTの署名が一致しない場合、Falseを返すことを確認するテスト"""
-        invalid_signature_jwt: str = (
-            f"{self.encoded_header}.{self.encoded_payload}.invalid_signature"
-        )
-        is_verify: bool = self.jws_handler.verify(invalid_signature_jwt)
-        self.assertFalse(is_verify)
-
-    def test_verify_empty_signature(self) -> None:
-        """JWTの署名が空の場合、Falseを返すことを確認するテスト"""
-        empty_signature_jwt: str = (
-            f"{self.encoded_header}.{self.encoded_payload}."
-        )
-        is_verify: bool = self.jws_handler.verify(empty_signature_jwt)
+    @parameterized.parameterized.expand(
+        [
+            (
+                "ヘッダーが空文字の場合",
+                "",
+                "eyJzdWIiOiIxMjM0NTY3ODkwIn0",
+                "wELfrcYgcf8pyBxSMOCRINRj8QXlxP360D0T3E_bq3U",
+            ),
+            (
+                "ペイロードが空文字の場合",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+                "",
+                "wELfrcYgcf8pyBxSMOCRINRj8QXlxP360D0T3E_bq3U",
+            ),
+            (
+                "シグネチャが空文字の場合",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+                "eyJzdWIiOiIxMjM0NTY3ODkwIn0",
+                "",
+            ),
+            (
+                "JWTのシグネチャが一致しない場合",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+                "eyJzdWIiOiIxMjM0NTY3ODkwIn0",
+                "invalid_signature",
+            ),
+        ]
+    )
+    def test_verify_invalid(
+        self, testcase_name: str, header: str, payload: str, signature: str
+    ) -> None:
+        is_verify: bool = self.jws_handler.verify(header, payload, signature)
         self.assertFalse(is_verify)

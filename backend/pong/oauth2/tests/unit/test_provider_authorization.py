@@ -41,19 +41,17 @@ class CreateProviderAuthorizationTestCase(TestCase):
         forty_two_authorization_result: forty_two_authorization.CreateFortyTwoAuthorizationResult = forty_two_authorization.create_forty_two_authorization(
             self.user.id, self.provider, self.provider_id, self.tokens
         )
-
         self.assertTrue(forty_two_authorization_result.is_ok)
-        oauth2: models.OAuth2 = forty_two_authorization_result.unwrap()
-
-        self.assertEqual(oauth2.user.id, self.user.id)
-        self.assertEqual(oauth2.provider, self.provider)
-        self.assertEqual(oauth2.provider_id, self.provider_id)
+        oauth2: dict = forty_two_authorization_result.unwrap()
+        self.assertEqual(oauth2["user"], self.user.id)
+        self.assertEqual(oauth2["provider"], self.provider)
+        self.assertEqual(oauth2["provider_id"], self.provider_id)
 
         # todo: fortytwotokenの全パラメータが存在するかどうか
         forty_two_token: models.FortyTwoToken = (
-            models.FortyTwoToken.objects.get(oauth2=oauth2)
+            models.FortyTwoToken.objects.get(oauth2_id=oauth2["id"])
         )
-        self.assertEqual(forty_two_token.oauth2.id, oauth2.id)
+        self.assertEqual(forty_two_token.oauth2.id, oauth2["id"])
         self.assertEqual(
             forty_two_token.access_token, self.tokens["access_token"]
         )
