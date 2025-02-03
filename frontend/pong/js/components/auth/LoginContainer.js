@@ -1,6 +1,7 @@
 import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
+import { Cookie } from "../../utils/cookie/Cookie";
 
 //ユーザーが入力するID、PWを保持する箱を入れる
 //サイインボタンを押した後の処理
@@ -75,6 +76,40 @@ export class LoginContainer extends Component {
       event.preventDefault();
       this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
     });
+
+    // "api/oauth2/authorize/”　へfetchする
+    oauth2Button.addEventListener("click", async (event) => {
+      try {
+        const response = await fetch(
+          "http://localhost:8000/api/token/",
+          {
+            headers: {
+              "Content-type": "application/json",
+            },
+            method: "POST",
+            //仮にadminアカウントのJWTを作成する
+            body: JSON.stringify({
+              username: "pong",
+              password: "su_12345",
+            }),
+          },
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status:" ${response.status}`);
+        }
+        const data = await response.json();
+        const accessToken = data.access;
+        // cookieのベストプラクティス
+        // 仮のJWTをcookieに保存する
+        Cookie.setCookie(accessToken, 7);
+        //cookieからJWTを取得する
+        const jwt = Cookie.getCookie("JWT");
+        if (jwt) console.log("get jwt success", jwt);
+        else console.log("get jwt failed");
+      } catch (error) {
+        console.log("Error:", error);
+      }
+    });
   }
 
   _render() {
@@ -85,11 +120,12 @@ export class LoginContainer extends Component {
     // コンテナをカスタム要素に追加
     this.appendChild(this.#container);
 
-    // cookieのベストプラクティス
-    allCookies = document.cookie;
-    console.log("allCookie is ", allCookies);
-    document.cookie = allCookies;
-    console.log("Cookie is ", )
+    //ログインページからJWTを認証してホームページへリダイレクトする
+    this._attachEventListener("submit", (event) => {
+      event.preventDefault();
+      this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
+    });
+
     // TODO 各ボタンの条件分岐でAPIエンドポイントにフェッチ(以下からのコードはBEのエントポイントと連携するため、レビューしない)
     // "api/signin/"　へfetchする
     // this.#form.addEventListener("submit", async (event) => {
@@ -121,27 +157,6 @@ export class LoginContainer extends Component {
     //   } catch (error) {
     //     console.error("Error:", error);
     //     // ここでエラーハンドリングを追加できます
-    //   }
-    // });
-
-    // "api/oauth2/authorize/”　へfetchする
-    // this.#form.addEventListener("42oauth", async (event) => {
-    //   event.preventDefault();
-    //   try {
-    //     const response = await fetch(
-    //       "http://localhost:8000/api/oauth2/authorize/",
-    //       {
-    //         method: "GET",
-    //       },
-    //     );
-    //     if (!response.ok) {
-    //       throw new Error("Oauth2 response was not ok");
-    //     }
-
-    //     const data = await response.json();
-    //     console.log("Success", data);
-    //   } catch (error) {
-    //     console.error("Error:", error);
     //   }
     // });
   }
