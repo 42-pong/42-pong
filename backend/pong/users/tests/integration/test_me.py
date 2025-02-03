@@ -84,3 +84,18 @@ class UsersMeViewTests(test.APITestCase):
         # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
         # todo: permissions_classesを変更して自作Responseを返せる場合、併せて変更する
         self.assertEqual(response.data["detail"].code, "not_authenticated")
+
+    def test_patch_200_update_valid_display_name(self) -> None:
+        """
+        正しいdisplay_nameを送り、自分のdisplay_nameを更新できることを確認
+        """
+        new_valid_display_name: str = "new_name"
+        response: drf_response.Response = self.client.patch(
+            self.url,
+            {DISPLAY_NAME: new_valid_display_name},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data: dict = response.data[DATA]
+        self.assertEqual(response_data[DISPLAY_NAME], new_valid_display_name)
