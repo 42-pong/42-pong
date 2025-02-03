@@ -3,8 +3,8 @@ from accounts.create_account import create_account
 
 from . import models, serializers
 
-CreateOAuth2UserResult = utils.result.Result[models.User, dict]
-CreateOAuth2Result = utils.result.Result[models.OAuth2, dict]
+CreateOAuth2UserResult = utils.result.Result[dict, dict]
+CreateOAuth2Result = utils.result.Result[dict, dict]
 
 
 def create_oauth2_user(
@@ -21,19 +21,18 @@ def create_oauth2_user(
     if not oauth2_user_serializer.is_valid():
         return CreateOAuth2UserResult.error(oauth2_user_serializer.errors)
     player_data: dict = {"display_name": display_name}
-    oauth2_account_result = create_account.create_account(
-        oauth2_user_serializer, player_data
+    # create_accountのdataを取得する前に、UserSerializerを保存する必要がある
+    oauth2_user: models.User = oauth2_user_serializer.save()
+    oauth2_account_result: create_account.CreateAccountResult = (
+        create_account.create_account(oauth2_user_serializer, player_data)
     )
     if not oauth2_account_result.is_ok:
+        oauth2_user.delete()
         return CreateOAuth2UserResult.error(
             oauth2_account_result.unwrap_error()
         )
-    # todo: typecehckingが通らないため、一旦getで取得
-    oauth2_user: models.User = models.User.objects.get(
-        id=oauth2_account_result.unwrap()["id"]
-    )
-    # oauth2_user: models.User = oauth2_account_result.unwrap()
-    return CreateOAuth2UserResult.ok(oauth2_user)
+    oauth2_user_serializer_data: dict = oauth2_account_result.unwrap()
+    return CreateOAuth2UserResult.ok(oauth2_user_serializer_data)
 
 
 def create_oauth2(
@@ -49,5 +48,6 @@ def create_oauth2(
     )
     if not oauth2_serializer.is_valid():
         return CreateOAuth2Result.error(oauth2_serializer.errors)
-    oauth2: models.OAuth2 = oauth2_serializer.save()
-    return CreateOAuth2Result.ok(oauth2)
+    oauth2_serializer.save()
+    oauth2_serializer_data: dict = oauth2_serializer.data
+    return CreateOAuth2Result.ok(oauth2_serializer_data)
