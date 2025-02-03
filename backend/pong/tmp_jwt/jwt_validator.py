@@ -6,29 +6,38 @@ logger = logging.getLogger(__name__)
 
 
 class JWTValidator:
+    # todo: validate_jwt作成
+    # - ヘッダー、ペイロード、シグネチャがデコードできるかどうかを検証する
+    # todo: _validate_header作成
+    # - {"typ": "JWT", "alg": "HS256"} であることを検証する
     def _validate_payload(self, payload: dict) -> None:
         """
         ペイロードを検証する関数
 
-        "sub" (Subject): JWT が対象を示すクレーム。
-        - 検証:
-            - str型かどうか
-            - 62種からなる英数字かどうか
-            - 文字数が7文字かどうか
+        "sub" (Subject): JWT が対象を示すクレーム。今回はユーザーIDを示す
+        - str型
+        - 62種からなる英数字
+        - 文字数が7文字
 
         "exp" (Expiration Time): JWT の有効期限を示すクレーム。有効期限が過ぎるとそのトークンは無効となる。
-        - 検証:
-            - int型かどうか
-            - 現在の時刻以上であるかどうか
+        - int型
+        - 現在の時刻以上である
 
         "iat" (Issued At): JWT が発行された時間を示すクレーム。
-        - 検証:
-            - int型かどうか
-            - 現在時刻以下であるかどうか
+        - int型
+        - 現在時刻以下である
 
         Raises:
             ValueError:
-                - sub, exp, iat以外のクレームが含まれている場合
+            - sub, exp, iat以外のクレームが含まれている場合
+            - subがstr型でない場合
+            - subの長さが7文字未満の場合
+            - subの長さが8文字以上の場合
+            - subが英数字以外の文字を含む場合
+            - expが整数でない場合
+            - expが現在時刻より小さい場合
+            - iatが整数でない場合
+            - iatが現在時刻より未来の場合
         """
         allowed_claims = {"sub", "exp", "iat"}
         extra_claims = set(payload.keys()) - allowed_claims
