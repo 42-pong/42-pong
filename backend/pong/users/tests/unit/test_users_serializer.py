@@ -13,6 +13,7 @@ USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
 PASSWORD: Final[str] = constants.UserFields.PASSWORD
 USER: Final[str] = constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
 
 
 class UsersSerializerTests(TestCase):
@@ -22,11 +23,11 @@ class UsersSerializerTests(TestCase):
         2つのUserと、そのUserに紐づく2つのPlayerをDBに保存
         """
 
-        def _create_user_and_related_player(user_data: dict) -> User:
+        def _create_user_and_related_player(
+            user_data: dict, player_data: dict
+        ) -> User:
             user: User = User.objects.create_user(**user_data)
-            player_data: dict = {
-                USER: user,
-            }
+            player_data[USER] = user
             models.Player.objects.create(**player_data)
             return user
 
@@ -40,8 +41,14 @@ class UsersSerializerTests(TestCase):
             EMAIL: "testuser_2@example.com",
             PASSWORD: "testpassword",
         }
-        self.user_1: User = _create_user_and_related_player(self.user_data_1)
-        self.user_2: User = _create_user_and_related_player(self.user_data_2)
+        self.player_data_1: dict = {DISPLAY_NAME: "display_name1"}
+        self.player_data_2: dict = {DISPLAY_NAME: "display_name2"}
+        self.user_1: User = _create_user_and_related_player(
+            self.user_data_1, self.player_data_1
+        )
+        self.user_2: User = _create_user_and_related_player(
+            self.user_data_2, self.player_data_2
+        )
 
     def test_valid_multiple_instance(self) -> None:
         """
