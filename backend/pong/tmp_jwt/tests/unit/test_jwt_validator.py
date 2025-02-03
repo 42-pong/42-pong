@@ -16,6 +16,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
             "sub": "user123",
             "exp": self.now + 3600,
             "iat": self.now - 3600,
+            "typ": "access",
         }
 
     def test_valid_payload(self) -> None:
@@ -23,7 +24,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
         self.jwt_validator._validate_payload(self.payload)
 
     def test_invalid_extra_claim(self) -> None:
-        """sub, exp, iat以外のクレームを含むペイロードの場合、ValueErrorを投げることを確認するテスト"""
+        """sub, exp, iat, typ以外のクレームを含むペイロードの場合、ValueErrorを投げることを確認するテスト"""
         invalid_payload: dict = self.payload.copy()
         invalid_payload["aud"] = "pong"
         with self.assertRaises(ValueError):
@@ -73,5 +74,18 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
         """'iat'が無効な場合にValueErrorを投げることを確認するテスト"""
         invalid_payload: dict = self.payload.copy()
         invalid_payload["iat"] = iat_value
+        with self.assertRaises(ValueError):
+            self.jwt_validator._validate_payload(invalid_payload)
+
+    @parameterized.parameterized.expand(
+        [
+            ("'typ'が文字列でない場合", 123),
+            ("'typ'が'access'または'refresh'以外の場合", "invalid_type"),
+        ]
+    )
+    def test_invalid_typ(self, _: str, typ_value: str | int) -> None:
+        """'typ'が無効な場合にValueErrorを投げることを確認するテスト"""
+        invalid_payload: dict = self.payload.copy()
+        invalid_payload["typ"] = typ_value
         with self.assertRaises(ValueError):
             self.jwt_validator._validate_payload(invalid_payload)

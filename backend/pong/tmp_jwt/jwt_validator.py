@@ -27,6 +27,11 @@ class JWTValidator:
         - int型
         - 現在時刻以下である
 
+        "typ" (Type): JWTの種類を示すクレーム。今回はアクセストークンとリフレッシュトークンの2種類を扱う。
+        - str型
+            - "access"（アクセストークン）
+            - "refresh"（リフレッシュトークン）
+
         Raises:
             ValueError:
             - sub, exp, iat以外のクレームが含まれている場合
@@ -39,7 +44,7 @@ class JWTValidator:
             - iatが整数でない場合
             - iatが現在時刻より未来の場合
         """
-        allowed_claims = {"sub", "exp", "iat"}
+        allowed_claims = {"sub", "exp", "iat", "typ"}
         extra_claims = set(payload.keys()) - allowed_claims
         if extra_claims:
             error_message = (
@@ -80,5 +85,11 @@ class JWTValidator:
             error_message = (
                 "'iat' must be less than or equal to the current time."
             )
+            logger.error(error_message)
+            raise ValueError(error_message)
+
+        typ = payload.get("typ")
+        if typ not in {"access", "refresh"}:
+            error_message = "'typ' must be either 'access' or 'refresh'."
             logger.error(error_message)
             raise ValueError(error_message)
