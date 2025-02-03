@@ -24,7 +24,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
 
     def test_invalid_extra_claim(self) -> None:
         """sub, exp, iat以外のクレームを含むペイロードの場合、ValueErrorを投げることを確認するテスト"""
-        invalid_payload: dict = self.payload
+        invalid_payload: dict = self.payload.copy()
         invalid_payload["aud"] = "pong"
         with self.assertRaises(ValueError):
             self.jwt_validator._validate_payload(invalid_payload)
@@ -39,7 +39,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
     )
     def test_invalid_sub(self, _: str, invalid_sub: str | int) -> None:
         """'sub'が無効な場合にValueErrorを投げることを確認するテスト"""
-        invalid_payload = self.payload
+        invalid_payload: dict = self.payload.copy()
         invalid_payload["sub"] = invalid_sub
         with self.assertRaises(ValueError):
             self.jwt_validator._validate_payload(invalid_payload)
@@ -55,7 +55,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
     )
     def test_invalid_exp(self, _: str, exp_value: str | int) -> None:
         """'exp'が無効な場合にValueErrorを投げることを確認するテスト"""
-        invalid_payload = self.payload
+        invalid_payload: dict = self.payload.copy()
         invalid_payload["exp"] = exp_value
         with self.assertRaises(ValueError):
             self.jwt_validator._validate_payload(invalid_payload)
@@ -71,7 +71,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
     )
     def test_invalid_iat(self, _: str, iat_value: str | int) -> None:
         """'iat'が無効な場合にValueErrorを投げることを確認するテスト"""
-        invalid_payload = self.payload
+        invalid_payload: dict = self.payload.copy()
         invalid_payload["iat"] = iat_value
         with self.assertRaises(ValueError):
             self.jwt_validator._validate_payload(invalid_payload)
