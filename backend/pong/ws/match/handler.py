@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any, Final, Optional
 
+from ..share import channel_layer
 from ..share import constants as ws_constants
 from . import constants as match_constants
 from . import serializers as match_serializers
@@ -130,7 +131,9 @@ class MatchHandler:
         ):
             self.group_name = "remote_match"
 
-        await self._add_to_group()
+        await channel_layer.ChannelLayer.add_to_group(
+            self.channel_layer, self.group_name, self.channel_name
+        )
         # TODO: remoteの場合のグループ作成方法は別で考える
 
         # LOCALモードの場合teamやdisplay_nameは必要ない
@@ -145,7 +148,9 @@ class MatchHandler:
                 "ball": {"x": self.ball.x, "y": self.ball.y},
             },
         )
-        await self._send_to_group(message)
+        await channel_layer.ChannelLayer.send_to_group(
+            self.channel_layer, self.group_name, message
+        )
 
     async def _handle_ready(self, data: dict) -> None:
         """
@@ -156,7 +161,9 @@ class MatchHandler:
         """
         self.stage = match_constants.Stage.READY
         message = self._build_message({})
-        await self._send_to_group(message)
+        await channel_layer.ChannelLayer.send_to_group(
+            self.channel_layer, self.group_name, message
+        )
 
         # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
         self.stage = match_constants.Stage.PLAY
@@ -192,7 +199,9 @@ class MatchHandler:
         message = self._build_message(
             {"win": win_team, "score1": self.score1, "score2": self.score2},
         )
-        await self._send_to_group(message)
+        await channel_layer.ChannelLayer.send_to_group(
+            self.channel_layer, self.group_name, message
+        )
         await self.cleanup()
 
     # ==============================
@@ -332,44 +341,15 @@ class MatchHandler:
                         "score2": self.score2,
                     },
                 )
-                await self._send_to_group(game_state)
+                await channel_layer.ChannelLayer.send_to_group(
+                    self.channel_layer, self.group_name, game_state
+                )
                 last_update = current_time
             else:
                 await asyncio.sleep(self.FPS - delta)
 
         # ENDステージの処理
         await self._end_process()
-
-    # ======================
-    # グループ関係のメソッド
-    # ======================
-    async def _add_to_group(self) -> None:
-        """
-        Consumerをグループに追加。
-
-        チャネル名を指定したグループに登録する。
-        """
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
-
-    async def _remove_from_group(self) -> None:
-        """
-        Consuerをグループから削除。
-
-        チャネル名を指定したグループから退出させる。
-        """
-        await self.channel_layer.group_discard(
-            self.group_name, self.channel_name
-        )
-
-    async def _send_to_group(self, message: dict) -> None:
-        """
-        グループにメッセージを送信。
-
-        :param message: 送信するメッセージ
-        """
-        await self.channel_layer.group_send(
-            self.group_name, {"type": "group.message", "message": message}
-        )
 
     # ==================
     # ヘルパーメソッド
@@ -416,7 +396,9 @@ class MatchHandler:
         グループから削除し、状態を初期化する
         """
         if self.group_name:
-            await self._remove_from_group()
+            await channel_layer.ChannelLayer.remove_from_group(
+                self.channel_layer, self.group_name, self.channel_name
+            )
         self._reset_state()
 
     def _build_message(self, data: dict) -> dict:
