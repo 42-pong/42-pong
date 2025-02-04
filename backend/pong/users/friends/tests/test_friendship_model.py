@@ -52,3 +52,17 @@ class FriendshipModelTestCase(TestCase):
         self.assertTrue(
             models.Friendship.objects.filter(id=self.friendship.id).exists()
         )
+
+    def test_valid_related_user(self) -> None:
+        """
+        作成したFriendshipが正しく2人のuserに紐づいていることを確認
+        """
+        user_id: int = self.friendship.user.id
+        user: User = User.objects.get(id=user_id)
+        # Friendshipから取得したuserがuser1と一致することを確認
+        self.assertEqual(user.username, self.user_data1[USERNAME])
+
+        friend_id: int = self.friendship.friend.id
+        friend: User = User.objects.get(id=friend_id)
+        # Friendshipから取得したfriendがuser2と一致することを確認
+        self.assertEqual(friend.username, self.user_data2[USERNAME])
