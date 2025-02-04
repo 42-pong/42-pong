@@ -82,3 +82,39 @@ class FriendshipModelTestCase(TestCase):
         # userが2人とも削除されていないことを確認
         self.assertTrue(User.objects.filter(id=self.user1.id).exists())
         self.assertTrue(User.objects.filter(id=self.user2.id).exists())
+
+    def test_delete_related_user(self) -> None:
+        """
+        userを削除すると、Friendshipも削除されることを確認
+        """
+        user_id: int = self.user1.id
+        friend_id: int = self.user2.id
+        friendship_id: int = self.friendship.id
+        # user1を削除
+        self.user1.delete()
+
+        # Friendshipが削除されていることを確認
+        self.assertFalse(
+            models.Friendship.objects.filter(id=friendship_id).exists()
+        )
+        # user1は削除され、user2は削除されていないことを確認
+        self.assertFalse(User.objects.filter(id=user_id).exists())
+        self.assertTrue(User.objects.filter(id=friend_id).exists())
+
+    def test_delete_related_friend(self) -> None:
+        """
+        friendを削除すると、Friendshipも削除されることを確認
+        """
+        user_id: int = self.user1.id
+        friend_id: int = self.user2.id
+        friendship_id: int = self.friendship.id
+        # user2を削除
+        self.user2.delete()
+
+        # Friendshipが削除されていることを確認
+        self.assertFalse(
+            models.Friendship.objects.filter(id=friendship_id).exists()
+        )
+        # user1は削除されておらず、user2は削除されていることを確認
+        self.assertTrue(User.objects.filter(id=user_id).exists())
+        self.assertFalse(User.objects.filter(id=friend_id).exists())
