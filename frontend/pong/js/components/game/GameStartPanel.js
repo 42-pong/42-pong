@@ -25,7 +25,7 @@ export class GameStartPanel extends Component {
   }
 
   _onConnect() {
-    this.#menu = getMenu();
+    this.#menu = createMenu();
 
     this._attachEventListener(
       "click",
@@ -38,7 +38,7 @@ export class GameStartPanel extends Component {
   }
 }
 
-const getMenu = () => {
+const createMenu = () => {
   const tournamentStartButton = new LinkButton(
     { textContent: "トーナメント開始", pathname: Paths.TOURNAMENTS },
     { type: "button" },
