@@ -16,6 +16,7 @@ class TournamentAdmin(ModelAdmin):
         constants.TournamentFields.ID,
         constants.TournamentFields.STATUS,
         constants.TournamentFields.CREATED_AT,
+        constants.TournamentFields.UPDATED_AT,
     )
     search_fields: tuple = (constants.TournamentFields.ID,)
     list_filter: tuple = (constants.TournamentFields.STATUS,)
