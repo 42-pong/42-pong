@@ -12,6 +12,10 @@ const setJustifyContentCenter = (element) => {
   return setClassNames(element, "justify-content-center");
 };
 
+const setJustifyContentAround = (element) => {
+  return setClassNames(element, "justify-content-around");
+};
+
 const setAlignItemsCenter = (element) => {
   return setClassNames(element, "align-items-center");
 };
@@ -20,5 +24,6 @@ export const BootstrapFlex = {
   setFlexColumn,
   setFlexGrow1,
   setJustifyContentCenter,
+  setJustifyContentAround,
   setAlignItemsCenter,
 };
