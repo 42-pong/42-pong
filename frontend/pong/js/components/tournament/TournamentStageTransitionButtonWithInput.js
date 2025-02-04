@@ -1,9 +1,9 @@
-import { BootstrapButtons } from "../../bootstrap/components/buttons";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Component } from "../../core/Component";
+import { TournamentEnums } from "../../enums/TournamentEnums";
 import { ObservableInput } from "../utils/ObservableInput";
 import { TournamentStageTransitionButton } from "./TournamentStageTransitionButton";
 
