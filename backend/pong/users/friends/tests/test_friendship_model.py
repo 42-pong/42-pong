@@ -1,6 +1,7 @@
 from typing import Final
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from accounts import constants
@@ -118,3 +119,27 @@ class FriendshipModelTestCase(TestCase):
         # user1は削除されておらず、user2は削除されていることを確認
         self.assertTrue(User.objects.filter(id=user_id).exists())
         self.assertFalse(User.objects.filter(id=friend_id).exists())
+
+    def test_reverse_friendship(self) -> None:
+        """
+        user2が自分のフレンドにuser1を追加する、という逆のFriendshipであれば作成できることを確認
+        """
+        friendship: models.Friendship = models.Friendship.objects.create(
+            user=self.user2,
+            friend=self.user1,
+        )
+        self.assertTrue(
+            models.Friendship.objects.filter(id=friendship.id).exists()
+        )
+        self.assertEqual(models.Friendship.objects.count(), 2)
+
+    def test_error_duplicate_friendship(self) -> None:
+        """
+        同じFriendshipは作成できないことを確認
+        """
+        with self.assertRaises(ValidationError):
+            models.Friendship.objects.create(
+                user=self.user1,
+                friend=self.user2,
+            )
+        self.assertEqual(models.Friendship.objects.count(), 1)
