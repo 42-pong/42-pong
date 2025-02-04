@@ -19,6 +19,7 @@ export class TournamentStageTransitionButtonWithInput extends Component {
     tournamentStage = TournamentEnums.Stage.ENTRANCE,
   ) {
     super(state);
+    // TODO: 入力のバリデーションハンドリングを確認
     this.#input = new ObservableInput({}, inputAttributes);
     this.#button = new TournamentStageTransitionButton(
       buttonState,
