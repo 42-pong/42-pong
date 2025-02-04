@@ -62,20 +62,18 @@ export class TournamentProgress extends Component {
 const createCurrentProgressComponent = (tournamentProgress) => {
   const { progress, tournamentId, players } =
     tournamentProgress._getState();
+  const progressState = {
+    tournamentId,
+    players,
+  };
   switch (progress) {
     case TournamentEnums.Progress.WAITING:
-      return new TournamentWaiting({
-        tournamentId,
-        players,
-      });
+      return new TournamentWaiting(progressState);
     case TournamentEnums.Progress.ONGOING:
-      return new TournamentOngoing({
-        tournamentId,
-        players,
-      });
+      return new TournamentOngoing(progressState);
     case TournamentEnums.Progress.FINISHED:
-      return new TournamentFinished();
+      return new TournamentFinished(progressState);
     default:
-      return new TournamentWaiting();
+      return new TournamentWaiting(progressState);
   }
 };
