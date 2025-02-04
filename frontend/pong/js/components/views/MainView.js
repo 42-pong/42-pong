@@ -23,20 +23,19 @@ export class MainView extends View {
     NOT_FOUND: "/not-found",
   });
 
-  #setStyle() {
+  _setStyle() {
+    BootstrapFlex.setFlexGrow1(this.#main);
+
     BootstrapDisplay.setFlex(this);
     BootstrapFlex.setFlexColumn(this);
     BootstrapSizing.setViewportHeight100(this);
     BootstrapSpacing.setPadding(this);
-
-    BootstrapFlex.setFlexGrow1(this.#main);
   }
 
   _onConnect() {
     this.#navbar = new MainNavbar();
     this.#main = createElement("div");
     this.#mainRouter = mainRouter(this.#main);
-    this.#setStyle();
   }
 
   #updateMain() {
