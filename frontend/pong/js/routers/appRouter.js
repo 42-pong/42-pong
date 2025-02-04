@@ -1,5 +1,6 @@
 import { LoginView } from "../components/views/LoginView";
 import { MainView } from "../components/views/MainView";
+import { TournamentsView } from "../components/views/TournamentsView";
 import { Paths } from "../constants/Paths";
 import { Route } from "../core/Route";
 import { Router } from "../core/Router";
@@ -18,10 +19,7 @@ export const appRouter = (target) => {
       MainView,
       MainView.Paths.MYPAGE,
     ),
-    [Paths.TOURNAMENTS]: Route.createRoute(
-      MainView,
-      MainView.Paths.TOURNAMENTS,
-    ),
+    [Paths.TOURNAMENTS]: Route.defaultRoute(TournamentsView),
   };
   const defaultRoute = Route.createRoute(
     MainView,
