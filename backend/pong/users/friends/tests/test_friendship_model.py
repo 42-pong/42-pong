@@ -66,3 +66,19 @@ class FriendshipModelTestCase(TestCase):
         friend: User = User.objects.get(id=friend_id)
         # Friendshipから取得したfriendがuser2と一致することを確認
         self.assertEqual(friend.username, self.user_data2[USERNAME])
+
+    def test_delete_friendship(self) -> None:
+        """
+        Friendshipを削除しても、userは削除されないことを確認
+        """
+        friendship_id: int = self.friendship.id
+        # Friendship削除
+        self.friendship.delete()
+
+        # Friendshipが削除されていることを確認
+        self.assertFalse(
+            models.Friendship.objects.filter(id=friendship_id).exists()
+        )
+        # userが2人とも削除されていないことを確認
+        self.assertTrue(User.objects.filter(id=self.user1.id).exists())
+        self.assertTrue(User.objects.filter(id=self.user2.id).exists())
