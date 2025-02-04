@@ -188,12 +188,6 @@ class UsersMeView(views.APIView):
                 user.player,
                 data=request.data,
                 partial=True,  # 部分的な更新を許可
-                fields=(
-                    constants.UserFields.ID,
-                    constants.UserFields.USERNAME,
-                    constants.UserFields.EMAIL,
-                    constants.PlayerFields.DISPLAY_NAME,
-                ),
             )
         )
         # 更新対象データ(request.data)のバリデーションを確認
