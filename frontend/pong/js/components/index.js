@@ -1,6 +1,7 @@
 import { LoginContainer } from "./auth/LoginContainer";
 import { GameStartPanel } from "./game/GameStartPanel";
 import { MainNavbar } from "./navigation/MainNavbar";
+import { LinkButton } from "./utils/LinkButton";
 import { ChatView } from "./views/ChatView";
 import { FriendsView } from "./views/FriendsView";
 import { HomeView } from "./views/HomeView";
@@ -14,6 +15,7 @@ import { UsersView } from "./views/UsersView";
 customElements.define("login-container", LoginContainer, {});
 customElements.define("game-start-panel", GameStartPanel, {});
 customElements.define("main-navbar", MainNavbar, {});
+customElements.define("link-button", LinkButton, {});
 customElements.define("chat-view", ChatView, {});
 customElements.define("friends-view", FriendsView, {});
 customElements.define("home-view", HomeView, {});
