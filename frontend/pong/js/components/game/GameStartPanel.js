@@ -25,10 +25,7 @@ export class GameStartPanel extends Component {
   }
 
   _onConnect() {
-    const menu = createElement("div");
-    menu.appendChild(getTournamentStartButton());
-    menu.appendChild(getLocalMatchStartButton());
-    this.#menu = menu;
+    this.#menu = getMenu();
 
     this._attachEventListener(
       "click",
@@ -41,21 +38,22 @@ export class GameStartPanel extends Component {
   }
 }
 
-const getTournamentStartButton = () => {
+const getMenu = () => {
   const tournamentStartButton = new LinkButton(
     { textContent: "トーナメント開始", pathname: Paths.TOURNAMENTS },
     { type: "button" },
   );
-  tournamentStartButton.setPrimary();
-  return tournamentStartButton;
-};
-
-const getLocalMatchStartButton = () => {
   // TODO: DELETE "disabled": ローカルマッチの準備とともに削除
   const localMatchStartButton = new LinkButton(
     { textContent: "ローカル対戦" },
     { type: "button", disabled: "" },
   );
+
+  tournamentStartButton.setPrimary();
   localMatchStartButton.setOutlinePrimary();
-  return localMatchStartButton;
+
+  const container = createElement("div");
+  container.appendChild(tournamentStartButton);
+  container.appendChild(localMatchStartButton);
+  return container;
 };
