@@ -5,13 +5,13 @@ import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
-import { createPrimaryButton } from "../../utils/elements/button/createPrimaryButton";
 import { createElement } from "../../utils/elements/createElement";
+import { LinkButton } from "../utils/LinkButton";
 
 export class GameStartPanel extends Component {
   #menu;
 
-  #setStyle() {
+  _setStyle() {
     BootstrapDisplay.setGrid(this.#menu);
     BootstrapSizing.setWidth50(this.#menu);
     BootstrapSpacing.setGap(this.#menu);
@@ -25,12 +25,7 @@ export class GameStartPanel extends Component {
   }
 
   _onConnect() {
-    const menu = createElement("div");
-    menu.appendChild(getLocalMatchStartButton());
-    menu.appendChild(getTournamentStartButton());
-    this.#menu = menu;
-
-    this.#setStyle();
+    this.#menu = createMenu();
 
     this._attachEventListener(
       "click",
@@ -43,20 +38,22 @@ export class GameStartPanel extends Component {
   }
 }
 
-const getLocalMatchStartButton = () => {
-  const localMatchStartButton = createPrimaryButton(
-    { textContent: "ローカル対戦" },
-    { type: "button" },
-  );
-  // TODO: [DELETE] ローカルマッチの準備とともに削除
-  localMatchStartButton.setAttribute("disabled", "");
-  return localMatchStartButton;
-};
-
-const getTournamentStartButton = () => {
-  const tournamentStartButton = createPrimaryButton(
+const createMenu = () => {
+  const tournamentStartButton = new LinkButton(
     { textContent: "トーナメント開始", pathname: Paths.TOURNAMENTS },
     { type: "button" },
   );
-  return tournamentStartButton;
+  // TODO: DELETE "disabled": ローカルマッチの準備とともに削除
+  const localMatchStartButton = new LinkButton(
+    { textContent: "ローカル対戦" },
+    { type: "button", disabled: "" },
+  );
+
+  tournamentStartButton.setPrimary();
+  localMatchStartButton.setOutlinePrimary();
+
+  const container = createElement("div");
+  container.appendChild(tournamentStartButton);
+  container.appendChild(localMatchStartButton);
+  return container;
 };

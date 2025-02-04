@@ -7,7 +7,7 @@ import { GameStartPanel } from "../game/GameStartPanel";
 export class HomeView extends View {
   #gameStartPanel;
 
-  #setStyle() {
+  _setStyle() {
     BootstrapDisplay.setFlex(this);
     BootstrapFlex.setFlexColumn(this);
     BootstrapFlex.setJustifyContentCenter(this);
@@ -18,7 +18,6 @@ export class HomeView extends View {
 
   _onConnect() {
     this.#gameStartPanel = new GameStartPanel();
-    this.#setStyle();
   }
 
   _render() {

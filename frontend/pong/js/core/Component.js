@@ -22,9 +22,11 @@ export class Component extends HTMLElement {
   _cleanup() {
     this.replaceChildren();
   }
+  _setStyle() {}
 
   connectedCallback() {
     this._onConnect();
+    this._setStyle();
     this._render();
   }
 
