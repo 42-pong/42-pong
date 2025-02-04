@@ -24,12 +24,12 @@ export class MainView extends View {
   });
 
   _setStyle() {
-    BootstrapFlex.setFlexGrow1(this.#main);
-
     BootstrapDisplay.setFlex(this);
     BootstrapFlex.setFlexColumn(this);
     BootstrapSizing.setViewportHeight100(this);
     BootstrapSpacing.setPadding(this);
+
+    BootstrapFlex.setFlexGrow1(this.#main);
   }
 
   _onConnect() {
