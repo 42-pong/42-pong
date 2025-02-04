@@ -13,7 +13,7 @@ export class TournamentStageTransitionButton extends StyledButton {
   ) {
     super(state, attributes);
     this.#tournamentStage = tournamentStage;
-    this.#tournamentId = "<TOURNAMENT_ID>";
+    this.#tournamentId = "";
   }
 
   _onConnect() {
