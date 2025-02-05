@@ -143,3 +143,14 @@ class FriendshipModelTestCase(TestCase):
                 friend=self.user2,
             )
         self.assertEqual(models.Friendship.objects.count(), 1)
+
+    def test_error_self_friendship(self) -> None:
+        """
+        自分自身をフレンドに追加するFriendshipは作成できないことを確認
+        """
+        with self.assertRaises(ValidationError):
+            models.Friendship.objects.create(
+                user=self.user1,
+                friend=self.user1,
+            )
+        self.assertEqual(models.Friendship.objects.count(), 1)
