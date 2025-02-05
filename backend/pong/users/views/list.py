@@ -54,6 +54,8 @@ class UsersListView(views.APIView):
                     ),
                 ],
             ),
+            # todo: 詳細のschemaが必要であれば追加する
+            500: utils.OpenApiResponse(description="Internal server error"),
         },
     )
     # todo: try-exceptで全体を囲って500を返す？

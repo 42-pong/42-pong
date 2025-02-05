@@ -65,6 +65,8 @@ class UsersRetrieveView(views.APIView):
                     ),
                 ],
             ),
+            # todo: 詳細のschemaが必要であれば追加する
+            500: utils.OpenApiResponse(description="Internal server error"),
         },
     )
     def get(self, request: request.Request, user_id: int) -> response.Response:
