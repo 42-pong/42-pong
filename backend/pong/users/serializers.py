@@ -52,4 +52,5 @@ class UsersSerializer(serializers.Serializer):
             constants.PlayerFields.DISPLAY_NAME, player.display_name
         )
         # todo: avatarも新しいものを代入
+        player.save()  # 必須
         return player

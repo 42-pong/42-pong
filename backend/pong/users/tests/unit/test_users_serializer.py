@@ -108,6 +108,7 @@ class UsersSerializerTests(TestCase):
         serializer.is_valid(raise_exception=True)
         serializer.save()  # update()が呼ばれる
 
+        player.refresh_from_db()  # 最新のDBの情報に更新
         self.assertEqual(player.display_name, new_valid_display_name)
 
     @parameterized.parameterized.expand(
@@ -142,4 +143,5 @@ class UsersSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(constants.PlayerFields.DISPLAY_NAME, serializer.errors)
         # 更新されずに元のdisplay_nameが保持されていることを確認
+        player.refresh_from_db()  # 最新のDBの情報に更新
         self.assertEqual(player.display_name, self.player_data_1[DISPLAY_NAME])

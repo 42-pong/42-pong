@@ -35,9 +35,11 @@ class UsersMeViewTests(test.APITestCase):
             DISPLAY_NAME: "display_name1",
         }
         # User,Playerを作成
-        user = User.objects.create_user(**self.user_data)
+        user: User = User.objects.create_user(**self.user_data)
         self.player_data[USER] = user
-        player_models.Player.objects.create(**self.player_data)
+        self.player: player_models.Player = (
+            player_models.Player.objects.create(**self.player_data)
+        )
 
         # tokenを取得
         token_url: str = reverse("tmp_jwt:token_obtain_pair")
@@ -101,6 +103,9 @@ class UsersMeViewTests(test.APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data: dict = response.data[DATA]
         self.assertEqual(response_data[DISPLAY_NAME], new_valid_display_name)
+        # 最新のDBの情報に更新し、DBの値も変更されていることを確認
+        self.player.refresh_from_db()
+        self.assertEqual(self.player.display_name, new_valid_display_name)
 
     @parameterized.parameterized.expand(
         [
@@ -124,6 +129,11 @@ class UsersMeViewTests(test.APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(DISPLAY_NAME, response.data[ERRORS])
+        # 最新のDBの情報に更新し、DBの値が変更されていないことを確認
+        self.player.refresh_from_db()
+        self.assertEqual(
+            self.player.display_name, self.player_data[DISPLAY_NAME]
+        )
 
     def test_patch_401_unauthenticated_user(self) -> None:
         """
