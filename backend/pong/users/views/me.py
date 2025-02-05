@@ -19,6 +19,7 @@ class UsersMeView(views.APIView):
     自分のユーザープロフィールを取得・更新する
     """
 
+    # プロフィールを全て返すのでIsAuthenticatedをセットする必要がある
     permission_classes = [permissions.IsAuthenticated]
 
     @utils.extend_schema(
