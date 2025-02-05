@@ -34,11 +34,11 @@ class UsersRetrieveView(views.APIView):
                     utils.OpenApiExample(
                         "Example 200 response",
                         value={
-                            "status": "ok",
-                            "data": {
-                                "id": 2,
-                                "username": "username1",
-                                "display_name": "display_name1",
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: {
+                                constants.UserFields.ID: 2,
+                                constants.UserFields.USERNAME: "username1",
+                                constants.PlayerFields.DISPLAY_NAME: "display_name1",
                             },
                         },
                     ),
@@ -49,16 +49,18 @@ class UsersRetrieveView(views.APIView):
                 response={
                     "type": "object",
                     "properties": {
-                        "status": {"type": "string"},
-                        "errors": {"type": "dict"},
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.ERRORS: {"type": "dict"},
                     },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 404 response",
                         value={
-                            "status": "error",
-                            "errors": {"user_id": "The user does not exist."},
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.ERRORS: {
+                                "user_id": "The user does not exist."
+                            },
                         },
                     ),
                 ],

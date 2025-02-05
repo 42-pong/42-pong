@@ -34,18 +34,18 @@ class UsersListView(views.APIView):
                     utils.OpenApiExample(
                         "Example 200 response",
                         value={
-                            "status": "ok",
-                            "data": [
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: [
                                 {
-                                    "id": 2,
-                                    "username": "username1",
-                                    "display_name": "display_name1",
+                                    constants.UserFields.ID: 2,
+                                    constants.UserFields.USERNAME: "username1",
+                                    constants.PlayerFields.DISPLAY_NAME: "display_name1",
                                     # todo: avatar追加
                                 },
                                 {
-                                    "id": 3,
-                                    "username": "username2",
-                                    "display_name": "display_name2",
+                                    constants.UserFields.ID: 3,
+                                    constants.UserFields.USERNAME: "username2",
+                                    constants.PlayerFields.DISPLAY_NAME: "display_name2",
                                     # todo: avatar追加
                                 },
                                 {"...", "..."},
