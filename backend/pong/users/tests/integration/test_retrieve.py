@@ -72,7 +72,7 @@ class UsersRetrieveViewTests(test.APITestCase):
         self.assertTrue(User.objects.filter(id=user1.id).exists())
         self.assertTrue(User.objects.filter(id=user2.id).exists())
 
-    def test_get_user_with_valid_user_id(self) -> None:
+    def test_get_200_user_with_valid_user_id(self) -> None:
         """
         存在するuser_idをurlに指定して特定のユーザープロフィールを取得できることを確認
         """
@@ -101,7 +101,7 @@ class UsersRetrieveViewTests(test.APITestCase):
             )
             self.assertNotIn(EMAIL, response_data)
 
-    def test_get_user_returns_404_with_nonexistent_user_id(self) -> None:
+    def test_get_404_user_returns_404_with_nonexistent_user_id(self) -> None:
         """
         存在しないuser_idを指定した場合に、エラーが返されることを確認
         """
