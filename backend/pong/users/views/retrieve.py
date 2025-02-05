@@ -24,6 +24,7 @@ class UsersRetrieveView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
+        operation_id="get_users_retrieve",
         request=None,
         responses={
             200: utils.OpenApiResponse(

@@ -24,6 +24,7 @@ class UsersListView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
+        operation_id="get_users_list",
         request=None,
         responses={
             200: utils.OpenApiResponse(
