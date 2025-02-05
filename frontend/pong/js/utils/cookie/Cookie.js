@@ -2,7 +2,7 @@ const setCookie = (token, expiration) => {
   const expirationDate = new Date();
   //cookieの有効期間をexpiration日間にする
   expirationDate.setDate(expirationDate.getDate() + expiration);
-  document.cookie = `JWT=${token}; expires=${expirationDate.toUTCString()}`;
+  document.cookie = `JWT=${token}; expires=${expirationDate.toUTCString()}; secure;`;
 };
 
 const getCookie = (name) => {
