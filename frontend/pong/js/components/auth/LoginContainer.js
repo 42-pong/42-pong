@@ -71,12 +71,6 @@ export class LoginContainer extends Component {
     this.#title = title;
     this.#form = form;
 
-    // TODO: "submit" ハンドリングの更新
-    this._attachEventListener("submit", (event) => {
-      event.preventDefault();
-      this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
-    });
-
     // "api/oauth2/authorize/”　へfetchする
     oauth2Button.addEventListener("click", async (event) => {
       try {
@@ -102,10 +96,6 @@ export class LoginContainer extends Component {
         // cookieのベストプラクティス
         // 仮のJWTをcookieに保存する
         Cookie.setCookie(accessToken, 7);
-        //cookieからJWTを取得する
-        const jwt = Cookie.getCookie("JWT");
-        if (jwt) console.log("get jwt success", jwt);
-        else console.log("get jwt failed");
       } catch (error) {
         console.log("Error:", error);
       }
@@ -120,11 +110,13 @@ export class LoginContainer extends Component {
     // コンテナをカスタム要素に追加
     this.appendChild(this.#container);
 
-    //ログインページからJWTを認証してホームページへリダイレクトする
-    this._attachEventListener("submit", (event) => {
-      event.preventDefault();
+    //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
+    //cookieからJWTを取得する
+    const jwt = Cookie.getCookie("JWT");
+    if (jwt) {
+      console.log("get jwt success", jwt);
       this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
-    });
+    } else console.log("get jwt failed");
 
     // TODO 各ボタンの条件分岐でAPIエンドポイントにフェッチ(以下からのコードはBEのエントポイントと連携するため、レビューしない)
     // "api/signin/"　へfetchする
