@@ -13,6 +13,23 @@ const UPDATE_ROUTER = {
   },
 };
 
+const UPDATE_TOURNAMENT_STAGE = {
+  type: "update-tournament-stage",
+  create: (stage, tournamentId) =>
+    createPongEvent(UPDATE_TOURNAMENT_STAGE.type, {
+      stage,
+      tournamentId,
+    }),
+};
+
+const UPDATE_TOURNAMENT_PROGRESS = {
+  type: "update-tournament-progress",
+  create: (progress) =>
+    createPongEvent(UPDATE_TOURNAMENT_PROGRESS.type, { progress }),
+};
+
 export const PongEvents = {
   UPDATE_ROUTER,
+  UPDATE_TOURNAMENT_STAGE,
+  UPDATE_TOURNAMENT_PROGRESS,
 };
