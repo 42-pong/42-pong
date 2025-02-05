@@ -20,8 +20,6 @@ export class TournamentsView extends View {
     // TODO: globalWebSocket Handler 登録
 
     this.#tournamentContainer = new TournamentContainer();
-
-    this._setStyle();
   }
 
   _onDisconnect() {
