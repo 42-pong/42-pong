@@ -20,7 +20,7 @@ class UsersListView(views.APIView):
     ユーザープロフィールの一覧を取得するビュー
     """
 
-    # todo: IsAuthenticatedに変更する
+    # todo: IsAuthenticatedに変更する。extend_schemaにも401を追加する
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(

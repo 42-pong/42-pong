@@ -43,25 +43,18 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 現在Djangoが自動で返している401のスキーマも書く？
-            # todo: 404ではないかも
-            404: utils.OpenApiResponse(
-                description="The user does not exist.",
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
                 response={
                     "type": "object",
-                    "properties": {
-                        custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "dict"},
-                    },
+                    "properties": {"detail": {"type": "string"}},
                 },
                 examples=[
                     utils.OpenApiExample(
-                        "Example 404 response",
+                        "Example 401 response",
                         value={
-                            custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.ERRORS: {
-                                "user": "The user does not exist."
-                            },
+                            "detail": "Authentication credentials were not provided."
                         },
                     ),
                 ],
@@ -81,7 +74,7 @@ class UsersMeView(views.APIView):
         if not hasattr(user, "player"):
             return custom_response.CustomResponse(
                 errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
+                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
             )
 
         users_serializer: serializers.UsersSerializer = (
@@ -146,25 +139,18 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 現在Djangoが自動で返している401のスキーマも書く？
-            # todo: 404ではないかも
-            404: utils.OpenApiResponse(
-                description="The user does not exist.",
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
                 response={
                     "type": "object",
-                    "properties": {
-                        custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "dict"},
-                    },
+                    "properties": {"detail": {"type": "string"}},
                 },
                 examples=[
                     utils.OpenApiExample(
-                        "Example 404 response",
+                        "Example 401 response",
                         value={
-                            custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.ERRORS: {
-                                "user": "The user does not exist."
-                            },
+                            "detail": "Authentication credentials were not provided."
                         },
                     ),
                 ],
@@ -181,7 +167,7 @@ class UsersMeView(views.APIView):
         if not hasattr(user, "player"):
             return custom_response.CustomResponse(
                 errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
+                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
             )
         # serializer作成
         users_serializer: serializers.UsersSerializer = (
