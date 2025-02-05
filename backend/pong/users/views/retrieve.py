@@ -1,3 +1,5 @@
+import logging
+
 from django.core.exceptions import ObjectDoesNotExist
 from drf_spectacular import utils
 from rest_framework import (
@@ -13,6 +15,8 @@ from accounts.player import models
 from pong.custom_response import custom_response
 
 from .. import serializers
+
+logger = logging.getLogger(__name__)
 
 
 class UsersRetrieveView(views.APIView):
@@ -94,14 +98,16 @@ class UsersRetrieveView(views.APIView):
                 data=users_serializer.data,
                 status=status.HTTP_200_OK,
             )
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist as e:
             # user_idに紐づくPlayerが存在しない場合
+            logger.error(f"[404] {str(e)}: user_id={user_id} does not exist.")
             return custom_response.CustomResponse(
                 errors={"user_id": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
             # MultipleObjectsReturnedなどの場合
+            logger.error(f"[500] Internal server error: {str(e)}")
             return custom_response.CustomResponse(
                 errors={"detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

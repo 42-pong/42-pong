@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.models import AnonymousUser, User
 from drf_spectacular import utils
 from rest_framework import (
@@ -12,6 +14,8 @@ from accounts import constants
 from pong.custom_response import custom_response
 
 from .. import serializers
+
+logger = logging.getLogger(__name__)
 
 
 class UsersMeView(views.APIView):
@@ -74,6 +78,7 @@ class UsersMeView(views.APIView):
         # AnonymousUserの場合はget()に入る前にpermission_classesで弾かれるが、
         # AnonymousUserだとuser.playerが使えずmypyでエラーになるため、事前にチェックが必要
         if not hasattr(user, "player"):
+            # todo: この処理が必要ならlogger書く
             return custom_response.CustomResponse(
                 errors={"user": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
@@ -169,6 +174,7 @@ class UsersMeView(views.APIView):
         # リクエストのtokenからuserを取得
         user: User | AnonymousUser = request.user
         if not hasattr(user, "player"):
+            # todo: この処理が必要ならlogger書く
             return custom_response.CustomResponse(
                 errors={"user": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
@@ -183,6 +189,9 @@ class UsersMeView(views.APIView):
         )
         # 更新対象データ(request.data)のバリデーションを確認
         if not users_serializer.is_valid():
+            logger.error(
+                f"[400] Serializer's validation error: {users_serializer.errors}"
+            )
             return custom_response.CustomResponse(
                 errors=users_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
