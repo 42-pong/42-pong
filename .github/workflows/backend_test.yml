@@ -1,13 +1,13 @@
-name: Backend Unit Test
+name: Backend Test
 
 on:
   pull_request:
     paths:
       - 'backend/pong/**'
-      - '.github/workflows/backend_unit_test.yml'
+      - '.github/workflows/backend_test.yml'
 
 jobs:
-  backend-unit-test:
+  backend-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -40,7 +40,7 @@ jobs:
             JWS_SECRET_KEY="${{ secrets.JWS_SECRET_KEY }}"
           EOF
 
-      # backendコンテナのunit-testがDBコンテナに依存しているため、DBコンテナを先に起動する
+      # backendコンテナのtestがDBコンテナに依存しているため、DBコンテナを先に起動する
       # --waitオプションによりstateがhealthyになるまで待機する
       # backendコンテナと同時に起動しない理由は、エラー時に問題を切り分けるため
       - name: Set up db container with docker compose
@@ -59,9 +59,9 @@ jobs:
       - name: Check backend container logs
         run: docker compose -f compose.yaml logs backend
 
-      # backendのunit-testを実行
-      - name: Run Backend Unit Test
-        run: docker compose -f compose.yaml exec -T backend make unit-test
+      # backendのtestを実行
+      - name: Run Backend Test
+        run: docker compose -f compose.yaml exec -T backend make test
 
       # docker composeを停止してクリーンアップする
       - name: Tear down docker compose
