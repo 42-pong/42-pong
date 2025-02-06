@@ -38,7 +38,6 @@ class TournamentHandler:
         デバッグ用途でTournamentHandlerオブジェクトの詳細な表現の文字列を返す。
         """
         return f"TournamentHandler(channel_layer={self.channel_layer!r}, channel_name={self.channel_name!r})"
-        return "TournamentHandler"
 
     async def handle(self, payload: dict) -> None:
         """
