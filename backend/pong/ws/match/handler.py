@@ -1,8 +1,10 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Any, Final, Optional
+from typing import Final, Optional
 
-from ..share import channel_layer
+from channels.layers import BaseChannelLayer  # type: ignore
+
+from ..share import channel_handler
 from ..share import constants as ws_constants
 from . import constants as match_constants
 from . import serializers as match_serializers
@@ -42,10 +44,10 @@ class MatchHandler:
     score2: int
     local_play: bool
     group_name: str
-    channel_layer: Any
+    channel_handler: channel_handler.ChannelHandler
     channel_name: str
 
-    def __init__(self, channel_layer: Any, channel_name: str):
+    def __init__(self, channel_layer: BaseChannelLayer, channel_name: str):
         """
         MatchHandlerの初期化。
 
@@ -58,8 +60,9 @@ class MatchHandler:
             match_constants.Stage.PLAY.value: self._handle_play,
             match_constants.Stage.END.value: self._handle_end,
         }
-        self.channel_layer = channel_layer
-        self.channel_name = channel_name
+        self.channel_handler = channel_handler.ChannelHandler(
+            channel_layer, channel_name
+        )
         self._reset_state()
 
     def __str__(self) -> str:
@@ -86,7 +89,7 @@ class MatchHandler:
             f"ball={self.ball}, ball_speed={self.ball_speed}, "
             f"score1={self.score1}, score2={self.score2}, "
             f"local_play={self.local_play}, group_name={self.group_name}, "
-            f"channel_layer={self.channel_layer}, channel_name={self.channel_name})"
+            f"channel_handler={self.channel_handler!r})"
         )
 
     # ===================
@@ -131,9 +134,7 @@ class MatchHandler:
         ):
             self.group_name = "remote_match"
 
-        await channel_layer.ChannelLayer.add_to_group(
-            self.channel_layer, self.group_name, self.channel_name
-        )
+        await self.channel_handler.add_to_group(self.group_name)
         # TODO: remoteの場合のグループ作成方法は別で考える
 
         # LOCALモードの場合teamやdisplay_nameは必要ない
@@ -148,9 +149,7 @@ class MatchHandler:
                 "ball": {"x": self.ball.x, "y": self.ball.y},
             },
         )
-        await channel_layer.ChannelLayer.send_to_group(
-            self.channel_layer, self.group_name, message
-        )
+        await self.channel_handler.send_to_group(self.group_name, message)
 
     async def _handle_ready(self, data: dict) -> None:
         """
@@ -161,9 +160,7 @@ class MatchHandler:
         """
         self.stage = match_constants.Stage.READY
         message = self._build_message({})
-        await channel_layer.ChannelLayer.send_to_group(
-            self.channel_layer, self.group_name, message
-        )
+        await self.channel_handler.send_to_group(self.group_name, message)
 
         # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
         self.stage = match_constants.Stage.PLAY
@@ -199,9 +196,7 @@ class MatchHandler:
         message = self._build_message(
             {"win": win_team, "score1": self.score1, "score2": self.score2},
         )
-        await channel_layer.ChannelLayer.send_to_group(
-            self.channel_layer, self.group_name, message
-        )
+        await self.channel_handler.send_to_group(self.group_name, message)
         await self.cleanup()
 
     # ==============================
@@ -341,8 +336,8 @@ class MatchHandler:
                         "score2": self.score2,
                     },
                 )
-                await channel_layer.ChannelLayer.send_to_group(
-                    self.channel_layer, self.group_name, game_state
+                await self.channel_handler.send_to_group(
+                    self.group_name, game_state
                 )
                 last_update = current_time
             else:
@@ -396,9 +391,7 @@ class MatchHandler:
         グループから削除し、状態を初期化する
         """
         if self.group_name:
-            await channel_layer.ChannelLayer.remove_from_group(
-                self.channel_layer, self.group_name, self.channel_name
-            )
+            await self.channel_handler.remove_from_group(self.group_name)
         self._reset_state()
 
     def _build_message(self, data: dict) -> dict:
