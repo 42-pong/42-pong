@@ -55,10 +55,10 @@ typecheck:
 unit-test:
 	@if [ -z "$(ARG)" ]; then \
 		echo "Running all tests..."; \
-		python manage.py test -v2; \
+		python manage.py test -v2 --parallel; \
 	else \
 		echo "Running tests for: $(ARG)..."; \
-		python manage.py test $(ARG) -v2; \
+		python manage.py test $(ARG) -v2 --parallel; \
 	fi
 
 # -------------------------------------------------------
