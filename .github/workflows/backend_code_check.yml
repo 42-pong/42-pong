@@ -26,6 +26,7 @@ jobs:
       DB_USER: "${{ secrets.DB_USER }}"
       DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
       JWS_SECRET_KEY: "${{ secrets.JWS_SECRET_KEY }}"
+      REDIS_PASSWORD: "${{ secrets.REDIS_PASSWORD }}"
 
     steps:
       # ソースコードをチェックアウト
