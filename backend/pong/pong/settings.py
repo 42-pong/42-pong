@@ -224,10 +224,12 @@ SPECTACULAR_SETTINGS = {
 # https://channels.readthedocs.io/en/latest/#
 
 CHANNEL_LAYERS = {
-    # TODO: 必要になったらchannel_redisを利用する
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        }
+    }
 }
 
 ASGI_APPLICATION = "pong.asgi.application"
