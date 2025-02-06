@@ -51,6 +51,8 @@ class UsersSerializer(serializers.Serializer):
         player.display_name = validated_data.get(
             constants.PlayerFields.DISPLAY_NAME, player.display_name
         )
-        # todo: avatarも新しいものを代入
-        player.save()  # 必須
+        # todo: avatarも新しいものを代入・save()のupdate_fieldsにも追加
+
+        # create()をオーバーライドしない場合、update()内でsave()は必須
+        player.save(update_fields=[constants.PlayerFields.DISPLAY_NAME])
         return player
