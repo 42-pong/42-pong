@@ -22,7 +22,7 @@ class Participation(models.Model):
     id = models.BigAutoField(primary_key=True)
     tournament_id = models.ForeignKey(
         tournament_models.Tournament,
-        related_name="participants",  # Tournamentsからこのテーブルにアクセスするときにエイリアス名
+        related_name="tournament_participations",  # Tournamentsからこのテーブルにアクセスするときにエイリアス名
         on_delete=models.CASCADE,
         db_column="tournament_id",
     )

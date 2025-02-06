@@ -6,6 +6,7 @@ from enum import Enum
 class TournamentFields:
     ID: str = "id"
     CREATED_AT: str = "created_at"
+    UPDATED_AT: str = "updated_at"
     STATUS: str = "status"
 
     class StatusEnum(Enum):
