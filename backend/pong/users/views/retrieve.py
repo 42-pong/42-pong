@@ -8,6 +8,7 @@ from rest_framework import (
     views,
 )
 
+from accounts import constants
 from accounts.player import models
 from pong.custom_response import custom_response
 
@@ -74,7 +75,15 @@ class UsersRetrieveView(views.APIView):
             # user_idに紐づくPlayerを取得
             player: models.Player = models.Player.objects.get(user_id=user_id)
             users_serializer: serializers.UsersSerializer = (
-                serializers.UsersSerializer(player)
+                serializers.UsersSerializer(
+                    player,
+                    # emailは含めない
+                    fields=(
+                        constants.UserFields.ID,
+                        constants.UserFields.USERNAME,
+                        constants.PlayerFields.DISPLAY_NAME,
+                    ),
+                )
             )
             return custom_response.CustomResponse(
                 data=users_serializer.data,
