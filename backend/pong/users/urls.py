@@ -2,7 +2,7 @@ from typing import Final
 
 from django.urls import path
 
-from .views import list, retrieve
+from .views import list, me, retrieve
 
 app_name: Final[str] = "users"
 urlpatterns = [
@@ -13,4 +13,5 @@ urlpatterns = [
         retrieve.UsersRetrieveView.as_view(),
         name="retrieve",
     ),
+    path("me/", me.UsersMeView.as_view(), name="me"),
 ]

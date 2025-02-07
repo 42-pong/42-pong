@@ -68,7 +68,14 @@ class UsersListView(views.APIView):
         )
         # 複数のオブジェクトをシリアライズ
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            all_players_with_users, many=True
+            all_players_with_users,
+            many=True,
+            # emailは含めない
+            fields=(
+                constants.UserFields.ID,
+                constants.UserFields.USERNAME,
+                constants.PlayerFields.DISPLAY_NAME,
+            ),
         )
         return custom_response.CustomResponse(
             data=serializer.data, status=status.HTTP_200_OK
