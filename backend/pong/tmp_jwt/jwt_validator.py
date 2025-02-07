@@ -45,11 +45,21 @@ class JWTValidator:
             - iatが現在時刻より未来の場合
         """
         allowed_claims: set[str] = {"sub", "exp", "iat", "typ"}
-        missing_claims: set[str] = set(payload.keys()) - allowed_claims
+        payload_keys: set[str] = set(payload.keys())
+        missing_claims: set[str] = allowed_claims - payload_keys
+        unexpected_claims: set[str] = payload_keys - allowed_claims
+
+        error_messages: list = []
         if missing_claims:
-            error_message = (
-                f"Unexpected claims found: {', '.join(missing_claims)}"
+            error_messages.append(
+                f"Missing claims: {', '.join(missing_claims)}"
             )
+        if unexpected_claims:
+            error_messages.append(
+                f"Unexpected claims: {', '.join(unexpected_claims)}"
+            )
+        if error_messages:
+            error_message = " | ".join(error_messages)
             logger.error(error_message)
             raise ValueError(error_message)
 

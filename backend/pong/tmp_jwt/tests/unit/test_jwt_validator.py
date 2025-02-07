@@ -45,7 +45,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
         invalid_payload: dict = {
             key: value
             for key, value in self.payload.items()
-            if key not in missing_claims
+            if key in missing_claims
         }
         with self.assertRaises(ValueError):
             self.jwt_validator._validate_payload(invalid_payload)
