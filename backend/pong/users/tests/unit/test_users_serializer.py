@@ -1,0 +1,145 @@
+from typing import Final
+
+import parameterized  # type: ignore[import-untyped]
+from django.contrib.auth.models import User
+from django.db.models.query import QuerySet
+from django.test import TestCase
+
+from accounts import constants
+from accounts.player import models
+
+from ... import serializers
+
+USERNAME: Final[str] = constants.UserFields.USERNAME
+EMAIL: Final[str] = constants.UserFields.EMAIL
+PASSWORD: Final[str] = constants.UserFields.PASSWORD
+USER: Final[str] = constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
+
+
+class UsersSerializerTests(TestCase):
+    def setUp(self) -> None:
+        """
+        TestCaseのsetUpメソッドのオーバーライド
+        2つのUserと、そのUserに紐づく2つのPlayerをDBに保存
+        """
+
+        def _create_user_and_related_player(
+            user_data: dict, player_data: dict
+        ) -> User:
+            user: User = User.objects.create_user(**user_data)
+            player_data[USER] = user
+            models.Player.objects.create(**player_data)
+            return user
+
+        self.user_data_1: dict = {
+            USERNAME: "testuser_1",
+            EMAIL: "testuser_1@example.com",
+            PASSWORD: "testpassword",
+        }
+        self.user_data_2: dict = {
+            USERNAME: "testuser_2",
+            EMAIL: "testuser_2@example.com",
+            PASSWORD: "testpassword",
+        }
+        self.player_data_1: dict = {DISPLAY_NAME: "display_name1"}
+        self.player_data_2: dict = {DISPLAY_NAME: "display_name2"}
+        self.user_1: User = _create_user_and_related_player(
+            self.user_data_1, self.player_data_1
+        )
+        self.user_2: User = _create_user_and_related_player(
+            self.user_data_2, self.player_data_2
+        )
+
+    def test_valid_multiple_instance(self) -> None:
+        """
+        正常なインスタンスが複数渡された場合に、dataにインスタンス分の値が入っていることを確認
+        """
+        # Userに紐づくPlayer全てのQuerySetを取得
+        all_players_with_users: QuerySet[models.Player] = (
+            models.Player.objects.select_related(USER).all()
+        )
+        # serializer作成
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            all_players_with_users, many=True
+        )
+
+        # シリアライズ済みdataからusernameのみのlistを作成
+        serializer_data_usernames: list[str] = [
+            data[USERNAME] for data in serializer.data
+        ]
+        self.assertEqual(len(serializer.data), 2)
+        for username in (
+            self.user_data_1[USERNAME],
+            self.user_data_2[USERNAME],
+        ):
+            self.assertIn(username, serializer_data_usernames)
+            # todo: display_nameも確認する
+
+    def test_non_users(self) -> None:
+        """
+        ユーザーが存在しない場合に、エラーにならずdataが空であることを確認
+        """
+        # User,紐づくPlayerを全て削除
+        User.objects.all().delete()
+
+        all_players_with_users: QuerySet[models.Player] = (
+            models.Player.objects.select_related(USER).all()
+        )
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            all_players_with_users, many=True
+        )
+
+        self.assertEqual(serializer.data, [])
+
+    def test_update_with_valid_display_name(self) -> None:
+        """
+        正しいdisplay_nameでupdate()が呼ばれた際に、正常にDBのdisplay_nameを更新できることを確認
+        """
+        player: models.Player = models.Player.objects.get(user=self.user_1)
+        # 新しいdisplay_name
+        new_valid_display_name: str = "new_name"
+        request_data: dict = {
+            constants.PlayerFields.DISPLAY_NAME: new_valid_display_name,
+        }
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            player, data=request_data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()  # update()が呼ばれる
+
+        self.assertEqual(player.display_name, new_valid_display_name)
+
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列のdisplay_name", ""),
+            ("max_lengthを超えるdisplay_name", "a" * 16),
+            ("不正な文字が含まれるdisplay_name", "あ"),
+            ("不正な記号が含まれるdisplay_name", "/"),
+        ]
+    )
+    def test_update_with_invalid_display_name(
+        self, testcase_name: str, new_invalid_display_name: str
+    ) -> None:
+        """
+        不正な形式のdisplay_nameでupdate()しようとした際に、エラーが発生して更新されないことを確認
+        正しいdisplay_name:
+            - 1文字以上、15文字以下
+            - 使用可能な文字である英文字・数字・記号(-_.~)で構成される
+
+        Args:
+            testcase_name: テストケースの説明
+            new_invalid_display_name: 新しく更新したいdisplay_nameの値
+        """
+        player: models.Player = models.Player.objects.get(user=self.user_1)
+        request_data: dict = {
+            constants.PlayerFields.DISPLAY_NAME: new_invalid_display_name,
+        }
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            player, data=request_data, partial=True
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(constants.PlayerFields.DISPLAY_NAME, serializer.errors)
+        # 更新されずに元のdisplay_nameが保持されていることを確認
+        self.assertEqual(player.display_name, self.player_data_1[DISPLAY_NAME])

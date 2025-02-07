@@ -12,7 +12,7 @@ from accounts import constants
 from accounts.player import models
 from pong.custom_response import custom_response
 
-from . import serializers
+from .. import serializers
 
 
 class UsersListView(views.APIView):
@@ -38,12 +38,14 @@ class UsersListView(views.APIView):
                                 {
                                     "id": 2,
                                     "username": "username1",
-                                    # todo: display_name,avatar追加
+                                    "display_name": "display_name1",
+                                    # todo: avatar追加
                                 },
                                 {
                                     "id": 3,
                                     "username": "username2",
-                                    # todo: display_name,avatar追加
+                                    "display_name": "display_name2",
+                                    # todo: avatar追加
                                 },
                                 {"...", "..."},
                             ],
@@ -66,7 +68,14 @@ class UsersListView(views.APIView):
         )
         # 複数のオブジェクトをシリアライズ
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            all_players_with_users, many=True
+            all_players_with_users,
+            many=True,
+            # emailは含めない
+            fields=(
+                constants.UserFields.ID,
+                constants.UserFields.USERNAME,
+                constants.PlayerFields.DISPLAY_NAME,
+            ),
         )
         return custom_response.CustomResponse(
             data=serializer.data, status=status.HTTP_200_OK

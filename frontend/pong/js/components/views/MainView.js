@@ -23,7 +23,7 @@ export class MainView extends View {
     NOT_FOUND: "/not-found",
   });
 
-  #setStyle() {
+  _setStyle() {
     BootstrapDisplay.setFlex(this);
     BootstrapFlex.setFlexColumn(this);
     BootstrapSizing.setViewportHeight100(this);
@@ -36,7 +36,6 @@ export class MainView extends View {
     this.#navbar = new MainNavbar();
     this.#main = createElement("div");
     this.#mainRouter = mainRouter(this.#main);
-    this.#setStyle();
   }
 
   #updateMain() {

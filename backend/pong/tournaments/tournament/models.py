@@ -25,6 +25,7 @@ class Tournament(models.Model):
         # TODO: db_index=Trueを必要によって追加
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "tournaments"

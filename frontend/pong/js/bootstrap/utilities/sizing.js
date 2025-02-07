@@ -4,12 +4,20 @@ const setWidth50 = (element) => {
   return setClassNames(element, "w-50");
 };
 
+const setWidth75 = (element) => {
+  return setClassNames(element, "w-75");
+};
+
 const setWidth100 = (element) => {
   return setClassNames(element, "w-100");
 };
 
 const setHeight50 = (element) => {
   return setClassNames(element, "h-50");
+};
+
+const setHeight75 = (element) => {
+  return setClassNames(element, "h-75");
 };
 
 const setHeight100 = (element) => {
@@ -22,8 +30,10 @@ const setViewportHeight100 = (element) => {
 
 export const BootstrapSizing = {
   setWidth50,
+  setWidth75,
   setWidth100,
   setHeight50,
+  setHeight75,
   setHeight100,
   setViewportHeight100,
 };
