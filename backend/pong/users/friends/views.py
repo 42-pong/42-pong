@@ -3,6 +3,7 @@ from django.db.models.query import QuerySet
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, viewsets
 
+from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
 
 from . import constants, models
@@ -24,6 +25,10 @@ from .serializers import list_serializers
                                 {
                                     constants.FriendshipFields.USER_ID: 1,
                                     constants.FriendshipFields.FRIEND_USER_ID: 2,
+                                    constants.FriendshipFields.FRIEND: {
+                                        accounts_constants.UserFields.USERNAME: "username2",
+                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                    },
                                 },
                                 {"...", "..."},
                             ],
