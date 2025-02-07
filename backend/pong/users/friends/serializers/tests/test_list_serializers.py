@@ -1,12 +1,14 @@
 from typing import Final
 
 from django.contrib.auth.models import User
+from django.db.models.query import QuerySet
 from django.test import TestCase
 
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
 
 from ... import constants, models
+from .. import list_serializers
 
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
@@ -63,3 +65,37 @@ class FriendshipListSerializerTests(TestCase):
         # user1が、user2とuser3をフレンドに追加する
         models.Friendship.objects.create(user=self.user1, friend=self.user2)
         models.Friendship.objects.create(user=self.user1, friend=self.user3)
+
+    def test_valid_friendship_list_serializer(self) -> None:
+        """
+        フレンドが複数存在する場合に、フレンド一覧が取得できることを確認
+        """
+        # user1のフレンド一覧を取得
+        friends: QuerySet[models.Friendship] = (
+            models.Friendship.objects.filter(user=self.user1)
+        )
+        list_serializer: list_serializers.FriendshipListSerializer = (
+            list_serializers.FriendshipListSerializer(friends, many=True)
+        )
+
+        self.assertEqual(
+            list_serializer.data,
+            [
+                {
+                    USER_ID: self.user1.id,
+                    FRIEND_USER_ID: self.user2.id,
+                    FRIEND: {
+                        USERNAME: self.user_data_2[USERNAME],
+                        DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
+                    },
+                },
+                {
+                    USER_ID: self.user1.id,
+                    FRIEND_USER_ID: self.user3.id,
+                    FRIEND: {
+                        USERNAME: self.user_data_3[USERNAME],
+                        DISPLAY_NAME: self.player_data_3[DISPLAY_NAME],
+                    },
+                },
+            ],
+        )
