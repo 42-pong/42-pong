@@ -1,31 +1,24 @@
-from enum import Enum
-from typing import Final
+from ..share import constants as ws_constants
 
 
-class BaseEnum(Enum):
-    @classmethod
-    def key(cls) -> str:
-        return cls.__name__.lower()
+class Stage(ws_constants.BaseEnum):
+    INIT = "INIT"
+    READY = "READY"
+    PLAY = "PLAY"
+    END = "END"
 
 
-class Stage(BaseEnum):
-    INIT: Final[str] = "INIT"
-    READY: Final[str] = "READY"
-    PLAY: Final[str] = "PLAY"
-    END: Final[str] = "END"
+class Mode(ws_constants.BaseEnum):
+    LOCAL = "LOCAL"
+    REMOTE = "REMOTE"
 
 
-class Mode(BaseEnum):
-    LOCAL: Final[str] = "LOCAL"
-    REMOTE: Final[str] = "REMOTE"
+class Team(ws_constants.BaseEnum):
+    ONE = "1"
+    TWO = "2"
+    EMPTY = ""
 
 
-class Team(BaseEnum):
-    ONE: Final[str] = "1"
-    TWO: Final[str] = "2"
-    EMPTY: Final[str] = ""
-
-
-class Move(BaseEnum):
-    UP: Final[str] = "UP"
-    DOWN: Final[str] = "DOWN"
+class Move(ws_constants.BaseEnum):
+    UP = "UP"
+    DOWN = "DOWN"
