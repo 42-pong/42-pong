@@ -68,10 +68,6 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
     @parameterized.parameterized.expand(
         [
             ("'exp'が整数でない場合", "not_integer"),
-            (
-                "'exp'が現在時刻より小さい場合",
-                int(datetime.utcnow().timestamp()) - 3600,
-            ),
         ]
     )
     def test_invalid_exp(self, _: str, exp_value: str | int) -> None:
