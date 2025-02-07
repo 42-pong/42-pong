@@ -99,3 +99,17 @@ class FriendshipListSerializerTests(TestCase):
                 },
             ],
         )
+
+    def test_empty_friendship_list_serializer(self) -> None:
+        """
+        フレンドが存在しない場合に、エラーにならず空のフレンド一覧が返されることを確認
+        """
+        # フレンドがいないuser2のフレンド一覧を取得
+        friends: QuerySet[models.Friendship] = (
+            models.Friendship.objects.filter(user=self.user2)
+        )
+        list_serializer: list_serializers.FriendshipListSerializer = (
+            list_serializers.FriendshipListSerializer(friends, many=True)
+        )
+
+        self.assertEqual(list_serializer.data, [])
