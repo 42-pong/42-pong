@@ -15,6 +15,12 @@ class Status:
     ERROR: str = "error"
 
 
+@dataclasses.dataclass(frozen=True)
+class Code:
+    INTERNAL_ERROR: str = "internal_error"
+    UNAUTHORIZED: str = "unauthorized"
+
+
 class CustomResponse(response.Response):
     """
     全appでレスポンスの形式を統一するためのクラス
