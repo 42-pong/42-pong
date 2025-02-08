@@ -1,6 +1,8 @@
 import colorsys
 import hashlib
+from io import BytesIO
 
+from django.core.files.base import ContentFile
 from PIL import Image, ImageDraw
 
 # 画像のサイズ(pixel)
@@ -15,7 +17,12 @@ PADDING: int = (SIZE - PIXEL * NUMBER_OF_CELLS) // 2
 BACKGROUND_COLOR: int = 0xDDDDDD
 
 
-def generate_identicon(username: str) -> None:
+def generate_identicon(username: str) -> ContentFile:
+    """
+    一意なusernameからIdenticonを生成してContentFileとして返す
+    アバターのデフォルト画像として使用する
+    """
+
     def _create_bit_pattern(hash_value: str) -> list[list[int]]:
         length: int = len(hash_value)
 
@@ -70,3 +77,8 @@ def generate_identicon(username: str) -> None:
     bit_pattern: list[list[int]] = _create_bit_pattern(hash_value[:15])
     color: tuple[int, int, int] = _create_color(hash_value[-7:])
     image: Image.Image = _create_image(bit_pattern, color)
+
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    # todo: 画像ファイル名にuuidなどを付与する
+    return ContentFile(buffer.getvalue(), name=f"{username}.png")
