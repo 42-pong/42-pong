@@ -1,6 +1,6 @@
 from django.db import models
 
-import accounts
+import accounts.player.models as player_models
 from tournaments.tournament import models as tournament_models
 
 
@@ -20,14 +20,14 @@ class Participation(models.Model):
     """
 
     id = models.BigAutoField(primary_key=True)
-    tournament_id = models.ForeignKey(
+    tournament = models.ForeignKey(
         tournament_models.Tournament,
         related_name="tournament_participations",  # Tournamentsからこのテーブルにアクセスするときにエイリアス名
         on_delete=models.CASCADE,
         db_column="tournament_id",
     )
-    player_id = models.ForeignKey(
-        accounts.player.models.Player,
+    player = models.ForeignKey(
+        player_models.Player,
         related_name="tournament_participations",  # Playersからこのテーブルにアクセスするときにエイリアス名
         on_delete=models.CASCADE,
         db_column="player_id",
