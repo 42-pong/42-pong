@@ -146,3 +146,13 @@ class UsersSerializerTests(TestCase):
         self.assertEqual(
             self.player_1.display_name, self.player_data_1[DISPLAY_NAME]
         )
+
+    def test_set_valid_default_avatar(self) -> None:
+        """
+        serializerのフィールドにデフォルトのavatarパスが設定されていることを確認
+        """
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            self.player_1, partial=True
+        )
+
+        self.assertEqual(serializer.data[AVATAR], self.player_1.avatar.url)
