@@ -13,6 +13,7 @@ class TournamentFields:
         MATCHING = "matching"
         PLAYING = "playing"
         END = "end"
+        CANCELED = "canceled"
 
 
 @dataclasses.dataclass(frozen=True)
