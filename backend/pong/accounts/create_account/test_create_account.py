@@ -65,6 +65,13 @@ class CreateAccountTests(TestCase):
             user_serializer_data[MockUserField.username], "testuser"
         )
 
+        # todo: tmp。アカウント作成後はplayer.delete()をしてavatar画像を削除する必要がある
+        #       create_account()がuserも返すようにした方が良いのかもしれない
+        user: User = User.objects.get(
+            username=self.user_data[MockUserField.username]
+        )
+        user.player.delete()
+
     def test_get_unique_random_username_string(self) -> None:
         """
         get_unique_random_username()のユニットテスト

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ... import create_oauth2_account, models
@@ -36,6 +37,11 @@ class CreateOAuth2AccountTestCase(TestCase):
             create_oauth2_account.create_oauth2_user("pong@gmail.com", "pong")
         )
         self.assertTrue(oauth2_user_result.is_ok)
+
+        # todo: tmp。アカウント作成後はplayer.delete()をしてavatar画像を削除する必要がある
+        #       create_account()がuserも返すようにした方が良いのかもしれない
+        tmp_user: User = User.objects.get(email="pong@gmail.com")
+        tmp_user.player.delete()
 
     def test_create_oauth2_user_failure_invalid_email(self) -> None:
         """
