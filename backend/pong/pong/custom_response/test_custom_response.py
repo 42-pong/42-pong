@@ -7,6 +7,7 @@ from . import custom_response
 
 STATUS: Final[str] = custom_response.STATUS
 DATA: Final[str] = custom_response.DATA
+CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
 
 STATUS_OK: Final[str] = custom_response.Status.OK
@@ -49,6 +50,7 @@ class ResponseTests(test.TestCase):
         """
         response: custom_response.CustomResponse = (
             custom_response.CustomResponse(
+                code=["invalid"],
                 errors={"key": "value"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -57,7 +59,11 @@ class ResponseTests(test.TestCase):
         self.assertEqual(response.status, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.data,
-            {STATUS: STATUS_ERROR, ERRORS: {"key": "value"}},
+            {
+                STATUS: STATUS_ERROR,
+                CODE: ["invalid"],
+                ERRORS: {"key": "value"},
+            },
         )
 
     # -------------------------------------------------------------------------
