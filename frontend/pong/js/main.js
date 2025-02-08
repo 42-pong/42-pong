@@ -28,5 +28,4 @@ async function enableMocking() {
   return worker.start();
 }
 
-main();
-// enableMocking().then(main);
+enableMocking().then(main);
