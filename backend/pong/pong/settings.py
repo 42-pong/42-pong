@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "oauth2",
     "accounts",
     "users",
+    "users.friends",
     "ws",
     "tournaments",
 ]

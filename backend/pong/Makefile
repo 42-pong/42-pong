@@ -46,19 +46,19 @@ typecheck:
 # ARG:
 #   アプリ名・ファイル名・クラス名・関数名などのテスト対象モジュールへのパス
 # 形式:
-#   make unit-test ARG=<APP_NAME>.<TEST_DIRECTORY>.<TEST_FILE_NAME>.<TEST_CLASS_NAME>.<TEST_FUNCTION_NAME>
+#   make test ARG=<APP_NAME>.<TEST_DIRECTORY>.<TEST_FILE_NAME>.<TEST_CLASS_NAME>.<TEST_FUNCTION_NAME>
 # 使用例:
-#   make unit-test ARG="accounts"
-#   make unit-test ARG="accounts.tests.serializers"
-#   make unit-test ARG="accounts.tests.serializers.test_user_serializer"
-.PHONY: unit-test
-unit-test:
+#   make test ARG="accounts"
+#   make test ARG="accounts.tests.serializers"
+#   make test ARG="accounts.tests.serializers.test_user_serializer"
+.PHONY: test
+test:
 	@if [ -z "$(ARG)" ]; then \
 		echo "Running all tests..."; \
-		python manage.py test -v2; \
+		python manage.py test -v2 --parallel; \
 	else \
 		echo "Running tests for: $(ARG)..."; \
-		python manage.py test $(ARG) -v2; \
+		python manage.py test $(ARG) -v2 --parallel; \
 	fi
 
 # -------------------------------------------------------
