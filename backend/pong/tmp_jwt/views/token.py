@@ -42,43 +42,39 @@ class TokenObtainView(views.APIView):
                 ],
             ),
             400: utils.OpenApiResponse(
-                description="リクエスト形式が不正の場合",
                 response={
                     "type": "object",
                     "properties": {"detail": {"type": "string"}},
                 },
                 examples=[
                     utils.OpenApiExample(
-                        "Example 400 response",
+                        "Example 400 response(リクエスト形式が不正の場合)",
                         value={
                             "status": "error",
-                            "code": "invalid_request",
+                            "code": "internal_error",
                         },
                     ),
                 ],
             ),
             401: utils.OpenApiResponse(
-                description="トークンの形式が間違っている、またはリフレッシュトークンの有効期限が切れている場合",
                 response={
                     "type": "object",
                     "properties": {"detail": {"type": "string"}},
                 },
                 examples=[
                     utils.OpenApiExample(
-                        "Example 401 response (invalid token format)",
+                        "Example 401 response (アカウントが存在しない場合)",
                         value={
                             "status": "error",
-                            "code": "invalid_token_format",
+                            "code": "not_exists",
                         },
-                        description="トークンの形式が間違っています",
                     ),
                     utils.OpenApiExample(
-                        "Example 401 response (refresh token expired)",
+                        "Example 401 response (パスワードが間違っている場合)",
                         value={
                             "status": "error",
-                            "code": "refresh_token_expired",
+                            "code": "incorrect_password",
                         },
-                        description="リフレッシュトークンの有効期限が切れています。再度ログインをしてください。",
                     ),
                 ],
             ),
