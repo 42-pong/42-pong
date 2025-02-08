@@ -30,12 +30,19 @@ class PlayerSerializer(serializers.ModelSerializer):
             )
         ],
     )
+    avatar: serializers.ImageField = serializers.ImageField(
+        required=False,
+        allow_null=True,
+        # todo: 画像の最大サイズを指定
+        # max_length=constants.MAX_AVATAR_SIZE,
+    )
 
     class Meta:
         model = models.Player
         fields = (
             constants.PlayerFields.USER,
             constants.PlayerFields.DISPLAY_NAME,
+            constants.PlayerFields.AVATAR,
             constants.PlayerFields.CREATED_AT,
             constants.PlayerFields.UPDATED_AT,
         )
