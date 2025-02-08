@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Final
+from typing import Final, Optional
 
 from rest_framework import response
 
@@ -43,9 +43,9 @@ class CustomResponse(response.Response):
     # https://github.com/django/django/blob/main/django/http/response.py#L111
     def __init__(
         self,
-        data: dict | None = None,
-        code: list[str] | None = None,
-        errors: dict | None = None,
+        data: Optional[dict] = None,
+        code: Optional[list[str]] = None,
+        errors: Optional[dict] = None,
         status: int = 200,
     ):
         # 内部で100-599番以外のステータスコードは例外を発生させる
@@ -56,9 +56,9 @@ class CustomResponse(response.Response):
         if status < 400:
             # 300番台までの成功レスポンス
             self.data[STATUS] = Status.OK
-            self.data[DATA] = data if data else {}
+            self.data[DATA] = data or {}
         else:
             # 400番台以上のエラーレスポンス
             self.data[STATUS] = Status.ERROR
-            self.data[CODE] = code if code else []
-            self.data[ERRORS] = errors if errors else {}
+            self.data[CODE] = code or []
+            self.data[ERRORS] = errors or {}
