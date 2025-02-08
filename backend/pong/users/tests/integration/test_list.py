@@ -63,6 +63,14 @@ class UsersListViewTests(test.APITestCase):
             self.user_data2, self.player_data2
         )
 
+    def tearDown(self) -> None:
+        """
+        APITestCaseのtearDownメソッドのオーバーライド
+        作成したPlayerはplayer.delete()でアバター画像を明示的に削除する必要がある
+        """
+        for player in (self.player1, self.player2):
+            player.delete()
+
     def test_create_user(self) -> None:
         """
         setUp()の情報で2人のユーザーを作成できることを確認

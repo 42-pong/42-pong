@@ -52,6 +52,14 @@ class UsersSerializerTests(TestCase):
             self.user_data_2, self.player_data_2
         )
 
+    def tearDown(self) -> None:
+        """
+        APITestCaseのtearDownメソッドのオーバーライド
+        作成したPlayerはplayer.delete()でアバター画像を明示的に削除する必要がある
+        """
+        for player in (self.player_1, self.player_2):
+            player.delete()
+
     def test_valid_multiple_instance(self) -> None:
         """
         正常なインスタンスが複数渡された場合に、dataにインスタンス分の値が入っていることを確認

@@ -59,6 +59,13 @@ class UsersMeViewTests(test.APITestCase):
 
         self.url: str = reverse("users:me")
 
+    def tearDown(self) -> None:
+        """
+        APITestCaseのtearDownメソッドのオーバーライド
+        作成したPlayerはplayer.delete()でアバター画像を明示的に削除する必要がある
+        """
+        self.player.delete()
+
     def test_setup_create_user(self) -> None:
         """
         念のため、setUp()でUser,Playerが作成できていることを確認
