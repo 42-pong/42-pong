@@ -1,5 +1,6 @@
-from typing import Final
+from typing import Final, Optional
 
+import parameterized  # type: ignore[import-untyped]
 from django import test
 from rest_framework import status
 
@@ -31,7 +32,7 @@ class ResponseTests(test.TestCase):
 
     def test_201_with_data(self) -> None:
         """
-        201で呼ばれた際に、成功レスポンスが形式に沿って返されることを確認
+        201(デフォルト値の200以外)で呼ばれた際に、成功レスポンスが形式に沿って返されることを確認
         """
         response: custom_response.CustomResponse = (
             custom_response.CustomResponse(
@@ -44,13 +45,29 @@ class ResponseTests(test.TestCase):
             response.data, {STATUS: STATUS_OK, DATA: {"key": "value"}}
         )
 
-    def test_400_with_errors(self) -> None:
+    @parameterized.parameterized.expand(
+        [
+            ("codeが引数に渡されない場合", None, []),
+            ("codeが1つの場合", ["invalid"], ["invalid"]),
+            (
+                "codeが複数の場合",
+                ["invalid1", "invalid2"],
+                ["invalid1", "invalid2"],
+            ),
+        ]
+    )
+    def test_400_with_code(
+        self,
+        testcase_name: str,
+        code: Optional[list[str]],
+        expected_code: Optional[list[str]],
+    ) -> None:
         """
-        400で呼ばれた際に、エラーレスポンスが形式に沿って返されることを確認
+        エラー時に400で呼ばれた際に、エラーレスポンスが形式に沿って返されることを確認
         """
         response: custom_response.CustomResponse = (
             custom_response.CustomResponse(
-                code=["invalid"],
+                code=code,
                 errors={"key": "value"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -61,7 +78,7 @@ class ResponseTests(test.TestCase):
             response.data,
             {
                 STATUS: STATUS_ERROR,
-                CODE: ["invalid"],
+                CODE: expected_code,
                 ERRORS: {"key": "value"},
             },
         )
