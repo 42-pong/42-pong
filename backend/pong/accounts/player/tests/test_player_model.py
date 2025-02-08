@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -96,3 +98,21 @@ class PlayerModelTestCase(TestCase):
 
         self.assertEqual(player.display_name, "valid_name")
         player.delete()
+
+    def test_avatar_file_creation(self) -> None:
+        """
+        アバター画像が実際に作成されていることを確認
+        """
+        self.assertTrue(self.player.avatar.name.startswith("avatars/"))
+        self.assertTrue(self.player.avatar.name.endswith(".png"))
+        self.assertTrue(os.path.exists(self.player.avatar.path))
+
+    def test_avatar_file_deletion(self) -> None:
+        """
+        Player削除時にアバター画像も削除されていることを確認
+        """
+        avatar_path: str = self.player.avatar.path
+        self.player.delete()
+        self.skip_teardown = True
+
+        self.assertFalse(os.path.exists(avatar_path))
