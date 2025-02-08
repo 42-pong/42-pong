@@ -1,6 +1,6 @@
 from typing import Final
 
-from django.urls import path
+from django.urls import include, path
 
 from .views import list, me, retrieve
 
@@ -14,4 +14,8 @@ urlpatterns = [
         name="retrieve",
     ),
     path("me/", me.UsersMeView.as_view(), name="me"),
+    path(
+        "me/friends/",
+        include("users.friends.urls", namespace="friends"),
+    ),
 ]
