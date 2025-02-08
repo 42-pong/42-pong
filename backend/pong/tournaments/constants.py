@@ -24,3 +24,18 @@ class ParticipationFields:
     RANKING: str = "ranking"
     CREATED_AT: str = "created_at"
     UPDATED_AT: str = "updated_at"
+
+
+@dataclasses.dataclass(frozen=True)
+class RoundFields:
+    ID: str = "id"
+    TOURNAMENT_ID: str = "tournament_id"
+    ROUND_NUMBER: str = "round_number"
+    STATUS: str = "status"
+    CREATED_AT: str = "created_at"
+    UPDATED_AT: str = "updated_at"
+
+    class StatusEnum(Enum):
+        IN_PROGRESS = "in_progress"
+        COMPLETED = "completed"
+        CANCELED = "canceled"
