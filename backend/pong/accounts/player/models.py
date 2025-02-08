@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth.models import User
 from django.db.models import (
     CASCADE,
@@ -7,6 +9,8 @@ from django.db.models import (
     Model,
     OneToOneField,
 )
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 from . import identicon
 
@@ -42,3 +46,12 @@ class Player(Model):
             # avatar画像のデフォルトを"{username}.png"で生成
             self.avatar = identicon.generate_identicon(self.user.username)
         super().save(*args, **kwargs)
+
+
+@receiver(post_delete, sender=Player)
+def delete_avatar_file(sender: type, instance: Player, **kwargs: Any) -> None:
+    """
+    シグナルを使用してPlayer削除時にavatar画像も削除する
+    """
+    if instance.avatar:
+        instance.avatar.delete(save=False)
