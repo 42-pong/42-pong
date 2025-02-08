@@ -71,7 +71,7 @@ class UsersListViewTests(test.APITestCase):
 
     def test_200_no_users_exist(self) -> None:
         """
-        ユーザーが存在しない場合、エラーにならず空のdataを返すことを確認
+        ユーザーが存在しない場合、エラーにならず空のプロフィール一覧を取得できることを確認
         """
         response: drf_response.Response = self.client.get(self.url)
 
