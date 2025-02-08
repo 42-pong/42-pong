@@ -1,8 +1,18 @@
 import colorsys
 import hashlib
 
+from PIL import Image, ImageDraw
+
+# 画像のサイズ(pixel)
+SIZE: int = 200
 # マスの個数
 NUMBER_OF_CELLS: int = 5
+# マスの一辺の長さ(pixel)
+PIXEL: int = 34
+# 余白(pixel)
+PADDING: int = (SIZE - PIXEL * NUMBER_OF_CELLS) // 2
+
+BACKGROUND_COLOR: int = 0xDDDDDD
 
 
 def generate_identicon(username: str) -> None:
@@ -32,6 +42,31 @@ def generate_identicon(username: str) -> None:
         r, g, b = colorsys.hls_to_rgb(hue / 360, luminance, saturation)
         return (int(r * 255), int(g * 255), int(b * 255))
 
+    def _create_image(
+        pattern: list[list[int]], color: tuple[int, int, int]
+    ) -> Image.Image:
+        def _draw_pixel(
+            draw: ImageDraw.ImageDraw,
+            y: int,
+            x: int,
+            color: tuple[int, int, int],
+        ) -> None:
+            draw.rectangle((x, y, x + PIXEL, y + PIXEL), fill=color)
+
+        image: Image.Image = Image.new("RGB", (SIZE, SIZE), BACKGROUND_COLOR)
+        draw: ImageDraw.ImageDraw = ImageDraw.Draw(image)
+        for i in range(NUMBER_OF_CELLS):
+            for j in range(NUMBER_OF_CELLS):
+                if pattern[i][j]:
+                    _draw_pixel(
+                        draw,
+                        PADDING + PIXEL * i,
+                        PADDING + PIXEL * j,
+                        color,
+                    )
+        return image
+
     hash_value: str = hashlib.md5(username.encode()).hexdigest()
     bit_pattern: list[list[int]] = _create_bit_pattern(hash_value[:15])
     color: tuple[int, int, int] = _create_color(hash_value[-7:])
+    image: Image.Image = _create_image(bit_pattern, color)
