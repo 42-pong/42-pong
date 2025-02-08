@@ -8,6 +8,8 @@ from django.db.models import (
     OneToOneField,
 )
 
+from . import identicon
+
 
 class Player(Model):
     """
@@ -36,7 +38,7 @@ class Player(Model):
         """
         Playerインスタンスを保存する際のsave()のオーバーライド
         """
-        # todo: 一旦デフォルト画像をmedia/avatars/sample.png固定で設定。画像生成はここで行う
         if not self.avatar:
-            self.avatar = "avatars/sample.png"
+            # avatar画像のデフォルトを"{username}.png"で生成
+            self.avatar = identicon.generate_identicon(self.user.username)
         super().save(*args, **kwargs)
