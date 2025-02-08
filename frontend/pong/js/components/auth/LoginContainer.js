@@ -2,6 +2,8 @@ import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { Cookie } from "../../utils/cookie/Cookie";
+import { validateEmail } from "../../utils/validator/validateEmail";
+import { validatePassword } from "../../utils/validator/validatePassword";
 
 //ユーザーが入力するID、PWを保持する箱を入れる
 //サイインボタンを押した後の処理
@@ -100,9 +102,47 @@ export class LoginContainer extends Component {
         console.log("Error:", error);
       }
     });
+    // "api/signin/"　へfetchする
+    this.#form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const email = this.#form.elements.email.value;
+      const password = this.#form.elements.password.value;
+      console.log("Email", email);
+      console.log("Password", password);
+      try {
+        const validateEmailResult = validateEmail(email);
+        const validatePasswordResult = validatePassword(password);
+        if (!validateEmailResult.valid)
+            throw new Error(validateEmailResult.message);
+        if (!validatePasswordResult.valid)
+            throw new Error(validatePasswordResult.message);
+        const response = await fetch(
+          "http://localhost:8000/api/signin/",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const data = await response.json();
+        console.log("Success:", data);
+        // ここで成功時の処理を追加できます
+      } catch (error) {
+        console.error("Error:", error);
+        // ここでエラーハンドリングを追加できます
+      }
+    });
   }
 
   _render() {
+
     // コンテナにタイトルとフォームを追加
     this.#container.appendChild(this.#title);
     this.#container.appendChild(this.#form);
@@ -118,38 +158,5 @@ export class LoginContainer extends Component {
       this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
     } else console.log("get jwt failed");
 
-    // TODO 各ボタンの条件分岐でAPIエンドポイントにフェッチ(以下からのコードはBEのエントポイントと連携するため、レビューしない)
-    // "api/signin/"　へfetchする
-    // this.#form.addEventListener("submit", async (event) => {
-    //   event.preventDefault();
-    //   const email = this.#form.elements.email.value;
-    //   const password = this.#form.elements.password.value;
-    //   console.log("Email", email);
-    //   console.log("Password", password);
-
-    //   try {
-    //     const response = await fetch(
-    //       "http://localhost:8000/api/signin/",
-    //       {
-    //         method: "POST",
-    //         headers: {
-    //           "Content-Type": "application/json",
-    //         },
-    //         body: JSON.stringify({ email, password }),
-    //       },
-    //     );
-
-    //     if (!response.ok) {
-    //       throw new Error("Network response was not ok");
-    //     }
-
-    //     const data = await response.json();
-    //     console.log("Success:", data);
-    //     // ここで成功時の処理を追加できます
-    //   } catch (error) {
-    //     console.error("Error:", error);
-    //     // ここでエラーハンドリングを追加できます
-    //   }
-    // });
   }
 }
