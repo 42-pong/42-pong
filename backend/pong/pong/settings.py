@@ -252,7 +252,6 @@ ASGI_APPLICATION = "pong.asgi.application"
 # リストに追加することでオリジンを許可する
 CORS_ALLOWED_ORIGINS = [
     f"http://localhost:{FRONT_SERVER_PORT}",  # frontendコンテナ
-    f"http://localhost:5173",
 ]
 # todo: CORS_ALLOW_CREDENTIALS, CSRFについての設定は必要になり次第追加
 

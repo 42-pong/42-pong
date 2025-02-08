@@ -73,76 +73,77 @@ export class LoginContainer extends Component {
     this.#title = title;
     this.#form = form;
 
+    // 42 Oauth 2.0ボタン
     // "api/oauth2/authorize/”　へfetchする
-    oauth2Button.addEventListener("click", async (event) => {
-      try {
-        const response = await fetch(
-          "http://localhost:8000/api/token/",
-          {
-            headers: {
-              "Content-type": "application/json",
-            },
-            method: "POST",
-            //仮にadminアカウントのJWTを作成する
-            body: JSON.stringify({
-              username: "pong",
-              password: "su_12345",
-            }),
-          },
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status:" ${response.status}`);
-        }
-        const data = await response.json();
-        const accessToken = data.access;
-        // cookieのベストプラクティス
-        // 仮のJWTをcookieに保存する
-        Cookie.setCookie(accessToken, 7);
-      } catch (error) {
-        console.log("Error:", error);
-      }
-    });
-    // "api/signin/"　へfetchする
+    // oauth2Button.addEventListener("click", async (event) => {
+    //   try {
+    //     const response = await fetch("http://localhost:8000/api/oauth2/authorize/");
+    //     if (!response.ok) {
+    //       throw new Error(`HTTP error! status:" ${response.status}`);
+    //     }
+    //     const data = await response.json();
+    //     const accessToken = data.access;
+    //     const refreshToken = data.refresh;
+    //     // cookieのベストプラクティス
+    //     // 仮のJWTをcookieに保存する
+    //     Cookie.setCookie(accessToken, 7);
+    //     Cookie.setCookie(refreshToken, 7);
+    //   } catch (error) {
+    //     console.log("Error:", error);
+    //    todo　エラーメッセージハンドリング
+    //    not_exists : ユーザーが存在しません
+    //    incorrect_password : パスワードが間違っています
+    //    fail : 42 認証に失敗しました。
+    //   }
+    // });
+
+    // サインインボタン
+    // "api/token/"へfetchする
     this.#form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const email = this.#form.elements.email.value;
       const password = this.#form.elements.password.value;
-      console.log("Email", email);
-      console.log("Password", password);
       try {
         const validateEmailResult = validateEmail(email);
         const validatePasswordResult = validatePassword(password);
         if (!validateEmailResult.valid)
-            throw new Error(validateEmailResult.message);
+          throw new Error(validateEmailResult.message);
         if (!validatePasswordResult.valid)
-            throw new Error(validatePasswordResult.message);
+          throw new Error(validatePasswordResult.message);
         const response = await fetch(
-          "http://localhost:8000/api/signin/",
+          "http://localhost:8000/api/token/",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({
+              username: email,
+              password: password,
+            }),
           },
         );
-
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-
         const data = await response.json();
-        console.log("Success:", data);
+        const accessToken = data.access;
+        const refreshToken = data.refresh;
+        // cookieにアクセストークンとリフレーシュートークンを保存する
+        Cookie.setCookie("accessToken", accessToken, 7);
+        Cookie.setCookie("refreshToken", refreshToken, 7);
         // ここで成功時の処理を追加できます
       } catch (error) {
-        console.error("Error:", error);
+        console.log("Error:", error);
         // ここでエラーハンドリングを追加できます
+        // todo　エラーメッセージハンドリング
+        // not_exists : ユーザーが存在しません
+        // incorrect_password : パスワードが間違っています
       }
     });
   }
 
   _render() {
-
     // コンテナにタイトルとフォームを追加
     this.#container.appendChild(this.#title);
     this.#container.appendChild(this.#form);
@@ -153,10 +154,8 @@ export class LoginContainer extends Component {
     //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
     //cookieからJWTを取得する
     const jwt = Cookie.getCookie("JWT");
-    if (jwt) {
-      console.log("get jwt success", jwt);
+    if (jwt)
       this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
-    } else console.log("get jwt failed");
-
+    else console.log("get jwt failed");
   }
 }
