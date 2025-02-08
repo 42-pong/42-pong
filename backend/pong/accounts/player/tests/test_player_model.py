@@ -21,6 +21,17 @@ class PlayerModelTestCase(TestCase):
         self.player: models.Player = models.Player.objects.create(
             user=self.user
         )
+        # tearDown()をスキップするかどうかのフラグ
+        self.skip_teardown = False
+
+    def tearDown(self) -> None:
+        """
+        TestCaseのtearDownメソッドのオーバーライド
+        player.delete()でアバター画像を明示的に削除する必要がある
+        """
+        if self.skip_teardown:
+            return
+        self.player.delete()
 
     def test_create_player_and_user(self) -> None:
         """
@@ -48,6 +59,7 @@ class PlayerModelTestCase(TestCase):
         user_id: int = self.player.user.id
         # Player削除
         self.player.delete()
+        self.skip_teardown = True
 
         # Playerが削除されていることを確認
         self.assertEqual(models.Player.objects.count(), 0)
@@ -83,3 +95,4 @@ class PlayerModelTestCase(TestCase):
         )
 
         self.assertEqual(player.display_name, "valid_name")
+        player.delete()

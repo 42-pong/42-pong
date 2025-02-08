@@ -89,6 +89,7 @@ class PlayerSerializerTests(TestCase):
         self.assertEqual(data[USER], player.user.id)
         self.assertEqual(data[DISPLAY_NAME], "default")
         self.assertEqual(data[AVATAR], player.avatar.url)
+        player.delete()
 
     def test_multi_create(self) -> None:
         """
@@ -110,16 +111,18 @@ class PlayerSerializerTests(TestCase):
             self.assertEqual(data[USER], player.user.id)
             self.assertEqual(data[DISPLAY_NAME], "default")
             self.assertEqual(data[AVATAR], player.avatar.url)
+            player.delete()
 
     def test_default_display_name(self) -> None:
         """
         display_nameが指定されていない場合、初期値の"default"が自動で設定されることを確認
         """
-        _, player_serializer = self._create_account(self.user_data)
+        player, player_serializer = self._create_account(self.user_data)
 
         self.assertEqual(
             player_serializer.validated_data[DISPLAY_NAME], "default"
         )
+        player.delete()
 
     def test_valid_display_name(self) -> None:
         """
@@ -129,12 +132,13 @@ class PlayerSerializerTests(TestCase):
             USER: self._create_user(self.user_data).id,
             DISPLAY_NAME: "abcDEF12345-_.~",  # 正常な15文字のdisplay_name
         }
-        _, player_serializer = self._create_player(player_data)
+        player, player_serializer = self._create_player(player_data)
 
         self.assertEqual(
             player_serializer.validated_data[DISPLAY_NAME],
             player_data[DISPLAY_NAME],
         )
+        player.delete()
 
     # -------------------------------------------------------------------------
     # エラーケース

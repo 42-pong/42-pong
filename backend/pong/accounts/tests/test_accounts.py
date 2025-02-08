@@ -70,6 +70,8 @@ class AccountsTests(test.APITestCase):
         self.assertTrue(
             models.User.objects.filter(username=player.user.username).exists()
         )
+        # todo: display_name, avatarも追加
+        player.delete()
 
     # -------------------------------------------------------------------------
     # エラーケース
