@@ -1,7 +1,7 @@
 import { BootstrapDisplay } from "../../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../../bootstrap/utilities/flex";
-import { BootstrapOverflow } from "../../../bootstrap/utilities/overflow";
 import { BootstrapSpacing } from "../../../bootstrap/utilities/spacing";
+import { BootstrapText } from "../../../bootstrap/utilities/text";
 import { createElement } from "../createElement";
 
 export const createNameplate = (user) => {
@@ -13,7 +13,7 @@ export const createNameplate = (user) => {
   const nameTag = createElement("span", {
     textContent: `${user.displayName}#${user.username}`,
   });
-  BootstrapOverflow.setOverflowXHidden(nameTag);
+  BootstrapText.setTextTruncate(nameTag);
 
   const nameplate = createElement("div");
   BootstrapDisplay.setFlex(nameplate);
