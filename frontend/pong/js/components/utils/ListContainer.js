@@ -3,7 +3,7 @@ import { createDefaultListItem } from "../../utils/elements/li/createDefaultList
 import { createDefaultUnorderedList } from "../../utils/elements/ul/createDefaultUnorderedList";
 
 export class ListContainer extends Component {
-  constructor(state = {}, attributes = {}) {
+  constructor(state = {}) {
     super({ ListItem: null, items: [], ...state });
   }
 
