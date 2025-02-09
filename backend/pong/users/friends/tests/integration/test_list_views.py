@@ -3,10 +3,11 @@ from typing import Final
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import response as drf_response
-from rest_framework import test
+from rest_framework import status, test
 
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
+from pong.custom_response import custom_response
 
 from ... import models
 
@@ -15,6 +16,8 @@ EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+
+DATA: Final[str] = custom_response.DATA
 
 
 class FriendsListViewTests(test.APITestCase):
@@ -94,3 +97,16 @@ class FriendsListViewTests(test.APITestCase):
         self.assertTrue(User.objects.filter(id=self.user1.id).exists())
         self.assertTrue(User.objects.filter(id=self.user2.id).exists())
         self.assertTrue(User.objects.filter(id=self.user3.id).exists())
+
+    def test_200_no_friends_exist(self) -> None:
+        """
+        自分のフレンドが存在しない場合、エラーにならず空のフレンド一覧を取得できることを確認
+        """
+        # フレンドを全員削除
+        self.user2.delete()
+        self.user3.delete()
+        response: drf_response.Response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[DATA], {})
+
