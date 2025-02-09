@@ -138,11 +138,7 @@ class UsersMeView(views.APIView):
                         "Example 400 response",
                         value={
                             custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.ERRORS: {
-                                constants.PlayerFields.DISPLAY_NAME: [
-                                    "This field may not to be blank."
-                                ],
-                            },
+                            custom_response.CODE: [constants.Code.INVALID],
                         },
                     ),
                 ],
@@ -195,6 +191,7 @@ class UsersMeView(views.APIView):
                 f"[400] Serializer's validation error: {users_serializer.errors}"
             )
             return custom_response.CustomResponse(
+                code=[constants.Code.INVALID],
                 errors=users_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )

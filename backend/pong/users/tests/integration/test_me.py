@@ -6,17 +6,20 @@ from django.urls import reverse
 from rest_framework import response as drf_response
 from rest_framework import status, test
 
-from accounts import constants
+from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from pong.custom_response import custom_response
 
-USERNAME: Final[str] = constants.UserFields.USERNAME
-EMAIL: Final[str] = constants.UserFields.EMAIL
-PASSWORD: Final[str] = constants.UserFields.PASSWORD
-USER: Final[str] = constants.PlayerFields.USER
-DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
+from ... import constants
+
+USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
+EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
+PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
+USER: Final[str] = accounts_constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 
 DATA: Final[str] = custom_response.DATA
+CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
 
 
@@ -137,6 +140,7 @@ class UsersMeViewTests(test.APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data[CODE], [constants.Code.INVALID])
         self.assertIn(DISPLAY_NAME, response.data[ERRORS])
         # 最新のDBの情報に更新し、DBの値が変更されていないことを確認
         self.player.refresh_from_db()
