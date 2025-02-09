@@ -20,8 +20,6 @@ export class UserProfile extends Component {
     BootstrapText.setTextCenter(this);
   }
 
-  _onConnect() {}
-
   _render() {
     const { user } = this._getState();
 
@@ -34,29 +32,35 @@ export class UserProfile extends Component {
     }
 
     const nameplate = createNameplate(user);
-
-    const addFriendButton = new AddFriendButton();
-    addFriendButton.setPrimary();
-    BootstrapGrid.setCol(addFriendButton, 10);
-    BootstrapGrid.setCol(addFriendButton, 5, "xl");
-    BootstrapSpacing.setMargin(addFriendButton);
-
-    const blockUserButton = new BlockUserButton();
-    blockUserButton.setDanger();
-    BootstrapGrid.setCol(blockUserButton, 10);
-    BootstrapGrid.setCol(blockUserButton, "5", "xl");
-    BootstrapSpacing.setMargin(blockUserButton);
-
-    const buttons = createElement("div");
-    BootstrapGrid.setRow(buttons);
-    BootstrapFlex.setJustifyContentCenter(buttons);
-    buttons.append(addFriendButton, blockUserButton);
-
-    this.appendChild(
+    const profileButtonPanel = createProfileMenu();
+    this.append(
       createDefaultCard({
         title: nameplate,
-        others: [buttons],
+        others: [profileButtonPanel],
       }),
     );
   }
 }
+
+const createProfileMenu = () => {
+  const addFriendButton = new AddFriendButton();
+  addFriendButton.setPrimary();
+  styleProfileButton(addFriendButton);
+
+  const blockUserButton = new BlockUserButton();
+  blockUserButton.setDanger();
+  styleProfileButton(blockUserButton);
+
+  const buttonPanel = createElement("div");
+  BootstrapGrid.setRow(buttonPanel);
+  BootstrapFlex.setJustifyContentCenter(buttonPanel);
+  buttonPanel.append(addFriendButton, blockUserButton);
+
+  return buttonPanel;
+};
+
+const styleProfileButton = (button) => {
+  BootstrapGrid.setCol(button, 10);
+  BootstrapGrid.setCol(button, 5, "xl");
+  BootstrapSpacing.setMargin(button);
+};
