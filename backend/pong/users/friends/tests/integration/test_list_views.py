@@ -2,10 +2,13 @@ from typing import Final
 
 from django.contrib.auth.models import User
 from django.urls import reverse
+from rest_framework import response as drf_response
 from rest_framework import test
 
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
+
+from ... import models
 
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
@@ -64,6 +67,24 @@ class FriendsListViewTests(test.APITestCase):
         )
         self.user3, self.player3 = _create_user_and_related_player(
             self.user_data3, self.player_data3
+        )
+
+        # user1が、user2とuser3をフレンドに追加する
+        models.Friendship.objects.create(user=self.user1, friend=self.user2)
+        models.Friendship.objects.create(user=self.user1, friend=self.user3)
+
+        # user1がtokenを取得してログイン
+        token_url: str = reverse("tmp_jwt:token_obtain_pair")
+        token_response: drf_response.Response = self.client.post(
+            token_url,
+            {
+                USERNAME: self.user_data1[USERNAME],
+                PASSWORD: self.user_data1[PASSWORD],
+            },
+            format="json",
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
         )
 
     def test_create_user(self) -> None:
