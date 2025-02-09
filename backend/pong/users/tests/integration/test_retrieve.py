@@ -101,6 +101,8 @@ class UsersRetrieveViewTests(test.APITestCase):
             )
             self.assertNotIn(EMAIL, response_data)
 
+    # todo: IsAuthenticatedにしたら、test_401_unauthenticated_user()を追加
+
     def test_get_user_returns_404_with_nonexistent_user_id(self) -> None:
         """
         存在しないuser_idを指定した場合に、エラーが返されることを確認
