@@ -17,6 +17,10 @@ COPY ./tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 RUN chown -R pong:pong /pong
+
+# github actionsで落ちるため、アバター画像を保存するmediaディレクトリに権限を付与
+RUN mkdir -p /pong/media/avatars && chmod -R 755 /pong/media
+
 # root権限が必要なinstall等を終えたら作成したuserに切り替え
 USER pong
 
