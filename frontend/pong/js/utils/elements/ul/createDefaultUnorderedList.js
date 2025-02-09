@@ -8,9 +8,6 @@ export const createDefaultUnorderedList = (listItemElements) => {
   BootstrapListGroup.setListGroup(ul);
   BootstrapSizing.setMaxHeight100(ul);
   BootstrapOverflow.setOverflowYAuto(ul);
-
-  for (const li of listItemElements) {
-    ul.append(li);
-  }
+  ul.append(...listItemElements);
   return ul;
 };

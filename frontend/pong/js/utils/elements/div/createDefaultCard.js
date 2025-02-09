@@ -21,18 +21,22 @@ const appendCardRelatedElements = (
   elementsObject,
 ) => {
   const { title, subtitle, text, others } = elementsObject;
+  const bodyElements = [];
+
   if (title) {
     BootstrapCard.setCardTitle(title);
-    cardBody.append(title);
+    bodyElements.push(title);
   }
   if (subtitle) {
     BootstrapCard.setCardSubtitle(subtitle);
-    cardBody.append(subtitle);
+    bodyElements.push(subtitle);
   }
   if (text) {
     BootstrapCard.setCardText(text);
-    cardBody.append(text);
+    bodyElements.push(text);
   }
-  if (others) cardBody.append(...others);
+  if (others) bodyElements.push(...others);
+
+  cardBody.append(...bodyElements);
   card.append(cardBody);
 };

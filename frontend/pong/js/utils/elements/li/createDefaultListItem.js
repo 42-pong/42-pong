@@ -4,8 +4,6 @@ import { createElement } from "../createElement";
 export const createDefaultListItem = (innerElements) => {
   const li = createElement("li");
   BootstrapListGroup.setListGroupItem(li);
-  for (const element of innerElements) {
-    li.append(element);
-  }
+  li.append(...innerElements);
   return li;
 };
