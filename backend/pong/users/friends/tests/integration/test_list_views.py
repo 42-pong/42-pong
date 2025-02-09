@@ -77,8 +77,12 @@ class FriendsListViewTests(test.APITestCase):
         )
 
         # user1が、user2とuser3をフレンドに追加する
-        models.Friendship.objects.create(user=self.user1, friend=self.user2)
-        models.Friendship.objects.create(user=self.user1, friend=self.user3)
+        self.friendship1: models.Friendship = models.Friendship.objects.create(
+            user=self.user1, friend=self.user2
+        )
+        self.friendship2: models.Friendship = models.Friendship.objects.create(
+            user=self.user1, friend=self.user3
+        )
 
         # user1がtokenを取得してログイン
         token_url: str = reverse("tmp_jwt:token_obtain_pair")
@@ -132,6 +136,30 @@ class FriendsListViewTests(test.APITestCase):
                         DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
                     },
                 },
+                {
+                    USER_ID: self.user1.id,
+                    FRIEND_USER_ID: self.user3.id,
+                    FRIEND: {
+                        USERNAME: self.user_data3[USERNAME],
+                        DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
+                    },
+                },
+            ],
+        )
+
+    def test_200_delete_friend(self) -> None:
+        """
+        フレンドから削除した場合にフレンド一覧からも削除されることを確認
+        """
+        # user1がuser2をフレンドから削除
+        self.friendship1.delete()
+        response: drf_response.Response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # user3のみフレンド一覧に残る
+        self.assertEqual(
+            response.data[DATA],
+            [
                 {
                     USER_ID: self.user1.id,
                     FRIEND_USER_ID: self.user3.id,
