@@ -170,3 +170,18 @@ class FriendsListViewTests(test.APITestCase):
                 },
             ],
         )
+
+    def test_401_unauthenticated_user(self) -> None:
+        """
+        認証されていないユーザーがフレンド一覧を取得しようとするとエラーになることを確認
+        """
+        # 認証情報をクリア
+        self.client.credentials()
+        response: drf_response.Response = self.client.get(
+            self.url, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
+        # todo: permissions_classesを変更して自作Responseを返せる場合、併せて変更する
+        self.assertEqual(response.data["detail"].code, "not_authenticated")
