@@ -42,7 +42,7 @@ class UsersMeViewTests(test.APITestCase):
         )
 
         # tokenを取得
-        token_url: str = reverse("tmp_jwt:token_obtain_pair")
+        token_url: str = reverse("simple_jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {
