@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from .. import constants, models
@@ -39,6 +40,14 @@ def is_friendship_exists(user_id: int, friend_user_id: int) -> bool:
     Raises:
         serializers.ValidationError: フレンドに追加したいidがDBに存在せず、フレンドかどうかの判定ができない場合
     """
+    # フレンドに追加したいidがDBに存在しない場合はエラー
+    if not User.objects.filter(id=friend_user_id).exists():
+        raise serializers.ValidationError(
+            {
+                constants.FriendshipFields.FRIEND_USER_ID: "The user does not exist."
+            },
+            code="not_exists",  # todo: constantsに置き換え
+        )
     # 既にフレンドであるかどうか
     return models.Friendship.objects.filter(
         user_id=user_id, friend_id=friend_user_id

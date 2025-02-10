@@ -127,3 +127,23 @@ class FriendshipCreateSerializerTests(TestCase):
             create_serializer.errors[FRIEND_USER_ID][0].code,
             "invalid",  # todo: constantsに置き換え
         )
+
+    def test_not_exist_friend(self) -> None:
+        """
+        存在しないユーザーをフレンドに追加しようとした場合にエラーになることを確認
+        """
+        # user1が存在しないユーザーをフレンドに追加しようとする
+        friendship_data: dict = {
+            USER_ID: self.user1.id,
+            FRIEND_USER_ID: 9999,
+        }
+        create_serializer: create_serializers.FriendshipCreateSerializer = (
+            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+        )
+
+        self.assertFalse(create_serializer.is_valid())
+        self.assertIn(FRIEND_USER_ID, create_serializer.errors)
+        self.assertEqual(
+            create_serializer.errors[FRIEND_USER_ID][0].code,
+            "not_exists",  # todo: constantsに置き換え
+        )
