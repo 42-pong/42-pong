@@ -28,6 +28,10 @@ const setViewportHeight100 = (element) => {
   return setClassNames(element, "vh-100");
 };
 
+const setMaxHeight100 = (element) => {
+  return setClassNames(element, "mh-100");
+};
+
 export const BootstrapSizing = {
   setWidth50,
   setWidth75,
@@ -36,4 +40,5 @@ export const BootstrapSizing = {
   setHeight75,
   setHeight100,
   setViewportHeight100,
+  setMaxHeight100,
 };

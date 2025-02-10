@@ -25,6 +25,14 @@ export class StyledButton extends Component {
     BootstrapButtons.setSecondary(this._button);
   }
 
+  setSuccess() {
+    BootstrapButtons.setSuccess(this._button);
+  }
+
+  setDanger() {
+    BootstrapButtons.setDanger(this._button);
+  }
+
   setOutlinePrimary() {
     BootstrapButtons.setOutlinePrimary(this._button);
   }
