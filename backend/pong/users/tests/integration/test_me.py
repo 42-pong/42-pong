@@ -98,7 +98,7 @@ class UsersMeViewTests(test.APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
-        # todo: permissions_classesを変更して自作Responseを返せる場合、併せて変更する
+        # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
         self.assertEqual(response.data["detail"].code, "not_authenticated")
 
     def test_patch_200_update_valid_display_name(self) -> None:
@@ -163,5 +163,5 @@ class UsersMeViewTests(test.APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
-        # todo: permissions_classesを変更して自作Responseを返せる場合、併せて変更する
+        # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
         self.assertEqual(response.data["detail"].code, "not_authenticated")
