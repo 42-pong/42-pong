@@ -7,11 +7,12 @@
 asgiref==3.8.1
     # via
     #   channels
+    #   channels-redis
     #   daphne
     #   django
     #   django-cors-headers
     #   django-stubs
-attrs==24.3.0
+attrs==25.1.0
     # via
     #   jsonschema
     #   referencing
@@ -21,11 +22,15 @@ autobahn==24.4.2
     # via daphne
 automat==24.8.1
     # via twisted
-certifi==2024.12.14
+certifi==2025.1.31
     # via requests
 cffi==1.17.1
     # via cryptography
 channels==4.2.0
+    # via
+    #   -r requirements.in
+    #   channels-redis
+channels-redis==4.2.1
     # via -r requirements.in
 charset-normalizer==3.4.1
     # via requests
@@ -52,13 +57,13 @@ django==5.1.4
     #   drf-spectacular-sidecar
 django-cors-headers==4.6.0
     # via -r requirements.in
-django-environ==0.11.2
+django-environ==0.12.0
     # via -r requirements.in
-django-stubs==5.1.1
+django-stubs==5.1.2
     # via
     #   -r requirements.in
     #   djangorestframework-stubs
-django-stubs-ext==5.1.1
+django-stubs-ext==5.1.2
     # via django-stubs
 djangorestframework==3.15.2
     # via
@@ -71,7 +76,7 @@ djangorestframework-stubs==3.15.2
     # via -r requirements.in
 drf-spectacular==0.28.0
     # via -r requirements.in
-drf-spectacular-sidecar==2024.12.1
+drf-spectacular-sidecar==2025.2.1
     # via -r requirements.in
 hyperlink==21.0.0
     # via
@@ -90,6 +95,8 @@ jsonschema==4.23.0
     # via drf-spectacular
 jsonschema-specifications==2024.10.1
     # via jsonschema
+msgpack==1.1.0
+    # via channels-redis
 mypy==1.13.0
     # via -r requirements.in
 mypy-extensions==1.0.0
@@ -108,11 +115,13 @@ pycparser==2.22
     # via cffi
 pyjwt==2.10.1
     # via djangorestframework-simplejwt
-pyopenssl==24.3.0
+pyopenssl==25.0.0
     # via twisted
 pyyaml==6.0.2
     # via drf-spectacular
-referencing==0.35.1
+redis==5.2.1
+    # via channels-redis
+referencing==0.36.2
     # via
     #   jsonschema
     #   jsonschema-specifications
