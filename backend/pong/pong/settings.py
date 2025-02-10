@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     "users.friends",
     "ws",
     "tournaments",
+    "matches",
 ]
 
 MIDDLEWARE = [
