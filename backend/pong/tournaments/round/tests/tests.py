@@ -49,7 +49,7 @@ class RoundModelTest(TestCase):
         tournament_id = self.tournament.id
         self.round.delete()
 
-        self.assertEqual(Round.objects.count(), 0)
+        self.assertFalse(Round.objects.exists())
         self.assertTrue(Tournament.objects.filter(id=tournament_id).exists())
 
     def test_delete_related_tournament(self) -> None:
@@ -58,5 +58,5 @@ class RoundModelTest(TestCase):
         """
         self.tournament.delete()
 
-        self.assertEqual(Tournament.objects.count(), 0)
-        self.assertEqual(Round.objects.count(), 0)
+        self.assertFalse(Round.objects.exists())
+        self.assertFalse(Tournament.objects.exists())
