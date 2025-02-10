@@ -5,6 +5,7 @@ from rest_framework import permissions, request, response, status, viewsets
 
 from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
+from users import constants as users_constants
 
 from . import constants, models
 from .serializers import list_serializers
@@ -28,6 +29,7 @@ from .serializers import list_serializers
                                     constants.FriendshipFields.FRIEND: {
                                         accounts_constants.UserFields.USERNAME: "username2",
                                         accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                     },
                                 },
                                 {"...", "..."},
@@ -72,6 +74,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
         user: User | AnonymousUser = request.user
         if isinstance(user, AnonymousUser):
             return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
                 errors={"user": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
             )
