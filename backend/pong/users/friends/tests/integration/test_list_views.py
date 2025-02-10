@@ -85,7 +85,8 @@ class FriendsListViewTests(test.APITestCase):
         )
 
         # user1がtokenを取得してログイン
-        token_url: str = reverse("tmp_jwt:token_obtain_pair")
+        # todo: 自作jwtができたらnamespaceを変更
+        token_url: str = reverse("simple_jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {

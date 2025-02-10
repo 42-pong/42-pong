@@ -20,10 +20,11 @@ class UsersListView(views.APIView):
     ユーザープロフィールの一覧を取得するビュー
     """
 
-    # todo: IsAuthenticatedに変更する
+    # todo: IsAuthenticatedに変更する。extend_schemaにも401を追加する
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
+        operation_id="get_users_list",
         request=None,
         responses={
             200: utils.OpenApiResponse(
@@ -33,18 +34,18 @@ class UsersListView(views.APIView):
                     utils.OpenApiExample(
                         "Example 200 response",
                         value={
-                            "status": "ok",
-                            "data": [
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: [
                                 {
-                                    "id": 2,
-                                    "username": "username1",
-                                    "display_name": "display_name1",
+                                    constants.UserFields.ID: 2,
+                                    constants.UserFields.USERNAME: "username1",
+                                    constants.PlayerFields.DISPLAY_NAME: "display_name1",
                                     # todo: avatar追加
                                 },
                                 {
-                                    "id": 3,
-                                    "username": "username2",
-                                    "display_name": "display_name2",
+                                    constants.UserFields.ID: 3,
+                                    constants.UserFields.USERNAME: "username2",
+                                    constants.PlayerFields.DISPLAY_NAME: "display_name2",
                                     # todo: avatar追加
                                 },
                                 {"...", "..."},
@@ -53,6 +54,8 @@ class UsersListView(views.APIView):
                     ),
                 ],
             ),
+            # todo: 詳細のschemaが必要であれば追加する
+            500: utils.OpenApiResponse(description="Internal server error"),
         },
     )
     # todo: try-exceptで全体を囲って500を返す？
