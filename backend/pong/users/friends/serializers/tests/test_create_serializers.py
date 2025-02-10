@@ -7,6 +7,7 @@ from accounts import constants as accounts_constants
 from accounts.player import models as players_models
 
 from ... import constants
+from .. import create_serializers
 
 ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
@@ -51,3 +52,36 @@ class FriendshipCreateSerializerTests(TestCase):
         }
         self.user1: User = _create_user(self.user_data_1, self.player_data_1)
         self.user2: User = _create_user(self.user_data_2, self.player_data_2)
+
+    def test_valid_friendship_create(self) -> None:
+        """
+        正常にフレンド追加ができることを確認
+        """
+        # user1がuser2をフレンドに追加する
+        friendship_data: dict = {
+            USER_ID: self.user1.id,
+            FRIEND_USER_ID: self.user2.id,
+        }
+        create_serializer: create_serializers.FriendshipCreateSerializer = (
+            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+        )
+
+        # validate()確認
+        self.assertTrue(create_serializer.is_valid())
+        self.assertEqual(
+            create_serializer.validated_data,
+            {USER: {ID: self.user1.id}, FRIEND: {ID: self.user2.id}},
+        )
+        # create()確認
+        create_serializer.save()
+        self.assertEqual(
+            create_serializer.data,
+            {
+                USER_ID: self.user1.id,
+                FRIEND_USER_ID: self.user2.id,
+                FRIEND: {
+                    USERNAME: self.user_data_2[USERNAME],
+                    DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
+                },
+            },
+        )
