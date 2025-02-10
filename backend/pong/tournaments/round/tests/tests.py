@@ -35,6 +35,9 @@ class RoundModelTest(TestCase):
         self.round.status = RoundFields.StatusEnum.COMPLETED.value
         self.round.save()
 
+        # DB の最新状態を取得
+        self.round.refresh_from_db()
+
         self.assertEqual(
             self.round.status, RoundFields.StatusEnum.COMPLETED.value
         )
