@@ -35,14 +35,14 @@ class UsersMeViewTests(test.APITestCase):
             DISPLAY_NAME: "display_name1",
         }
         # User,Playerを作成
-        user: User = User.objects.create_user(**self.user_data)
-        self.player_data[USER] = user
+        self.user: User = User.objects.create_user(**self.user_data)
+        self.player_data[USER] = self.user
         self.player: player_models.Player = (
             player_models.Player.objects.create(**self.player_data)
         )
 
         # tokenを取得
-        token_url: str = reverse("tmp_jwt:token_obtain_pair")
+        token_url: str = reverse("simple_jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {
@@ -57,6 +57,15 @@ class UsersMeViewTests(test.APITestCase):
         )
 
         self.url: str = reverse("users:me")
+
+    def test_setup_create_user(self) -> None:
+        """
+        念のため、setUp()でUser,Playerが作成できていることを確認
+        """
+        self.assertTrue(User.objects.filter(id=self.user.id).exists())
+        self.assertTrue(
+            player_models.Player.objects.filter(id=self.player.id).exists()
+        )
 
     def test_get_200_authenticated_user(self) -> None:
         """

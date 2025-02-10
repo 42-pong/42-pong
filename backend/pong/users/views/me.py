@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.models import AnonymousUser, User
 from drf_spectacular import utils
 from rest_framework import (
@@ -13,12 +15,15 @@ from pong.custom_response import custom_response
 
 from .. import serializers
 
+logger = logging.getLogger(__name__)
+
 
 class UsersMeView(views.APIView):
     """
     自分のユーザープロフィールを取得・更新する
     """
 
+    # プロフィールを全て返すのでIsAuthenticatedをセットする必要がある
     permission_classes = [permissions.IsAuthenticated]
 
     @utils.extend_schema(
@@ -42,29 +47,24 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 現在Djangoが自動で返している401のスキーマも書く？
-            # todo: 404ではないかも
-            404: utils.OpenApiResponse(
-                description="The user does not exist.",
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
                 response={
                     "type": "object",
-                    "properties": {
-                        custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "dict"},
-                    },
+                    "properties": {"detail": {"type": "string"}},
                 },
                 examples=[
                     utils.OpenApiExample(
-                        "Example 404 response",
+                        "Example 401 response",
                         value={
-                            custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.ERRORS: {
-                                "user": "The user does not exist."
-                            },
+                            "detail": "Authentication credentials were not provided."
                         },
                     ),
                 ],
             ),
+            # todo: 詳細のschemaが必要であれば追加する
+            500: utils.OpenApiResponse(description="Internal server error"),
         },
     )
     # todo: try-exceptで全体を囲って500を返す？
@@ -78,9 +78,10 @@ class UsersMeView(views.APIView):
         # AnonymousUserの場合はget()に入る前にpermission_classesで弾かれるが、
         # AnonymousUserだとuser.playerが使えずmypyでエラーになるため、事前にチェックが必要
         if not hasattr(user, "player"):
+            # todo: この処理が必要ならlogger書く
             return custom_response.CustomResponse(
                 errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
+                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
             )
 
         users_serializer: serializers.UsersSerializer = (
@@ -145,29 +146,24 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 現在Djangoが自動で返している401のスキーマも書く？
-            # todo: 404ではないかも
-            404: utils.OpenApiResponse(
-                description="The user does not exist.",
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
                 response={
                     "type": "object",
-                    "properties": {
-                        custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "dict"},
-                    },
+                    "properties": {"detail": {"type": "string"}},
                 },
                 examples=[
                     utils.OpenApiExample(
-                        "Example 404 response",
+                        "Example 401 response",
                         value={
-                            custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.ERRORS: {
-                                "user": "The user does not exist."
-                            },
+                            "detail": "Authentication credentials were not provided."
                         },
                     ),
                 ],
             ),
+            # todo: 詳細のschemaが必要であれば追加する
+            500: utils.OpenApiResponse(description="Internal server error"),
         },
     )
     # todo: try-exceptで全体を囲って500を返す
@@ -178,9 +174,10 @@ class UsersMeView(views.APIView):
         # リクエストのtokenからuserを取得
         user: User | AnonymousUser = request.user
         if not hasattr(user, "player"):
+            # todo: この処理が必要ならlogger書く
             return custom_response.CustomResponse(
                 errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
+                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
             )
         # serializer作成
         users_serializer: serializers.UsersSerializer = (
@@ -192,6 +189,9 @@ class UsersMeView(views.APIView):
         )
         # 更新対象データ(request.data)のバリデーションを確認
         if not users_serializer.is_valid():
+            logger.error(
+                f"[400] Serializer's validation error: {users_serializer.errors}"
+            )
             return custom_response.CustomResponse(
                 errors=users_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
