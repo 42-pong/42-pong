@@ -6,4 +6,8 @@ const WEBSOCKET_BASE_URL = new URL(`ws://${HOST}`);
 export const Endpoints = Object.freeze({
   HEALTH: new URL("/api/health/", BASE_URL),
   WEBSOCKET: new URL("/ws/", WEBSOCKET_BASE_URL),
+  USERS: {
+    default: new URL("/api/users/", BASE_URL),
+    withId: (userId) => new URL(`${userId}`, Endpoints.USERS.default),
+  },
 });
