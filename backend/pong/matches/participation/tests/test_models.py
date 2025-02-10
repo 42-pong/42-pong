@@ -1,6 +1,7 @@
 from typing import ClassVar
 
 from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
 from django.test import TestCase
 
 from accounts.player.models import Player
@@ -87,3 +88,14 @@ class MatchParticipationModelTest(TestCase):
 
         self.assertFalse(Match.objects.exists())
         self.assertFalse(Participation.objects.exists())
+
+    def test_unique_participation_constraint(self) -> None:
+        """
+        同じ試合に同じプレイヤーが二重に参加できないことを確認
+        """
+        with self.assertRaises(IntegrityError):
+            Participation.objects.create(
+                match=self.match,
+                player=self.player,
+                team=constants.ParticipationFields.TeamEnum.TWO.value,
+            )
