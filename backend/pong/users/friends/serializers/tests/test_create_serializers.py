@@ -6,7 +6,7 @@ from django.test import TestCase
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
 
-from ... import constants
+from ... import constants, models
 from .. import create_serializers
 
 ID: Final[str] = accounts_constants.UserFields.ID
@@ -104,4 +104,26 @@ class FriendshipCreateSerializerTests(TestCase):
         self.assertEqual(
             create_serializer.errors[FRIEND_USER_ID][0].code,
             "internal_error",  # todo: constantsに置き換え
+        )
+
+    def test_error_already_friend(self) -> None:
+        """
+        既にフレンドであるユーザーをフレンドに追加しようとした場合にエラーになることを確認
+        """
+        # user1がuser2をフレンドに追加する
+        models.Friendship.objects.create(user=self.user1, friend=self.user2)
+        # 再度、user1がuser2をフレンドに追加しようとする
+        friendship_data: dict = {
+            USER_ID: self.user1.id,
+            FRIEND_USER_ID: self.user2.id,
+        }
+        create_serializer: create_serializers.FriendshipCreateSerializer = (
+            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+        )
+
+        self.assertFalse(create_serializer.is_valid())
+        self.assertIn(FRIEND_USER_ID, create_serializer.errors)
+        self.assertEqual(
+            create_serializer.errors[FRIEND_USER_ID][0].code,
+            "invalid",  # todo: constantsに置き換え
         )

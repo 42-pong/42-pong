@@ -48,4 +48,12 @@ class FriendshipCreateSerializer(serializers.ModelSerializer):
         # 自分自身をフレンドに追加しようとした場合にValidationErrorを発生させる
         validators.invalid_same_user_validator(user_id, friend_user_id)
 
+        # フレンドに追加したいユーザーが既にフレンドである場合にValidationErrorを発生させる
+        if validators.is_friendship_exists(user_id, friend_user_id):
+            raise serializers.ValidationError(
+                {
+                    constants.FriendshipFields.FRIEND_USER_ID: "The user is already a friend."
+                },
+                code="invalid",  # todo: constantsに置き換え
+            )
         return data
