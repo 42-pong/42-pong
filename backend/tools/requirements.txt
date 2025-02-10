@@ -7,6 +7,7 @@
 asgiref==3.8.1
     # via
     #   channels
+    #   channels-redis
     #   daphne
     #   django
     #   django-cors-headers
@@ -26,6 +27,10 @@ certifi==2025.1.31
 cffi==1.17.1
     # via cryptography
 channels==4.2.0
+    # via
+    #   -r requirements.in
+    #   channels-redis
+channels-redis==4.2.1
     # via -r requirements.in
 charset-normalizer==3.4.1
     # via requests
@@ -90,6 +95,8 @@ jsonschema==4.23.0
     # via drf-spectacular
 jsonschema-specifications==2024.10.1
     # via jsonschema
+msgpack==1.1.0
+    # via channels-redis
 mypy==1.13.0
     # via -r requirements.in
 mypy-extensions==1.0.0
@@ -114,6 +121,8 @@ pyopenssl==25.0.0
     # via twisted
 pyyaml==6.0.2
     # via drf-spectacular
+redis==5.2.1
+    # via channels-redis
 referencing==0.36.2
     # via
     #   jsonschema

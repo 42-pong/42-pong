@@ -28,6 +28,9 @@ urlpatterns = [
     path("api/schema/", include("swagger_ui.urls")),
     # health check
     path("api/health/", health_check, name="health_check"),
+    # todo: tmp_jwt完成後、simple-jwtを削除し、tmp_tokenからtokenへ
+    # simple_jwt
+    path("api/simple_jwt/token/", include("simple_jwt.urls")),
     # tmp_jwt
     path("api/token/", include("tmp_jwt.urls")),
     # oauth2

@@ -68,6 +68,7 @@ OAUTH2_AUTHORIZATION_ENDPOINT = get_valid_str_env(
 OAUTH2_TOKEN_ENDPOINT = get_valid_str_env("OAUTH2_TOKEN_ENDPOINT")
 JWS_SECRET_KEY = get_valid_str_env("JWS_SECRET_KEY")
 FRONT_SERVER_PORT = get_valid_str_env("FRONT_SERVER_PORT")
+REDIS_PASSWORD = get_valid_str_env("REDIS_PASSWORD")
 
 
 # Quick-start development settings - unsuitable for production
@@ -96,6 +97,8 @@ INSTALLED_APPS = [
     "channels",
     "corsheaders",  # for CORS
     # apps
+    # todo: jwt完成後、simple-jwtを削除
+    "simple_jwt",
     "tmp_jwt",
     "oauth2",
     "accounts",
@@ -229,9 +232,13 @@ SPECTACULAR_SETTINGS = {
 # https://channels.readthedocs.io/en/latest/#
 
 CHANNEL_LAYERS = {
-    # TODO: 必要になったらchannel_redisを利用する
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [f"redis://:{REDIS_PASSWORD}@redis:6379/0"],
+            "capacity": 5000,
+            "expiry": 2,
+        },
     },
 }
 

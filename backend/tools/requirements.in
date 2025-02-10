@@ -13,4 +13,5 @@ daphne
 channels
 django-cors-headers
 parameterized
+channels-redis
 Pillow
