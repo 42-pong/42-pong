@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from typing import ClassVar
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -14,19 +14,27 @@ from ..models import Score
 
 
 class ScoreModelTest(TestCase):
+    user: ClassVar[User]
+    player: ClassVar[Player]
+    tournament: ClassVar[Tournament]
+    round: ClassVar[Round]
+    match: ClassVar[Match]
+
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         """
         classで一度だけ初期化される
         """
-        cls.user: User = User.objects.create_user(
+        cls.user = User.objects.create_user(
             username="testuser",
             email="testuser@example.com",
             password="testpassword",
         )
         cls.player = Player.objects.create(user=cls.user)
         cls.tournament = Tournament.objects.create()
-        cls.round = Round.objects.create(tournament=cls.tournament, round_number=1)
+        cls.round = Round.objects.create(
+            tournament=cls.tournament, round_number=1
+        )
         cls.match = Match.objects.create(round=cls.round)
 
     def setUp(self) -> None:

@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from typing import ClassVar
 
 from django.test import TestCase
 
@@ -9,8 +9,10 @@ from ..models import Match
 
 
 class MatchModelTest(TestCase):
+    tournament: ClassVar[Tournament]
+
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         """
         test対象のモデルに直接関係していないモデルはTestClassで一度だけ初期化する
         """

@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from typing import ClassVar
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -13,18 +13,24 @@ from ..models import Participation
 
 
 class MatchParticipationModelTest(TestCase):
+    user: ClassVar[User]
+    tournament: ClassVar[Tournament]
+    round: ClassVar[Round]
+
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         """
         test対象のモデルに直接関係していないモデルはTestClassで一度だけ初期化する
         """
-        cls.user: User = User.objects.create_user(
+        cls.user = User.objects.create_user(
             username="testuser",
             email="testuser@example.com",
             password="testpassword",
         )
         cls.tournament = Tournament.objects.create()
-        cls.round = Round.objects.create(tournament=cls.tournament, round_number=1)
+        cls.round = Round.objects.create(
+            tournament=cls.tournament, round_number=1
+        )
 
     def setUp(self) -> None:
         """
