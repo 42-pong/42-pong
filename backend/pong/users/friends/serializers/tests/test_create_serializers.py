@@ -85,3 +85,23 @@ class FriendshipCreateSerializerTests(TestCase):
                 },
             },
         )
+
+    def test_error_same_user(self) -> None:
+        """
+        自分自身をフレンドに追加しようとした場合にエラーになることを確認
+        """
+        # user1が自分自身をフレンドに追加しようとする
+        friendship_data: dict = {
+            USER_ID: self.user1.id,
+            FRIEND_USER_ID: self.user1.id,
+        }
+        create_serializer: create_serializers.FriendshipCreateSerializer = (
+            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+        )
+
+        self.assertFalse(create_serializer.is_valid())
+        self.assertIn(FRIEND_USER_ID, create_serializer.errors)
+        self.assertEqual(
+            create_serializer.errors[FRIEND_USER_ID][0].code,
+            "internal_error",  # todo: constantsに置き換え
+        )

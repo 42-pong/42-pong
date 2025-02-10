@@ -4,6 +4,7 @@ from accounts import constants as accounts_constants
 from users import serializers as users_serializers
 
 from .. import constants, models
+from . import validators
 
 
 class FriendshipCreateSerializer(serializers.ModelSerializer):
@@ -36,3 +37,15 @@ class FriendshipCreateSerializer(serializers.ModelSerializer):
         return models.Friendship.objects.create(
             user_id=user_id, friend_id=friend_user_id
         )
+
+    def validate(self, data: dict) -> dict:
+        """
+        is_valid()内で呼ばれるvalidate()のオーバーライド
+        """
+        user_id: int = data["user"]["id"]
+        friend_user_id: int = data["friend"]["id"]
+
+        # 自分自身をフレンドに追加しようとした場合にValidationErrorを発生させる
+        validators.invalid_same_user_validator(user_id, friend_user_id)
+
+        return data
