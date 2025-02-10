@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
@@ -8,7 +10,7 @@ from pong.custom_response import custom_response
 from users import constants as users_constants
 
 from . import constants, models
-from .serializers import list_serializers
+from .serializers import create_serializers, list_serializers
 
 
 @utils.extend_schema_view(
@@ -65,7 +67,10 @@ class FriendsViewSet(viewsets.ModelViewSet):
     queryset = models.Friendship.objects.all().select_related("user", "friend")
     permission_classes = (permissions.IsAuthenticated,)
 
-    http_method_names = ["get"]
+    # URLから取得するID名
+    lookup_field = "friend_id"
+
+    http_method_names = ["get", "post"]
 
     def list(self, request: request.Request) -> response.Response:
         """
@@ -86,4 +91,45 @@ class FriendsViewSet(viewsets.ModelViewSet):
         )
         return custom_response.CustomResponse(
             data=list_serializer.data, status=status.HTTP_200_OK
+        )
+
+    def _create_friendship_create_serializer(
+        self, request_data: dict, user_id: int
+    ) -> create_serializers.FriendshipCreateSerializer:
+        # Noneの場合はそのままserializerに渡してエラーになる
+        friend_user_id: Optional[int] = request_data.get(
+            constants.FriendshipFields.FRIEND_USER_ID
+        )
+        friendship_data: dict = {
+            constants.FriendshipFields.USER_ID: user_id,
+            constants.FriendshipFields.FRIEND_USER_ID: friend_user_id,
+        }
+        return create_serializers.FriendshipCreateSerializer(
+            data=friendship_data
+        )
+
+    def create(self, request: request.Request) -> response.Response:
+        """
+        自分のフレンドに特定の新しいユーザーを追加するPOSTメソッド
+        """
+
+        # ログインユーザーの取得
+        user: User | AnonymousUser = request.user
+        if isinstance(user, AnonymousUser):
+            return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"user": "The user does not exist."},
+                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
+            )
+
+        create_serializer: create_serializers.FriendshipCreateSerializer = (
+            self._create_friendship_create_serializer(
+                request.data, request.user.id
+            )
+        )
+        # todo: try-except
+        create_serializer.is_valid(raise_exception=True)
+        create_serializer.save()
+        return custom_response.CustomResponse(
+            data=create_serializer.data, status=status.HTTP_201_CREATED
         )
