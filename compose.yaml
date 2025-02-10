@@ -37,6 +37,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health/ || exit 1"]
       interval: 5s
@@ -77,6 +79,23 @@ services:
       - transcendence
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+
+  redis:
+    image: redis:7.4.2-alpine
+    container_name: redis
+    restart: always
+    command: [ "sh", "-c", "redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}" ]
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - transcendence
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 6
