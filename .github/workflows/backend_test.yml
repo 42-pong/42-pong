@@ -38,6 +38,7 @@ jobs:
             DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
             PONG_ORIGIN="${{ vars.PONG_ORIGIN }}"
             JWS_SECRET_KEY="${{ secrets.JWS_SECRET_KEY }}"
+            REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
           EOF
 
       # backendコンテナのtestがDBコンテナに依存しているため、DBコンテナを先に起動する
