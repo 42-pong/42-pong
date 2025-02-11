@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from django.contrib.auth.models import AnonymousUser, User
@@ -12,6 +13,8 @@ from users import constants as users_constants
 
 from . import constants, models
 from .serializers import create_serializers, list_serializers
+
+logger = logging.getLogger(__name__)
 
 
 @utils.extend_schema_view(
@@ -161,12 +164,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
         )
 
     def _create_friendship_create_serializer(
-        self, request_data: dict, user_id: int
+        self, user_id: int, friend_user_id: Optional[int]
     ) -> create_serializers.FriendshipCreateSerializer:
-        # Noneの場合はそのままserializerに渡してエラーになる
-        friend_user_id: Optional[int] = request_data.get(
-            constants.FriendshipFields.FRIEND_USER_ID
-        )
         friendship_data: dict = {
             constants.FriendshipFields.USER_ID: user_id,
             constants.FriendshipFields.FRIEND_USER_ID: friend_user_id,
@@ -176,13 +175,16 @@ class FriendsViewSet(viewsets.ModelViewSet):
         )
 
     def _handle_create_validation_error(
-        self, errors: dict
+        self, errors: dict, user_id: int, friend_user_id: Optional[int]
     ) -> response.Response:
         try:
             # friend_user_idしか入っていない想定のためignoreで対応
             code: str = errors.get(  # type: ignore
                 constants.FriendshipFields.FRIEND_USER_ID
             )[0].code
+            logger.error(
+                f"[400] ValidationError: failed to create friendship(user_id={user_id},friend_user_id={friend_user_id}): {errors}"
+            )
             return custom_response.CustomResponse(
                 code=[code],
                 errors=errors,
@@ -208,17 +210,18 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 errors={"user": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
             )
-
+        # Noneの場合はそのままserializerに渡してエラーになる
+        friend_user_id: Optional[int] = request.data.get(
+            constants.FriendshipFields.FRIEND_USER_ID
+        )
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            self._create_friendship_create_serializer(
-                request.data, request.user.id
-            )
+            self._create_friendship_create_serializer(user.id, friend_user_id)
         )
         try:
             with transaction.atomic():
                 if not create_serializer.is_valid():
                     return self._handle_create_validation_error(
-                        create_serializer.errors
+                        create_serializer.errors, user.id, friend_user_id
                     )
                 create_serializer.save()
             # todo: logger.info追加
