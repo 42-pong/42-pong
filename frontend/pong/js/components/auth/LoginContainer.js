@@ -4,6 +4,7 @@ import { Component } from "../../core/Component";
 import { Cookie } from "../../utils/cookie/Cookie";
 import { validateEmail } from "../../utils/validator/validateEmail";
 import { validatePassword } from "../../utils/validator/validatePassword";
+import { Endpoints } from "../../constants/Endpoints";
 
 //ユーザーが入力するID、PWを保持する箱を入れる
 //サイインボタンを押した後の処理
@@ -77,7 +78,7 @@ export class LoginContainer extends Component {
     // "api/oauth2/authorize/”　へfetchする
     // oauth2Button.addEventListener("click", async (event) => {
     //   try {
-    //     const response = await fetch("http://localhost:8000/api/oauth2/authorize/");
+    //     const response = await fetch(Endpoints.AUTH2.href);
     //     if (!response.ok) {
     //       throw new Error(`HTTP error! status:" ${response.status}`);
     //     }
@@ -90,10 +91,10 @@ export class LoginContainer extends Component {
     //     Cookie.setCookie(refreshToken, 7);
     //   } catch (error) {
     //     console.log("Error:", error);
-    //    todo　エラーメッセージハンドリング
-    //    not_exists : ユーザーが存在しません
-    //    incorrect_password : パスワードが間違っています
-    //    fail : 42 認証に失敗しました。
+    //     todo エラーメッセージハンドリング
+    //     not_exists : ユーザーが存在しません
+    //     incorrect_password : パスワードが間違っています
+    //     fail : 42 認証に失敗しました。
     //   }
     // });
 
@@ -111,7 +112,7 @@ export class LoginContainer extends Component {
         if (!validatePasswordResult.valid)
           throw new Error(validatePasswordResult.message);
         const response = await fetch(
-          "http://localhost:8000/api/token/",
+          Endpoints.TOKEN.href,
           {
             method: "POST",
             headers: {
@@ -130,8 +131,8 @@ export class LoginContainer extends Component {
         const accessToken = data.access;
         const refreshToken = data.refresh;
         // cookieにアクセストークンとリフレーシュートークンを保存する
-        Cookie.setCookie("accessToken", accessToken, 7);
-        Cookie.setCookie("refreshToken", refreshToken, 7);
+        Cookie.setCookie("accessToken", accessToken, 7, { httpOnly: true, secure: true, sameSite: 'strict' });
+        Cookie.setCookie("refreshToken", refreshToken, 7, { httpOnly: true, secure: true, sameSite: 'strict' });
         // ここで成功時の処理を追加できます
       } catch (error) {
         console.log("Error:", error);
