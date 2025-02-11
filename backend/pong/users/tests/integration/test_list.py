@@ -104,3 +104,5 @@ class UsersListViewTests(test.APITestCase):
                 },
             ],
         )
+
+    # todo: IsAuthenticatedにしたら、test_401_unauthenticated_user()を追加
