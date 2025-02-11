@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
+from users import constants as users_constants
 
 from ... import constants, models
 from .. import destroy_serializers
@@ -19,6 +20,8 @@ DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
 FRIEND: Final[str] = constants.FriendshipFields.FRIEND
+
+CODE_INTERNAL_ERROR: Final[str] = users_constants.Code.INTERNAL_ERROR
 
 
 class FriendshipCreateSerializerTests(TestCase):
@@ -85,4 +88,26 @@ class FriendshipCreateSerializerTests(TestCase):
             models.Friendship.objects.filter(
                 user=self.user1, friend=self.user2
             ).exists()
+        )
+
+    def test_error_same_user(self) -> None:
+        """
+        自分自身をフレンド解除しようとした場合にエラーが発生することを確認
+        """
+        # user1が自分自身をフレンド解除しようとする
+        friendship_data: dict = {
+            USER_ID: self.user1.id,
+            FRIEND_USER_ID: self.user1.id,
+        }
+        destroy_serializer: destroy_serializers.FriendshipDestroySerializer = (
+            destroy_serializers.FriendshipDestroySerializer(
+                data=friendship_data
+            )
+        )
+
+        self.assertFalse(destroy_serializer.is_valid())
+        self.assertIn(FRIEND_USER_ID, destroy_serializer.errors)
+        self.assertEqual(
+            destroy_serializer.errors[FRIEND_USER_ID][0].code,
+            CODE_INTERNAL_ERROR,
         )
