@@ -1,15 +1,10 @@
+import { Endpoints } from "../../constants/Endpoints";
 import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { Cookie } from "../../utils/cookie/Cookie";
 import { validateEmail } from "../../utils/validator/validateEmail";
 import { validatePassword } from "../../utils/validator/validatePassword";
-import { Endpoints } from "../../constants/Endpoints";
-
-//ユーザーが入力するID、PWを保持する箱を入れる
-//サイインボタンを押した後の処理
-//フロントエンドのIDとPWバリデーション
-//BEのエンドポイントにIDとPWを送った後のresponse処理
 
 export class LoginContainer extends Component {
   #container;
