@@ -1,6 +1,7 @@
 from typing import Optional
 
 from django.contrib.auth.models import AnonymousUser, User
+from django.db import transaction
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, viewsets
@@ -108,6 +109,15 @@ class FriendsViewSet(viewsets.ModelViewSet):
             data=friendship_data
         )
 
+    def _handle_create_validation_error(
+        self, errors: dict
+    ) -> response.Response:
+        # todo: code取得してセット
+        return custom_response.CustomResponse(
+            errors=errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     def create(self, request: request.Request) -> response.Response:
         """
         自分のフレンドに特定の新しいユーザーを追加するPOSTメソッド
@@ -127,9 +137,21 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 request.data, request.user.id
             )
         )
-        # todo: try-except
-        create_serializer.is_valid(raise_exception=True)
-        create_serializer.save()
-        return custom_response.CustomResponse(
-            data=create_serializer.data, status=status.HTTP_201_CREATED
-        )
+        try:
+            with transaction.atomic():
+                if not create_serializer.is_valid():
+                    return self._handle_create_validation_error(
+                        create_serializer.errors
+                    )
+                create_serializer.save()
+            # todo: logger.info追加
+            return custom_response.CustomResponse(
+                data=create_serializer.data, status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            # DatabaseErrorなど
+            return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
