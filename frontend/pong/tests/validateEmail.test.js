@@ -60,7 +60,6 @@ describe("validateEmail", () => {
 
   it("should return valid for an email with subdomain", () => {
     const result = validateEmail("user@mail.example.com");
-    console.log(result);
     expect(result).toEqual({
       valid: true,
       message: "Email is valid",

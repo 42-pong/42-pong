@@ -10,4 +10,6 @@ export const Endpoints = Object.freeze({
     default: new URL("/api/users/", BASE_URL),
     withId: (userId) => new URL(`${userId}`, Endpoints.USERS.default),
   },
+  TOKEN: new URL("api/token/", BASE_URL),
+  AUTH2: new URL("oauth2/authorize/", BASE_URL),
 });
