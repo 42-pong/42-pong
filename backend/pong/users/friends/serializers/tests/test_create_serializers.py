@@ -154,3 +154,5 @@ class FriendshipCreateSerializerTests(TestCase):
             create_serializer.errors[FRIEND_USER_ID][0].code,
             CODE_NOT_EXISTS,
         )
+
+    # todo: requestから取得するfriend_user_idがNoneの場合のテストを追加(今は自動でcode="null"が返る)
