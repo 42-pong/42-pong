@@ -112,11 +112,22 @@ class FriendsViewSet(viewsets.ModelViewSet):
     def _handle_create_validation_error(
         self, errors: dict
     ) -> response.Response:
-        # todo: code取得してセット
-        return custom_response.CustomResponse(
-            errors=errors,
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        try:
+            # friend_user_idしか入っていない想定のためignoreで対応
+            code: str = errors.get(  # type: ignore
+                constants.FriendshipFields.FRIEND_USER_ID
+            )[0].code
+            return custom_response.CustomResponse(
+                code=[code],
+                errors=errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as inner_exception:
+            return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(inner_exception)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     def create(self, request: request.Request) -> response.Response:
         """
