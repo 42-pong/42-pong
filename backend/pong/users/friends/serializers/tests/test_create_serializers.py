@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
+from users import constants as users_constants
 
 from ... import constants, models
 from .. import create_serializers
@@ -19,6 +20,10 @@ DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
 FRIEND: Final[str] = constants.FriendshipFields.FRIEND
+
+CODE_INVALID: Final[str] = users_constants.Code.INVALID
+CODE_NOT_EXISTS: Final[str] = users_constants.Code.NOT_EXISTS
+CODE_INTERNAL_ERROR: Final[str] = users_constants.Code.INTERNAL_ERROR
 
 
 class FriendshipCreateSerializerTests(TestCase):
@@ -103,7 +108,7 @@ class FriendshipCreateSerializerTests(TestCase):
         self.assertIn(FRIEND_USER_ID, create_serializer.errors)
         self.assertEqual(
             create_serializer.errors[FRIEND_USER_ID][0].code,
-            "internal_error",  # todo: constantsに置き換え
+            CODE_INTERNAL_ERROR,
         )
 
     def test_error_already_friend(self) -> None:
@@ -125,7 +130,7 @@ class FriendshipCreateSerializerTests(TestCase):
         self.assertIn(FRIEND_USER_ID, create_serializer.errors)
         self.assertEqual(
             create_serializer.errors[FRIEND_USER_ID][0].code,
-            "invalid",  # todo: constantsに置き換え
+            CODE_INVALID,
         )
 
     def test_not_exist_friend(self) -> None:
@@ -145,5 +150,5 @@ class FriendshipCreateSerializerTests(TestCase):
         self.assertIn(FRIEND_USER_ID, create_serializer.errors)
         self.assertEqual(
             create_serializer.errors[FRIEND_USER_ID][0].code,
-            "not_exists",  # todo: constantsに置き換え
+            CODE_NOT_EXISTS,
         )

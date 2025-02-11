@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
+from users import constants as users_constants
 from users import serializers as users_serializers
 
 from .. import constants, models
@@ -54,6 +55,6 @@ class FriendshipCreateSerializer(serializers.ModelSerializer):
                 {
                     constants.FriendshipFields.FRIEND_USER_ID: "The user is already a friend."
                 },
-                code="invalid",  # todo: constantsに置き換え
+                code=users_constants.Code.INVALID,
             )
         return data

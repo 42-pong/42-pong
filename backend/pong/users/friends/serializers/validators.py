@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from users import constants as users_constants
+
 from .. import constants, models
 
 
@@ -21,7 +23,7 @@ def invalid_same_user_validator(user_id: int, friend_user_id: int) -> None:
             {
                 constants.FriendshipFields.FRIEND_USER_ID: "The friend_user_id cannot be the same as user_id."
             },
-            code="internal_error",  # todo: constantsに置き換え
+            code=users_constants.Code.INTERNAL_ERROR,
         )
 
 
@@ -46,7 +48,7 @@ def is_friendship_exists(user_id: int, friend_user_id: int) -> bool:
             {
                 constants.FriendshipFields.FRIEND_USER_ID: "The user does not exist."
             },
-            code="not_exists",  # todo: constantsに置き換え
+            code=users_constants.Code.NOT_EXISTS,
         )
     # 既にフレンドであるかどうか
     return models.Friendship.objects.filter(
