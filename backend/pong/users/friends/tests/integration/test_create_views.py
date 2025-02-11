@@ -135,6 +135,27 @@ class FriendsCreateViewTests(test.APITestCase):
             models.Friendship.objects.filter(user=self.user1).exists()
         )
 
+    def test_400_already_friend(self) -> None:
+        """
+        既にフレンドであるユーザーをフレンドに追加しようとした場合に
+        エラーでcode=invalidが返ることを確認
+        """
+        # user1がuser2をフレンドに追加する
+        models.Friendship.objects.create(user=self.user1, friend=self.user2)
+        # 再度、user1がuser2をフレンドに追加しようとする
+        friendship_data: dict = {
+            FRIEND_USER_ID: self.user2.id,
+        }
+        response: drf_response.Response = self.client.post(
+            self.url, friendship_data, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data[CODE][0], users_constants.Code.INVALID)
+        self.assertTrue(
+            models.Friendship.objects.filter(user=self.user1).exists()
+        )
+
     def test_401_unauthenticated_user(self) -> None:
         """
         認証されていないユーザーがフレンド一覧を取得しようとするとエラーになることを確認
