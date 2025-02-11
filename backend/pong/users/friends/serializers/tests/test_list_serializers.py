@@ -15,6 +15,7 @@ EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
@@ -87,6 +88,7 @@ class FriendshipListSerializerTests(TestCase):
                     FRIEND: {
                         USERNAME: self.user_data_2[USERNAME],
                         DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
+                        AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
                     },
                 },
                 {
@@ -95,6 +97,7 @@ class FriendshipListSerializerTests(TestCase):
                     FRIEND: {
                         USERNAME: self.user_data_3[USERNAME],
                         DISPLAY_NAME: self.player_data_3[DISPLAY_NAME],
+                        AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
                     },
                 },
             ],

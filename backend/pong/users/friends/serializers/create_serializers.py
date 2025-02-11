@@ -17,7 +17,7 @@ class FriendshipCreateSerializer(serializers.ModelSerializer):
         fields=(  # emailは含めない
             accounts_constants.UserFields.USERNAME,
             accounts_constants.PlayerFields.DISPLAY_NAME,
-            # todo: avatar追加
+            accounts_constants.PlayerFields.AVATAR,
         ),
     )
 
