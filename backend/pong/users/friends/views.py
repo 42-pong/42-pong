@@ -62,6 +62,72 @@ from .serializers import create_serializers, list_serializers
             500: utils.OpenApiResponse(description="Internal server error"),
         },
     ),
+    create=utils.extend_schema(
+        request=utils.OpenApiRequest(
+            create_serializers.FriendshipCreateSerializer,
+            examples=[
+                utils.OpenApiExample(
+                    "Example request",
+                    value={constants.FriendshipFields.FRIEND_USER_ID: 1},
+                ),
+            ],
+        ),
+        responses={
+            201: create_serializers.FriendshipCreateSerializer,
+            400: utils.OpenApiResponse(
+                description="The user does not exist.",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 400 response - not_exists",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: users_constants.Code.NOT_EXISTS,
+                        },
+                    ),
+                    utils.OpenApiExample(
+                        "Example 400 response - invalid",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: users_constants.Code.INVALID,
+                        },
+                    ),
+                    utils.OpenApiExample(
+                        "Example 400 response - internal_error",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: users_constants.Code.INTERNAL_ERROR,
+                        },
+                    ),
+                ],
+            ),
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
+                        },
+                    ),
+                ],
+            ),
+            # todo: 404は確定したら追加する
+            # todo: 詳細のschemaが必要であれば追加する
+            500: utils.OpenApiResponse(description="Internal server error"),
+        },
+    ),
 )
 # todo: 各メソッドにtry-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
 class FriendsViewSet(viewsets.ModelViewSet):
