@@ -1,4 +1,5 @@
 import { LoginContainer } from "./auth/LoginContainer";
+import { AddFriendButton } from "./friend/AddFriendButton";
 import { GameStartPanel } from "./game/GameStartPanel";
 import { MainNavbar } from "./navigation/MainNavbar";
 import { TournamentContainer } from "./tournament/TournamentContainer";
@@ -10,7 +11,14 @@ import { TournamentProgressTransitionButton } from "./tournament/TournamentProgr
 import { TournamentStageTransitionButton } from "./tournament/TournamentStageTransitionButton";
 import { TournamentStageTransitionButtonWithInput } from "./tournament/TournamentStageTransitionButtonWithInput";
 import { TournamentWaiting } from "./tournament/TournamentWaiting";
+import { BlockUserButton } from "./user/BlockUserButton";
+import { UserListContainer } from "./user/UserListContainer";
+import { UserListItem } from "./user/UserListItem";
+import { UserProfile } from "./user/UserProfile";
+import { UserProfileContainer } from "./user/UserProfileContainer";
+import { ErrorContainer } from "./utils/ErrorContainer";
 import { LinkButton } from "./utils/LinkButton";
+import { ListContainer } from "./utils/ListContainer";
 import { ObservableInput } from "./utils/ObservableInput";
 import { ChatView } from "./views/ChatView";
 import { FriendsView } from "./views/FriendsView";
@@ -23,6 +31,7 @@ import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
+customElements.define("add-friend-button", AddFriendButton, {});
 customElements.define("game-start-panel", GameStartPanel, {});
 customElements.define("main-navbar", MainNavbar, {});
 customElements.define(
@@ -50,7 +59,18 @@ customElements.define(
   {},
 );
 customElements.define("tournament-waiting", TournamentWaiting, {});
+customElements.define("block-user-button", BlockUserButton, {});
+customElements.define("user-list-container", UserListContainer, {});
+customElements.define("user-list-item", UserListItem, {});
+customElements.define("user-profile", UserProfile, {});
+customElements.define(
+  "user-profile-container",
+  UserProfileContainer,
+  {},
+);
+customElements.define("error-container", ErrorContainer, {});
 customElements.define("link-button", LinkButton, {});
+customElements.define("list-container", ListContainer, {});
 customElements.define("observable-input", ObservableInput, {});
 customElements.define("chat-view", ChatView, {});
 customElements.define("friends-view", FriendsView, {});

@@ -8,6 +8,14 @@ const setSecondary = (element) => {
   return setClassNames(element, "btn", "btn-secondary");
 };
 
+const setSuccess = (element) => {
+  return setClassNames(element, "btn", "btn-success");
+};
+
+const setDanger = (element) => {
+  return setClassNames(element, "btn", "btn-danger");
+};
+
 const setOutlinePrimary = (element) => {
   return setClassNames(element, "btn", "btn-outline-primary");
 };
@@ -19,6 +27,8 @@ const setOutlineSecondary = (element) => {
 export const BootstrapButtons = {
   setPrimary,
   setSecondary,
+  setSuccess,
+  setDanger,
   setOutlinePrimary,
   setOutlineSecondary,
 };

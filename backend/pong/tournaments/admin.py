@@ -3,6 +3,7 @@ from django.contrib.admin import ModelAdmin
 
 from . import constants
 from .participation import models as participation_models
+from .round import models as round_models
 from .tournament import models as tournament_models
 
 
@@ -45,3 +46,25 @@ class ParticipationAdmin(ModelAdmin):
     ordering: tuple = (
         "-" + constants.ParticipationFields.CREATED_AT,
     )  # 降順に表示
+
+
+@admin.register(round_models.Round)
+class RoundAdmin(ModelAdmin):
+    """
+    adminサイトでroundに表示されるカラムをカスタマイズ
+    """
+
+    list_display: tuple = (
+        constants.RoundFields.ID,
+        constants.RoundFields.TOURNAMENT_ID,
+        constants.RoundFields.ROUND_NUMBER,
+        constants.RoundFields.STATUS,
+        constants.RoundFields.CREATED_AT,
+        constants.RoundFields.UPDATED_AT,
+    )
+    search_fields: tuple = (constants.RoundFields.TOURNAMENT_ID,)
+    list_filter: tuple = (
+        constants.RoundFields.ROUND_NUMBER,
+        constants.RoundFields.STATUS,
+    )
+    ordering: tuple = ("-" + constants.RoundFields.UPDATED_AT,)  # 降順に表示

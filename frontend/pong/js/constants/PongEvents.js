@@ -28,8 +28,15 @@ const UPDATE_TOURNAMENT_PROGRESS = {
     createPongEvent(UPDATE_TOURNAMENT_PROGRESS.type, { progress }),
 };
 
+const UPDATE_USER_ID = {
+  type: "update-user-id",
+  create: (userId) =>
+    createPongEvent(UPDATE_USER_ID.type, { userId }),
+};
+
 export const PongEvents = {
   UPDATE_ROUTER,
   UPDATE_TOURNAMENT_STAGE,
   UPDATE_TOURNAMENT_PROGRESS,
+  UPDATE_USER_ID,
 };

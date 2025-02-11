@@ -5,19 +5,22 @@ from django.urls import reverse
 from rest_framework import response as drf_response
 from rest_framework import status, test
 
-from accounts import constants
+from accounts import constants as accounts_constants
 from accounts.player import models
 from pong.custom_response import custom_response
 
-ID: Final[str] = constants.UserFields.ID
-USERNAME: Final[str] = constants.UserFields.USERNAME
-EMAIL: Final[str] = constants.UserFields.EMAIL
-PASSWORD: Final[str] = constants.UserFields.PASSWORD
-USER: Final[str] = constants.PlayerFields.USER
-DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
-AVATAR: Final[str] = constants.PlayerFields.AVATAR
+from ... import constants
+
+ID: Final[str] = accounts_constants.UserFields.ID
+USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
+EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
+PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
+USER: Final[str] = accounts_constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 
 DATA: Final[str] = custom_response.DATA
+CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
 
 
@@ -107,4 +110,5 @@ class UsersRetrieveViewTests(test.APITestCase):
         response: drf_response.Response = self.client.get(url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data[CODE], [constants.Code.INTERNAL_ERROR])
         self.assertIn("user_id", response.data[ERRORS])
