@@ -25,6 +25,7 @@ class FriendshipDestroySerializer(serializers.ModelSerializer):
             serializers.ValidationError
               - フレンド解除したいユーザーがフレンドではない場合
               - 自分自身をフレンド解除しようとした場合
+              - フレンド解除したいユーザーが存在しない場合
         """
         user_id: int = data["user"]["id"]
         friend_user_id: int = data["friend"]["id"]
