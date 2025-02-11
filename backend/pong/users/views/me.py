@@ -42,6 +42,7 @@ class UsersMeView(views.APIView):
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.UserFields.EMAIL: "username1@example.com",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
                             },
                         },
                     ),
@@ -101,6 +102,7 @@ class UsersMeView(views.APIView):
                     "Example request",
                     value={
                         accounts_constants.PlayerFields.DISPLAY_NAME: "new_name",
+                        # todo: avatarも追加？
                     },
                 ),
             ],
@@ -119,6 +121,7 @@ class UsersMeView(views.APIView):
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.UserFields.EMAIL: "username1@example.com",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
                             },
                         },
                     ),

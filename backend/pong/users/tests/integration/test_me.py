@@ -17,6 +17,7 @@ EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 
 DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
@@ -85,6 +86,7 @@ class UsersMeViewTests(test.APITestCase):
         self.assertEqual(
             response_data[DISPLAY_NAME], self.player_data[DISPLAY_NAME]
         )
+        self.assertEqual(response_data[AVATAR], self.player.avatar.url)
 
     def test_get_401_unauthenticated_user(self) -> None:
         """
@@ -165,3 +167,5 @@ class UsersMeViewTests(test.APITestCase):
         # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
         # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
         self.assertEqual(response.data["detail"].code, "not_authenticated")
+
+    # todo: avatarの更新に関するテストを追加

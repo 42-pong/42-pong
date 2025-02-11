@@ -43,6 +43,7 @@ class UsersRetrieveView(views.APIView):
                                 accounts_constants.UserFields.ID: 2,
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
                             },
                         },
                     ),
@@ -91,6 +92,7 @@ class UsersRetrieveView(views.APIView):
                         accounts_constants.UserFields.ID,
                         accounts_constants.UserFields.USERNAME,
                         accounts_constants.PlayerFields.DISPLAY_NAME,
+                        accounts_constants.PlayerFields.AVATAR,
                     ),
                 )
             )

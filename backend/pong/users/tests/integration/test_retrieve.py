@@ -17,6 +17,7 @@ EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 
 DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
@@ -27,8 +28,15 @@ class UsersRetrieveViewTests(test.APITestCase):
     def setUp(self) -> None:
         """
         APITestCaseのsetUpメソッドのオーバーライド
-        setUp()毎にuser_idが増えるため、実際にユーザーを作成するのは各テストメソッド内
         """
+
+        def _create_user_and_related_player(
+            user_data: dict, player_data: dict
+        ) -> tuple[User, models.Player]:
+            user: User = User.objects.create_user(**user_data)
+            player_data[USER] = user
+            player: models.Player = models.Player.objects.create(**player_data)
+            return user, player
 
         # 1人目のユーザーデータ
         self.user_data1: dict = {
@@ -49,13 +57,13 @@ class UsersRetrieveViewTests(test.APITestCase):
             DISPLAY_NAME: "display_name2",
         }
 
-    def _create_user_and_related_player(
-        self, user_data: dict, player_data: dict
-    ) -> User:
-        user: User = User.objects.create_user(**user_data)
-        player_data[USER] = user
-        models.Player.objects.create(**player_data)
-        return user
+        # 2人のユーザーを作成
+        self.user1, self.player1 = _create_user_and_related_player(
+            self.user_data1, self.player_data1
+        )
+        self.user2, self.player2 = _create_user_and_related_player(
+            self.user_data2, self.player_data2
+        )
 
     def _create_url(self, user_id: int) -> str:
         return reverse("users:retrieve", kwargs={"user_id": user_id})
@@ -64,31 +72,16 @@ class UsersRetrieveViewTests(test.APITestCase):
         """
         setUp()の情報で2人のユーザーを作成できることを確認
         """
-        # 2人のユーザーを作成
-        user1: User = self._create_user_and_related_player(
-            self.user_data1, self.player_data1
-        )
-        user2: User = self._create_user_and_related_player(
-            self.user_data2, self.player_data2
-        )
-
-        self.assertTrue(User.objects.filter(id=user1.id).exists())
-        self.assertTrue(User.objects.filter(id=user2.id).exists())
+        self.assertTrue(User.objects.filter(id=self.user1.id).exists())
+        self.assertTrue(User.objects.filter(id=self.user2.id).exists())
 
     def test_get_200_user_with_valid_user_id(self) -> None:
         """
         存在するuser_idをurlに指定して特定のユーザープロフィールを取得できることを確認
         """
-        # 2人のユーザーを作成
-        user1: User = self._create_user_and_related_player(
-            self.user_data1, self.player_data1
-        )
-        user2: User = self._create_user_and_related_player(
-            self.user_data2, self.player_data2
-        )
         for user_data, player_data, user in (
-            (self.user_data1, self.player_data1, user1),
-            (self.user_data2, self.player_data2, user2),
+            (self.user_data1, self.player_data1, self.user1),
+            (self.user_data2, self.player_data2, self.user2),
         ):
             url: str = self._create_url(user.id)
             response: drf_response.Response = self.client.get(
@@ -103,6 +96,10 @@ class UsersRetrieveViewTests(test.APITestCase):
                 response_data[DISPLAY_NAME], player_data[DISPLAY_NAME]
             )
             self.assertNotIn(EMAIL, response_data)
+            self.assertEqual(
+                response_data[AVATAR],
+                user.player.avatar.url,
+            )
 
     def test_get_404_user_returns_404_with_nonexistent_user_id(self) -> None:
         """

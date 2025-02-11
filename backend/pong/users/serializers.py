@@ -18,7 +18,9 @@ class UsersSerializer(serializers.Serializer):
     display_name = player_serializers.PlayerSerializer().fields[
         constants.PlayerFields.DISPLAY_NAME
     ]
-    # todo: こことfieldにavatar追加
+    avatar = player_serializers.PlayerSerializer().fields[
+        constants.PlayerFields.AVATAR
+    ]
 
     class Meta:
         model = models.Player
@@ -27,6 +29,7 @@ class UsersSerializer(serializers.Serializer):
             constants.UserFields.USERNAME,
             constants.UserFields.EMAIL,
             constants.PlayerFields.DISPLAY_NAME,
+            constants.PlayerFields.AVATAR,
         )
 
     # args,kwargsは型ヒントが複雑かつそのままsuper()に渡したいためignoreで対処

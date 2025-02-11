@@ -40,13 +40,13 @@ class UsersListView(views.APIView):
                                     constants.UserFields.ID: 2,
                                     constants.UserFields.USERNAME: "username1",
                                     constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                    # todo: avatar追加
+                                    constants.PlayerFields.AVATAR: "avatars/sample1.png",
                                 },
                                 {
                                     constants.UserFields.ID: 3,
                                     constants.UserFields.USERNAME: "username2",
                                     constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                    # todo: avatar追加
+                                    constants.PlayerFields.AVATAR: "avatars/sample2.png",
                                 },
                                 {"...", "..."},
                             ],
@@ -78,6 +78,7 @@ class UsersListView(views.APIView):
                 constants.UserFields.ID,
                 constants.UserFields.USERNAME,
                 constants.PlayerFields.DISPLAY_NAME,
+                constants.PlayerFields.AVATAR,
             ),
         )
         return custom_response.CustomResponse(
