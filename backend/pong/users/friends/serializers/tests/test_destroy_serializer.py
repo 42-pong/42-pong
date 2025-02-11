@@ -7,6 +7,7 @@ from accounts import constants as accounts_constants
 from accounts.player import models as players_models
 
 from ... import constants, models
+from .. import destroy_serializers
 
 ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
@@ -54,3 +55,34 @@ class FriendshipCreateSerializerTests(TestCase):
 
         # user1がuser2をフレンドに追加
         models.Friendship.objects.create(user=self.user1, friend=self.user2)
+
+    def test_valid_friendship_destroy(self) -> None:
+        """
+        正常にフレンド解除ができることを確認
+        """
+        friendship_data: dict = {
+            USER_ID: self.user1.id,
+            FRIEND_USER_ID: self.user2.id,
+        }
+        destroy_serializer: destroy_serializers.FriendshipDestroySerializer = (
+            destroy_serializers.FriendshipDestroySerializer(
+                data=friendship_data
+            )
+        )
+
+        # validate()確認
+        self.assertTrue(destroy_serializer.is_valid())
+        self.assertEqual(
+            destroy_serializer.validated_data,
+            {USER: {ID: self.user1.id}, FRIEND: {ID: self.user2.id}},
+        )
+        # destroy()確認
+        friendship: models.Friendship = models.Friendship.objects.get(
+            user=self.user1, friend=self.user2
+        )
+        friendship.delete()
+        self.assertFalse(
+            models.Friendship.objects.filter(
+                user=self.user1, friend=self.user2
+            ).exists()
+        )
