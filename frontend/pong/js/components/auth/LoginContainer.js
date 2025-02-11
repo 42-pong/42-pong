@@ -111,19 +111,16 @@ export class LoginContainer extends Component {
           throw new Error(validateEmailResult.message);
         if (!validatePasswordResult.valid)
           throw new Error(validatePasswordResult.message);
-        const response = await fetch(
-          Endpoints.TOKEN.href,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username: email,
-              password: password,
-            }),
+        const response = await fetch(Endpoints.TOKEN.href, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            username: email,
+            password: password,
+          }),
+        });
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -131,8 +128,16 @@ export class LoginContainer extends Component {
         const accessToken = data.access;
         const refreshToken = data.refresh;
         // cookieにアクセストークンとリフレーシュートークンを保存する
-        Cookie.setCookie("accessToken", accessToken, 7, { httpOnly: true, secure: true, sameSite: 'strict' });
-        Cookie.setCookie("refreshToken", refreshToken, 7, { httpOnly: true, secure: true, sameSite: 'strict' });
+        Cookie.setCookie("accessToken", accessToken, 7, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+        });
+        Cookie.setCookie("refreshToken", refreshToken, 7, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+        });
         // ここで成功時の処理を追加できます
       } catch (error) {
         console.log("Error:", error);
