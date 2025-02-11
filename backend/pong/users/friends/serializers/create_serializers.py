@@ -42,6 +42,12 @@ class FriendshipCreateSerializer(serializers.ModelSerializer):
     def validate(self, data: dict) -> dict:
         """
         is_valid()内で呼ばれるvalidate()のオーバーライド
+
+        Raises:
+            serializers.ValidationError
+              - 自分自身をフレンドに追加しようとした場合
+              - フレンドに追加したいユーザーが存在しない場合
+              - フレンドに追加したいユーザーが既にフレンドである場合
         """
         user_id: int = data["user"]["id"]
         friend_user_id: int = data["friend"]["id"]
