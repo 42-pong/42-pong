@@ -159,6 +159,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
         list_serializer: list_serializers.FriendshipListSerializer = (
             list_serializers.FriendshipListSerializer(friends, many=True)
         )
+        # todo: logger.info追加
         return custom_response.CustomResponse(
             data=list_serializer.data, status=status.HTTP_200_OK
         )
@@ -182,8 +183,9 @@ class FriendsViewSet(viewsets.ModelViewSet):
             code: str = errors.get(  # type: ignore
                 constants.FriendshipFields.FRIEND_USER_ID
             )[0].code
+            # codeの取得に成功した場合
             logger.error(
-                f"[400] ValidationError: failed to create friendship(user_id={user_id},friend_user_id={friend_user_id}): {errors}"
+                f"[400] ValidationError: failed to create friendship(user_id={user_id},friend_user_id={friend_user_id}): code={code}: {errors}"
             )
             return custom_response.CustomResponse(
                 code=[code],
@@ -191,6 +193,10 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as inner_exception:
+            # codeの取得に失敗した場合
+            logger.error(
+                f"[500] Failed to create friendship(user_id={user_id},friend_user_id={friend_user_id}): {str(inner_exception)} from {errors}"
+            )
             return custom_response.CustomResponse(
                 code=[users_constants.Code.INTERNAL_ERROR],
                 errors={"detail": str(inner_exception)},
@@ -230,6 +236,9 @@ class FriendsViewSet(viewsets.ModelViewSet):
             )
         except Exception as e:
             # DatabaseErrorなど
+            logger.error(
+                f"[500] Failed to create friendship(user_id={user.id},friend_user_id={friend_user_id}): {str(e)}"
+            )
             return custom_response.CustomResponse(
                 code=[users_constants.Code.INTERNAL_ERROR],
                 errors={"detail": str(e)},
