@@ -100,12 +100,12 @@ export class LoginContainer extends Component {
       const email = this.#form.elements.email.value;
       const password = this.#form.elements.password.value;
       try {
-        const validateEmailResult = validateEmail(email);
-        const validatePasswordResult = validatePassword(password);
-        if (!validateEmailResult.valid)
-          throw new Error(validateEmailResult.message);
-        if (!validatePasswordResult.valid)
-          throw new Error(validatePasswordResult.message);
+        // const validateEmailResult = validateEmail(email);
+        // const validatePasswordResult = validatePassword(password);
+        // if (!validateEmailResult.valid)
+        //   throw new Error(validateEmailResult.message);
+        // if (!validatePasswordResult.valid)
+        //   throw new Error(validatePasswordResult.message);
         const response = await fetch(Endpoints.TOKEN.href, {
           method: "POST",
           headers: {
@@ -116,6 +116,8 @@ export class LoginContainer extends Component {
             password: password,
           }),
         });
+        //todo
+        //JWTエントポイント(api/token/)作成後に適用
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -124,12 +126,10 @@ export class LoginContainer extends Component {
         const refreshToken = data.refresh;
         // cookieにアクセストークンとリフレーシュートークンを保存する
         Cookie.setCookie("accessToken", accessToken, 7, {
-          httpOnly: true,
           secure: true,
           sameSite: "strict",
         });
         Cookie.setCookie("refreshToken", refreshToken, 7, {
-          httpOnly: true,
           secure: true,
           sameSite: "strict",
         });
@@ -154,8 +154,8 @@ export class LoginContainer extends Component {
 
     //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
     //cookieからJWTを取得する
-    const jwt = Cookie.getCookie("JWT");
-    if (jwt)
+    const accessToken = Cookie.getCookie("accessToken");
+    if (accessToken)
       this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
     else console.log("get jwt failed");
   }
