@@ -21,6 +21,7 @@ USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
 FRIEND: Final[str] = constants.FriendshipFields.FRIEND
 
+CODE_INVALID: Final[str] = users_constants.Code.INVALID
 CODE_INTERNAL_ERROR: Final[str] = users_constants.Code.INTERNAL_ERROR
 
 
@@ -57,7 +58,9 @@ class FriendshipCreateSerializerTests(TestCase):
         self.user2: User = _create_user(self.user_data_2, self.player_data_2)
 
         # user1がuser2をフレンドに追加
-        models.Friendship.objects.create(user=self.user1, friend=self.user2)
+        self.friendship: models.Friendship = models.Friendship.objects.create(
+            user=self.user1, friend=self.user2
+        )
 
     def test_valid_friendship_destroy(self) -> None:
         """
@@ -110,4 +113,28 @@ class FriendshipCreateSerializerTests(TestCase):
         self.assertEqual(
             destroy_serializer.errors[FRIEND_USER_ID][0].code,
             CODE_INTERNAL_ERROR,
+        )
+
+    def test_error_already_not_friend(self) -> None:
+        """
+        フレンドではないユーザーをフレンド解除しようとした場合にエラーが発生することを確認
+        """
+        # user1がuser2をフレンド解除する
+        self.friendship.delete()
+        # user1が再度user2をフレンド解除しようとする
+        friendship_data: dict = {
+            USER_ID: self.user1.id,
+            FRIEND_USER_ID: self.user2.id,
+        }
+        destroy_serializer: destroy_serializers.FriendshipDestroySerializer = (
+            destroy_serializers.FriendshipDestroySerializer(
+                data=friendship_data
+            )
+        )
+
+        self.assertFalse(destroy_serializer.is_valid())
+        self.assertIn(FRIEND_USER_ID, destroy_serializer.errors)
+        self.assertEqual(
+            destroy_serializer.errors[FRIEND_USER_ID][0].code,
+            CODE_INVALID,
         )
