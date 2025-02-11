@@ -10,11 +10,11 @@ from rest_framework import (
     views,
 )
 
-from accounts import constants
+from accounts import constants as accounts_constants
 from accounts.player import models
 from pong.custom_response import custom_response
 
-from .. import serializers
+from .. import constants, serializers
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +40,9 @@ class UsersRetrieveView(views.APIView):
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: {
-                                constants.UserFields.ID: 2,
-                                constants.UserFields.USERNAME: "username1",
-                                constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                accounts_constants.UserFields.ID: 2,
+                                accounts_constants.UserFields.USERNAME: "username1",
+                                accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
                             },
                         },
                     ),
@@ -54,7 +54,7 @@ class UsersRetrieveView(views.APIView):
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "dict"},
+                        custom_response.ERRORS: {"type": "list"},
                     },
                 },
                 examples=[
@@ -62,9 +62,9 @@ class UsersRetrieveView(views.APIView):
                         "Example 404 response",
                         value={
                             custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.ERRORS: {
-                                "user_id": "The user does not exist."
-                            },
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
                         },
                     ),
                 ],
@@ -88,9 +88,9 @@ class UsersRetrieveView(views.APIView):
                     player,
                     # emailは含めない
                     fields=(
-                        constants.UserFields.ID,
-                        constants.UserFields.USERNAME,
-                        constants.PlayerFields.DISPLAY_NAME,
+                        accounts_constants.UserFields.ID,
+                        accounts_constants.UserFields.USERNAME,
+                        accounts_constants.PlayerFields.DISPLAY_NAME,
                     ),
                 )
             )
@@ -102,6 +102,7 @@ class UsersRetrieveView(views.APIView):
             # user_idに紐づくPlayerが存在しない場合
             logger.error(f"[404] {str(e)}: user_id={user_id} does not exist.")
             return custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
                 errors={"user_id": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -109,6 +110,7 @@ class UsersRetrieveView(views.APIView):
             # MultipleObjectsReturnedなどの場合
             logger.error(f"[500] Internal server error: {str(e)}")
             return custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
                 errors={"detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
