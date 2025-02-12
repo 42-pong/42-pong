@@ -36,3 +36,15 @@ class CustomJWTAuthenticationTestCase(APITestCase):
         self.assertEqual(user, self.user)
         self.assertEqual(token, self.valid_token)
 
+    def test_authenticate_no_token(self) -> None:
+        """トークン形式の情報が存在しないのリクエストの場合、認証をスキップすることを確認"""
+        request: Request = self.factory.get("/api/")
+        self.assertIsNone(self.auth_handler.authenticate(request))
+
+    def test_authenticate_invalid_format(self) -> None:
+        """Bearer形式でないトークン認証のリクエストの場合、認証をスキップすることを確認"""
+        request: Request = self.factory.get(
+            "/api/", HTTP_AUTHORIZATION="InvalidFormatToken"
+        )
+        self.assertIsNone(self.auth_handler.authenticate(request))
+
