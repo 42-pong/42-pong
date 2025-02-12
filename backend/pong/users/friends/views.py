@@ -259,7 +259,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
             )[0].code
             # codeの取得に成功した場合
             logger.error(
-                f"[400] ValidationError: failed to create friendship(user_id={user_id},friend_user_id={friend_user_id}): code={code}: {errors}"
+                f"[400] ValidationError: failed to create friendship\
+                (user_id={user_id},friend_user_id={friend_user_id}): code={code}: {errors}"
             )
             return custom_response.CustomResponse(
                 code=[code],
@@ -269,7 +270,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # codeの取得に失敗した場合
             logger.error(
-                f"[500] Failed to create friendship(user_id={user_id},friend_user_id={friend_user_id}): {str(e)} from {errors}"
+                f"[500] Failed to create friendship\
+                (user_id={user_id},friend_user_id={friend_user_id}): {str(e)} from {errors}"
             )
             return custom_response.CustomResponse(
                 code=[users_constants.Code.INTERNAL_ERROR],
@@ -310,7 +312,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # DatabaseErrorなど
             logger.error(
-                f"[500] Failed to create friendship(user_id={user.id},friend_user_id={friend_user_id}): {str(e)}"
+                f"[500] Failed to create friendship\
+                (user_id={user.id},friend_user_id={friend_user_id}): {str(e)}"
             )
             return custom_response.CustomResponse(
                 code=[users_constants.Code.INTERNAL_ERROR],
@@ -341,7 +344,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 constants.FriendshipFields.FRIEND_USER_ID
             )[0].code
             logger.error(
-                f"[404] ValidationError: failed to delete friendship(user_id={user_id},friend_user_id={friend_id}): {errors}"
+                f"[404] ValidationError: failed to delete friendship\
+                (user_id={user_id},friend_user_id={friend_id}): {errors}"
             )
             return custom_response.CustomResponse(
                 # "not_exists" or "invalid" or "internal_error"
@@ -352,7 +356,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # codeの取得に失敗した場合
             logger.error(
-                f"[500] Failed to delete friendship(user_id={user_id},friend_user_id={friend_id}): {str(e)} from {errors}"
+                f"[500] Failed to delete friendship\
+                (user_id={user_id},friend_user_id={friend_id}): {str(e)} from {errors}"
             )
             return custom_response.CustomResponse(
                 code=[users_constants.Code.INTERNAL_ERROR],
@@ -395,7 +400,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # DatabaseErrorなど
             logger.error(
-                f"[500] Failed to delete friendship(user_id={user.id},friend_user_id={friend_id}): {str(e)}"
+                f"[500] Failed to delete friendship\
+                (user_id={user.id},friend_user_id={friend_id}): {str(e)}"
             )
             return custom_response.CustomResponse(
                 code=[users_constants.Code.INTERNAL_ERROR],
