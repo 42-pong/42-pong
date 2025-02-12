@@ -12,7 +12,11 @@ from pong.custom_response import custom_response
 from users import constants as users_constants
 
 from . import constants, models
-from .serializers import create_serializers, list_serializers
+from .serializers import (
+    create_serializers,
+    destroy_serializers,
+    list_serializers,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +144,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
     # URLから取得するID名
     lookup_field = "friend_id"
 
-    http_method_names = ["get", "post"]
+    http_method_names = ["get", "post", "delete"]
 
     def list(self, request: request.Request) -> response.Response:
         """
@@ -244,3 +248,43 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 errors={"detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    def _create_destroy_serializer(
+        self, user_id: int, friend_id: int
+    ) -> destroy_serializers.FriendshipDestroySerializer:
+        friendship_data: dict = {
+            constants.FriendshipFields.USER_ID: user_id,
+            constants.FriendshipFields.FRIEND_USER_ID: friend_id,
+        }
+        return destroy_serializers.FriendshipDestroySerializer(
+            data=friendship_data
+        )
+
+    def destroy(
+        self, request: request.Request, friend_id: int
+    ) -> response.Response:
+        """
+        自分のフレンドから特定のユーザーを削除するDELETEメソッド
+        """
+        # ログインユーザーの取得
+        user: User | AnonymousUser = request.user
+        if isinstance(user, AnonymousUser):
+            return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"user": "The user does not exist."},
+                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
+            )
+
+        destroy_serializer: destroy_serializers.FriendshipDestroySerializer = (
+            self._create_destroy_serializer(user.id, friend_id)
+        )
+        # todo: try-except
+        destroy_serializer.is_valid(raise_exception=True)
+        friend: models.Friendship = models.Friendship.objects.get(
+            user_id=user.id, friend_id=friend_id
+        )
+        friend.delete()
+        # todo: logger.info追加
+        return custom_response.CustomResponse(
+            status=status.HTTP_204_NO_CONTENT
+        )
