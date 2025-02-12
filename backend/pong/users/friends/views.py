@@ -263,11 +263,30 @@ class FriendsViewSet(viewsets.ModelViewSet):
     def _handle_destroy_validation_error(
         self, errors: dict, user_id: int, friend_id: int
     ) -> response.Response:
-        # todo: codeを取得して振分け
-        return custom_response.CustomResponse(
-            errors=errors,
-            status=status.HTTP_404_NOT_FOUND,
-        )
+        try:
+            # friend_user_idしか入っていない想定のためignoreで対応
+            code: str = errors.get(  # type: ignore
+                constants.FriendshipFields.FRIEND_USER_ID
+            )[0].code
+            logger.error(
+                f"[404] ValidationError: failed to delete friendship(user_id={user_id},friend_user_id={friend_id}): {errors}"
+            )
+            return custom_response.CustomResponse(
+                # "not_exists" or "invalid" or "internal_error"
+                code=[code],
+                errors=errors,
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            # codeの取得に失敗した場合
+            logger.error(
+                f"[500] Failed to delete friendship(user_id={user_id},friend_user_id={friend_id}): {str(e)} from {errors}"
+            )
+            return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     def destroy(
         self, request: request.Request, friend_id: int
