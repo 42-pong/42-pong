@@ -8,6 +8,7 @@ from rest_framework import status, test
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
 from pong.custom_response import custom_response
+from users import constants as users_constants
 
 from ... import models
 
@@ -18,6 +19,9 @@ USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 
 DATA: Final[str] = custom_response.DATA
+CODE: Final[str] = custom_response.CODE
+
+CODE_INVALID: Final[str] = users_constants.Code.INVALID
 
 
 class FriendsListViewTests(test.APITestCase):
@@ -117,3 +121,22 @@ class FriendsListViewTests(test.APITestCase):
         # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
         # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
         self.assertEqual(response.data["detail"].code, "not_authenticated")
+
+    def test_404_delete_non_friend(self) -> None:
+        """
+        フレンドでないユーザーをフレンドから削除しようとするとエラーになることを確認
+        """
+        # user1がuser2をフレンドから削除
+        self.friendship.delete()
+        # 再度user1がuser2をフレンドから削除しようとする
+        response: drf_response.Response = self.client.delete(
+            self._create_url(self.user2.id)
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data[CODE][0], CODE_INVALID)
+        self.assertFalse(
+            models.Friendship.objects.filter(
+                user=self.user1, friend=self.user2
+            ).exists()
+        )
