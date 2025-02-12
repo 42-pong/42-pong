@@ -1,20 +1,22 @@
 from datetime import datetime
 
 from django.contrib.auth.models import User
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory, APITestCase
 
 from ... import custom_jwt_authentication, jwt
+
 
 class CustomJWTAuthenticationTestCase(APITestCase):
     def setUp(self) -> None:
         """テスト用のセットアップ"""
         self.factory = APIRequestFactory()
         self.jwt_handler: jwt.JWT = jwt.JWT()
-        self.auth_handler: custom_jwt_authentication.CustomJWTAuthentication = (
-            custom_jwt_authentication.CustomJWTAuthentication()
+        self.auth_handler: custom_jwt_authentication.CustomJWTAuthentication = custom_jwt_authentication.CustomJWTAuthentication()
+        self.user = User.objects.create_user(
+            username="testuser", password="testpass"
         )
-        self.user = User.objects.create_user(username="testuser", password="testpass")
         self.now: int = int(datetime.utcnow().timestamp())
         self.payload: dict = {
             "sub": self.user.id,
@@ -23,7 +25,9 @@ class CustomJWTAuthenticationTestCase(APITestCase):
             "typ": "access",
         }
         self.valid_token: str = self.jwt_handler.encode(self.payload)
-        self.auth_header: dict = {"HTTP_AUTHORIZATION": f"Bearer {self.valid_token}"}
+        self.auth_header: dict = {
+            "HTTP_AUTHORIZATION": f"Bearer {self.valid_token}"
+        }
 
     def test_authenticate_valid_user(self) -> None:
         """有効なユーザーで Bearer 認証が成功することを確認"""
@@ -48,3 +52,39 @@ class CustomJWTAuthenticationTestCase(APITestCase):
         )
         self.assertIsNone(self.auth_handler.authenticate(request))
 
+    def test_authenticate_invalid_token(self) -> None:
+        """無効なトークンの場合に AuthenticationFailed が発生し、無効なトークンであることを確認"""
+        invalid_auth_header: dict = {
+            "HTTP_AUTHORIZATION": "Bearer invalid_token"
+        }
+        request: Request = self.factory.get("/", **invalid_auth_header)
+        with self.assertRaises(AuthenticationFailed) as e:
+            self.auth_handler.authenticate(request)
+        self.assertEqual(
+            e.exception.detail, {"status": "error", "code": "invalid_token"}
+        )
+
+    def test_authenticate_user_not_exist(self) -> None:
+        """存在しないユーザーIDを含んだトークンの場合、AuthenticationFailed が発生し、ユーザーが存在しないことを確認"""
+        self.payload["sub"] = 99999
+        invalid_payload_token: str = self.jwt_handler.encode(self.payload)
+        request: Request = self.factory.get(
+            "/", HTTP_AUTHORIZATION=f"Bearer {invalid_payload_token}"
+        )
+        with self.assertRaises(AuthenticationFailed) as e:
+            self.auth_handler.authenticate(request)
+        self.assertEqual(
+            e.exception.detail, {"status": "error", "code": "not_exist"}
+        )
+
+    def test_authenticate_empty_payload_in_token(self) -> None:
+        """ペイロードが空のトークンの場合、AuthenticationFailed が発生し、無効なトークンであることを確認"""
+        invalid_payload_token: str = self.jwt_handler.encode({})
+        request: Request = self.factory.get(
+            "/", HTTP_AUTHORIZATION=f"Bearer {invalid_payload_token}"
+        )
+        with self.assertRaises(AuthenticationFailed) as e:
+            self.auth_handler.authenticate(request)
+        self.assertEqual(
+            e.exception.detail, {"status": "error", "code": "invalid_token"}
+        )
