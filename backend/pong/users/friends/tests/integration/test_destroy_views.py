@@ -86,6 +86,22 @@ class FriendsListViewTests(test.APITestCase):
             "users:friends:friends-detail", kwargs={"friend_id": friend_id}
         )
 
+    def test_204_delete_friend(self) -> None:
+        """
+        フレンドを正常にフレンドから削除できることを確認
+        """
+        response: drf_response.Response = self.client.delete(
+            self._create_url(self.user2.id)
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.data[DATA], {})
+        self.assertFalse(
+            models.Friendship.objects.filter(
+                user=self.user1, friend=self.user2
+            ).exists()
+        )
+
     def test_401_unauthenticated_user(self) -> None:
         """
         認証されていないユーザーがフレンド一覧を取得しようとするとエラーになることを確認
