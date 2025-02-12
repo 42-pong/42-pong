@@ -82,7 +82,7 @@ logger = logging.getLogger(__name__)
         responses={
             201: create_serializers.FriendshipCreateSerializer,
             400: utils.OpenApiResponse(
-                description="The user does not exist.",
+                description="Invalid friend_user_id",
                 response={
                     "type": "object",
                     "properties": {
@@ -146,10 +146,14 @@ class FriendsViewSet(viewsets.ModelViewSet):
 
     http_method_names = ["get", "post", "delete"]
 
+    # --------------------------------------------------------------------------
+    # GET method
+    # --------------------------------------------------------------------------
     def list(self, request: request.Request) -> response.Response:
         """
         自分のフレンドのユーザープロフィール一覧を取得するGETメソッド
         """
+        # ログインユーザーの取得
         user: User | AnonymousUser = request.user
         if isinstance(user, AnonymousUser):
             return custom_response.CustomResponse(
@@ -168,6 +172,9 @@ class FriendsViewSet(viewsets.ModelViewSet):
             data=list_serializer.data, status=status.HTTP_200_OK
         )
 
+    # --------------------------------------------------------------------------
+    # POST method
+    # --------------------------------------------------------------------------
     def _create_friendship_create_serializer(
         self, user_id: int, friend_user_id: Optional[int]
     ) -> create_serializers.FriendshipCreateSerializer:
@@ -196,14 +203,14 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 errors=errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except Exception as inner_exception:
+        except Exception as e:
             # codeの取得に失敗した場合
             logger.error(
-                f"[500] Failed to create friendship(user_id={user_id},friend_user_id={friend_user_id}): {str(inner_exception)} from {errors}"
+                f"[500] Failed to create friendship(user_id={user_id},friend_user_id={friend_user_id}): {str(e)} from {errors}"
             )
             return custom_response.CustomResponse(
                 code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(inner_exception)},
+                errors={"detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -211,7 +218,6 @@ class FriendsViewSet(viewsets.ModelViewSet):
         """
         自分のフレンドに特定の新しいユーザーを追加するPOSTメソッド
         """
-
         # ログインユーザーの取得
         user: User | AnonymousUser = request.user
         if isinstance(user, AnonymousUser):
@@ -249,6 +255,9 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+    # --------------------------------------------------------------------------
+    # DELETE method
+    # --------------------------------------------------------------------------
     def _create_destroy_serializer(
         self, user_id: int, friend_id: int
     ) -> destroy_serializers.FriendshipDestroySerializer:
