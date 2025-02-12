@@ -260,6 +260,15 @@ class FriendsViewSet(viewsets.ModelViewSet):
             data=friendship_data
         )
 
+    def _handle_destroy_validation_error(
+        self, errors: dict, user_id: int, friend_id: int
+    ) -> response.Response:
+        # todo: codeを取得して振分け
+        return custom_response.CustomResponse(
+            errors=errors,
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
     def destroy(
         self, request: request.Request, friend_id: int
     ) -> response.Response:
@@ -278,13 +287,27 @@ class FriendsViewSet(viewsets.ModelViewSet):
         destroy_serializer: destroy_serializers.FriendshipDestroySerializer = (
             self._create_destroy_serializer(user.id, friend_id)
         )
-        # todo: try-except
-        destroy_serializer.is_valid(raise_exception=True)
-        friend: models.Friendship = models.Friendship.objects.get(
-            user_id=user.id, friend_id=friend_id
-        )
-        friend.delete()
-        # todo: logger.info追加
-        return custom_response.CustomResponse(
-            status=status.HTTP_204_NO_CONTENT
-        )
+        try:
+            with transaction.atomic():
+                if not destroy_serializer.is_valid():
+                    return self._handle_destroy_validation_error(
+                        destroy_serializer.errors, user.id, friend_id
+                    )
+                friend: models.Friendship = models.Friendship.objects.get(
+                    user_id=user.id, friend_id=friend_id
+                )
+                friend.delete()
+            # todo: logger.info追加
+            return custom_response.CustomResponse(
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Exception as e:
+            # DatabaseErrorなど
+            logger.error(
+                f"[500] Failed to delete friendship(user_id={user.id},friend_user_id={friend_id}): {str(e)}"
+            )
+            return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
