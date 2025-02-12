@@ -22,6 +22,7 @@ DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
 
 CODE_INVALID: Final[str] = users_constants.Code.INVALID
+CODE_INTERNAL_ERROR: Final[str] = users_constants.Code.INTERNAL_ERROR
 
 
 class FriendsListViewTests(test.APITestCase):
@@ -140,3 +141,15 @@ class FriendsListViewTests(test.APITestCase):
                 user=self.user1, friend=self.user2
             ).exists()
         )
+
+    def test_404_delete_same_user(self) -> None:
+        """
+        自分自身をフレンドから削除しようとするとエラーになることを確認
+        """
+        # user1が自分自身をフレンドから削除
+        response: drf_response.Response = self.client.delete(
+            self._create_url(self.user1.id)
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data[CODE][0], CODE_INTERNAL_ERROR)
