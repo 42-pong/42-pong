@@ -9,10 +9,12 @@ class Tournament(models.Model):
 
     Attributes:
         status: トーナメントの現在の状態を表す
-            - matching: 参加者募集中
-            - playing: 進行中
-            - end: 終了済み
+            - not_stated: 参加者募集中
+            - on_going: 進行中
+            - completed: 終了
+            - canceled: 中止
         created_at: トーナメント作成日時
+        updated_at: トーナメント更新日時
     """
 
     status = models.CharField(
