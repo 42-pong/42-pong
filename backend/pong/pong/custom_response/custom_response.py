@@ -34,7 +34,7 @@ class CustomResponse(response.Response):
     レスポンスのJSON形式(self.data):
         {
             "status": "ok" | "error",
-            "data": {...},
+            "data": {...} | [...],
             "code": ["string", ...],
             "errors": {...}
         }
@@ -49,7 +49,7 @@ class CustomResponse(response.Response):
     # https://github.com/django/django/blob/main/django/http/response.py#L111
     def __init__(
         self,
-        data: Optional[dict] = None,
+        data: Optional[dict | list] = None,
         code: Optional[list[str]] = None,
         errors: Optional[dict] = None,
         status: int = 200,
