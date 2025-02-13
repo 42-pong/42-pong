@@ -2,6 +2,8 @@ from drf_spectacular import utils
 from rest_framework import permissions, request, response, views
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from pong.custom_response import custom_response
+
 
 class TokenObtainView(views.APIView):
     """
@@ -11,7 +13,18 @@ class TokenObtainView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
-        request=TokenObtainPairSerializer,
+        request=utils.OpenApiRequest(
+            TokenObtainPairSerializer,
+            examples=[
+                utils.OpenApiExample(
+                    "Example request",
+                    value={
+                        "email": "user@example.com",
+                        "password": "password",
+                    },
+                ),
+            ],
+        ),
         responses={
             200: utils.OpenApiResponse(
                 description="アクセストークンとリフレッシュトークンを返す",
@@ -84,5 +97,12 @@ class TokenObtainView(views.APIView):
         """
         アクセストークンとリフレッシュトークンを取得するPOSTメソッド
         """
+        # todo: JWT作成
         pass
         return response.Response()
+        # 1. ユーザーが存在するかどうか
+        # 2. パスワードが正しいかどうか
+        # 3. user_idをペイロード作成
+        # 4. ペイロードからJWTにエンコード
+        # 5. アクセストークンとリフレッシュトークンを返す
+        return custom_response.CustomResponse(status=status.HTTP_200_OK)
