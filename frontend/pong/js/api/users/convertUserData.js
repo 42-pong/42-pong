@@ -3,5 +3,6 @@ export const convertUserData = (userData) => {
     id: userData.id,
     username: userData.username,
     displayName: userData.display_name,
+    avatar: userData.avatar,
   };
 };
