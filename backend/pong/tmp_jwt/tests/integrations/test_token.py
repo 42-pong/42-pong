@@ -32,3 +32,11 @@ class TokenViewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["code"][0], "not_exists")
 
+    def test_api_token_incorrect_password(self) -> None:
+        """
+        存在するユーザーのemailで間違ったpasswordを渡した場合、'incorrect_password' エラーが返されることを確認
+        """
+        data = {"email": self.user.email, "password": "wrongpassword"}
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["code"][0], "incorrect_password")

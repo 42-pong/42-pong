@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
@@ -110,10 +111,14 @@ class TokenObtainView(views.APIView):
             return custom_response.CustomResponse(
                 code=["not_exists"], status=status.HTTP_401_UNAUTHORIZED
             )
-        pass
-        return response.Response()
-        # 1. ユーザーが存在するかどうか
-        # 2. パスワードが正しいかどうか
+
+        password = request.data.get("password")
+        if authenticate(username=user.username, password=password) is None:
+            logger.error(f"Password is incorrect: {password}")
+            return custom_response.CustomResponse(
+                code=["incorrect_password"],
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         # 3. user_idをペイロード作成
         # 4. ペイロードからJWTにエンコード
         # 5. アクセストークンとリフレッシュトークンを返す
