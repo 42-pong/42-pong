@@ -24,7 +24,7 @@ class RoundModelTest(TestCase):
         self.assertEqual(self.round.tournament, self.tournament)
         self.assertEqual(self.round.round_number, 1)
         self.assertEqual(
-            self.round.status, RoundFields.StatusEnum.IN_PROGRESS.value
+            self.round.status, RoundFields.StatusEnum.NOT_STARTED.value
         )
 
     def test_change_round_status(self) -> None:
