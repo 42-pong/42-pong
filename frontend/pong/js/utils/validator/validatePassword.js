@@ -1,37 +1,56 @@
-const isValidPasswordFormat = (password) => {
-  const minLength = 8;
-  const maxLength = 50;
-  const validChars = /^[a-zA-Z0-9-_]+$/;
+import {
+  Auth,
+  minLength,
+  maxLength,
+  validChars,
+  allNums,
+} from "../../constants/message/Auth";
 
+const isValidPasswordFormat = (password) => {
   if (password.length < minLength) {
     return {
       valid: false,
-      message: `Password must be at least ${minLength} characters long`,
+      message:
+        Auth.validatePasswordMessage[
+          `Password must be at least ${minLength} characters long`
+        ],
     };
   }
 
   if (password.length > maxLength) {
     return {
       valid: false,
-      message: `Password must be no more than ${maxLength} characters long`,
+      message:
+        Auth.validatePasswordMessage[
+          `Password must be no more than ${maxLength} characters long`
+        ],
     };
   }
 
   if (!validChars.test(password)) {
     return {
       valid: false,
-      message: "Password contains invalid characters",
+      message:
+        Auth.validatePasswordMessage[
+          "Password contains invalid characters"
+        ],
     };
   }
 
-  if (/^\d+$/.test(password)) {
+  if (allNums.test(password)) {
     return {
       valid: false,
-      message: "Password cannot be all numbers",
+      message:
+        Auth.validatePasswordMessage[
+          "Password cannot be all numbers"
+        ],
     };
   }
 
-  return { valid: true, message: "Password format is valid" };
+  return {
+    valid: true,
+    message: Auth.validatePasswordMessage["Password format is valid"],
+  };
 };
 
 const validatePassword = (password) => {
@@ -39,7 +58,10 @@ const validatePassword = (password) => {
   if (!result.valid) {
     return result;
   }
-  return { valid: true, message: "Password is valid" };
+  return {
+    valid: true,
+    message: Auth.validatePasswordMessage["Password format is valid"],
+  };
 };
 
 export { validatePassword };

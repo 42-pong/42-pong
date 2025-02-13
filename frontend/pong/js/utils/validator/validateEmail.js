@@ -1,3 +1,5 @@
+import { Auth } from "../../constants/message/Auth";
+
 const isValidEmailFormat = (email) => {
   if (!email) return false; // 入力が空の場合
   const atIndex = email.indexOf("@");
@@ -9,8 +11,14 @@ const isValidEmailFormat = (email) => {
 
 const validateEmail = (email) => {
   if (!isValidEmailFormat(email))
-    return { valid: false, message: "Invalid email format" };
-  return { valid: true, message: "Email is valid" };
+    return {
+      valid: false,
+      message: Auth.validateEmailMessage["Invalid email format"],
+    };
+  return {
+    valid: true,
+    message: Auth.validateEmailMessage["Email is valid"],
+  };
 };
 
 export { validateEmail };

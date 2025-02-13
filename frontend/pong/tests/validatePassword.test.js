@@ -6,7 +6,7 @@ describe("validatePassword", () => {
     const result = validatePassword("ValidPass123-");
     expect(result).toEqual({
       valid: true,
-      message: "Password is valid",
+      message: "パスワードは有効です",
     });
   });
 
@@ -14,7 +14,7 @@ describe("validatePassword", () => {
     const result = validatePassword("short");
     expect(result).toEqual({
       valid: false,
-      message: "Password must be at least 8 characters long",
+      message: "パスワードは 8 文字以下禁止です",
     });
   });
 
@@ -22,7 +22,7 @@ describe("validatePassword", () => {
     const result = validatePassword("a".repeat(51));
     expect(result).toEqual({
       valid: false,
-      message: "Password must be no more than 50 characters long",
+      message: "パスワードは 50 文字以上禁止です",
     });
   });
 
@@ -30,7 +30,8 @@ describe("validatePassword", () => {
     const result = validatePassword("Invalid@Pass");
     expect(result).toEqual({
       valid: false,
-      message: "Password contains invalid characters",
+      message:
+        "パスワードは無効な文字が入っています。（a-zA-Z0-9-_のみ許可）",
     });
   });
 
@@ -38,7 +39,7 @@ describe("validatePassword", () => {
     const result = validatePassword("12345678");
     expect(result).toEqual({
       valid: false,
-      message: "Password cannot be all numbers",
+      message: "パスワードは全て数字が禁止です",
     });
   });
 
@@ -46,7 +47,7 @@ describe("validatePassword", () => {
     const result = validatePassword("Valid-Pass_123");
     expect(result).toEqual({
       valid: true,
-      message: "Password is valid",
+      message: "パスワードは有効です",
     });
   });
 });

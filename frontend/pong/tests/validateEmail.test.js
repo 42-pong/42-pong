@@ -6,7 +6,7 @@ describe("validateEmail", () => {
     const result = validateEmail("user@example.com");
     expect(result).toEqual({
       valid: true,
-      message: "Email is valid",
+      message: "メールアドレスが有効です",
     });
   });
 
@@ -14,7 +14,7 @@ describe("validateEmail", () => {
     const result = validateEmail("");
     expect(result).toEqual({
       valid: false,
-      message: "Invalid email format",
+      message: "メールアドレスの形が間違えました",
     });
   });
 
@@ -22,7 +22,7 @@ describe("validateEmail", () => {
     const result = validateEmail("userexample.com");
     expect(result).toEqual({
       valid: false,
-      message: "Invalid email format",
+      message: "メールアドレスの形が間違えました",
     });
   });
 
@@ -30,7 +30,7 @@ describe("validateEmail", () => {
     const result = validateEmail("@example.com");
     expect(result).toEqual({
       valid: false,
-      message: "Invalid email format",
+      message: "メールアドレスの形が間違えました",
     });
   });
 
@@ -38,7 +38,7 @@ describe("validateEmail", () => {
     const result = validateEmail("user@");
     expect(result).toEqual({
       valid: false,
-      message: "Invalid email format",
+      message: "メールアドレスの形が間違えました",
     });
   });
 
@@ -46,7 +46,7 @@ describe("validateEmail", () => {
     const result = validateEmail("user@.com");
     expect(result).toEqual({
       valid: false,
-      message: "Invalid email format",
+      message: "メールアドレスの形が間違えました",
     });
   });
 
@@ -54,7 +54,7 @@ describe("validateEmail", () => {
     const result = validateEmail("@example.com");
     expect(result).toEqual({
       valid: false,
-      message: "Invalid email format",
+      message: "メールアドレスの形が間違えました",
     });
   });
 
@@ -62,7 +62,7 @@ describe("validateEmail", () => {
     const result = validateEmail("user @example.com");
     expect(result).toEqual({
       valid: false,
-      message: "Invalid email format",
+      message: "メールアドレスの形が間違えました",
     });
   });
 });

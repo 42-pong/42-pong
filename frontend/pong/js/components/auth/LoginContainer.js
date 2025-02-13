@@ -86,7 +86,6 @@ export class LoginContainer extends Component {
         //JWTエントポイント(api/token/)作成後に適用
       } catch (error) {
         //FEの画面に表示するエラーを実装
-
         // todo　APIのエラーメッセージハンドリング
         // not_exists : ユーザーが存在しません
         // incorrect_password : パスワードが間違っています
