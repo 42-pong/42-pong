@@ -21,6 +21,7 @@ class UsersSerializer(serializers.Serializer):
     avatar = player_serializers.PlayerSerializer().fields[
         accounts_constants.PlayerFields.AVATAR
     ]
+    # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
 
     class Meta:
         model = player_models.Player
@@ -30,6 +31,7 @@ class UsersSerializer(serializers.Serializer):
             accounts_constants.UserFields.EMAIL,
             accounts_constants.PlayerFields.DISPLAY_NAME,
             accounts_constants.PlayerFields.AVATAR,
+            # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
         )
 
     # args,kwargsは型ヒントが複雑かつそのままsuper()に渡したいためignoreで対処
