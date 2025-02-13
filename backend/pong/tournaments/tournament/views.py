@@ -92,4 +92,7 @@ from . import models, serializers
     ),
 )
 class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Tournament.objects.all().prefetch_related(
+        "rounds__matches__match_participations__scores"
+    )
     serializer_class = serializers.TournamentSerializer
