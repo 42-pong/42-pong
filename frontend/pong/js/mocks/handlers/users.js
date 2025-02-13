@@ -7,6 +7,7 @@ const createSampleUser = (number) =>
     id: `${number}`,
     username: `pong${number}`,
     display_name: `DISPLAY${number}`,
+    avatar: "https://placehold.co/30",
   });
 const sampleUsers = Array.from({ length: SAMPLE_COUNT }).map(
   (_, idx) => createSampleUser(idx + 1),
