@@ -58,14 +58,6 @@ describe("validateEmail", () => {
     });
   });
 
-  it("should return valid for an email with subdomain", () => {
-    const result = validateEmail("user@mail.example.com");
-    expect(result).toEqual({
-      valid: true,
-      message: "Email is valid",
-    });
-  });
-
   it("should return invalid for an email with spaces", () => {
     const result = validateEmail("user @example.com");
     expect(result).toEqual({

@@ -100,12 +100,12 @@ export class LoginContainer extends Component {
       const email = this.#form.elements.email.value;
       const password = this.#form.elements.password.value;
       try {
-        // const validateEmailResult = validateEmail(email);
-        // const validatePasswordResult = validatePassword(password);
-        // if (!validateEmailResult.valid)
-        //   throw new Error(validateEmailResult.message);
-        // if (!validatePasswordResult.valid)
-        //   throw new Error(validatePasswordResult.message);
+        const validateEmailResult = validateEmail(email);
+        const validatePasswordResult = validatePassword(password);
+        if (!validateEmailResult.valid)
+          throw new Error(validateEmailResult.message);
+        if (!validatePasswordResult.valid)
+          throw new Error(validatePasswordResult.message);
         const response = await fetch(Endpoints.TOKEN.href, {
           method: "POST",
           headers: {
