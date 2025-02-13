@@ -1,16 +1,18 @@
+import { BootstrapBorders } from "../../../bootstrap/utilities/borders";
 import { BootstrapDisplay } from "../../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../../bootstrap/utilities/flex";
 import { BootstrapSpacing } from "../../../bootstrap/utilities/spacing";
 import { BootstrapText } from "../../../bootstrap/utilities/text";
+import { Endpoints } from "../../../constants/Endpoints";
 import { createElement } from "../createElement";
 import { setHeight } from "../style/setHeight";
 
 export const createNameplate = (user, avatarHeight = "") => {
-  // TODO: 実際のアバターを使用
   const avatar = new Image();
-  avatar.src = "https://placehold.co/30";
-  avatar.alt = "sample image";
+  avatar.src = Endpoints.create(user.avatar).href;
+  avatar.alt = `${user.displayName}#${user.username}'s avatar`;
   if (avatarHeight) setHeight(avatar, avatarHeight);
+  BootstrapBorders.setRoundedCircle(avatar);
 
   const nameTag = createElement("span", {
     textContent: `${user.displayName}#${user.username}`,
