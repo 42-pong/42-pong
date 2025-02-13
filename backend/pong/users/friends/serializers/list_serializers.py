@@ -19,6 +19,7 @@ class FriendshipListSerializer(drf_serializers.ModelSerializer):
         fields=(  # emailは含めない
             accounts_constants.UserFields.USERNAME,
             accounts_constants.PlayerFields.DISPLAY_NAME,
+            accounts_constants.PlayerFields.AVATAR,
         ),
     )
 
