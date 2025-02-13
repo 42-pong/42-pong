@@ -16,13 +16,12 @@ class Tournament(models.Model):
     """
 
     status = models.CharField(
-        max_length=10,
+        max_length=15,
         choices=[
             (status.value, status.name)
             for status in constants.TournamentFields.StatusEnum
         ],
-        default=constants.TournamentFields.StatusEnum.MATCHING.value,
-        # TODO: db_index=Trueを必要によって追加
+        default=constants.TournamentFields.StatusEnum.NOT_STARTED.value,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

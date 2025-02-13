@@ -24,7 +24,6 @@ class Round(models.Model):
         tournament_models.Tournament,
         related_name="round",  # Tournamentsからこのテーブルにアクセスするときにエイリアス名
         on_delete=models.CASCADE,
-        db_column="tournament_id",
     )
     round_number = models.PositiveIntegerField()
     status = models.CharField(
@@ -33,7 +32,7 @@ class Round(models.Model):
             (status.value, status.name)
             for status in constants.RoundFields.StatusEnum
         ],
-        default=constants.RoundFields.StatusEnum.IN_PROGRESS.value,
+        default=constants.RoundFields.StatusEnum.NOT_STARTED.value,
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

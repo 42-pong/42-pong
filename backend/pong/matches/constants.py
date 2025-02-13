@@ -6,7 +6,15 @@ from enum import Enum
 class MatchFields:
     ID: str = "id"
     ROUND_ID: str = "round_id"
+    STATUS: str = "status"
     CREATED_AT: str = "created_at"
+    UPDATED_AT: str = "updated_at"
+
+    class StatusEnum(Enum):
+        NOT_STARTED = "not_started"
+        ON_GOING = "on_going"
+        COMPLETED = "completed"
+        CANCELED = "canceled"
 
 
 @dataclasses.dataclass(frozen=True)
