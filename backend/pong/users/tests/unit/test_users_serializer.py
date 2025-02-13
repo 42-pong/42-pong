@@ -7,8 +7,9 @@ from django.test import TestCase
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from users.friends import constants as friends_constants
 
-from ... import serializers
+from ... import constants, serializers
 
 ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
@@ -17,6 +18,9 @@ PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
+
+USER_ID: Final[str] = friends_constants.FriendshipFields.USER_ID
 
 
 class UsersSerializerTests(TestCase):
@@ -65,7 +69,9 @@ class UsersSerializerTests(TestCase):
         )
         # serializer作成
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            all_players_with_users, many=True
+            all_players_with_users,
+            many=True,
+            context={USER_ID: self.user_1.id},
         )
 
         self.assertEqual(
@@ -77,6 +83,8 @@ class UsersSerializerTests(TestCase):
                     EMAIL: self.user_data_1[EMAIL],
                     DISPLAY_NAME: self.player_data_1[DISPLAY_NAME],
                     AVATAR: self.player_1.avatar.url,
+                    IS_FRIEND: False,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
                 },
                 {
                     ID: self.user_2.id,
@@ -84,6 +92,8 @@ class UsersSerializerTests(TestCase):
                     EMAIL: self.user_data_2[EMAIL],
                     DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
                     AVATAR: self.player_2.avatar.url,
+                    IS_FRIEND: False,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
                 },
             ],
         )
@@ -99,7 +109,9 @@ class UsersSerializerTests(TestCase):
             player_models.Player.objects.select_related(USER).all()
         )
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            all_players_with_users, many=True
+            all_players_with_users,
+            many=True,
+            context={USER_ID: self.user_1.id},
         )
 
         self.assertEqual(serializer.data, [])
@@ -114,7 +126,10 @@ class UsersSerializerTests(TestCase):
             DISPLAY_NAME: new_valid_display_name,
         }
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            self.player_1, data=request_data, partial=True
+            self.player_1,
+            data=request_data,
+            partial=True,
+            context={USER_ID: self.user_1.id},
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()  # update()が呼ばれる
@@ -147,7 +162,10 @@ class UsersSerializerTests(TestCase):
             DISPLAY_NAME: new_invalid_display_name,
         }
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            self.player_1, data=request_data, partial=True
+            self.player_1,
+            data=request_data,
+            partial=True,
+            context={USER_ID: self.user_1.id},
         )
 
         self.assertFalse(serializer.is_valid())
@@ -163,7 +181,9 @@ class UsersSerializerTests(TestCase):
         serializerのフィールドにデフォルトのavatarパスが設定されていることを確認
         """
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            self.player_1, partial=True
+            self.player_1,
+            partial=True,
+            context={USER_ID: self.user_1.id},
         )
 
         self.assertEqual(serializer.data[AVATAR], self.player_1.avatar.url)

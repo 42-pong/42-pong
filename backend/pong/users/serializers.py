@@ -3,6 +3,9 @@ from rest_framework import serializers
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from accounts.player import serializers as player_serializers
+from users.friends import constants, models
+
+from . import constants as users_constants
 
 
 class UsersSerializer(serializers.Serializer):
@@ -21,7 +24,9 @@ class UsersSerializer(serializers.Serializer):
     avatar = player_serializers.PlayerSerializer().fields[
         accounts_constants.PlayerFields.AVATAR
     ]
-    # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+    # get_is_friend()の返り値が格納される
+    is_friend = serializers.SerializerMethodField()
+    # todo: is_blocked,is_online,win_match,lose_match追加
 
     class Meta:
         model = player_models.Player
@@ -31,7 +36,8 @@ class UsersSerializer(serializers.Serializer):
             accounts_constants.UserFields.EMAIL,
             accounts_constants.PlayerFields.DISPLAY_NAME,
             accounts_constants.PlayerFields.AVATAR,
-            # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+            users_constants.UsersFields.IS_FRIEND,
+            # todo: is_blocked,is_online,win_match,lose_match追加
         )
 
     # args,kwargsは型ヒントが複雑かつそのままsuper()に渡したいためignoreで対処
@@ -46,6 +52,26 @@ class UsersSerializer(serializers.Serializer):
             existing: set[str] = set(self.fields)
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
+
+    def get_is_friend(self, player: player_models.Player) -> bool:
+        """
+        playerがログインユーザーのフレンドであるかどうかを取得する
+
+        Args:
+            player: Playerインスタンス
+
+        Returns:
+            bool: ログインユーザーのフレンドであればTrue、そうでなければFalse
+        """
+        if not hasattr(self, "_friendships_cache"):
+            # ログインユーザーのフレンド全員をsetでキャッシュしておく
+            user_id: int = self.context[constants.FriendshipFields.USER_ID]
+            self._friendships_cache: set[int] = set(
+                models.Friendship.objects.filter(user_id=user_id).values_list(
+                    "friend_id", flat=True
+                )
+            )
+        return player.user.id in self._friendships_cache
 
     def update(
         self, player: player_models.Player, validated_data: dict
