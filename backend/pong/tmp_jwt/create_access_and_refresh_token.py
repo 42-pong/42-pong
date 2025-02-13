@@ -6,6 +6,8 @@ from tmp_jwt import jwt
 logger = logging.getLogger(__name__)
 
 
+# todo: リファクタリング
+# - typによってexpの時間を変える関数作成
 def create_access_and_refresh_token(user_id: int) -> dict:
     jwt_handler: jwt.JWT = jwt.JWT()
     now: int = int(datetime.utcnow().timestamp())

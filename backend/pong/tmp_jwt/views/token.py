@@ -103,6 +103,18 @@ class TokenObtainView(views.APIView):
     def post(self, request: request.Request) -> response.Response:
         """
         アクセストークンとリフレッシュトークンを取得するPOSTメソッド
+
+        Responses:
+            - 200: アクセストークンとリフレッシュトークンを返す
+            - 400:
+                - internal_error: リクエスト形式が不正の場合
+            - 401:
+                - not_exists: アカウントが存在しない場合
+                - incorrect_password: パスワードが間違っている場合
+            - 500:
+                - internal_error:
+                    - JWTトークンの生成に失敗した場合
+                    - 予期せぬエラーが発生した場合
         """
         required_keys: set = {"email", "password"}
         request_keys: set = set(request.data.keys())
@@ -122,7 +134,7 @@ class TokenObtainView(views.APIView):
 
         password = request.data.get("password")
         if authenticate(username=user.username, password=password) is None:
-            logger.error(f"Password is incorrect: {password}")
+            logger.error("Password is incorrect")
             return custom_response.CustomResponse(
                 code=["incorrect_password"],
                 status=status.HTTP_401_UNAUTHORIZED,
