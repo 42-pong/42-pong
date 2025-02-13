@@ -10,6 +10,7 @@ from accounts.player import models
 
 from ... import serializers
 
+ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
@@ -65,17 +66,25 @@ class UsersSerializerTests(TestCase):
             all_players_with_users, many=True
         )
 
-        # シリアライズ済みdataからusernameのみのlistを作成
-        serializer_data_usernames: list[str] = [
-            data[USERNAME] for data in serializer.data
-        ]
-        self.assertEqual(len(serializer.data), 2)
-        for username in (
-            self.user_data_1[USERNAME],
-            self.user_data_2[USERNAME],
-        ):
-            self.assertIn(username, serializer_data_usernames)
-            # todo: display_nameも確認する
+        self.assertEqual(
+            serializer.data,
+            [
+                {
+                    ID: self.user_1.id,
+                    USERNAME: self.user_data_1[USERNAME],
+                    EMAIL: self.user_data_1[EMAIL],
+                    DISPLAY_NAME: self.player_data_1[DISPLAY_NAME],
+                    AVATAR: self.player_1.avatar.url,
+                },
+                {
+                    ID: self.user_2.id,
+                    USERNAME: self.user_data_2[USERNAME],
+                    EMAIL: self.user_data_2[EMAIL],
+                    DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
+                    AVATAR: self.player_2.avatar.url,
+                },
+            ],
+        )
 
     def test_non_users(self) -> None:
         """
