@@ -6,7 +6,7 @@ from rest_framework import response as drf_response
 from rest_framework import status, test
 
 from accounts import constants as accounts_constants
-from accounts.player import models
+from accounts.player import models as player_models
 from pong.custom_response import custom_response
 
 ID: Final[str] = accounts_constants.UserFields.ID
@@ -28,10 +28,12 @@ class UsersListViewTests(test.APITestCase):
 
         def _create_user_and_related_player(
             user_data: dict, player_data: dict
-        ) -> tuple[User, models.Player]:
+        ) -> tuple[User, player_models.Player]:
             user: User = User.objects.create_user(**user_data)
             player_data[USER] = user
-            player: models.Player = models.Player.objects.create(**player_data)
+            player: player_models.Player = player_models.Player.objects.create(
+                **player_data
+            )
             return user, player
 
         self.url: str = reverse("users:list")

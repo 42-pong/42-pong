@@ -11,7 +11,7 @@ from rest_framework import (
 )
 
 from accounts import constants as accounts_constants
-from accounts.player import models
+from accounts.player import models as player_models
 from pong.custom_response import custom_response
 
 from .. import constants, serializers
@@ -83,7 +83,9 @@ class UsersRetrieveView(views.APIView):
         """
         try:
             # user_idに紐づくPlayerを取得
-            player: models.Player = models.Player.objects.get(user_id=user_id)
+            player: player_models.Player = player_models.Player.objects.get(
+                user_id=user_id
+            )
             users_serializer: serializers.UsersSerializer = (
                 serializers.UsersSerializer(
                     player,

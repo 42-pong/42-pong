@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
-from accounts.player import models
+from accounts.player import models as player_models
 from accounts.player import serializers as player_serializers
 
 
@@ -23,7 +23,7 @@ class UsersSerializer(serializers.Serializer):
     ]
 
     class Meta:
-        model = models.Player
+        model = player_models.Player
         fields = (
             accounts_constants.UserFields.ID,
             accounts_constants.UserFields.USERNAME,
@@ -46,8 +46,8 @@ class UsersSerializer(serializers.Serializer):
                 self.fields.pop(field_name)
 
     def update(
-        self, player: models.Player, validated_data: dict
-    ) -> models.Player:
+        self, player: player_models.Player, validated_data: dict
+    ) -> player_models.Player:
         """
         Playerインスタンスを更新するupdate()のオーバーライド
         """

@@ -9,7 +9,7 @@ from rest_framework import (
 )
 
 from accounts import constants as accounts_constants
-from accounts.player import models
+from accounts.player import models as player_models
 from pong.custom_response import custom_response
 
 from .. import serializers
@@ -64,8 +64,8 @@ class UsersListView(views.APIView):
         ユーザープロフィール一覧を取得するGETメソッド
         """
         # Userに紐づくPlayer全てのQuerySetを取得
-        all_players_with_users: QuerySet[models.Player] = (
-            models.Player.objects.select_related(
+        all_players_with_users: QuerySet[player_models.Player] = (
+            player_models.Player.objects.select_related(
                 accounts_constants.PlayerFields.USER
             ).all()
         )

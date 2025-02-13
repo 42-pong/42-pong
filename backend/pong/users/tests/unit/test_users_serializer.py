@@ -6,7 +6,7 @@ from django.db.models.query import QuerySet
 from django.test import TestCase
 
 from accounts import constants as accounts_constants
-from accounts.player import models
+from accounts.player import models as player_models
 
 from ... import serializers
 
@@ -28,10 +28,12 @@ class UsersSerializerTests(TestCase):
 
         def _create_user_and_related_player(
             user_data: dict, player_data: dict
-        ) -> tuple[User, models.Player]:
+        ) -> tuple[User, player_models.Player]:
             user: User = User.objects.create_user(**user_data)
             player_data[USER] = user
-            player: models.Player = models.Player.objects.create(**player_data)
+            player: player_models.Player = player_models.Player.objects.create(
+                **player_data
+            )
             return user, player
 
         self.user_data_1: dict = {
@@ -58,8 +60,8 @@ class UsersSerializerTests(TestCase):
         正常なインスタンスが複数渡された場合に、dataにインスタンス分の値が入っていることを確認
         """
         # Userに紐づくPlayer全てのQuerySetを取得
-        all_players_with_users: QuerySet[models.Player] = (
-            models.Player.objects.select_related(USER).all()
+        all_players_with_users: QuerySet[player_models.Player] = (
+            player_models.Player.objects.select_related(USER).all()
         )
         # serializer作成
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
@@ -93,8 +95,8 @@ class UsersSerializerTests(TestCase):
         # User,紐づくPlayerを全て削除
         User.objects.all().delete()
 
-        all_players_with_users: QuerySet[models.Player] = (
-            models.Player.objects.select_related(USER).all()
+        all_players_with_users: QuerySet[player_models.Player] = (
+            player_models.Player.objects.select_related(USER).all()
         )
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
             all_players_with_users, many=True
