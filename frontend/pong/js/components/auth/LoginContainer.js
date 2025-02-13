@@ -69,30 +69,6 @@ export class LoginContainer extends Component {
     this.#title = title;
     this.#form = form;
 
-    // 42 Oauth 2.0ボタン
-    // "api/oauth2/authorize/”　へfetchする
-    // oauth2Button.addEventListener("click", async (event) => {
-    //   try {
-    //     const response = await fetch(Endpoints.AUTH2.href);
-    //     if (!response.ok) {
-    //       throw new Error(`HTTP error! status:" ${response.status}`);
-    //     }
-    //     const data = await response.json();
-    //     const accessToken = data.access;
-    //     const refreshToken = data.refresh;
-    //     // cookieのベストプラクティス
-    //     // 仮のJWTをcookieに保存する
-    //     Cookie.setCookie(accessToken, 7);
-    //     Cookie.setCookie(refreshToken, 7);
-    //   } catch (error) {
-    //     console.log("Error:", error);
-    //     todo エラーメッセージハンドリング
-    //     not_exists : ユーザーが存在しません
-    //     incorrect_password : パスワードが間違っています
-    //     fail : 42 認証に失敗しました。
-    //   }
-    // });
-
     // サインインボタン
     // "api/token/"へfetchする
     this.#form.addEventListener("submit", async (event) => {
@@ -106,38 +82,12 @@ export class LoginContainer extends Component {
           throw new Error(validateEmailResult.message);
         if (!validatePasswordResult.valid)
           throw new Error(validatePasswordResult.message);
-        const response = await fetch(Endpoints.TOKEN.href, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: email,
-            password: password,
-          }),
-        });
         //todo
         //JWTエントポイント(api/token/)作成後に適用
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        const accessToken = data.access;
-        const refreshToken = data.refresh;
-        // cookieにアクセストークンとリフレーシュートークンを保存する
-        Cookie.setCookie("accessToken", accessToken, 7, {
-          secure: true,
-          sameSite: "strict",
-        });
-        Cookie.setCookie("refreshToken", refreshToken, 7, {
-          secure: true,
-          sameSite: "strict",
-        });
-        // ここで成功時の処理を追加できます
       } catch (error) {
-        console.log("Error:", error);
-        // ここでエラーハンドリングを追加できます
-        // todo　エラーメッセージハンドリング
+        //FEの画面に表示するエラーを実装
+
+        // todo　APIのエラーメッセージハンドリング
         // not_exists : ユーザーが存在しません
         // incorrect_password : パスワードが間違っています
       }
@@ -152,11 +102,9 @@ export class LoginContainer extends Component {
     // コンテナをカスタム要素に追加
     this.appendChild(this.#container);
 
+    //todo
     //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
     //cookieからJWTを取得する
-    const accessToken = Cookie.getCookie("accessToken");
-    if (accessToken)
-      this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
-    else console.log("get jwt failed");
+    this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
   }
 }
