@@ -18,7 +18,11 @@ class TokenViewTestCase(APITestCase):
         data = {"email": "user@example.com", "password": "password"}
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # todo: アクセストークンとリフレッシュトークンが返されることを確認
+        response_data = response.json()["data"]
+        self.assertIn("access", response_data)
+        self.assertIn("refresh", response_data)
+        self.assertTrue(response_data["access"])
+        self.assertTrue(response_data["refresh"])
 
     def test_api_token_user_not_exists(self) -> None:
         """

@@ -7,6 +7,7 @@ from rest_framework import permissions, request, response, status, views
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from pong.custom_response import custom_response
+from tmp_jwt import create_access_and_refresh_token
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,6 @@ class TokenObtainView(views.APIView):
         """
         アクセストークンとリフレッシュトークンを取得するPOSTメソッド
         """
-        # todo: JWT作成
         email = request.data.get("email")
         user = User.objects.filter(email=email).first()
         if user is None:
@@ -119,7 +119,17 @@ class TokenObtainView(views.APIView):
                 code=["incorrect_password"],
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        # 3. user_idをペイロード作成
-        # 4. ペイロードからJWTにエンコード
-        # 5. アクセストークンとリフレッシュトークンを返す
-        return custom_response.CustomResponse(status=status.HTTP_200_OK)
+
+        tokens: dict = (
+            create_access_and_refresh_token.create_access_and_refresh_token(
+                user.id
+            )
+        )
+        if not tokens:
+            return custom_response.CustomResponse(
+                code=["internal_error"],
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        return custom_response.CustomResponse(
+            data=tokens, status=status.HTTP_200_OK
+        )
