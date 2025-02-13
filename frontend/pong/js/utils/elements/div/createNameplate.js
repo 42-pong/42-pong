@@ -8,14 +8,15 @@ import { createElement } from "../createElement";
 import { setHeight } from "../style/setHeight";
 
 export const createNameplate = (user, avatarHeight = "") => {
-  const avatar = new Image();
-  avatar.src = Endpoints.create(user.avatar).href;
-  avatar.alt = `${user.displayName}#${user.username}'s avatar`;
-  if (avatarHeight) setHeight(avatar, avatarHeight);
-  BootstrapBorders.setRoundedCircle(avatar);
+  const nameTagText = `${user.displayName}#${user.username}`;
 
+  const avatar = createAvatarImage({
+    pathname: user.avatar,
+    alt: nameTagText + "'s avatar`",
+    height: avatarHeight,
+  });
   const nameTag = createElement("span", {
-    textContent: `${user.displayName}#${user.username}`,
+    textContent: nameTagText,
   });
   BootstrapText.setTextTruncate(nameTag);
 
@@ -25,4 +26,15 @@ export const createNameplate = (user, avatarHeight = "") => {
   BootstrapSpacing.setGap(nameplate);
   nameplate.append(avatar, nameTag);
   return nameplate;
+};
+
+const createAvatarImage = (params) => {
+  const { pathname, alt, height } = params;
+
+  const image = new Image();
+  image.src = Endpoints.create(pathname).href;
+  image.alt = alt;
+  if (height) setHeight(image, height);
+  BootstrapBorders.setRoundedCircle(image);
+  return image;
 };
