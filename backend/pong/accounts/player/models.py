@@ -3,12 +3,12 @@ from django.db.models import (
     CASCADE,
     CharField,
     DateTimeField,
+    ImageField,
     Model,
     OneToOneField,
 )
 
 
-# todo: アバター画像PATHがfieldに追加される予定
 class Player(Model):
     """
     Playerモデル
@@ -18,6 +18,7 @@ class Player(Model):
     # related_name: 紐づいている他のモデルから逆参照する際の名前(user.playerでPlayerを取得)
     user = OneToOneField(User, on_delete=CASCADE, related_name="player")
     display_name = CharField(max_length=255)
+    avatar = ImageField(upload_to="avatars/", blank=True, null=True)
     created_at = DateTimeField(auto_now_add=True)
     updated_at = DateTimeField(auto_now=True)
 
@@ -30,3 +31,12 @@ class Player(Model):
 
     def __str__(self) -> str:
         return self.user.username
+
+    def save(self, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
+        """
+        Playerインスタンスを保存する際のsave()のオーバーライド
+        """
+        # todo: 一旦デフォルト画像をmedia/avatars/sample.png固定で設定。画像生成はここで行う
+        if not self.avatar:
+            self.avatar = "avatars/sample.png"
+        super().save(*args, **kwargs)

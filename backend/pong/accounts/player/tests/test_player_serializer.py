@@ -5,13 +5,14 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from ... import constants
-from .. import serializers
+from .. import models, serializers
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
 PASSWORD: Final[str] = constants.UserFields.PASSWORD
 USER: Final[str] = constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
+AVATAR: Final[str] = constants.PlayerFields.AVATAR
 
 
 class PlayerSerializerTests(TestCase):
@@ -35,7 +36,7 @@ class PlayerSerializerTests(TestCase):
 
     def _create_player(
         self, player_data: dict
-    ) -> serializers.PlayerSerializer:
+    ) -> tuple[models.Player, serializers.PlayerSerializer]:
         """
         Playerを作成するヘルパーメソッド
         """
@@ -45,10 +46,12 @@ class PlayerSerializerTests(TestCase):
         if not player_serializer.is_valid():
             # この関数ではerrorにならない想定
             raise AssertionError(player_serializer.errors)
-        player_serializer.save()
-        return player_serializer
+        player: models.Player = player_serializer.save()
+        return player, player_serializer
 
-    def _create_account(self, user_data: dict) -> serializers.PlayerSerializer:
+    def _create_account(
+        self, user_data: dict
+    ) -> tuple[models.Player, serializers.PlayerSerializer]:
         """
         Userと紐づくPlayerを作成するヘルパーメソッド
         """
@@ -56,10 +59,8 @@ class PlayerSerializerTests(TestCase):
         player_data: dict = {
             USER: user.id,
         }
-        player_serializer: serializers.PlayerSerializer = self._create_player(
-            player_data
-        )
-        return player_serializer
+        player, player_serializer = self._create_player(player_data)
+        return player, player_serializer
 
     # -------------------------------------------------------------------------
     # 正常ケース
@@ -82,16 +83,12 @@ class PlayerSerializerTests(TestCase):
         """
         PlayerSerializerのcreate()が、正常にPlayerを作成できることを確認する
         """
-        player_serializer: serializers.PlayerSerializer = self._create_account(
-            self.user_data
-        )
+        player, player_serializer = self._create_account(self.user_data)
+        data: dict = player_serializer.data
 
-        # todo: 現在Player独自のfieldがないため、紐づくUserのfieldのみ確認している
-        #       今後Player独自のfieldが追加された時にテストも追加する
-        self.assertEqual(
-            str(player_serializer.validated_data[constants.PlayerFields.USER]),
-            self.user_data[USERNAME],
-        )
+        self.assertEqual(data[USER], player.user.id)
+        self.assertEqual(data[DISPLAY_NAME], "default")
+        self.assertEqual(data[AVATAR], player.avatar.url)
 
     def test_multi_create(self) -> None:
         """
@@ -107,27 +104,18 @@ class PlayerSerializerTests(TestCase):
 
         # 2人共アカウントを作成し,UserとPlayerが正常に1対1で紐づいているか確認
         for user_data in (self.user_data, user_data_2):
-            player_serializer: serializers.PlayerSerializer = (
-                self._create_account(user_data)
-            )
+            player, player_serializer = self._create_account(user_data)
+            data: dict = player_serializer.data
 
-            # todo: Player独自のfieldが追加された時にテストも追加する
-            self.assertEqual(
-                str(
-                    player_serializer.validated_data[
-                        constants.PlayerFields.USER
-                    ]
-                ),
-                user_data[USERNAME],
-            )
+            self.assertEqual(data[USER], player.user.id)
+            self.assertEqual(data[DISPLAY_NAME], "default")
+            self.assertEqual(data[AVATAR], player.avatar.url)
 
     def test_default_display_name(self) -> None:
         """
         display_nameが指定されていない場合、初期値の"default"が自動で設定されることを確認
         """
-        player_serializer: serializers.PlayerSerializer = self._create_account(
-            self.user_data
-        )
+        _, player_serializer = self._create_account(self.user_data)
 
         self.assertEqual(
             player_serializer.validated_data[DISPLAY_NAME], "default"
@@ -141,9 +129,7 @@ class PlayerSerializerTests(TestCase):
             USER: self._create_user(self.user_data).id,
             DISPLAY_NAME: "abcDEF12345-_.~",  # 正常な15文字のdisplay_name
         }
-        player_serializer: serializers.PlayerSerializer = self._create_player(
-            player_data
-        )
+        _, player_serializer = self._create_player(player_data)
 
         self.assertEqual(
             player_serializer.validated_data[DISPLAY_NAME],

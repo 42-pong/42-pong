@@ -39,6 +39,12 @@ class Migration(migrations.Migration):
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
+                (
+                    "avatar",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="avatars/"
+                    ),
+                ),
             ],
             options={
                 "db_table": "players",

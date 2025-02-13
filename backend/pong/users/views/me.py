@@ -10,10 +10,10 @@ from rest_framework import (
     views,
 )
 
-from accounts import constants
+from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
 
-from .. import serializers
+from .. import constants, serializers
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +38,11 @@ class UsersMeView(views.APIView):
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: {
-                                constants.UserFields.ID: 1,
-                                constants.UserFields.USERNAME: "username1",
-                                constants.UserFields.EMAIL: "username1@example.com",
-                                constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                accounts_constants.UserFields.ID: 1,
+                                accounts_constants.UserFields.USERNAME: "username1",
+                                accounts_constants.UserFields.EMAIL: "username1@example.com",
+                                accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
                             },
                         },
                     ),
@@ -80,6 +81,7 @@ class UsersMeView(views.APIView):
         if not hasattr(user, "player"):
             # todo: この処理が必要ならlogger書く
             return custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
                 errors={"user": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
             )
@@ -99,7 +101,8 @@ class UsersMeView(views.APIView):
                 utils.OpenApiExample(
                     "Example request",
                     value={
-                        constants.PlayerFields.DISPLAY_NAME: "new_name",
+                        accounts_constants.PlayerFields.DISPLAY_NAME: "new_name",
+                        # todo: avatarも追加？
                     },
                 ),
             ],
@@ -114,10 +117,11 @@ class UsersMeView(views.APIView):
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: {
-                                constants.UserFields.ID: 1,
-                                constants.UserFields.USERNAME: "username1",
-                                constants.UserFields.EMAIL: "username1@example.com",
-                                constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                accounts_constants.UserFields.ID: 1,
+                                accounts_constants.UserFields.USERNAME: "username1",
+                                accounts_constants.UserFields.EMAIL: "username1@example.com",
+                                accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
                             },
                         },
                     ),
@@ -137,11 +141,7 @@ class UsersMeView(views.APIView):
                         "Example 400 response",
                         value={
                             custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.ERRORS: {
-                                constants.PlayerFields.DISPLAY_NAME: [
-                                    "This field may not to be blank."
-                                ],
-                            },
+                            custom_response.CODE: [constants.Code.INVALID],
                         },
                     ),
                 ],
@@ -176,6 +176,7 @@ class UsersMeView(views.APIView):
         if not hasattr(user, "player"):
             # todo: この処理が必要ならlogger書く
             return custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
                 errors={"user": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
             )
@@ -193,6 +194,7 @@ class UsersMeView(views.APIView):
                 f"[400] Serializer's validation error: {users_serializer.errors}"
             )
             return custom_response.CustomResponse(
+                code=[constants.Code.INVALID],
                 errors=users_serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
