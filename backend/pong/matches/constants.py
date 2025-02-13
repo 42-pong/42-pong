@@ -23,7 +23,9 @@ class ParticipationFields:
     MATCH_ID: str = "match_id"
     PLAYER_ID: str = "player_id"
     TEAM: str = "team"
+    IS_WIN: str = "is_win"
     CREATED_AT: str = "created_at"
+    UPDATED_AT: str = "updated_at"
 
     class TeamEnum(Enum):
         ONE = "1"
