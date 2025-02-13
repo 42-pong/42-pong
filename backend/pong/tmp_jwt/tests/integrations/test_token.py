@@ -44,3 +44,16 @@ class TokenViewTestCase(APITestCase):
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["code"][0], "incorrect_password")
+
+    def test_api_token_invalid_request(self) -> None:
+        """
+        emailとpassword以外のリクエストの値を渡した場合、'internal_error' エラーが返されることを確認
+        """
+        data = {
+            "user": 1,
+            "email": self.user.email,
+            "password": self.user.password,
+        }
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["code"][0], "internal_error")

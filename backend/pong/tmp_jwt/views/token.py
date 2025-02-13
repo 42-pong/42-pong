@@ -104,6 +104,14 @@ class TokenObtainView(views.APIView):
         """
         アクセストークンとリフレッシュトークンを取得するPOSTメソッド
         """
+        required_keys: set = {"email", "password"}
+        request_keys: set = set(request.data.keys())
+        if request_keys != required_keys:
+            return custom_response.CustomResponse(
+                code=["internal_error"],
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         email = request.data.get("email")
         user = User.objects.filter(email=email).first()
         if user is None:
