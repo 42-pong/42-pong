@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from accounts import constants
+from accounts import constants as accounts_constants
 from accounts.player import models
 from accounts.player import serializers as player_serializers
 
@@ -16,20 +16,20 @@ class UsersSerializer(serializers.Serializer):
     email = serializers.EmailField(source="user.email")
     # todo: 別のserializerをネストする方法で他に良い書き方があれば変更する
     display_name = player_serializers.PlayerSerializer().fields[
-        constants.PlayerFields.DISPLAY_NAME
+        accounts_constants.PlayerFields.DISPLAY_NAME
     ]
     avatar = player_serializers.PlayerSerializer().fields[
-        constants.PlayerFields.AVATAR
+        accounts_constants.PlayerFields.AVATAR
     ]
 
     class Meta:
         model = models.Player
         fields = (
-            constants.UserFields.ID,
-            constants.UserFields.USERNAME,
-            constants.UserFields.EMAIL,
-            constants.PlayerFields.DISPLAY_NAME,
-            constants.PlayerFields.AVATAR,
+            accounts_constants.UserFields.ID,
+            accounts_constants.UserFields.USERNAME,
+            accounts_constants.UserFields.EMAIL,
+            accounts_constants.PlayerFields.DISPLAY_NAME,
+            accounts_constants.PlayerFields.AVATAR,
         )
 
     # args,kwargsは型ヒントが複雑かつそのままsuper()に渡したいためignoreで対処
@@ -52,10 +52,12 @@ class UsersSerializer(serializers.Serializer):
         Playerインスタンスを更新するupdate()のオーバーライド
         """
         player.display_name = validated_data.get(
-            constants.PlayerFields.DISPLAY_NAME, player.display_name
+            accounts_constants.PlayerFields.DISPLAY_NAME, player.display_name
         )
         # todo: avatarも新しいものを代入・save()のupdate_fieldsにも追加
 
         # create()をオーバーライドしない場合、update()内でsave()は必須
-        player.save(update_fields=[constants.PlayerFields.DISPLAY_NAME])
+        player.save(
+            update_fields=[accounts_constants.PlayerFields.DISPLAY_NAME]
+        )
         return player

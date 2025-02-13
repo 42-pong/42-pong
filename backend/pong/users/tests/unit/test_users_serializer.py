@@ -5,17 +5,17 @@ from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
 from django.test import TestCase
 
-from accounts import constants
+from accounts import constants as accounts_constants
 from accounts.player import models
 
 from ... import serializers
 
-USERNAME: Final[str] = constants.UserFields.USERNAME
-EMAIL: Final[str] = constants.UserFields.EMAIL
-PASSWORD: Final[str] = constants.UserFields.PASSWORD
-USER: Final[str] = constants.PlayerFields.USER
-DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
-AVATAR: Final[str] = constants.PlayerFields.AVATAR
+USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
+EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
+PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
+USER: Final[str] = accounts_constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 
 
 class UsersSerializerTests(TestCase):
@@ -100,7 +100,7 @@ class UsersSerializerTests(TestCase):
         # 新しいdisplay_name
         new_valid_display_name: str = "new_name"
         request_data: dict = {
-            constants.PlayerFields.DISPLAY_NAME: new_valid_display_name,
+            DISPLAY_NAME: new_valid_display_name,
         }
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
             self.player_1, data=request_data, partial=True
@@ -133,14 +133,14 @@ class UsersSerializerTests(TestCase):
             new_invalid_display_name: 新しく更新したいdisplay_nameの値
         """
         request_data: dict = {
-            constants.PlayerFields.DISPLAY_NAME: new_invalid_display_name,
+            DISPLAY_NAME: new_invalid_display_name,
         }
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
             self.player_1, data=request_data, partial=True
         )
 
         self.assertFalse(serializer.is_valid())
-        self.assertIn(constants.PlayerFields.DISPLAY_NAME, serializer.errors)
+        self.assertIn(DISPLAY_NAME, serializer.errors)
         # 更新されずに元のdisplay_nameが保持されていることを確認
         self.player_1.refresh_from_db()  # 最新のDBの情報に更新
         self.assertEqual(

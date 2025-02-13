@@ -8,7 +8,7 @@ from rest_framework import (
     views,
 )
 
-from accounts import constants
+from accounts import constants as accounts_constants
 from accounts.player import models
 from pong.custom_response import custom_response
 
@@ -37,16 +37,16 @@ class UsersListView(views.APIView):
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: [
                                 {
-                                    constants.UserFields.ID: 2,
-                                    constants.UserFields.USERNAME: "username1",
-                                    constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                    constants.PlayerFields.AVATAR: "avatars/sample1.png",
+                                    accounts_constants.UserFields.ID: 2,
+                                    accounts_constants.UserFields.USERNAME: "username1",
+                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                    accounts_constants.PlayerFields.AVATAR: "avatars/sample1.png",
                                 },
                                 {
-                                    constants.UserFields.ID: 3,
-                                    constants.UserFields.USERNAME: "username2",
-                                    constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                    constants.PlayerFields.AVATAR: "avatars/sample2.png",
+                                    accounts_constants.UserFields.ID: 3,
+                                    accounts_constants.UserFields.USERNAME: "username2",
+                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                    accounts_constants.PlayerFields.AVATAR: "avatars/sample2.png",
                                 },
                                 {"...", "..."},
                             ],
@@ -66,7 +66,7 @@ class UsersListView(views.APIView):
         # Userに紐づくPlayer全てのQuerySetを取得
         all_players_with_users: QuerySet[models.Player] = (
             models.Player.objects.select_related(
-                constants.PlayerFields.USER
+                accounts_constants.PlayerFields.USER
             ).all()
         )
         # 複数のオブジェクトをシリアライズ
@@ -75,10 +75,10 @@ class UsersListView(views.APIView):
             many=True,
             # emailは含めない
             fields=(
-                constants.UserFields.ID,
-                constants.UserFields.USERNAME,
-                constants.PlayerFields.DISPLAY_NAME,
-                constants.PlayerFields.AVATAR,
+                accounts_constants.UserFields.ID,
+                accounts_constants.UserFields.USERNAME,
+                accounts_constants.PlayerFields.DISPLAY_NAME,
+                accounts_constants.PlayerFields.AVATAR,
             ),
         )
         return custom_response.CustomResponse(
