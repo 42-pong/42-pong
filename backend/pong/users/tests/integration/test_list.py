@@ -9,6 +9,8 @@ from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from pong.custom_response import custom_response
 
+from ... import constants
+
 ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
@@ -16,6 +18,7 @@ PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
 
 DATA: Final[str] = custom_response.DATA
 
@@ -65,6 +68,8 @@ class UsersListViewTests(test.APITestCase):
             self.user_data2, self.player_data2
         )
 
+        # todo: ログイン
+
     def test_create_user(self) -> None:
         """
         setUp()の情報で2人のユーザーを作成できることを確認
@@ -75,6 +80,8 @@ class UsersListViewTests(test.APITestCase):
     def test_200_no_users_exist(self) -> None:
         """
         ユーザーが存在しない場合、エラーにならず空のプロフィール一覧を取得できることを確認
+        -> todo: IsAuthenticatedにしたら、ユーザーが存在しない場合ログインユーザーもいないので401になる
+                 テスト内容と関数名も変更
         """
         User.objects.all().delete()
         response: drf_response.Response = self.client.get(self.url)
@@ -97,12 +104,16 @@ class UsersListViewTests(test.APITestCase):
                     USERNAME: self.user_data1[USERNAME],
                     DISPLAY_NAME: self.player_data1[DISPLAY_NAME],
                     AVATAR: self.player1.avatar.url,
+                    IS_FRIEND: False,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
                 },
                 {
                     ID: self.user2.id,
                     USERNAME: self.user_data2[USERNAME],
                     DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
                     AVATAR: self.player2.avatar.url,
+                    IS_FRIEND: False,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
                 },
             ],
         )

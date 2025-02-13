@@ -11,8 +11,9 @@ from rest_framework import (
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from pong.custom_response import custom_response
+from users.friends import constants as friends_constants
 
-from .. import serializers
+from .. import constants, serializers
 
 
 class UsersListView(views.APIView):
@@ -41,14 +42,16 @@ class UsersListView(views.APIView):
                                     accounts_constants.UserFields.USERNAME: "username1",
                                     accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
                                     accounts_constants.PlayerFields.AVATAR: "avatars/sample1.png",
-                                    # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                                    constants.UsersFields.IS_FRIEND: False,
+                                    # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
                                 {
                                     accounts_constants.UserFields.ID: 3,
                                     accounts_constants.UserFields.USERNAME: "username2",
                                     accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
                                     accounts_constants.PlayerFields.AVATAR: "avatars/sample2.png",
-                                    # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                                    constants.UsersFields.IS_FRIEND: False,
+                                    # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
                                 {"...", "..."},
                             ],
@@ -81,8 +84,12 @@ class UsersListView(views.APIView):
                 accounts_constants.UserFields.USERNAME,
                 accounts_constants.PlayerFields.DISPLAY_NAME,
                 accounts_constants.PlayerFields.AVATAR,
-                # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                constants.UsersFields.IS_FRIEND,
+                # todo: is_blocked,is_online,win_match,lose_match追加
             ),
+            context={
+                friends_constants.FriendshipFields.USER_ID: request.user.id
+            },
         )
         return custom_response.CustomResponse(
             data=serializer.data, status=status.HTTP_200_OK
