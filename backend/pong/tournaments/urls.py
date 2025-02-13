@@ -6,7 +6,9 @@ from .tournament import views as tournament_views
 
 router = routers.DefaultRouter()
 # この順番でregisterしないとparticipationsのエンドポイントのURIマッチングが通らない
-router.register(r"participations", participation_views.ParticipationViewSet)
+router.register(
+    r"participations", participation_views.ParticipationReadOnlyViewSet
+)
 router.register(r"", tournament_views.TournamentReadOnlyViewSet)
 
 urlpatterns = [
