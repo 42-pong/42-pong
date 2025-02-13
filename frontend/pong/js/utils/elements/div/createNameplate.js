@@ -12,7 +12,7 @@ export const createNameplate = (user, avatarHeight = "") => {
 
   const avatar = createAvatarImage({
     pathname: user.avatar,
-    alt: nameTagText + "'s avatar`",
+    alt: `${nameTagText}'s avatar`,
     height: avatarHeight,
   });
   const nameTag = createElement("span", {
