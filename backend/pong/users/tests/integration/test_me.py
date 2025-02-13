@@ -12,6 +12,7 @@ from pong.custom_response import custom_response
 
 from ... import constants
 
+ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
@@ -80,13 +81,16 @@ class UsersMeViewTests(test.APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data: dict = response.data[DATA]
-        self.assertEqual(response_data[USERNAME], self.user_data[USERNAME])
-        self.assertEqual(response_data[EMAIL], self.user_data[EMAIL])
         self.assertEqual(
-            response_data[DISPLAY_NAME], self.player_data[DISPLAY_NAME]
+            response.data[DATA],
+            {
+                ID: self.user.id,
+                USERNAME: self.user_data[USERNAME],
+                EMAIL: self.user_data[EMAIL],
+                DISPLAY_NAME: self.player_data[DISPLAY_NAME],
+                AVATAR: self.player.avatar.url,
+            },
         )
-        self.assertEqual(response_data[AVATAR], self.player.avatar.url)
 
     def test_get_401_unauthenticated_user(self) -> None:
         """
