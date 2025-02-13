@@ -34,6 +34,10 @@ const createAvatarImage = (params) => {
   const image = new Image();
   image.src = Endpoints.create(pathname).href;
   image.alt = alt;
+  image.onerror = () => {
+    image.onerror = null;
+    image.src = Endpoints.USERS.defaultAvatar.href;
+  };
   if (height) setHeight(image, height);
   BootstrapBorders.setRoundedCircle(image);
   return image;
