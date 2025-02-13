@@ -13,6 +13,7 @@ from rest_framework import (
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from pong.custom_response import custom_response
+from users.friends import constants as friends_constants
 
 from .. import constants, serializers
 
@@ -44,7 +45,8 @@ class UsersRetrieveView(views.APIView):
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
                                 accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
-                                # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                                constants.UsersFields.IS_FRIEND: True,
+                                # todo: is_blocked,is_online,win_match,lose_match追加
                             },
                         },
                     ),
@@ -87,18 +89,20 @@ class UsersRetrieveView(views.APIView):
             player: player_models.Player = player_models.Player.objects.get(
                 user_id=user_id
             )
-            users_serializer: serializers.UsersSerializer = (
-                serializers.UsersSerializer(
-                    player,
-                    # emailは含めない
-                    fields=(
-                        accounts_constants.UserFields.ID,
-                        accounts_constants.UserFields.USERNAME,
-                        accounts_constants.PlayerFields.DISPLAY_NAME,
-                        accounts_constants.PlayerFields.AVATAR,
-                        # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
-                    ),
-                )
+            users_serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+                player,
+                # emailは含めない
+                fields=(
+                    accounts_constants.UserFields.ID,
+                    accounts_constants.UserFields.USERNAME,
+                    accounts_constants.PlayerFields.DISPLAY_NAME,
+                    accounts_constants.PlayerFields.AVATAR,
+                    constants.UsersFields.IS_FRIEND,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
+                ),
+                context={
+                    friends_constants.FriendshipFields.USER_ID: request.user.id
+                },
             )
             return custom_response.CustomResponse(
                 data=users_serializer.data,
