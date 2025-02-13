@@ -19,3 +19,16 @@ class TokenViewTestCase(APITestCase):
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # todo: アクセストークンとリフレッシュトークンが返されることを確認
+
+    def test_api_token_user_not_exists(self) -> None:
+        """
+        存在しないユーザーのemailでリクエストした場合、'not_exists' エラーが返されることを確認
+        """
+        data = {
+            "email": "nonexistent@example.com",
+            "password": self.user.password,
+        }
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["code"][0], "not_exists")
+

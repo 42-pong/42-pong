@@ -1,8 +1,13 @@
+import logging
+
+from django.contrib.auth.models import User
 from drf_spectacular import utils
-from rest_framework import permissions, request, response, views
+from rest_framework import permissions, request, response, status, views
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from pong.custom_response import custom_response
+
+logger = logging.getLogger(__name__)
 
 
 class TokenObtainView(views.APIView):
@@ -98,6 +103,13 @@ class TokenObtainView(views.APIView):
         アクセストークンとリフレッシュトークンを取得するPOSTメソッド
         """
         # todo: JWT作成
+        email = request.data.get("email")
+        user = User.objects.filter(email=email).first()
+        if user is None:
+            logger.error(f"Email does not register: {email}")
+            return custom_response.CustomResponse(
+                code=["not_exists"], status=status.HTTP_401_UNAUTHORIZED
+            )
         pass
         return response.Response()
         # 1. ユーザーが存在するかどうか
