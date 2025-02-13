@@ -1,7 +1,6 @@
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
-    OpenApiRequest,
     OpenApiResponse,
     extend_schema,
     extend_schema_view,
@@ -91,66 +90,6 @@ from . import models, serializers
             ),
         },
     ),
-    create=extend_schema(
-        description="新しいTournamentレコードを作成する。",
-        request=None,
-        responses={
-            201: OpenApiResponse(
-                response={"type": "object"},  # todo: serializerに変える
-                examples=[
-                    OpenApiExample(
-                        "example 201 response",
-                        value={
-                            "status": "ok",
-                            "data": {
-                                "id": 1,
-                                "status": "matching",
-                                "created_at": "2025-01-01t00:00:00.000000+09:00",
-                                "updated_at": "2025-01-01t00:00:00.000000+09:00",
-                            },
-                        },
-                    ),
-                ],
-            ),
-        },
-    ),
-    partial_update=extend_schema(
-        description="指定されたIDの大会情報の一部を更新します。",
-        request=OpenApiRequest(
-            request={"type": "object"},
-            examples=[
-                OpenApiExample(
-                    "Example request",
-                    value={
-                        "status": "playing",
-                    },
-                ),
-            ],
-        ),
-        responses={
-            200: OpenApiResponse(
-                response={"type": "object"},  # todo: serializerに変える
-                examples=[
-                    OpenApiExample(
-                        "Example 200 response",
-                        value={
-                            "status": "ok",
-                            "data": {
-                                "id": 1,
-                                "status": "end",
-                                "created_at": "2025-01-01T00:00:00.000000+09:00",
-                                "updated_at": "2025-01-01T00:30:00.000000+09:00",
-                            },
-                        },
-                    ),
-                ],
-            ),
-        },
-    ),
 )
-class TournamentViewSet(viewsets.ModelViewSet):
-    queryset = models.Tournament.objects.all()
+class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.TournamentSerializer
-
-    # 使用できるHTTPメソッドを制限
-    http_method_names = ["get", "post", "patch"]
