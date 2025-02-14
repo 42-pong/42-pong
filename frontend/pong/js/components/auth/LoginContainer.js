@@ -1,11 +1,7 @@
-//import { Endpoints } from "../../constants/Endpoints";
-import { Paths } from "../../constants/Paths";
-import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
-//import { Cookie } from "../../utils/cookie/Cookie";
+import { Auth } from "../../constants/message/Auth";
 import { validateEmail } from "../../utils/validator/validateEmail";
 import { validatePassword } from "../../utils/validator/validatePassword";
-import { Auth } from "../../constants/message/Auth";
 
 export class LoginContainer extends Component {
   #container;
