@@ -42,7 +42,7 @@ from . import models, serializers
         request=None,
         responses={
             200: OpenApiResponse(
-                response={"type": "object"},  # todo: serializerに変える
+                response=serializers.TournamentSerializer,
                 examples=[
                     OpenApiExample(
                         "Example 200 response",
@@ -207,7 +207,7 @@ from . import models, serializers
         operation_id="tournaments_retrieve_by_id",  # 明示的にoperationIdを設定
         responses={
             200: OpenApiResponse(
-                response={"type": "object"},  # todo: serializerに変える
+                response=serializers.TournamentSerializer,
                 examples=[
                     OpenApiExample(
                         "Example 200 response",
