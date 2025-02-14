@@ -143,7 +143,7 @@ class TokenObtainView(views.APIView):
         tokens: dict = create_token_functions.create_access_and_refresh_token(
             user.id
         )
-        if not tokens:
+        if not tokens["access"] or not tokens["refresh"]:
             return custom_response.CustomResponse(
                 code=["internal_error"],
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

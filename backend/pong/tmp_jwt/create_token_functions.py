@@ -6,30 +6,32 @@ from tmp_jwt import jwt
 logger = logging.getLogger(__name__)
 
 
-# todo: リファクタリング
-# - typによってexpの時間を変える関数作成
-def create_access_and_refresh_token(user_id: int) -> dict:
+def create_token(user_id: int, token_type: str) -> str:
     jwt_handler: jwt.JWT = jwt.JWT()
     now: int = int(datetime.utcnow().timestamp())
-    # アクセストークンの有効期限は10分にしています
-    access_payload: dict = {
+
+    exp_time: dict = {"access": now + 500, "refresh": now + 3600}
+    exp = exp_time.get(token_type)
+    if exp is None:
+        logger.error(f"Invalid token type: {token_type}")
+        return ""
+
+    token_payload: dict = {
         "sub": user_id,
-        "exp": now + 500,
+        "exp": exp,
         "iat": now,
-        "typ": "access",
+        "typ": token_type,
     }
-    # リフレッシュトークンの有効期限は1時間にしています
-    refresh_payload: dict = {
-        "sub": user_id,
-        "exp": now + 3600,
-        "iat": now,
-        "typ": "refresh",
-    }
-    tokens: dict = {}
     try:
-        tokens["access"] = jwt_handler.encode(access_payload)
-        tokens["refresh"] = jwt_handler.encode(refresh_payload)
+        return jwt_handler.encode(token_payload)
     except ValueError as e:
-        # 本来起こらないエラー
-        logger.error(e)
+        logger.error(f"Token encoding failed: {e}")
+        return ""
+
+
+# todo: user_idを検証する
+def create_access_and_refresh_token(user_id: int) -> dict:
+    tokens: dict = {}
+    tokens["access"] = create_token(user_id, "access")
+    tokens["refresh"] = create_token(user_id, "refresh")
     return tokens
