@@ -4,7 +4,7 @@ const MY_USER_ID = 1;
 
 const createSampleUser = (number) =>
   Object.freeze({
-    id: `${number}`,
+    id: number,
     username: `pong${number}`,
     display_name: `DISPLAY${number}`,
     avatar: "https://placehold.co/30",
@@ -16,7 +16,7 @@ const sampleUsers = Array.from({ length: SAMPLE_COUNT }).map(
 
 const createSampleFriend = (idx) =>
   Object.freeze({
-    user_id: `${MY_USER_ID}`,
+    user_id: MY_USER_ID,
     friend_user_id: sampleUsers[idx].id,
     friend: {
       username: sampleUsers[idx].username,

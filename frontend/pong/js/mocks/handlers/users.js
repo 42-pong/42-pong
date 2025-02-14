@@ -13,7 +13,9 @@ export const handlers = [
     const {
       params: { userId },
     } = req;
-    const user = sampleUsers.find(({ id }) => id === userId);
+    const user = sampleUsers.find(
+      ({ id }) => id.toString() === userId,
+    );
 
     const responseBody = user
       ? {
