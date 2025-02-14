@@ -7,7 +7,7 @@ from rest_framework import permissions, request, response, status, views
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from pong.custom_response import custom_response
-from tmp_jwt import create_access_and_refresh_token
+from tmp_jwt import create_token_functions
 
 logger = logging.getLogger(__name__)
 
@@ -140,10 +140,8 @@ class TokenObtainView(views.APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        tokens: dict = (
-            create_access_and_refresh_token.create_access_and_refresh_token(
-                user.id
-            )
+        tokens: dict = create_token_functions.create_access_and_refresh_token(
+            user.id
         )
         if not tokens:
             return custom_response.CustomResponse(
