@@ -7,4 +7,5 @@ from pong.custom_response import custom_response
 @dataclasses.dataclass(frozen=True)
 class Code:
     INVALID: Final[str] = "invalid"
+    NOT_EXISTS: Final[str] = "not_exists"
     INTERNAL_ERROR: Final[str] = custom_response.Code.INTERNAL_ERROR
