@@ -95,21 +95,27 @@ logger = logging.getLogger(__name__)
                         "Example 400 response - not_exists",
                         value={
                             custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.CODE: users_constants.Code.NOT_EXISTS,
+                            custom_response.CODE: [
+                                users_constants.Code.NOT_EXISTS
+                            ],
                         },
                     ),
                     utils.OpenApiExample(
                         "Example 400 response - invalid",
                         value={
                             custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.CODE: users_constants.Code.INVALID,
+                            custom_response.CODE: [
+                                users_constants.Code.INVALID
+                            ],
                         },
                     ),
                     utils.OpenApiExample(
                         "Example 400 response - internal_error",
                         value={
                             custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.CODE: users_constants.Code.INTERNAL_ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
                         },
                     ),
                 ],
