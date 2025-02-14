@@ -4,6 +4,7 @@ const validChars = /^[a-zA-Z0-9-_]+$/;
 const allNums = /^\d+$/;
 
 const Auth = {
+  validateLoginMessage: "メールアドレス、あるいはパスワードが間違えました",
   validateEmailMessage: {
     "Email is valid": "メールアドレスが有効です",
     "Invalid email format": "メールアドレスの形が間違えました",

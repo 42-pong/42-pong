@@ -1,15 +1,17 @@
-import { Endpoints } from "../../constants/Endpoints";
+//import { Endpoints } from "../../constants/Endpoints";
 import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
-import { Cookie } from "../../utils/cookie/Cookie";
+//import { Cookie } from "../../utils/cookie/Cookie";
 import { validateEmail } from "../../utils/validator/validateEmail";
 import { validatePassword } from "../../utils/validator/validatePassword";
+import { Auth } from "../../constants/message/Auth";
 
 export class LoginContainer extends Component {
   #container;
   #title;
   #form;
+  #loginError
 
   _onConnect() {
     //コンテナ要素を作成
@@ -23,6 +25,12 @@ export class LoginContainer extends Component {
     //フォーム要素を作成
     const form = document.createElement("form");
     form.id = "login-form";
+
+    //エラーメッセージ要素を作成
+    this.#loginError = document.createElement("div");
+    this.#loginError.className = "error-message";
+    this.#loginError.style.color = "red";
+    this.#loginError.style.display = "none"; //初期状態では非表示
 
     //メール入力フィールドを作成
     const emailInput = document.createElement("input");
@@ -58,12 +66,15 @@ export class LoginContainer extends Component {
     signupButton.type = "button";
     signupButton.textContent = "サインアップ";
 
-    form.appendChild(emailInput);
-    form.appendChild(passwordInput);
-    form.appendChild(submitButton);
-    form.appendChild(guestButton);
-    form.appendChild(oauth2Button);
-    form.appendChild(signupButton);
+    form.append(
+      this.#loginError,
+      emailInput,
+      passwordInput,
+      submitButton,
+      guestButton,
+      oauth2Button,
+      signupButton
+    );
 
     this.#container = container;
     this.#title = title;
@@ -78,32 +89,43 @@ export class LoginContainer extends Component {
       try {
         const validateEmailResult = validateEmail(email);
         const validatePasswordResult = validatePassword(password);
-        if (!validateEmailResult.valid)
+        if (!validateEmailResult.valid) {
+          this.#loginError.textContent = Auth.validateLoginMessage;
+          this.#loginError.style.display = "block"; //エラーメッセージを表示する
           throw new Error(validateEmailResult.message);
-        if (!validatePasswordResult.valid)
+        }
+        if (!validatePasswordResult.valid) {
+          this.#loginError.textContent = Auth.validateLoginMessage;
+          this.#loginError.style.display = "block"; //エラーメッセージを表示する
           throw new Error(validatePasswordResult.message);
+        }
+        //e-mailかpasswordが間違えていなかったら、エラーメッセージが非表示にする
+        this.#loginError.style.display = "none";
+
         //todo
         //JWTエントポイント(api/token/)作成後に適用
-      } catch (error) {
         //FEの画面に表示するエラーを実装
         // todo　APIのエラーメッセージハンドリング
         // not_exists : ユーザーが存在しません
         // incorrect_password : パスワードが間違っています
+      } catch (error) {
+        console.log(error);
       }
     });
   }
 
   _render() {
     // コンテナにタイトルとフォームを追加
-    this.#container.appendChild(this.#title);
-    this.#container.appendChild(this.#form);
-
+    this.#container.append(
+      this.#title,
+      this.#form
+    );
     // コンテナをカスタム要素に追加
     this.appendChild(this.#container);
 
     //todo
     //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
     //cookieからJWTを取得する
-    this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
+    //this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
   }
 }
