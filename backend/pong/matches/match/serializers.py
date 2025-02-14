@@ -17,5 +17,6 @@ class MatchSerializer(drf_serializers.ModelSerializer):
             constants.MatchFields.ROUND_ID,
             constants.MatchFields.STATUS,
             constants.MatchFields.CREATED_AT,
+            constants.MatchFields.UPDATED_AT,
             "participations",
         )

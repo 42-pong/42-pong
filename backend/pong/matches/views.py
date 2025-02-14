@@ -42,10 +42,14 @@ from .match import serializers
                                 {
                                     constants.MatchFields.ID: 1,
                                     constants.MatchFields.ROUND_ID: 1,
+                                    constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.COMPLETED.value,
+                                    constants.MatchFields.CREATED_AT: "2025-01-01T00:01:00.000000+09:00",
+                                    constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                     "participations": [
                                         {
                                             constants.ParticipationFields.PLAYER_ID: 1,
                                             constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.ONE.value,
+                                            constants.ParticipationFields.IS_WIN: True,
                                             "scores": [
                                                 {
                                                     constants.ScoreFields.CREATED_AT: "2025-01-01T00:00:00.000000+09:00",
@@ -58,6 +62,7 @@ from .match import serializers
                                         {
                                             constants.ParticipationFields.PLAYER_ID: 2,
                                             constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.TWO.value,
+                                            constants.ParticipationFields.IS_WIN: False,
                                             "scores": [
                                                 {
                                                     constants.ScoreFields.CREATED_AT: "2025-01-01T00:00:30.000000+09:00",
@@ -72,11 +77,17 @@ from .match import serializers
                                 {
                                     constants.MatchFields.ID: 2,
                                     constants.MatchFields.ROUND_ID: 1,
+                                    constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.ON_GOING.value,
+                                    constants.MatchFields.CREATED_AT: "2025-01-01T00:03:00.000000+09:00",
+                                    constants.MatchFields.UPDATED_AT: "2025-01-01T00:06:00.000000+09:00",
                                     "participations": [{"..."}],
                                 },
                                 {
                                     constants.MatchFields.ID: 3,
                                     constants.MatchFields.ROUND_ID: 2,
+                                    constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.NOT_STARTED.value,
+                                    constants.MatchFields.CREATED_AT: "2025-01-01T00:03:00.000000+09:00",
+                                    constants.MatchFields.UPDATED_AT: "2025-01-01T00:06:00.000000+09:00",
                                     "participations": [{"..."}],
                                 },
                                 {"..."},
@@ -106,10 +117,14 @@ from .match import serializers
                                 {
                                     constants.MatchFields.ID: 1,
                                     constants.MatchFields.ROUND_ID: 1,
+                                    constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.COMPLETED.value,
+                                    constants.MatchFields.CREATED_AT: "2025-01-01T00:01:00.000000+09:00",
+                                    constants.MatchFields.UPDATED_AT: "2025-01-01T00:03:00.000000+09:00",
                                     "participations": [
                                         {
                                             constants.ParticipationFields.PLAYER_ID: 1,
                                             constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.ONE.value,
+                                            constants.ParticipationFields.IS_WIN: True,
                                             "scores": [
                                                 {
                                                     constants.ScoreFields.CREATED_AT: "2025-01-01T00:00:00.000000+09:00",
@@ -122,6 +137,7 @@ from .match import serializers
                                         {
                                             constants.ParticipationFields.PLAYER_ID: 2,
                                             constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.TWO.value,
+                                            constants.ParticipationFields.IS_WIN: False,
                                             "scores": [
                                                 {
                                                     constants.ScoreFields.CREATED_AT: "2025-01-01T00:00:30.000000+09:00",
