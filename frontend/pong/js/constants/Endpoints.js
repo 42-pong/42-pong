@@ -14,4 +14,5 @@ export const Endpoints = Object.freeze({
     withId: (userId) => new URL(`${userId}`, Endpoints.USERS.default),
     defaultAvatar: new URL(DEFAULT_AVATAR_IMAGE_PATH, BASE_URL),
   },
+  FRIENDS: new URL("/api/users/me/friends/", BASE_URL),
 });
