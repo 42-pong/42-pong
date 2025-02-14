@@ -1,4 +1,8 @@
 import { LoginContainer } from "./auth/LoginContainer";
+import { ChatBuddyListContainer } from "./chat/ChatBuddyListContainer";
+import { ChatDmContainer } from "./chat/ChatDmContainer";
+import { ChatGlobal } from "./chat/ChatGlobal";
+import { ChatPanel } from "./chat/ChatPanel";
 import { AddFriendButton } from "./friend/AddFriendButton";
 import { GameStartPanel } from "./game/GameStartPanel";
 import { MainNavbar } from "./navigation/MainNavbar";
@@ -17,6 +21,7 @@ import { UserListItem } from "./user/UserListItem";
 import { UserProfile } from "./user/UserProfile";
 import { UserProfileContainer } from "./user/UserProfileContainer";
 import { ErrorContainer } from "./utils/ErrorContainer";
+import { EventDispatchingButton } from "./utils/EventDispatchingButton";
 import { LinkButton } from "./utils/LinkButton";
 import { ListContainer } from "./utils/ListContainer";
 import { ObservableInput } from "./utils/ObservableInput";
@@ -30,6 +35,14 @@ import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
+customElements.define(
+  "chat-buddy-list-container",
+  ChatBuddyListContainer,
+  {},
+);
+customElements.define("chat-dm-container", ChatDmContainer, {});
+customElements.define("chat-global", ChatGlobal, {});
+customElements.define("chat-panel", ChatPanel, {});
 customElements.define("add-friend-button", AddFriendButton, {});
 customElements.define("game-start-panel", GameStartPanel, {});
 customElements.define("main-navbar", MainNavbar, {});
@@ -68,6 +81,11 @@ customElements.define(
   {},
 );
 customElements.define("error-container", ErrorContainer, {});
+customElements.define(
+  "event-dispatching-button",
+  EventDispatchingButton,
+  {},
+);
 customElements.define("link-button", LinkButton, {});
 customElements.define("list-container", ListContainer, {});
 customElements.define("observable-input", ObservableInput, {});
