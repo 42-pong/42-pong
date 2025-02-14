@@ -1,5 +1,6 @@
-const MY_USER_ID = 21;
-const SAMPLE_COUNT = 30;
+const SAMPLE_COUNT = 30; // userId: 1 ~ SAMPLE_COUNT
+
+const MY_USER_ID = 1;
 
 const createSampleUser = (number) =>
   Object.freeze({
@@ -24,8 +25,8 @@ const createSampleFriend = (idx) =>
     },
   });
 
-const sampleFriends = Array.from({ length: SAMPLE_COUNT / 2 }).map(
-  (_, idx) => createSampleFriend(2 * idx),
-);
+const sampleFriends = Array.from({ length: SAMPLE_COUNT / 2 })
+  .map((_, idx) => createSampleFriend(2 * idx))
+  .filter((friend) => friend.user_id !== friend.friend_user_id);
 
 export { sampleUsers, sampleFriends };
