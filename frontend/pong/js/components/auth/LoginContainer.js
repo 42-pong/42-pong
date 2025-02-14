@@ -1,5 +1,5 @@
-import { Component } from "../../core/Component";
 import { Auth } from "../../constants/message/Auth";
+import { Component } from "../../core/Component";
 import { validateEmail } from "../../utils/validator/validateEmail";
 import { validatePassword } from "../../utils/validator/validatePassword";
 

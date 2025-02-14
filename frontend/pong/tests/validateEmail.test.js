@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { validateEmail } from "../js/utils/validator/validateEmail";
 import { Auth } from "../js/constants/message/Auth";
+import { validateEmail } from "../js/utils/validator/validateEmail";
 
 describe("validateEmail", () => {
   it("should return valid for a correct email format", () => {

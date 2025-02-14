@@ -1,9 +1,9 @@
 import {
   Auth,
-  minLength,
-  maxLength,
-  validChars,
   allNums,
+  maxLength,
+  minLength,
+  validChars,
 } from "../../constants/message/Auth";
 
 const isValidPasswordFormat = (password) => {
