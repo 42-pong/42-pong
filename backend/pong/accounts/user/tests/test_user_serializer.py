@@ -1,5 +1,6 @@
 from typing import Final
 
+import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -133,13 +134,31 @@ class UserSerializerTests(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn(PASSWORD, serializer.errors)
 
-    def test_error_invalid_email_format(self) -> None:
+    @parameterized.parameterized.expand(
+        [
+            # 空文字列はtest_error_empty_email()で確認済み
+            ("user_partがない場合", "@example.com"),
+            ("@がない場合", "invalid_email.example.com"),
+            ("domain_partがない場合", "invalid_email@"),
+            (
+                "320文字より長い場合",
+                "a" * (320 - len("@example.com") + 1) + "@example.com",
+            ),
+            ("複数の@が含まれる場合", "invalid_email@example@com"),
+            (
+                "スペースなどの特殊記号が含まれる場合",
+                "invalid< >email@example.com",
+            ),
+        ]
+    )
+    def test_error_invalid_email_format(
+        self, testcase_name: str, invalid_email: str
+    ) -> None:
         """
         emailの形式が不正な場合にエラーになることを確認する
-        実装はしていない。EmailField()が自動でチェックしてくれている
-        todo: 自動でチェックされている形式を調べてそのまま使うか独自で定義するか決めたらテストも変更
+        EmailFieldの中でEmailValidator()が自動でチェックしてくれている
         """
-        self.user_data[EMAIL] = "invalid_email@none"
+        self.user_data[EMAIL] = invalid_email
         serializer: serializers.UserSerializer = serializers.UserSerializer(
             data=self.user_data
         )
