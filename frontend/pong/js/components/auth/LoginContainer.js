@@ -11,7 +11,7 @@ export class LoginContainer extends Component {
   #container;
   #title;
   #form;
-  #loginError
+  #loginError;
 
   _onConnect() {
     //コンテナ要素を作成
@@ -73,7 +73,7 @@ export class LoginContainer extends Component {
       submitButton,
       guestButton,
       oauth2Button,
-      signupButton
+      signupButton,
     );
 
     this.#container = container;
@@ -116,10 +116,7 @@ export class LoginContainer extends Component {
 
   _render() {
     // コンテナにタイトルとフォームを追加
-    this.#container.append(
-      this.#title,
-      this.#form
-    );
+    this.#container.append(this.#title, this.#form);
     // コンテナをカスタム要素に追加
     this.appendChild(this.#container);
 
