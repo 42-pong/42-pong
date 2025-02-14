@@ -41,6 +41,8 @@ urlpatterns = [
     path("api/users/", include("users.urls")),
     # tournaments
     path("api/tournaments/", include("tournaments.urls")),
+    # matches
+    path("api/matches/", include("matches.urls")),
 ]
 
 if settings.DEBUG:
