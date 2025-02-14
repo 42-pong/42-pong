@@ -269,6 +269,11 @@ LOGGING = {
     },
     "handlers": {
         # todo: ログレベルの設定は必要に応じて追加する
+        "debug": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "custom",
+        },
         "warning": {
             "level": "WARNING",
             "class": "logging.StreamHandler",
@@ -279,8 +284,7 @@ LOGGING = {
     # todo: アプリごとにログレベルを設定する場合は追加する
     # 詳細: https://docs.python.org/ja/3/library/logging.config.html#dictionary-schema-details
     "root": {
-        "handlers": ["warning"],
-        # todo: DEBUGがTrueの場合はDEBUGレベルのログを出力するようにする？
-        "level": "WARNING",
+        "handlers": ["debug", "warning"],
+        "level": "DEBUG" if DEBUG else "WARNING",
     },
 }
