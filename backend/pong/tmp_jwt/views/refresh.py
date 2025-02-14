@@ -1,8 +1,13 @@
+import logging
+
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from pong.custom_response import custom_response
+from tmp_jwt import create_token_functions, jwt
+
+logger = logging.getLogger(__name__)
 
 
 class TokenRefreshView(views.APIView):
@@ -83,7 +88,6 @@ class TokenRefreshView(views.APIView):
         リフレッシュトークンを使用して新しいアクセストークンを取得するPOSTメソッド
         """
         # todo: リフレッシュトークンを検証するシリアライズ作成
-        # 1. リフレッシュトークンを検証する
         required_keys: set = {"refresh"}
         request_keys: set = set(request.data.keys())
         if request_keys != required_keys:
@@ -91,6 +95,35 @@ class TokenRefreshView(views.APIView):
                 code=["internal_error"],
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        # 2. ユーザーIDを取得する
-        # 3. 新しいアクセストークンを生成する
-        return custom_response.CustomResponse(status=status.HTTP_200_OK)
+
+        jwt_handler: jwt.JWT = jwt.JWT()
+        refresh_token: str = request.data["refresh"]
+        try:
+            refresh_payload: dict = jwt_handler.decode(refresh_token)
+        except Exception as e:
+            logger.error(e)
+            return custom_response.CustomResponse(
+                code=["internal_error"],
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user_id = refresh_payload.get("sub")
+        logger.debug(f"user_id: {user_id}")
+        if user_id is None:
+            logger.error("User ID missing in refresh token payload")
+            return custom_response.CustomResponse(
+                code=["internal_error"],
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        access_token: str = create_token_functions.create_token(
+            user_id, "access"
+        )
+        if not access_token:
+            return custom_response.CustomResponse(
+                code=["internal_error"],
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        return custom_response.CustomResponse(
+            data={"access": access_token}, status=status.HTTP_200_OK
+        )
