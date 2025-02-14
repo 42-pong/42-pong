@@ -1,17 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { Endpoints } from "../../constants/Endpoints";
-
-const SAMPLE_COUNT = 30;
-const createSampleUser = (number) =>
-  Object.freeze({
-    id: `${number}`,
-    username: `pong${number}`,
-    display_name: `DISPLAY${number}`,
-    avatar: "https://placehold.co/30",
-  });
-const sampleUsers = Array.from({ length: SAMPLE_COUNT }).map(
-  (_, idx) => createSampleUser(idx + 1),
-);
+import { sampleUsers } from "../utils/createSamples";
 
 export const handlers = [
   http.get(Endpoints.USERS.default.href, async () => {
