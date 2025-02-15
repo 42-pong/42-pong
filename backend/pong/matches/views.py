@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -25,6 +26,16 @@ from .match import serializers
                 description="userテーブルのID",
                 required=False,
                 type=int,
+                location=OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                name="status",
+                description="マッチのステータス",
+                required=False,
+                type=str,
+                enum=[
+                    status.value for status in constants.MatchFields.StatusEnum
+                ],
                 location=OpenApiParameter.QUERY,
             ),
         ],
@@ -161,7 +172,21 @@ from .match import serializers
 )
 class MatchReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
-    queryset = match_models.Match.objects.all().prefetch_related(
-        "match_participations__scores"
-    )
     serializer_class = serializers.MatchSerializer
+
+    def get_queryset(self) -> QuerySet:
+        queryset = match_models.Match.objects.all().prefetch_related(
+            "match_participations__scores"
+        )
+        status = self.request.query_params.get("status")
+        user_id = self.request.query_params.get("user-id")
+
+        if status:
+            queryset = queryset.filter(status=status)
+
+        if user_id:
+            queryset = queryset.filter(
+                match_participations__player__user_id=user_id
+            )
+
+        return queryset
