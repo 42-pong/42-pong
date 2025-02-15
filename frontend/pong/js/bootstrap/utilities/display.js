@@ -1,5 +1,9 @@
 import { setClassNames } from "../../utils/elements/setClassNames";
 
+const setBlock = (element) => {
+  return setClassNames(element, "d-block");
+};
+
 const setFlex = (element) => {
   return setClassNames(element, "d-flex");
 };
@@ -9,6 +13,7 @@ const setGrid = (element) => {
 };
 
 export const BootstrapDisplay = {
+  setBlock,
   setFlex,
   setGrid,
 };

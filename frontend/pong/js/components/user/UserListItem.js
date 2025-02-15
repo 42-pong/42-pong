@@ -19,6 +19,7 @@ export class UserListItem extends Component {
 
   _render() {
     const { item: user } = this._getState();
-    this.append(createNameplate(user));
+    const nameplate = createNameplate(user, "4vh");
+    this.append(nameplate);
   }
 }
