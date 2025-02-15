@@ -84,9 +84,11 @@ class FriendshipCreateSerializerTests(TestCase):
             create_serializer.data,
             {
                 FRIEND: {
+                    ID: self.user2.id,
                     USERNAME: self.user_data_2[USERNAME],
                     DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
                     AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                    # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
                 },
             },
         )

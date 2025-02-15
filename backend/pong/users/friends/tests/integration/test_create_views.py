@@ -12,6 +12,7 @@ from users import constants as users_constants
 
 from ... import constants, models
 
+ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
@@ -101,9 +102,11 @@ class FriendsCreateViewTests(test.APITestCase):
             response.data[DATA],
             {
                 FRIEND: {
+                    ID: self.user2.id,
                     USERNAME: self.user_data2[USERNAME],
                     DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
                     AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                    # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
                 },
             },
         )

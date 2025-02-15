@@ -18,9 +18,11 @@ class FriendshipCreateSerializer(serializers.ModelSerializer):
         source="friend.player",
         read_only=True,
         fields=(  # emailは含めない
+            accounts_constants.UserFields.ID,
             accounts_constants.UserFields.USERNAME,
             accounts_constants.PlayerFields.DISPLAY_NAME,
             accounts_constants.PlayerFields.AVATAR,
+            # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
         ),
     )
 
