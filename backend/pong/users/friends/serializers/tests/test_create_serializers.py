@@ -83,8 +83,6 @@ class FriendshipCreateSerializerTests(TestCase):
         self.assertEqual(
             create_serializer.data,
             {
-                USER_ID: self.user1.id,
-                FRIEND_USER_ID: self.user2.id,
                 FRIEND: {
                     USERNAME: self.user_data_2[USERNAME],
                     DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],

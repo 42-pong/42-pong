@@ -8,8 +8,12 @@ from . import validators
 
 
 class FriendshipCreateSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(source="user.id", min_value=1)
-    friend_user_id = serializers.IntegerField(source="friend.id", min_value=1)
+    user_id = serializers.IntegerField(
+        source="user.id", min_value=1, write_only=True
+    )
+    friend_user_id = serializers.IntegerField(
+        source="friend.id", min_value=1, write_only=True
+    )
     friend = users_serializers.UsersSerializer(
         source="friend.player",
         read_only=True,

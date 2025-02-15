@@ -100,8 +100,6 @@ class FriendsCreateViewTests(test.APITestCase):
         self.assertEqual(
             response.data[DATA],
             {
-                USER_ID: self.user1.id,
-                FRIEND_USER_ID: self.user2.id,
                 FRIEND: {
                     USERNAME: self.user_data2[USERNAME],
                     DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
