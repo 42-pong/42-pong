@@ -263,8 +263,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
         self, user_id: int, friend_user_id: Optional[int]
     ) -> create_serializers.FriendshipCreateSerializer:
         friendship_data: dict = {
-            constants.FriendshipFields.USER_ID: user_id,
-            constants.FriendshipFields.FRIEND_USER_ID: friend_user_id,
+            constants.FriendshipFields.FRIEND_USER_ID: friend_user_id
         }
         return create_serializers.FriendshipCreateSerializer(
             data=friendship_data,

@@ -66,7 +66,6 @@ class FriendshipCreateSerializerTests(TestCase):
         """
         # user1がuser2をフレンドに追加する
         friendship_data: dict = {
-            USER_ID: self.user1.id,
             FRIEND_USER_ID: self.user2.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
@@ -78,8 +77,7 @@ class FriendshipCreateSerializerTests(TestCase):
         # validate()確認
         self.assertTrue(create_serializer.is_valid())
         self.assertEqual(
-            create_serializer.validated_data,
-            {USER: {ID: self.user1.id}, FRIEND: {ID: self.user2.id}},
+            create_serializer.validated_data, {FRIEND: {ID: self.user2.id}}
         )
         # create()確認
         create_serializer.save()
@@ -103,7 +101,6 @@ class FriendshipCreateSerializerTests(TestCase):
         """
         # user1が自分自身をフレンドに追加しようとする
         friendship_data: dict = {
-            USER_ID: self.user1.id,
             FRIEND_USER_ID: self.user1.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
@@ -127,7 +124,6 @@ class FriendshipCreateSerializerTests(TestCase):
         models.Friendship.objects.create(user=self.user1, friend=self.user2)
         # 再度、user1がuser2をフレンドに追加しようとする
         friendship_data: dict = {
-            USER_ID: self.user1.id,
             FRIEND_USER_ID: self.user2.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
@@ -149,7 +145,6 @@ class FriendshipCreateSerializerTests(TestCase):
         """
         # user1が存在しないユーザーをフレンドに追加しようとする
         friendship_data: dict = {
-            USER_ID: self.user1.id,
             FRIEND_USER_ID: 9999,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
