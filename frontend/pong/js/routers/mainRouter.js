@@ -1,4 +1,3 @@
-import { ChatView } from "../components/views/ChatView";
 import { FriendsView } from "../components/views/FriendsView";
 import { HomeView } from "../components/views/HomeView";
 import { MainView } from "../components/views/MainView";
@@ -12,7 +11,6 @@ import { Router } from "../core/Router";
 export const mainRouter = (target) => {
   const routes = {
     [MainView.Paths.HOME]: Route.defaultRoute(HomeView),
-    [MainView.Paths.CHAT]: Route.defaultRoute(ChatView),
     [MainView.Paths.USERS]: Route.defaultRoute(UsersView),
     [MainView.Paths.FRIENDS]: Route.defaultRoute(FriendsView),
     [MainView.Paths.MYPAGE]: Route.defaultRoute(MyPageView),

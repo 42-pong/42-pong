@@ -15,7 +15,6 @@ export class MainView extends View {
   // MainView の対応中のパスを列挙
   static Paths = Object.freeze({
     HOME: "/",
-    CHAT: "/chat",
     USERS: "/users",
     FRIENDS: "/friends",
     MYPAGE: "/mypage",

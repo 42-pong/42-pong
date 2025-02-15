@@ -34,9 +34,21 @@ const UPDATE_USER_ID = {
     createPongEvent(UPDATE_USER_ID.type, { userId }),
 };
 
+const TOGGLE_CHAT_GLOBAL = {
+  type: "toggle-chat-global",
+  create: () => createPongEvent(TOGGLE_CHAT_GLOBAL.type, {}),
+};
+
+const TOGGLE_CHAT_USER_SELECTION = {
+  type: "toggle-chat-user",
+  create: () => createPongEvent(TOGGLE_CHAT_USER_SELECTION.type, {}),
+};
+
 export const PongEvents = {
   UPDATE_ROUTER,
   UPDATE_TOURNAMENT_STAGE,
   UPDATE_TOURNAMENT_PROGRESS,
   UPDATE_USER_ID,
+  TOGGLE_CHAT_GLOBAL,
+  TOGGLE_CHAT_USER_SELECTION,
 };
