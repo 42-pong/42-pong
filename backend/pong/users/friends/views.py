@@ -267,7 +267,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
             constants.FriendshipFields.FRIEND_USER_ID: friend_user_id,
         }
         return create_serializers.FriendshipCreateSerializer(
-            data=friendship_data
+            data=friendship_data,
+            context={constants.FriendshipFields.USER_ID: user_id},
         )
 
     def _handle_create_validation_error(

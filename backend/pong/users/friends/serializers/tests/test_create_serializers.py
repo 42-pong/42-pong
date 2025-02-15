@@ -17,6 +17,7 @@ PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
 
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
@@ -69,7 +70,9 @@ class FriendshipCreateSerializerTests(TestCase):
             FRIEND_USER_ID: self.user2.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
         )
 
         # validate()確認
@@ -88,7 +91,8 @@ class FriendshipCreateSerializerTests(TestCase):
                     USERNAME: self.user_data_2[USERNAME],
                     DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
                     AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                    # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                    IS_FRIEND: True,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
                 },
             },
         )
@@ -103,7 +107,9 @@ class FriendshipCreateSerializerTests(TestCase):
             FRIEND_USER_ID: self.user1.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
         )
 
         self.assertFalse(create_serializer.is_valid())
@@ -125,7 +131,9 @@ class FriendshipCreateSerializerTests(TestCase):
             FRIEND_USER_ID: self.user2.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
         )
 
         self.assertFalse(create_serializer.is_valid())
@@ -145,7 +153,9 @@ class FriendshipCreateSerializerTests(TestCase):
             FRIEND_USER_ID: 9999,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
         )
 
         self.assertFalse(create_serializer.is_valid())
