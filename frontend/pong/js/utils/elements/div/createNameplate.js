@@ -1,17 +1,22 @@
+import { BootstrapBorders } from "../../../bootstrap/utilities/borders";
 import { BootstrapDisplay } from "../../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../../bootstrap/utilities/flex";
 import { BootstrapSpacing } from "../../../bootstrap/utilities/spacing";
 import { BootstrapText } from "../../../bootstrap/utilities/text";
+import { Endpoints } from "../../../constants/Endpoints";
 import { createElement } from "../createElement";
+import { setHeight } from "../style/setHeight";
 
-export const createNameplate = (user) => {
-  // TODO: 実際のアバターを使用
-  const avatar = new Image();
-  avatar.src = "https://placehold.co/30";
-  avatar.alt = "sample image";
+export const createNameplate = (user, avatarHeight = "") => {
+  const nameTagText = `${user.displayName}#${user.username}`;
 
+  const avatar = createAvatarImage({
+    pathname: user.avatar,
+    alt: `${nameTagText}'s avatar`,
+    height: avatarHeight,
+  });
   const nameTag = createElement("span", {
-    textContent: `${user.displayName}#${user.username}`,
+    textContent: nameTagText,
   });
   BootstrapText.setTextTruncate(nameTag);
 
@@ -21,4 +26,19 @@ export const createNameplate = (user) => {
   BootstrapSpacing.setGap(nameplate);
   nameplate.append(avatar, nameTag);
   return nameplate;
+};
+
+const createAvatarImage = (params) => {
+  const { pathname, alt, height } = params;
+
+  const image = new Image();
+  image.src = Endpoints.create(pathname).href;
+  image.alt = alt;
+  image.onerror = () => {
+    image.onerror = null;
+    image.src = Endpoints.USERS.defaultAvatar.href;
+  };
+  if (height) setHeight(image, height);
+  BootstrapBorders.setRoundedCircle(image);
+  return image;
 };

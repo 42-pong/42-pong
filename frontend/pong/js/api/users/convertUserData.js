@@ -1,7 +1,10 @@
 export const convertUserData = (userData) => {
+  const { id, username, display_name, avatar } = userData;
+
   return {
-    id: userData.id,
-    username: userData.username,
-    displayName: userData.display_name,
+    id: id.toString(),
+    username,
+    displayName: display_name,
+    avatar,
   };
 };
