@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -371,7 +372,21 @@ from . import models, serializers
     ),
 )
 class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = models.Tournament.objects.all().prefetch_related(
-        "round__matches__match_participations__scores"
-    )
     serializer_class = serializers.TournamentSerializer
+
+    def get_queryset(self) -> QuerySet:
+        queryset = models.Tournament.objects.all().prefetch_related(
+            "round__matches__match_participations__scores"
+        )
+        status = self.request.query_params.get("status")
+        user_id = self.request.query_params.get("user-id")
+
+        if status:
+            queryset = queryset.filter(status=status)
+
+        if user_id:
+            queryset = queryset.filter(
+                tournament_participations__player__user_id=user_id
+            )
+
+        return queryset
