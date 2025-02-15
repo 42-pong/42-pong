@@ -11,6 +11,7 @@ class UserFields:
 
 @dataclasses.dataclass(frozen=True)
 class PlayerFields:
+    ID: str = "id"
     USER: str = "user"
     DISPLAY_NAME: str = "display_name"
     AVATAR: str = "avatar"
