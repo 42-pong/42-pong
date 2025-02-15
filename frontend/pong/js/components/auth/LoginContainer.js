@@ -1,7 +1,8 @@
 import { Auth } from "../../constants/message/Auth";
 import { Component } from "../../core/Component";
-import { validateEmail } from "../../utils/validator/validateEmail";
-import { validatePassword } from "../../utils/validator/validatePassword";
+import { MessageEnums } from "../../enums/MessageEnums";
+import { Endpoints } from "../../constants/Endpoints"
+
 
 export class LoginContainer extends Component {
   #container;
@@ -83,27 +84,29 @@ export class LoginContainer extends Component {
       const email = this.#form.elements.email.value;
       const password = this.#form.elements.password.value;
       try {
-        const validateEmailResult = validateEmail(email);
-        const validatePasswordResult = validatePassword(password);
-        if (!validateEmailResult.valid) {
-          this.#loginError.textContent = Auth.validateLoginMessage;
-          this.#loginError.style.display = "block"; //エラーメッセージを表示する
-          throw new Error(validateEmailResult.message);
-        }
-        if (!validatePasswordResult.valid) {
-          this.#loginError.textContent = Auth.validateLoginMessage;
-          this.#loginError.style.display = "block"; //エラーメッセージを表示する
-          throw new Error(validatePasswordResult.message);
-        }
-        //e-mailかpasswordが間違えていなかったら、エラーメッセージが非表示にする
-        this.#loginError.style.display = "none";
 
         //todo
         //JWTエントポイント(api/token/)作成後に適用
         //FEの画面に表示するエラーを実装
-        // todo　APIのエラーメッセージハンドリング
-        // not_exists : ユーザーが存在しません
-        // incorrect_password : パスワードが間違っています
+        const response = await fetch(Endpoints.TOKEN.href, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
+        })
+        if (response.status !== ok) {
+          this.#loginError.textContent = Auth[MessageEnums.AuthCode.LOGIN_ERROR];
+          this.#loginError.style.display = "block"; //エラーメッセージを表示する
+          throw new Error(response.code)
+        }
+        this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
+        // todo
+        // responseからaccess,refresh tokenを取得する
+
       } catch (error) {
         console.log(error);
       }
