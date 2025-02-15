@@ -35,9 +35,11 @@ logger = logging.getLogger(__name__)
                             custom_response.DATA: [
                                 {
                                     constants.FriendshipFields.FRIEND: {
+                                        accounts_constants.UserFields.ID: 2,
                                         accounts_constants.UserFields.USERNAME: "username2",
                                         accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                        # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
                                     },
                                 },
                                 {"...", "..."},
