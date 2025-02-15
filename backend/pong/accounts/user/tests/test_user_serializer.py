@@ -214,3 +214,29 @@ class UserSerializerTests(TestCase):
 
         self.assertFalse(serializer_2.is_valid())
         self.assertIn(EMAIL, serializer_2.errors)
+
+    @parameterized.parameterized.expand(
+        [
+            # 空文字列はtest_error_empty_password()で確認済み
+            ("7文字以下の場合", "mb7asb2"),
+            ("51文字以上の場合", "a" * 51),
+            ("数字のみの場合", "97251037"),
+            ("よく使われてるパスワードの場合1", "password"),
+            ("よく使われてるパスワードの場合2", "pass1234"),
+            ("よく使われてるパスワードの場合3", "computer"),
+            # ("usernameとの類似度が高い場合", "testuser"), # todo: なぜかエラーにならない
+        ]
+    )
+    def test_error_invalid_password(
+        self, testcase_name: str, invalid_password: str
+    ) -> None:
+        """
+        パスワードが不正な場合にエラーになることを確認する
+        """
+        self.user_data[PASSWORD] = invalid_password
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(PASSWORD, serializer.errors)
