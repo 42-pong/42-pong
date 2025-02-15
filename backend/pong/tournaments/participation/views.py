@@ -9,6 +9,7 @@ from drf_spectacular.utils import (
 from rest_framework import permissions, viewsets
 
 from accounts.player import models as player_models
+from pong import readonly_custom_renderer
 
 from . import models, serializers
 
@@ -101,6 +102,7 @@ from . import models, serializers
 class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.ParticipationSerializer
+    renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]
 
     def get_queryset(self) -> QuerySet:
         queryset = models.Participation.objects.all()

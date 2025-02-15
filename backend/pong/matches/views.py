@@ -8,6 +8,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import permissions, viewsets
 
+from pong import readonly_custom_renderer
 from pong.custom_response import custom_response
 
 from . import constants
@@ -173,6 +174,7 @@ from .match import serializers
 class MatchReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.MatchSerializer
+    renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]
 
     def get_queryset(self) -> QuerySet:
         queryset = match_models.Match.objects.all().prefetch_related(
