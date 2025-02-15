@@ -8,6 +8,7 @@ from rest_framework import status, test
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
 from pong.custom_response import custom_response
+from users import constants as users_constants
 
 from ... import constants, models
 
@@ -18,6 +19,7 @@ PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
 
 FRIEND: Final[str] = constants.FriendshipFields.FRIEND
 
@@ -135,7 +137,8 @@ class FriendsListViewTests(test.APITestCase):
                         USERNAME: self.user_data2[USERNAME],
                         DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                        IS_FRIEND: True,
+                        # todo: is_blocked,is_online,win_match,lose_match追加
                     },
                 },
                 {
@@ -144,7 +147,8 @@ class FriendsListViewTests(test.APITestCase):
                         USERNAME: self.user_data3[USERNAME],
                         DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                        IS_FRIEND: True,
+                        # todo: is_blocked,is_online,win_match,lose_match追加
                     },
                 },
             ],
@@ -169,7 +173,8 @@ class FriendsListViewTests(test.APITestCase):
                         USERNAME: self.user_data3[USERNAME],
                         DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                        IS_FRIEND: True,
+                        # todo: is_blocked,is_online,win_match,lose_match追加
                     },
                 },
             ],

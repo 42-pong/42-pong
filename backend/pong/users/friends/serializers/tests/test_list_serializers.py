@@ -6,6 +6,7 @@ from django.test import TestCase
 
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
+from users import constants as users_constants
 
 from ... import constants, models
 from .. import list_serializers
@@ -17,7 +18,9 @@ PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
 
+USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND: Final[str] = constants.FriendshipFields.FRIEND
 
 
@@ -75,7 +78,9 @@ class FriendshipListSerializerTests(TestCase):
             models.Friendship.objects.filter(user=self.user1)
         )
         list_serializer: list_serializers.FriendshipListSerializer = (
-            list_serializers.FriendshipListSerializer(friends, many=True)
+            list_serializers.FriendshipListSerializer(
+                friends, many=True, context={USER_ID: self.user1.id}
+            )
         )
 
         self.assertEqual(
@@ -87,7 +92,8 @@ class FriendshipListSerializerTests(TestCase):
                         USERNAME: self.user_data_2[USERNAME],
                         DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                        IS_FRIEND: True,
+                        # todo: is_blocked,is_online,win_match,lose_match追加
                     },
                 },
                 {
@@ -96,7 +102,8 @@ class FriendshipListSerializerTests(TestCase):
                         USERNAME: self.user_data_3[USERNAME],
                         DISPLAY_NAME: self.player_data_3[DISPLAY_NAME],
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                        IS_FRIEND: True,
+                        # todo: is_blocked,is_online,win_match,lose_match追加
                     },
                 },
             ],
@@ -107,11 +114,14 @@ class FriendshipListSerializerTests(TestCase):
         フレンドが存在しない場合に、エラーにならず空のフレンド一覧が返されることを確認
         """
         # フレンドがいないuser2のフレンド一覧を取得
+        user_id: int = self.user2.id
         friends: QuerySet[models.Friendship] = (
-            models.Friendship.objects.filter(user=self.user2)
+            models.Friendship.objects.filter(user_id=user_id)
         )
         list_serializer: list_serializers.FriendshipListSerializer = (
-            list_serializers.FriendshipListSerializer(friends, many=True)
+            list_serializers.FriendshipListSerializer(
+                friends, many=True, context={USER_ID: user_id}
+            )
         )
 
         self.assertEqual(list_serializer.data, [])

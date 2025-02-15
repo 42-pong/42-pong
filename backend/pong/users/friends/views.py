@@ -39,7 +39,8 @@ logger = logging.getLogger(__name__)
                                         accounts_constants.UserFields.USERNAME: "username2",
                                         accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
-                                        # todo: is_friend,is_blocked,is_online,win_match,lose_match追加
+                                        users_constants.UsersFields.IS_FRIEND: True,
+                                        # todo: is_blocked,is_online,win_match,lose_match追加
                                     },
                                 },
                                 {"...", "..."},
@@ -234,7 +235,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
         # 自分のフレンド一覧を取得
         friends: QuerySet[models.Friendship] = self.queryset.filter(user=user)
         list_serializer: list_serializers.FriendshipListSerializer = (
-            list_serializers.FriendshipListSerializer(friends, many=True)
+            list_serializers.FriendshipListSerializer(
+                friends,
+                many=True,
+                context={constants.FriendshipFields.USER_ID: user.id},
+            )
         )
         # todo: logger.info追加
         return custom_response.CustomResponse(
