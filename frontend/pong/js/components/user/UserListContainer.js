@@ -16,7 +16,7 @@ export class UserListContainer extends Component {
   #userProfileContainer;
 
   constructor(state) {
-    super({ isError: false, ...state });
+    super({ isError: false, fetchUsers: getUsers, ...state });
   }
 
   _setStyle() {
@@ -38,7 +38,8 @@ export class UserListContainer extends Component {
     });
     this.#userProfileContainer = new UserProfileContainer();
 
-    getUsers().then(({ users, error }) => {
+    const { fetchUsers } = this._getState();
+    fetchUsers().then(({ users, error }) => {
       if (error) {
         this._updateState({ isError: true });
         return;
@@ -60,9 +61,7 @@ export class UserListContainer extends Component {
   _render() {
     const { isError } = this._getState();
     if (isError) {
-      this.append(
-        new ErrorContainer({ message: "ユーザー一覧情報の取得" }),
-      );
+      this.append(new ErrorContainer({ message: "一覧情報の取得" }));
       return;
     }
 
