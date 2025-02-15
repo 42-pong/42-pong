@@ -34,8 +34,6 @@ logger = logging.getLogger(__name__)
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: [
                                 {
-                                    constants.FriendshipFields.USER_ID: 1,
-                                    constants.FriendshipFields.FRIEND_USER_ID: 2,
                                     constants.FriendshipFields.FRIEND: {
                                         accounts_constants.UserFields.USERNAME: "username2",
                                         accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",

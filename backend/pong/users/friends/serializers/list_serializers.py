@@ -7,12 +7,6 @@ from .. import constants, models
 
 
 class FriendshipListSerializer(drf_serializers.ModelSerializer):
-    user_id = drf_serializers.IntegerField(
-        source="user.id", min_value=1, read_only=True
-    )
-    friend_user_id = drf_serializers.IntegerField(
-        source="friend.id", min_value=1, read_only=True
-    )
     friend = users_serializers.UsersSerializer(
         source="friend.player",
         read_only=True,
@@ -25,8 +19,4 @@ class FriendshipListSerializer(drf_serializers.ModelSerializer):
 
     class Meta:
         model = models.Friendship
-        fields = (
-            constants.FriendshipFields.USER_ID,
-            constants.FriendshipFields.FRIEND_USER_ID,
-            constants.FriendshipFields.FRIEND,
-        )
+        fields = (constants.FriendshipFields.FRIEND,)

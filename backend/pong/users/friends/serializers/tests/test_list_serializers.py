@@ -17,8 +17,6 @@ USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 
-USER_ID: Final[str] = constants.FriendshipFields.USER_ID
-FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
 FRIEND: Final[str] = constants.FriendshipFields.FRIEND
 
 
@@ -83,8 +81,6 @@ class FriendshipListSerializerTests(TestCase):
             list_serializer.data,
             [
                 {
-                    USER_ID: self.user1.id,
-                    FRIEND_USER_ID: self.user2.id,
                     FRIEND: {
                         USERNAME: self.user_data_2[USERNAME],
                         DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
@@ -92,8 +88,6 @@ class FriendshipListSerializerTests(TestCase):
                     },
                 },
                 {
-                    USER_ID: self.user1.id,
-                    FRIEND_USER_ID: self.user3.id,
                     FRIEND: {
                         USERNAME: self.user_data_3[USERNAME],
                         DISPLAY_NAME: self.player_data_3[DISPLAY_NAME],
