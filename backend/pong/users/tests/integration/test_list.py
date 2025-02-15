@@ -78,7 +78,7 @@ class UsersListViewTests(test.APITestCase):
         response: drf_response.Response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[DATA], {})
+        self.assertEqual(response.data[DATA], [])
 
     def test_200_get_users_list(self) -> None:
         """
