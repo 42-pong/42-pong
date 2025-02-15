@@ -1,3 +1,4 @@
+import { getUsers } from "../../api/users/getUsers";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
@@ -17,7 +18,9 @@ export class UsersView extends View {
   }
 
   _onConnect() {
-    this.#userListContainer = new UserListContainer();
+    this.#userListContainer = new UserListContainer({
+      fetchUsers: getUsers,
+    });
   }
 
   _render() {
