@@ -1,67 +1,44 @@
-import {
-  Auth,
-  allNums,
-  maxLength,
-  minLength,
-  validChars,
-} from "../../constants/message/Auth";
+import { MessageEnums } from "../../enums/MessageEnums";
+import { MessageConstants } from "../../constants/MessageConstants";
 
 const isValidPasswordFormat = (password) => {
-  if (password.length < minLength) {
+  if (password.length < MessageConstants.MIN_LENGTH) {
     return {
       valid: false,
-      message:
-        Auth.validatePasswordMessage[
-          `Password must be at least ${minLength} characters long`
-        ],
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_MIN_LENGTH,
     };
   }
 
-  if (password.length > maxLength) {
+  if (password.length > MessageConstants.MAX_LENGTH) {
     return {
       valid: false,
-      message:
-        Auth.validatePasswordMessage[
-          `Password must be no more than ${maxLength} characters long`
-        ],
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_MAX_LENGTH,
     };
   }
 
-  if (!validChars.test(password)) {
+  if (!MessageConstants.VALID_CHARS.test(password)) {
     return {
       valid: false,
-      message:
-        Auth.validatePasswordMessage[
-          "Password contains invalid characters"
-        ],
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_CHAR,
     };
   }
 
-  if (allNums.test(password)) {
+  if (MessageConstants.ALL_NUMS.test(password)) {
     return {
       valid: false,
-      message:
-        Auth.validatePasswordMessage[
-          "Password cannot be all numbers"
-        ],
+      message: MessageEnums.AuthCode.PASSWROD_INVALID_ALL_NUMS,
     };
   }
 
   return {
     valid: true,
-    message: Auth.validatePasswordMessage["Password format is valid"],
+    message: MessageEnums.AuthCode.PASSWORD_VALID,
   };
 };
 
 const validatePassword = (password) => {
   const result = isValidPasswordFormat(password);
-  if (!result.valid) {
-    return result;
-  }
-  return {
-    valid: true,
-    message: Auth.validatePasswordMessage["Password format is valid"],
-  };
+  return result;
 };
 
 export { validatePassword };

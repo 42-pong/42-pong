@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { Auth } from "../js/constants/message/Auth";
 import { validateEmail } from "../js/utils/validator/validateEmail";
+import { MessageEnums } from "../js/enums/MessageEnums";
 
 describe("validateEmail", () => {
   it("should return valid for a correct email format", () => {
     const result = validateEmail("user@example.com");
     expect(result).toEqual({
       valid: true,
-      message: Auth.validateEmailMessage["Email is valid"],
+      message: MessageEnums.AuthCode.EMAIL_VALID,
     });
   });
 
@@ -15,7 +15,7 @@ describe("validateEmail", () => {
     const result = validateEmail("");
     expect(result).toEqual({
       valid: false,
-      message: "メールアドレスの形が間違えました",
+      message: MessageEnums.AuthCode.EMAIL_INVALID_FORMAT,
     });
   });
 
@@ -23,7 +23,7 @@ describe("validateEmail", () => {
     const result = validateEmail("userexample.com");
     expect(result).toEqual({
       valid: false,
-      message: "メールアドレスの形が間違えました",
+      message: MessageEnums.AuthCode.EMAIL_INVALID_FORMAT,
     });
   });
 
@@ -31,7 +31,7 @@ describe("validateEmail", () => {
     const result = validateEmail("@example.com");
     expect(result).toEqual({
       valid: false,
-      message: "メールアドレスの形が間違えました",
+      message: MessageEnums.AuthCode.EMAIL_INVALID_FORMAT,
     });
   });
 
@@ -39,7 +39,7 @@ describe("validateEmail", () => {
     const result = validateEmail("user@");
     expect(result).toEqual({
       valid: false,
-      message: "メールアドレスの形が間違えました",
+      message: MessageEnums.AuthCode.EMAIL_INVALID_FORMAT,
     });
   });
 
@@ -47,7 +47,7 @@ describe("validateEmail", () => {
     const result = validateEmail("user@.com");
     expect(result).toEqual({
       valid: false,
-      message: "メールアドレスの形が間違えました",
+      message: MessageEnums.AuthCode.EMAIL_INVALID_FORMAT,
     });
   });
 
@@ -55,7 +55,7 @@ describe("validateEmail", () => {
     const result = validateEmail("user @example.com");
     expect(result).toEqual({
       valid: false,
-      message: "メールアドレスの形が間違えました",
+      message: MessageEnums.AuthCode.EMAIL_INVALID_FORMAT,
     });
   });
 });

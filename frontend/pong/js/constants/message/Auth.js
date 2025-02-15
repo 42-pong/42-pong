@@ -1,24 +1,15 @@
-const minLength = 8;
-const maxLength = 50;
-const validChars = /^[a-zA-Z0-9-_]+$/;
-const allNums = /^\d+$/;
+import { MessageConstants } from "../MessageConstants";
 
 const Auth = {
-  validateLoginMessage:
-    "メールアドレス、あるいはパスワードが間違えました",
-  validateEmailMessage: {
-    "Email is valid": "メールアドレスが有効です",
-    "Invalid email format": "メールアドレスの形が間違えました",
-  },
-  validatePasswordMessage: {
-    [`Password must be at least ${minLength} characters long`]: `パスワードは ${minLength} 文字以下禁止です`,
-    [`Password must be no more than ${maxLength} characters long`]: `パスワードは ${maxLength} 文字以上禁止です`,
-    "Password contains invalid characters":
-      "パスワードは無効な文字が入っています。（a-zA-Z0-9-_のみ許可）",
-    "Password cannot be all numbers":
-      "パスワードは全て数字が禁止です",
-    "Password format is valid": "パスワードは有効です",
-  },
+  LOGIN_ERROR: "メールアドレス、あるいはパスワードが間違えました",
+  EMAIL_VALID: "メールアドレスが有効です",
+  EMAIL_INVALID_FORMAT: "メールアドレスの形が間違えました",
+  PASSWORD_VALID: "パスワードが有効です",
+  PASSWORD_INVALID_MIN_LENGTH: `パスワードは ${MessageConstants.MIN_LENGTH} 文字以下禁止です`,
+  PASSWORD_INVALID_MAX_LENGTH: `パスワードは ${MessageConstants.MAX_LENGTH} 文字以上禁止です`,
+  PASSWORD_INVALID_CHAR:
+    "パスワードは無効な文字が入っています。（大小英数字のみ許可）",
+  PASSWORD_INVALID_ALL_NUMS: "パスワードは全て数字が禁止です",
 };
 
-export { Auth, minLength, maxLength, validChars, allNums };
+export { Auth };

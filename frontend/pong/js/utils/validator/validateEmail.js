@@ -1,4 +1,4 @@
-import { Auth } from "../../constants/message/Auth";
+import { MessageEnums } from "../../enums/MessageEnums";
 
 const isValidEmailFormat = (email) => {
   if (!email) return false; // 入力が空の場合
@@ -10,14 +10,15 @@ const isValidEmailFormat = (email) => {
 };
 
 const validateEmail = (email) => {
-  if (!isValidEmailFormat(email))
+  if (!isValidEmailFormat(email)) {
     return {
       valid: false,
-      message: Auth.validateEmailMessage["Invalid email format"],
+      message: MessageEnums.AuthCode.EMAIL_INVALID_FORMAT,
     };
+  }
   return {
     valid: true,
-    message: Auth.validateEmailMessage["Email is valid"],
+    message: MessageEnums.AuthCode.EMAIL_VALID,
   };
 };
 
