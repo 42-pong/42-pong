@@ -81,7 +81,31 @@ logger = logging.getLogger(__name__)
             ],
         ),
         responses={
-            201: create_serializers.FriendshipCreateSerializer,
+            201: utils.OpenApiResponse(
+                description="Successfully added a new user to the authenticated user's friends list.",
+                response=list_serializers.FriendshipListSerializer(many=True),
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 201 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: [
+                                {
+                                    constants.FriendshipFields.FRIEND: {
+                                        accounts_constants.UserFields.ID: 2,
+                                        accounts_constants.UserFields.USERNAME: "username2",
+                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                        users_constants.UsersFields.IS_FRIEND: True,
+                                        # todo: is_blocked,is_online,win_match,lose_match追加
+                                    },
+                                },
+                                {"...", "..."},
+                            ],
+                        },
+                    ),
+                ],
+            ),
             400: utils.OpenApiResponse(
                 description="Invalid friend_user_id",
                 response={
