@@ -6,7 +6,7 @@ from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from rest_framework import viewsets
+from rest_framework import permissions, viewsets
 
 from matches import constants as matches_constants
 
@@ -372,6 +372,7 @@ from . import models, serializers
     ),
 )
 class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.TournamentSerializer
 
     def get_queryset(self) -> QuerySet:
