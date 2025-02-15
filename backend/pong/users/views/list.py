@@ -8,11 +8,12 @@ from rest_framework import (
     views,
 )
 
-from accounts import constants
-from accounts.player import models
+from accounts import constants as accounts_constants
+from accounts.player import models as player_models
 from pong.custom_response import custom_response
+from users.friends import constants as friends_constants
 
-from .. import serializers
+from .. import constants, serializers
 
 
 class UsersListView(views.APIView):
@@ -37,16 +38,20 @@ class UsersListView(views.APIView):
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: [
                                 {
-                                    constants.UserFields.ID: 2,
-                                    constants.UserFields.USERNAME: "username1",
-                                    constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                    constants.PlayerFields.AVATAR: "avatars/sample1.png",
+                                    accounts_constants.UserFields.ID: 2,
+                                    accounts_constants.UserFields.USERNAME: "username1",
+                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                    accounts_constants.PlayerFields.AVATAR: "avatars/sample1.png",
+                                    constants.UsersFields.IS_FRIEND: False,
+                                    # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
                                 {
-                                    constants.UserFields.ID: 3,
-                                    constants.UserFields.USERNAME: "username2",
-                                    constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                    constants.PlayerFields.AVATAR: "avatars/sample2.png",
+                                    accounts_constants.UserFields.ID: 3,
+                                    accounts_constants.UserFields.USERNAME: "username2",
+                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                    accounts_constants.PlayerFields.AVATAR: "avatars/sample2.png",
+                                    constants.UsersFields.IS_FRIEND: False,
+                                    # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
                                 {"...", "..."},
                             ],
@@ -64,9 +69,9 @@ class UsersListView(views.APIView):
         ユーザープロフィール一覧を取得するGETメソッド
         """
         # Userに紐づくPlayer全てのQuerySetを取得
-        all_players_with_users: QuerySet[models.Player] = (
-            models.Player.objects.select_related(
-                constants.PlayerFields.USER
+        all_players_with_users: QuerySet[player_models.Player] = (
+            player_models.Player.objects.select_related(
+                accounts_constants.PlayerFields.USER
             ).all()
         )
         # 複数のオブジェクトをシリアライズ
@@ -75,11 +80,16 @@ class UsersListView(views.APIView):
             many=True,
             # emailは含めない
             fields=(
-                constants.UserFields.ID,
-                constants.UserFields.USERNAME,
-                constants.PlayerFields.DISPLAY_NAME,
-                constants.PlayerFields.AVATAR,
+                accounts_constants.UserFields.ID,
+                accounts_constants.UserFields.USERNAME,
+                accounts_constants.PlayerFields.DISPLAY_NAME,
+                accounts_constants.PlayerFields.AVATAR,
+                constants.UsersFields.IS_FRIEND,
+                # todo: is_blocked,is_online,win_match,lose_match追加
             ),
+            context={
+                friends_constants.FriendshipFields.USER_ID: request.user.id
+            },
         )
         return custom_response.CustomResponse(
             data=serializer.data, status=status.HTTP_200_OK

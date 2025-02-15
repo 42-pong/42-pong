@@ -27,10 +27,9 @@ def invalid_same_user_validator(user_id: int, friend_user_id: int) -> None:
         )
 
 
-def is_friendship_exists(user_id: int, friend_user_id: int) -> bool:
+def _is_friendship_exists(user_id: int, friend_user_id: int) -> bool:
     """
     user_idが既にfriend_user_idをフレンドに追加済みであるかどうかを返す
-    create,destroyのserializerのvalidate()で呼ばれる想定
 
     Args:
         user_id: リクエストを送信したユーザーのID
@@ -54,3 +53,45 @@ def is_friendship_exists(user_id: int, friend_user_id: int) -> bool:
     return models.Friendship.objects.filter(
         user_id=user_id, friend_id=friend_user_id
     ).exists()
+
+
+def already_friend_validator(user_id: int, friend_user_id: int) -> None:
+    """
+    user_idがfriend_user_idを既にフレンド追加済みである場合に例外を発生させる
+    createのserializerのvalidate()で呼ばれる想定
+
+    Args:
+        user_id: リクエストを送信したユーザーのID
+        friend_user_id: フレンド追加対象のユーザーのID
+
+    Raises:
+        serializers.ValidationError: フレンドとして追加したいユーザーが既にフレンドである場合
+    """
+    if _is_friendship_exists(user_id, friend_user_id):
+        raise serializers.ValidationError(
+            {
+                constants.FriendshipFields.FRIEND_USER_ID: "The user is already a friend."
+            },
+            code=users_constants.Code.INVALID,
+        )
+
+
+def not_friend_validator(user_id: int, friend_user_id: int) -> None:
+    """
+    user_idがfriend_user_idをフレンドに追加していない場合に例外を発生させる
+    destroyのserializerのvalidate()で呼ばれる想定
+
+    Args:
+        user_id: リクエストを送信したユーザーのID
+        friend_user_id: フレンド削除対象のユーザーのID
+
+    Raises:
+        serializers.ValidationError: フレンドとして削除したいユーザーがフレンドでない場合
+    """
+    if not _is_friendship_exists(user_id, friend_user_id):
+        raise serializers.ValidationError(
+            {
+                constants.FriendshipFields.FRIEND_USER_ID: "The user is not a friend."
+            },
+            code=users_constants.Code.INVALID,
+        )
