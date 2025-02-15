@@ -40,4 +40,8 @@ export class StyledButton extends Component {
   setOutlineSecondary() {
     BootstrapButtons.setOutlineSecondary(this._button);
   }
+
+  setSmall() {
+    BootstrapButtons.setSmall(this._button);
+  }
 }
