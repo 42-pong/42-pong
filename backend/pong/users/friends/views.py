@@ -373,11 +373,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
         self, user_id: int, friend_id: int
     ) -> destroy_serializers.FriendshipDestroySerializer:
         friendship_data: dict = {
-            constants.FriendshipFields.USER_ID: user_id,
-            constants.FriendshipFields.FRIEND_USER_ID: friend_id,
+            constants.FriendshipFields.FRIEND_USER_ID: friend_id
         }
         return destroy_serializers.FriendshipDestroySerializer(
-            data=friendship_data
+            data=friendship_data,
+            context={constants.FriendshipFields.USER_ID: user_id},
         )
 
     def _handle_destroy_validation_error(
