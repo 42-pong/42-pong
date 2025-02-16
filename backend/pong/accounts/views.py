@@ -67,12 +67,21 @@ class AccountCreateView(views.APIView):
                 },
                 examples=[
                     utils.OpenApiExample(
-                        "Example 400 response",
+                        "Example 400 response - invalid_email",
                         value={
                             custom_response.STATUS: custom_response.Status.ERROR,
-                            custom_response.ERRORS: {
-                                "field": ["error messages"]
-                            },
+                            custom_response.CODE: [
+                                constants.Code.INVALID_EMAIL
+                            ],
+                        },
+                    ),
+                    utils.OpenApiExample(
+                        "Example 400 response - invalid_password",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INVALID_PASSWORD
+                            ],
                         },
                     ),
                 ],
@@ -100,8 +109,15 @@ class AccountCreateView(views.APIView):
             return user_serializers.UserSerializer(data=user_data)
 
         def _handle_validation_error(errors: dict) -> response.Response:
-            # todo: エラーの種類によって返すcodeを変える
+            code: list[str] = []
+            # emailのエラーがあればcodeに追加
+            if constants.UserFields.EMAIL in errors:
+                code.append(constants.Code.INVALID_EMAIL)
+            # passwordのエラーがあればcodeに追加
+            if constants.UserFields.PASSWORD in errors:
+                code.append(constants.Code.INVALID_PASSWORD)
             return custom_response.CustomResponse(
+                code=code,
                 errors=errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )

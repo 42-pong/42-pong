@@ -15,7 +15,11 @@ EMAIL: Final[str] = constants.UserFields.EMAIL
 PASSWORD: Final[str] = constants.UserFields.PASSWORD
 
 DATA: Final[str] = custom_response.DATA
+CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
+
+CODE_INVALID_EMAIL: Final[str] = constants.Code.INVALID_EMAIL
+CODE_INVALID_PASSWORD: Final[str] = constants.Code.INVALID_PASSWORD
 
 
 # todo: 認証付きのテスト追加？
@@ -105,6 +109,7 @@ class AccountsTests(test.APITestCase):
             self.url, account_data, format="json"
         )
         response_error: dict = response.data[ERRORS]
+        code: list[str] = response.data[CODE]
 
         # responseの内容を確認
         # response.data == {
@@ -117,7 +122,7 @@ class AccountsTests(test.APITestCase):
         # }
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(EMAIL, response_error)
-        # todo: codeを返すようになったらresponse.data[CODE]も確認
+        self.assertIn(CODE_INVALID_EMAIL, code)
 
         # DBにUser,Playerが作成されていないことを確認
         self.assertEqual(models.User.objects.count(), 0)
@@ -159,10 +164,11 @@ class AccountsTests(test.APITestCase):
             self.url, account_data, format="json"
         )
         response_error: dict = response.data[ERRORS]
+        code: list[str] = response.data[CODE]
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(PASSWORD, response_error)
-        # todo: codeを返すようになったらresponse.data[CODE]も確認
+        self.assertIn(CODE_INVALID_PASSWORD, code)
 
         # DBにUser,Playerが作成されていないことを確認
         self.assertEqual(models.User.objects.count(), 0)

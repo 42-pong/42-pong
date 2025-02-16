@@ -17,3 +17,9 @@ class PlayerFields:
     AVATAR: str = "avatar"
     CREATED_AT: str = "created_at"
     UPDATED_AT: str = "updated_at"
+
+
+@dataclasses.dataclass(frozen=True)
+class Code:
+    INVALID_EMAIL: str = "invalid_email"
+    INVALID_PASSWORD: str = "invalid_password"
