@@ -1,29 +1,29 @@
 import { MessageEnums } from "../../enums/MessageEnums";
-import { MessageConstants } from "../../constants/MessageConstants";
+import { AuthConstants } from "../../constants/AuthConstants";
 
 const isValidPasswordFormat = (password) => {
-  if (password.length < MessageConstants.MIN_LENGTH) {
+  if (password.length < AuthConstants.MIN_LENGTH) {
     return {
       valid: false,
       message: MessageEnums.AuthCode.PASSWORD_INVALID_MIN_LENGTH,
     };
   }
 
-  if (password.length > MessageConstants.MAX_LENGTH) {
+  if (password.length > AuthConstants.MAX_LENGTH) {
     return {
       valid: false,
       message: MessageEnums.AuthCode.PASSWORD_INVALID_MAX_LENGTH,
     };
   }
 
-  if (!MessageConstants.VALID_CHARS.test(password)) {
+  if (!AuthConstants.VALID_CHARS.test(password)) {
     return {
       valid: false,
       message: MessageEnums.AuthCode.PASSWORD_INVALID_CHAR,
     };
   }
 
-  if (MessageConstants.ALL_NUMS.test(password)) {
+  if (AuthConstants.ALL_NUMS.test(password)) {
     return {
       valid: false,
       message: MessageEnums.AuthCode.PASSWROD_INVALID_ALL_NUMS,

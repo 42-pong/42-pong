@@ -1,4 +1,4 @@
-import { Auth } from "../../constants/message/Auth";
+import { FrontendMessage } from "../../constants/message/FrontendMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
 import { Endpoints } from "../../constants/Endpoints"
@@ -100,7 +100,7 @@ export class LoginContainer extends Component {
         const res = await response.json();
 
         if (res.status !== "ok") {
-          this.#loginError.textContent = Auth[MessageEnums.AuthCode.LOGIN_ERROR];
+          this.#loginError.textContent = FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
           this.#loginError.style.display = "block"; //エラーメッセージを表示する
           throw new Error(response.code)
         }

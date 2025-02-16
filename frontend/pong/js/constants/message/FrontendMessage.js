@@ -11,4 +11,6 @@ const Auth = {
   PASSWORD_INVALID_ALL_NUMS: "パスワードは全て数字が禁止です",
 };
 
-export { Auth };
+export const FrontendMessage = {
+  Auth,
+}
