@@ -1,6 +1,4 @@
 from drf_spectacular import utils
-
-# todo: IsAuthenticatedが追加されたらAllowAnyは不要かも
 from rest_framework import permissions, request, response, status, views
 
 from pong.custom_response import custom_response
@@ -20,7 +18,6 @@ class AccountCreateView(views.APIView):
     serializer_class: type[player_serializers.PlayerSerializer] = (
         player_serializers.PlayerSerializer
     )
-    # todo: 認証機能を実装したら多分IsAuthenticatedに変更
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(

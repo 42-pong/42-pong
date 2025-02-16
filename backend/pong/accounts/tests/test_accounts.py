@@ -22,7 +22,6 @@ CODE_INVALID_EMAIL: Final[str] = constants.Code.INVALID_EMAIL
 CODE_INVALID_PASSWORD: Final[str] = constants.Code.INVALID_PASSWORD
 
 
-# todo: 認証付きのテスト追加？
 class AccountsTests(test.APITestCase):
     def setUp(self) -> None:
         """
