@@ -34,7 +34,7 @@ class AccountsTests(test.APITestCase):
     # -------------------------------------------------------------------------
     # 正常ケース
     # -------------------------------------------------------------------------
-    def test_create_account_with_valid_data(self) -> None:
+    def test_200_create_account_with_valid_data(self) -> None:
         """
         有効なデータでアカウントを作成するテスト
         status 201, username, email が返されることを確認
@@ -93,7 +93,7 @@ class AccountsTests(test.APITestCase):
             ),
         ]
     )
-    def test_create_account_with_invalid_email(
+    def test_400_create_account_with_invalid_email(
         self, testcase_name: str, invalid_email: str
     ) -> None:
         """
@@ -148,7 +148,7 @@ class AccountsTests(test.APITestCase):
             ),
         ]
     )
-    def test_create_account_with_invalid_password(
+    def test_400_create_account_with_invalid_password(
         self, testcase_name: str, invalid_password: str
     ) -> None:
         """
