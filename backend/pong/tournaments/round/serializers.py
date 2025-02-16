@@ -16,6 +16,7 @@ class RoundSerializer(drf_serializers.ModelSerializer):
     class Meta:
         model = models.Round
         fields = (
+            # roundは必ずtournamentとまとめて渡されるのでtournament_idは返さない
             constants.RoundFields.ROUND_NUMBER,
             constants.RoundFields.STATUS,
             constants.RoundFields.CREATED_AT,

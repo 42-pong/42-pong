@@ -20,5 +20,6 @@ class TournamentSerializer(drf_serializers.ModelSerializer):
             constants.TournamentFields.ID,
             constants.TournamentFields.STATUS,
             constants.TournamentFields.CREATED_AT,
+            constants.TournamentFields.UPDATED_AT,
             "rounds",
         )

@@ -10,9 +10,9 @@ class TournamentFields:
     STATUS: str = "status"
 
     class StatusEnum(Enum):
-        MATCHING = "matching"
-        PLAYING = "playing"
-        END = "end"
+        NOT_STARTED = "not_started"
+        ON_GOING = "on_going"
+        COMPLETED = "completed"
         CANCELED = "canceled"
 
 
@@ -37,6 +37,7 @@ class RoundFields:
     UPDATED_AT: str = "updated_at"
 
     class StatusEnum(Enum):
-        IN_PROGRESS = "in_progress"
+        NOT_STARTED = "not_started"
+        ON_GOING = "on_going"
         COMPLETED = "completed"
         CANCELED = "canceled"

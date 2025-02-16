@@ -1,5 +1,6 @@
 from typing import Final
 
+import parameterized  # type: ignore[import-untyped]
 from django.urls import reverse
 from rest_framework import response as drf_response
 from rest_framework import status, test
@@ -74,7 +75,26 @@ class AccountsTests(test.APITestCase):
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
-    def test_create_account_with_invalid_email(self) -> None:
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列の場合", ""),
+            ("user_partがない場合", "@example.com"),
+            ("@がない場合", "invalid_email.example.com"),
+            ("domain_partがない場合", "invalid_email@"),
+            (
+                "320文字より長い場合",
+                "a" * (320 - len("@example.com") + 1) + "@example.com",
+            ),
+            ("複数の@が含まれる場合", "invalid_email@example@com"),
+            (
+                "スペースなどの特殊記号が含まれる場合",
+                "invalid< >email@example.com",
+            ),
+        ]
+    )
+    def test_create_account_with_invalid_email(
+        self, testcase_name: str, invalid_email: str
+    ) -> None:
         """
         不正なemailの形式でアカウントを作成するテスト
         status 400 が返されることを確認
@@ -82,7 +102,7 @@ class AccountsTests(test.APITestCase):
         """
         account_data: dict = {
             USER: {
-                EMAIL: "invalid-email@none",  # 不正なemail形式
+                EMAIL: invalid_email,  # 不正なemail形式
                 PASSWORD: "testpassword12345",
             }
         }
@@ -102,6 +122,7 @@ class AccountsTests(test.APITestCase):
         # }
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(EMAIL, response_error)
+        # todo: codeを返すようになったらresponse.data[CODE]も確認
 
         # DBにUser,Playerが作成されていないことを確認
         self.assertEqual(models.User.objects.count(), 0)
