@@ -173,3 +173,25 @@ class AccountsTests(test.APITestCase):
         # DBにUser,Playerが作成されていないことを確認
         self.assertEqual(models.User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
+
+    def test_400_invalid_email_and_invalid_password(self) -> None:
+        """
+        不正なemailと不正なpasswordの形式でアカウントを作成するテスト
+        status 400 が返されることを確認
+        errorsにemailとpasswordが含まれることを確認
+        """
+        account_data: dict = {
+            EMAIL: "invalid_email",
+            PASSWORD: "invalid_password!!",
+        }
+        response: drf_response.Response = self.client.post(
+            self.url, account_data, format="json"
+        )
+        response_error: dict = response.data[ERRORS]
+        code: list[str] = response.data[CODE]
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(EMAIL, response_error)
+        self.assertIn(PASSWORD, response_error)
+        self.assertIn(CODE_INVALID_EMAIL, code)
+        self.assertIn(CODE_INVALID_PASSWORD, code)
