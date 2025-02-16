@@ -138,6 +138,14 @@ class AccountsTests(test.APITestCase):
             ("よく使われてるパスワードの場合2", "pass1234"),
             ("よく使われてるパスワードの場合3", "computer"),
             # ("usernameとの類似度が高い場合", "testuser"), # todo: なぜかエラーにならない
+            (
+                "使用可能文字列以外が含まれる場合(英数字以外)",
+                "あいうえおかきく",
+            ),
+            (
+                "使用可能文字列以外が含まれる場合(記号の-_以外)",
+                "invalid@password!",
+            ),
         ]
     )
     def test_create_account_with_invalid_password(
