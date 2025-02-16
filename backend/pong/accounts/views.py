@@ -43,8 +43,8 @@ class AccountCreateView(views.APIView):
                     utils.OpenApiExample(
                         "Example 201 response",
                         value={
-                            "status": "ok",
-                            "data": {
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: {
                                 constants.UserFields.ID: 2,
                                 constants.UserFields.USERNAME: "username",
                                 constants.UserFields.EMAIL: "user@example.com",
@@ -61,16 +61,18 @@ class AccountCreateView(views.APIView):
                 response={
                     "type": "object",
                     "properties": {
-                        "status": {"type": ["string"]},
-                        "errors": {"type": ["dict"]},
+                        custom_response.STATUS: {"type": ["string"]},
+                        custom_response.ERRORS: {"type": ["dict"]},
                     },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 400 response",
                         value={
-                            "status": "error",
-                            "errors": {"field": ["error messages"]},
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.ERRORS: {
+                                "field": ["error messages"]
+                            },
                         },
                     ),
                 ],
