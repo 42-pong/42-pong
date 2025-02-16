@@ -121,6 +121,9 @@ def create_account(
 
     Returns:
         CreateAccountResult: 作成されたUserのシリアライズ後のデータのResult
+          - ok: User,Playerの作成に成功した場合
+          - error: PlayerSerializerでは実装上のミス以外にValidationErrorは発生しないため、
+                   errorが返る場合は実装上のミスまたはDatabaseErrorとしていい
     """
     # UserSerializerが引数として正しくない場合にassertを発生させる
     _assert_user_serializer(user_serializer)

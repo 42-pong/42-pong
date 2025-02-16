@@ -86,6 +86,8 @@ class AccountCreateView(views.APIView):
                     ),
                 ],
             ),
+            # todo: 詳細のschemaが必要であれば追加する
+            500: utils.OpenApiResponse(description="Internal server error"),
         },
     )
     # todo: try-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
@@ -123,10 +125,11 @@ class AccountCreateView(views.APIView):
             )
 
         def _handle_unexpected_error(errors: dict) -> response.Response:
-            # todo: エラーの種類によって返すcodeを変える
+            # 実装上のミスor予期せぬエラーのみ
             return custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
                 errors=errors,
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
         # サインアップ専用のUserSerializerを作成

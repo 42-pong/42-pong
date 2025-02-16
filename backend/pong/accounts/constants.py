@@ -1,5 +1,7 @@
 import dataclasses
 
+from pong.custom_response import custom_response
+
 
 @dataclasses.dataclass(frozen=True)
 class UserFields:
@@ -23,3 +25,4 @@ class PlayerFields:
 class Code:
     INVALID_EMAIL: str = "invalid_email"
     INVALID_PASSWORD: str = "invalid_password"
+    INTERNAL_ERROR: str = custom_response.Code.INTERNAL_ERROR
