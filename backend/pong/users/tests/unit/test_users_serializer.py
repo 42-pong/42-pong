@@ -5,17 +5,22 @@ from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
 from django.test import TestCase
 
-from accounts import constants
-from accounts.player import models
+from accounts import constants as accounts_constants
+from accounts.player import models as player_models
+from users.friends import constants as friends_constants
 
-from ... import serializers
+from ... import constants, serializers
 
-USERNAME: Final[str] = constants.UserFields.USERNAME
-EMAIL: Final[str] = constants.UserFields.EMAIL
-PASSWORD: Final[str] = constants.UserFields.PASSWORD
-USER: Final[str] = constants.PlayerFields.USER
-DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
-AVATAR: Final[str] = constants.PlayerFields.AVATAR
+ID: Final[str] = accounts_constants.UserFields.ID
+USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
+EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
+PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
+USER: Final[str] = accounts_constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
+
+USER_ID: Final[str] = friends_constants.FriendshipFields.USER_ID
 
 
 class UsersSerializerTests(TestCase):
@@ -27,10 +32,12 @@ class UsersSerializerTests(TestCase):
 
         def _create_user_and_related_player(
             user_data: dict, player_data: dict
-        ) -> tuple[User, models.Player]:
+        ) -> tuple[User, player_models.Player]:
             user: User = User.objects.create_user(**user_data)
             player_data[USER] = user
-            player: models.Player = models.Player.objects.create(**player_data)
+            player: player_models.Player = player_models.Player.objects.create(
+                **player_data
+            )
             return user, player
 
         self.user_data_1: dict = {
@@ -57,25 +64,39 @@ class UsersSerializerTests(TestCase):
         正常なインスタンスが複数渡された場合に、dataにインスタンス分の値が入っていることを確認
         """
         # Userに紐づくPlayer全てのQuerySetを取得
-        all_players_with_users: QuerySet[models.Player] = (
-            models.Player.objects.select_related(USER).all()
+        all_players_with_users: QuerySet[player_models.Player] = (
+            player_models.Player.objects.select_related(USER).all()
         )
         # serializer作成
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            all_players_with_users, many=True
+            all_players_with_users,
+            many=True,
+            context={USER_ID: self.user_1.id},
         )
 
-        # シリアライズ済みdataからusernameのみのlistを作成
-        serializer_data_usernames: list[str] = [
-            data[USERNAME] for data in serializer.data
-        ]
-        self.assertEqual(len(serializer.data), 2)
-        for username in (
-            self.user_data_1[USERNAME],
-            self.user_data_2[USERNAME],
-        ):
-            self.assertIn(username, serializer_data_usernames)
-            # todo: display_nameも確認する
+        self.assertEqual(
+            serializer.data,
+            [
+                {
+                    ID: self.user_1.id,
+                    USERNAME: self.user_data_1[USERNAME],
+                    EMAIL: self.user_data_1[EMAIL],
+                    DISPLAY_NAME: self.player_data_1[DISPLAY_NAME],
+                    AVATAR: self.player_1.avatar.url,
+                    IS_FRIEND: False,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
+                },
+                {
+                    ID: self.user_2.id,
+                    USERNAME: self.user_data_2[USERNAME],
+                    EMAIL: self.user_data_2[EMAIL],
+                    DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
+                    AVATAR: self.player_2.avatar.url,
+                    IS_FRIEND: False,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
+                },
+            ],
+        )
 
     def test_non_users(self) -> None:
         """
@@ -84,11 +105,13 @@ class UsersSerializerTests(TestCase):
         # User,紐づくPlayerを全て削除
         User.objects.all().delete()
 
-        all_players_with_users: QuerySet[models.Player] = (
-            models.Player.objects.select_related(USER).all()
+        all_players_with_users: QuerySet[player_models.Player] = (
+            player_models.Player.objects.select_related(USER).all()
         )
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            all_players_with_users, many=True
+            all_players_with_users,
+            many=True,
+            context={USER_ID: self.user_1.id},
         )
 
         self.assertEqual(serializer.data, [])
@@ -100,10 +123,13 @@ class UsersSerializerTests(TestCase):
         # 新しいdisplay_name
         new_valid_display_name: str = "new_name"
         request_data: dict = {
-            constants.PlayerFields.DISPLAY_NAME: new_valid_display_name,
+            DISPLAY_NAME: new_valid_display_name,
         }
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            self.player_1, data=request_data, partial=True
+            self.player_1,
+            data=request_data,
+            partial=True,
+            context={USER_ID: self.user_1.id},
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()  # update()が呼ばれる
@@ -133,14 +159,17 @@ class UsersSerializerTests(TestCase):
             new_invalid_display_name: 新しく更新したいdisplay_nameの値
         """
         request_data: dict = {
-            constants.PlayerFields.DISPLAY_NAME: new_invalid_display_name,
+            DISPLAY_NAME: new_invalid_display_name,
         }
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            self.player_1, data=request_data, partial=True
+            self.player_1,
+            data=request_data,
+            partial=True,
+            context={USER_ID: self.user_1.id},
         )
 
         self.assertFalse(serializer.is_valid())
-        self.assertIn(constants.PlayerFields.DISPLAY_NAME, serializer.errors)
+        self.assertIn(DISPLAY_NAME, serializer.errors)
         # 更新されずに元のdisplay_nameが保持されていることを確認
         self.player_1.refresh_from_db()  # 最新のDBの情報に更新
         self.assertEqual(
@@ -152,7 +181,9 @@ class UsersSerializerTests(TestCase):
         serializerのフィールドにデフォルトのavatarパスが設定されていることを確認
         """
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            self.player_1, partial=True
+            self.player_1,
+            partial=True,
+            context={USER_ID: self.user_1.id},
         )
 
         self.assertEqual(serializer.data[AVATAR], self.player_1.avatar.url)

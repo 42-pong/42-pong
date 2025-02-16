@@ -30,6 +30,17 @@ class ResponseTests(test.TestCase):
         self.assertEqual(response.status, status.HTTP_200_OK)
         self.assertEqual(response.data, {STATUS: STATUS_OK, DATA: {}})
 
+    def test_200_with_empty_data(self) -> None:
+        """
+        引数にNoneではなく空listが渡された際に、デフォルトの空辞書ではなくそのまま返されることを確認
+        """
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(data=[])
+        )
+
+        self.assertEqual(response.status, status.HTTP_200_OK)
+        self.assertEqual(response.data, {STATUS: STATUS_OK, DATA: []})
+
     def test_201_with_data(self) -> None:
         """
         201(デフォルト値の200以外)で呼ばれた際に、成功レスポンスが形式に沿って返されることを確認

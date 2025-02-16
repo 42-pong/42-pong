@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
-from users import constants as users_constants
 from users import serializers as users_serializers
 
 from .. import constants, models
@@ -56,11 +55,6 @@ class FriendshipCreateSerializer(serializers.ModelSerializer):
         validators.invalid_same_user_validator(user_id, friend_user_id)
 
         # フレンドに追加したいユーザーが既にフレンドである場合にValidationErrorを発生させる
-        if validators.is_friendship_exists(user_id, friend_user_id):
-            raise serializers.ValidationError(
-                {
-                    constants.FriendshipFields.FRIEND_USER_ID: "The user is already a friend."
-                },
-                code=users_constants.Code.INVALID,
-            )
+        validators.already_friend_validator(user_id, friend_user_id)
+
         return data

@@ -12,6 +12,7 @@ from rest_framework import (
 
 from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
+from users.friends import constants as friends_constants
 
 from .. import constants, serializers
 
@@ -43,6 +44,8 @@ class UsersMeView(views.APIView):
                                 accounts_constants.UserFields.EMAIL: "username1@example.com",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
                                 accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
+                                constants.UsersFields.IS_FRIEND: False,
+                                # todo: is_blocked,is_online,win_match,lose_match追加
                             },
                         },
                     ),
@@ -87,7 +90,11 @@ class UsersMeView(views.APIView):
             )
 
         users_serializer: serializers.UsersSerializer = (
-            serializers.UsersSerializer(user.player)
+            serializers.UsersSerializer(
+                user.player,
+                # 全て取得するのでfieldsは指定しない
+                context={friends_constants.FriendshipFields.USER_ID: user.id},
+            )
         )
         return custom_response.CustomResponse(
             data=users_serializer.data,
@@ -122,6 +129,8 @@ class UsersMeView(views.APIView):
                                 accounts_constants.UserFields.EMAIL: "username1@example.com",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
                                 accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
+                                constants.UsersFields.IS_FRIEND: False,
+                                # todo: is_blocked,is_online,win_match,lose_match追加
                             },
                         },
                     ),
@@ -186,6 +195,8 @@ class UsersMeView(views.APIView):
                 user.player,
                 data=request.data,
                 partial=True,  # 部分的な更新を許可
+                # 全て取得するのでfieldsは指定しない
+                context={friends_constants.FriendshipFields.USER_ID: user.id},
             )
         )
         # 更新対象データ(request.data)のバリデーションを確認

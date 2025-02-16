@@ -1,7 +1,6 @@
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
-    OpenApiRequest,
     OpenApiResponse,
     extend_schema,
     extend_schema_view,
@@ -95,84 +94,7 @@ from . import models, serializers
             ),
         },
     ),
-    create=extend_schema(
-        description="新しいParticipationレコードを作成する。",
-        request=OpenApiRequest(
-            request={"type": "object"},
-            examples=[
-                OpenApiExample(
-                    "Example request",
-                    value={
-                        "tournament_id": 1,
-                        "player_id": 2,
-                        "participation_name": "player_x",
-                    },
-                ),
-            ],
-        ),
-        responses={
-            201: OpenApiResponse(
-                response={"type": "object"},  # todo: serializerに変える
-                examples=[
-                    OpenApiExample(
-                        "Example 201 response",
-                        value={
-                            "status": "ok",
-                            "data": {
-                                "id": 1,
-                                "participation_name": "player_x",
-                                "ranking": None,
-                                "created_at": "2025-01-01T00:00:00.000000+09:00",
-                                "updated_at": "2025-01-01T00:00:00.000000+09:00",
-                                "tournament_id": 2,
-                                "user_id": 3,
-                            },
-                        },
-                    ),
-                ],
-            ),
-        },
-    ),
-    partial_update=extend_schema(
-        description="指定されたIDのParticipationレコードのランキングを登録します。",
-        request=OpenApiRequest(
-            request={"type": "object"},
-            examples=[
-                OpenApiExample(
-                    "Example request",
-                    value={
-                        "ranking": 1,
-                    },
-                ),
-            ],
-        ),
-        responses={
-            200: OpenApiResponse(
-                response={"type": "object"},  # todo: serializerに変える
-                examples=[
-                    OpenApiExample(
-                        "Example 200 response",
-                        value={
-                            "status": "ok",
-                            "data": {
-                                "id": 1,
-                                "participation_name": "player_x",
-                                "ranking": 1,
-                                "created_at": "2025-01-01T00:00:00.000000+09:00",
-                                "updated_at": "2025-01-01T00:30:00.000000+09:00",
-                                "tournament_id": 2,
-                                "user_id": 3,
-                            },
-                        },
-                    ),
-                ],
-            ),
-        },
-    ),
 )
-class ParticipationViewSet(viewsets.ModelViewSet):
+class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Participation.objects.all()
     serializer_class = serializers.ParticipationSerializer
-
-    # 使用できるHTTPメソッドを制限
-    http_method_names = ["get", "post", "patch"]
