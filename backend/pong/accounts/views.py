@@ -99,15 +99,26 @@ class AccountCreateView(views.APIView):
             # user_dataの中に必須fieldが存在しない場合は、UserSerializerでエラーになる
             return user_serializers.UserSerializer(data=user_data)
 
+        def _handle_validation_error(errors: dict) -> response.Response:
+            # todo: エラーの種類によって返すcodeを変える
+            return custom_response.CustomResponse(
+                errors=errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        def _handle_unexpected_error(errors: dict) -> response.Response:
+            # todo: エラーの種類によって返すcodeを変える
+            return custom_response.CustomResponse(
+                errors=errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # サインアップ専用のUserSerializerを作成
         user_serializer: user_serializers.UserSerializer = (
             _create_user_serializer(request.data)
         )
         if not user_serializer.is_valid():
-            return custom_response.CustomResponse(
-                errors=user_serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return _handle_validation_error(user_serializer.errors)
 
         # 作成したUserSerializerを使って新規アカウントを作成
         create_account_result: create_account.CreateAccountResult = (
@@ -117,9 +128,8 @@ class AccountCreateView(views.APIView):
             )
         )
         if create_account_result.is_error:
-            return custom_response.CustomResponse(
-                errors=create_account_result.unwrap_error(),
-                status=status.HTTP_400_BAD_REQUEST,
+            return _handle_unexpected_error(
+                create_account_result.unwrap_error()
             )
 
         user_serializer_data: dict = create_account_result.unwrap()
