@@ -35,7 +35,7 @@ class ReadOnlyCustomJSONRenderer(JSONRenderer):
         elif status_code == 404:
             response_data = {
                 custom_response.STATUS: custom_response.Status.ERROR,
-                custom_response.CODE: custom_response.Code.INTERNAL_ERROR,
+                custom_response.CODE: [custom_response.Code.INTERNAL_ERROR],
                 custom_response.ERRORS: {"id": "The resource does not exist."},
             }
         else:
