@@ -87,7 +87,6 @@ class AccountCreateView(views.APIView):
             500: utils.OpenApiResponse(description="Internal server error"),
         },
     )
-    # todo: try-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
     def post(
         self, request: request.Request, *args: tuple, **kwargs: dict
     ) -> response.Response:
@@ -111,6 +110,7 @@ class AccountCreateView(views.APIView):
             code: list[str] = []
             # emailのエラーがあればcodeに追加
             if constants.UserFields.EMAIL in errors:
+                # codeの取得に失敗した場合は呼び出し元のexceptに入る
                 email_code: str = errors[constants.UserFields.EMAIL][0].code
                 if email_code == "unique":
                     code.append(constants.Code.ALREADY_EXISTS)
@@ -134,27 +134,34 @@ class AccountCreateView(views.APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        # サインアップ専用のUserSerializerを作成
-        user_serializer: user_serializers.UserSerializer = (
-            _create_user_serializer(request.data)
-        )
-        if not user_serializer.is_valid():
-            return _handle_validation_error(user_serializer.errors)
-
-        # 作成したUserSerializerを使って新規アカウントを作成
-        create_account_result: create_account.CreateAccountResult = (
-            create_account.create_account(
-                user_serializer,
-                request.data,
+        try:
+            # サインアップ専用のUserSerializerを作成
+            user_serializer: user_serializers.UserSerializer = (
+                _create_user_serializer(request.data)
             )
-        )
-        if create_account_result.is_error:
-            return _handle_unexpected_error(
-                create_account_result.unwrap_error()
-            )
+            if not user_serializer.is_valid():
+                return _handle_validation_error(user_serializer.errors)
 
-        user_serializer_data: dict = create_account_result.unwrap()
-        return custom_response.CustomResponse(
-            data=user_serializer_data,
-            status=status.HTTP_201_CREATED,
-        )
+            # 作成したUserSerializerを使って新規アカウントを作成
+            create_account_result: create_account.CreateAccountResult = (
+                create_account.create_account(
+                    user_serializer,
+                    request.data,
+                )
+            )
+            if create_account_result.is_error:
+                return _handle_unexpected_error(
+                    create_account_result.unwrap_error()
+                )
+
+            user_serializer_data: dict = create_account_result.unwrap()
+            return custom_response.CustomResponse(
+                data=user_serializer_data,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
