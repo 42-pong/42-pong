@@ -6,6 +6,8 @@ from django.utils.crypto import get_random_string
 from rest_framework import serializers as drf_serializers
 
 import utils.result
+from users import serializers as user_serializers
+from users.friends import constants as friends_constants
 
 from .. import constants
 from ..player import models, serializers
@@ -126,7 +128,7 @@ def create_account(
     try:
         with transaction.atomic():
             user: User = _save_user(user_serializer)
-            _save_player(player_data, user.id)
+            player: models.Player = _save_player(player_data, user.id)
     except drf_serializers.ValidationError as e:
         # e.detail: list or dictのためmypy用にlistの処理も書いているが、ほぼdictだと思われる
         if isinstance(e.detail, list):
@@ -137,4 +139,14 @@ def create_account(
             {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
         )
 
-    return CreateAccountResult.ok(user_serializer.data)
+    # todo(優先度低):
+    #  ユーザープロフィールは統一して同じものを返したいため、一旦users appのserializerを使用して変換している
+    #  users appのserializerをここで使っている構成は変なので、usersをaccounts内に含める方が自然なのかもしれない
+    users_serializer: user_serializers.UsersSerializer = (
+        user_serializers.UsersSerializer(
+            player,
+            # 全て取得するのでfieldsは指定しない
+            context={friends_constants.FriendshipFields.USER_ID: user.id},
+        )
+    )
+    return CreateAccountResult.ok(users_serializer.data)
