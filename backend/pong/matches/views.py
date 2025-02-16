@@ -108,6 +108,21 @@ from .match import serializers
                     ),
                 ],
             ),
+            401: OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
+                        },
+                    ),
+                ],
+            ),
             # todo: 詳細のschemaが必要であれば追加する
             500: OpenApiResponse(description="Internal server error"),
         },
@@ -162,6 +177,46 @@ from .match import serializers
                                     ],
                                 },
                             ],
+                        },
+                    ),
+                ],
+            ),
+            401: OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
+                        },
+                    ),
+                ],
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                        custom_response.ERRORS: {"type": "string"},
+                    },
+                },
+                examples=[
+                    OpenApiExample(
+                        "Example 404 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                custom_response.Code.INTERNAL_ERROR
+                            ],
+                            custom_response.ERRORS: {
+                                "id": "The resource does not exist."
+                            },
                         },
                     ),
                 ],
