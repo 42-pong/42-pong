@@ -36,12 +36,11 @@ class AccountsTests(test.APITestCase):
         有効なデータでアカウントを作成するテスト
         status 201, username, email が返されることを確認
         """
-        account_data: dict = {
-            USER: {
-                EMAIL: "testuser@example.com",
-                PASSWORD: "testpassword12345",
-            }
+        user_data: dict = {
+            EMAIL: "testuser@example.com",
+            PASSWORD: "testpassword12345",
         }
+        account_data: dict = {USER: user_data}
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
@@ -55,7 +54,7 @@ class AccountsTests(test.APITestCase):
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response_user[EMAIL], "testuser@example.com")
+        self.assertEqual(response_user[EMAIL], user_data[EMAIL])
         # passwordは返されない
         self.assertNotIn(PASSWORD, response_user)
 
@@ -65,7 +64,7 @@ class AccountsTests(test.APITestCase):
 
         # emailからplayerを取得できる/例外がraiseされないことを確認
         player: models.Player = models.Player.objects.get(
-            user__email="testuser@example.com"
+            user__email=user_data[EMAIL]
         )
         # playerから取得したランダム文字列usernameのUserが実際にDBに存在するか確認
         self.assertTrue(
