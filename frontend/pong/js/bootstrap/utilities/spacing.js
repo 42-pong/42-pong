@@ -8,6 +8,10 @@ const setMargin = (element, size = 2) => {
   return setClassNames(element, `m-${size}`);
 };
 
+const setMarginLeft = (element, size = 2) => {
+  return setClassNames(element, `ms-${size}`);
+};
+
 const setGap = (element, size = 3) => {
   return setClassNames(element, `gap-${size}`);
 };
@@ -15,5 +19,6 @@ const setGap = (element, size = 3) => {
 export const BootstrapSpacing = {
   setPadding,
   setMargin,
+  setMarginLeft,
   setGap,
 };
