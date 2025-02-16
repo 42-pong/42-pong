@@ -21,8 +21,7 @@ class UsersListView(views.APIView):
     ユーザープロフィールの一覧を取得するビュー
     """
 
-    # todo: IsAuthenticatedに変更する。extend_schemaにも401を追加する
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     @utils.extend_schema(
         operation_id="get_users_list",
@@ -55,6 +54,22 @@ class UsersListView(views.APIView):
                                 },
                                 {"...", "..."},
                             ],
+                        },
+                    ),
+                ],
+            ),
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
                         },
                     ),
                 ],

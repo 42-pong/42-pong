@@ -68,7 +68,20 @@ class UsersListViewTests(test.APITestCase):
             self.user_data2, self.player_data2
         )
 
-        # todo: ログイン
+        # user1がtokenを取得してログイン
+        # todo: 自作jwtができたらnamespaceを変更
+        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_response: drf_response.Response = self.client.post(
+            token_url,
+            {
+                USERNAME: self.user_data1[USERNAME],
+                PASSWORD: self.user_data1[PASSWORD],
+            },
+            format="json",
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+        )
 
     def test_create_user(self) -> None:
         """
@@ -76,18 +89,6 @@ class UsersListViewTests(test.APITestCase):
         """
         self.assertTrue(User.objects.filter(id=self.user1.id).exists())
         self.assertTrue(User.objects.filter(id=self.user2.id).exists())
-
-    def test_200_no_users_exist(self) -> None:
-        """
-        ユーザーが存在しない場合、エラーにならず空のプロフィール一覧を取得できることを確認
-        -> todo: IsAuthenticatedにしたら、ユーザーが存在しない場合ログインユーザーもいないので401になる
-                 テスト内容と関数名も変更
-        """
-        User.objects.all().delete()
-        response: drf_response.Response = self.client.get(self.url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[DATA], [])
 
     def test_200_get_users_list(self) -> None:
         """
@@ -118,4 +119,31 @@ class UsersListViewTests(test.APITestCase):
             ],
         )
 
-    # todo: IsAuthenticatedにしたら、test_401_unauthenticated_user()を追加
+    def test_get_401_unauthenticated_user(self) -> None:
+        """
+        認証されていないユーザーが自分のプロフィールを取得しようとするとエラーになることを確認
+        """
+        # 認証情報をクリア
+        self.client.credentials()
+        response: drf_response.Response = self.client.get(
+            self.url, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
+        # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
+        self.assertEqual(response.data["detail"].code, "not_authenticated")
+
+    def test_401_no_users_exist(self) -> None:
+        """
+        ユーザーが存在しない場合はログインユーザーもいないので、401になりauthentication_failedが返ることを確認
+        """
+        User.objects.all().delete()
+        response: drf_response.Response = self.client.get(
+            self.url, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
+        # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
+        self.assertEqual(response.data["detail"].code, "authentication_failed")
