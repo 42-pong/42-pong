@@ -1,3 +1,5 @@
+import logging
+
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
@@ -8,6 +10,8 @@ from . import constants
 from .create_account import create_account
 from .player import serializers as player_serializers
 from .user import serializers as user_serializers
+
+logger = logging.getLogger(__name__)
 
 
 class AccountCreateView(views.APIView):
@@ -114,12 +118,21 @@ class AccountCreateView(views.APIView):
                 email_code: str = errors[constants.UserFields.EMAIL][0].code
                 if email_code == "unique":
                     code.append(constants.Code.ALREADY_EXISTS)
+                    logger.error(
+                        "[400] Failed to create account: email already exists"
+                    )
                 else:
                     # 既にアカウント登録済み以外は全てINVALID_EMAIL
                     code.append(constants.Code.INVALID_EMAIL)
+                    logger.error(
+                        "[400] Failed to create account: invalid email format"
+                    )
             # passwordのエラーがあればcodeに追加
             if constants.UserFields.PASSWORD in errors:
                 code.append(constants.Code.INVALID_PASSWORD)
+                logger.error(
+                    "[400] Failed to create account: invalid password format"
+                )
             return custom_response.CustomResponse(
                 code=code,
                 errors=errors,
@@ -128,6 +141,7 @@ class AccountCreateView(views.APIView):
 
         def _handle_unexpected_error(errors: dict) -> response.Response:
             # 実装上のミスor予期せぬエラーのみ
+            logger.error("[500] Failed to create account")
             return custom_response.CustomResponse(
                 code=[constants.Code.INTERNAL_ERROR],
                 errors=errors,
@@ -155,11 +169,13 @@ class AccountCreateView(views.APIView):
                 )
 
             user_serializer_data: dict = create_account_result.unwrap()
+            # todo: logger.info()追加
             return custom_response.CustomResponse(
                 data=user_serializer_data,
                 status=status.HTTP_201_CREATED,
             )
         except Exception as e:
+            logger.error(f"[500] Failed to create account: {str(e)}")
             return custom_response.CustomResponse(
                 code=[constants.Code.INTERNAL_ERROR],
                 errors={"detail": str(e)},
