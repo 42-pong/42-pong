@@ -1,5 +1,5 @@
 import { StyledButton } from "../../core/StyledButton";
-import { getUserSession } from "../../session";
+import { UserSessionManager } from "../../session/UserSessionManager";
 
 export class SignInButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
@@ -27,7 +27,7 @@ export class SignInButton extends StyledButton {
         displayName: "mock",
         avatar: "https://placehold.co/30",
       };
-      getUserSession().signIn(mockUser, {});
+      UserSessionManager.signIn(mockUser, {});
     });
   }
 }

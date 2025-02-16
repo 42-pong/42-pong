@@ -1,7 +1,7 @@
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Component } from "../../core/Component";
-import { getUserSession } from "../../session";
+import { UserSessionManager } from "../../session/UserSessionManager";
 import { createNameplate } from "../../utils/elements/div/createNameplate";
 import { SignInButton } from "../auth/SignInButton";
 import { SignOutButton } from "../auth/SignOutButton";
@@ -28,11 +28,11 @@ export class UserProfileHeader extends Component {
   }
 
   _onConnect() {
-    getUserSession().myInfoManager.attach(this.#userDataObserver);
+    UserSessionManager.myInfoManager.attach(this.#userDataObserver);
   }
 
   _onDisconnect() {
-    getUserSession().myInfoManager.detach(this.#userDataObserver);
+    UserSessionManager.myInfoManager.detach(this.#userDataObserver);
   }
 
   _render() {

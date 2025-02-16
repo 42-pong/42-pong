@@ -2,12 +2,9 @@ import "./components";
 import { ChatGlobal } from "./components/chat/ChatGlobal";
 import { PongEvents } from "./constants/PongEvents";
 import { appRouter } from "./routers/appRouter";
-import { initUserSession } from "./session";
 import { initWebSocket } from "./websocket";
 
 function main() {
-  initUserSession();
-
   const appLocal = document.getElementById("app-local");
   const router = appRouter(appLocal);
   const updateWindowPath = () => {

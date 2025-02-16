@@ -1,4 +1,5 @@
 import { DataManager } from "./DataManager";
+import { UserSessionManager } from "./UserSessionManager";
 
 export class UserSession {
   #myInfoManager;
@@ -9,7 +10,7 @@ export class UserSession {
   }
 
   signIn(userData) {
-    this.#myInfoManager.updateData({ ...userData, isSignedIn: true });
+    this.myInfoManager.updateData({ ...userData, isSignedIn: true });
   }
 
   signOut() {
@@ -17,7 +18,7 @@ export class UserSession {
   }
 
   init() {
-    this.#myInfoManager.init({ isSignedIn: false });
+    this.myInfoManager.init({ isSignedIn: false });
   }
 
   get myInfoManager() {

@@ -1,5 +1,5 @@
 import { StyledButton } from "../../core/StyledButton";
-import { getUserSession } from "../../session";
+import { UserSessionManager } from "../../session/UserSessionManager";
 
 export class SignOutButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
@@ -18,7 +18,7 @@ export class SignOutButton extends StyledButton {
     this._attachEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      getUserSession().signOut();
+      UserSessionManager.signOut();
     });
   }
 }
