@@ -18,6 +18,7 @@ DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
 
+CODE_ALREADY_EXISTS: Final[str] = constants.Code.ALREADY_EXISTS
 CODE_INVALID_EMAIL: Final[str] = constants.Code.INVALID_EMAIL
 CODE_INVALID_PASSWORD: Final[str] = constants.Code.INVALID_PASSWORD
 
@@ -194,3 +195,29 @@ class AccountsTests(test.APITestCase):
         self.assertIn(PASSWORD, response_error)
         self.assertIn(CODE_INVALID_EMAIL, code)
         self.assertIn(CODE_INVALID_PASSWORD, code)
+
+    def test_400_already_exists_email(self) -> None:
+        """
+        既に存在するemailで再度アカウントを作成しようとするテスト
+        status 400 が返されることを確認
+        errorsにemailが含まれることを確認
+        """
+        account_data: dict = {
+            EMAIL: "testuser@example.com",
+            PASSWORD: "testpassword12345",
+        }
+        # 1回目のアカウント作成
+        response1: drf_response.Response = self.client.post(
+            self.url, account_data, format="json"
+        )
+        self.assertEqual(response1.status_code, status.HTTP_201_CREATED)
+        # 2回目のアカウント作成
+        response2: drf_response.Response = self.client.post(
+            self.url, account_data, format="json"
+        )
+        response_error: dict = response2.data[ERRORS]
+        code: list[str] = response2.data[CODE]
+
+        self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(EMAIL, response_error)
+        self.assertIn(CODE_ALREADY_EXISTS, code)

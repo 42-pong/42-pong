@@ -111,7 +111,12 @@ class AccountCreateView(views.APIView):
             code: list[str] = []
             # emailのエラーがあればcodeに追加
             if constants.UserFields.EMAIL in errors:
-                code.append(constants.Code.INVALID_EMAIL)
+                email_code: str = errors[constants.UserFields.EMAIL][0].code
+                if email_code == "unique":
+                    code.append(constants.Code.ALREADY_EXISTS)
+                else:
+                    # 既にアカウント登録済み以外は全てINVALID_EMAIL
+                    code.append(constants.Code.INVALID_EMAIL)
             # passwordのエラーがあればcodeに追加
             if constants.UserFields.PASSWORD in errors:
                 code.append(constants.Code.INVALID_PASSWORD)

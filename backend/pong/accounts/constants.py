@@ -23,6 +23,7 @@ class PlayerFields:
 
 @dataclasses.dataclass(frozen=True)
 class Code:
+    ALREADY_EXISTS: str = "already_exists"
     INVALID_EMAIL: str = "invalid_email"
     INVALID_PASSWORD: str = "invalid_password"
     INTERNAL_ERROR: str = custom_response.Code.INTERNAL_ERROR
