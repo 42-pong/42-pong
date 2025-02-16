@@ -1,4 +1,6 @@
 import { LoginContainer } from "./auth/LoginContainer";
+import { SignInButton } from "./auth/SignInButton";
+import { SignOutButton } from "./auth/SignOutButton";
 import { ChatBuddyListContainer } from "./chat/ChatBuddyListContainer";
 import { ChatDmContainer } from "./chat/ChatDmContainer";
 import { ChatGlobal } from "./chat/ChatGlobal";
@@ -20,6 +22,7 @@ import { UserListContainer } from "./user/UserListContainer";
 import { UserListItem } from "./user/UserListItem";
 import { UserProfile } from "./user/UserProfile";
 import { UserProfileContainer } from "./user/UserProfileContainer";
+import { UserProfileHeader } from "./user/UserProfileHeader";
 import { ErrorContainer } from "./utils/ErrorContainer";
 import { EventDispatchingButton } from "./utils/EventDispatchingButton";
 import { LinkButton } from "./utils/LinkButton";
@@ -35,6 +38,8 @@ import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
+customElements.define("sign-in-button", SignInButton, {});
+customElements.define("sign-out-button", SignOutButton, {});
 customElements.define(
   "chat-buddy-list-container",
   ChatBuddyListContainer,
@@ -80,6 +85,7 @@ customElements.define(
   UserProfileContainer,
   {},
 );
+customElements.define("user-profile-header", UserProfileHeader, {});
 customElements.define("error-container", ErrorContainer, {});
 customElements.define(
   "event-dispatching-button",
