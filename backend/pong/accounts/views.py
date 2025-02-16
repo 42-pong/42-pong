@@ -30,10 +30,8 @@ class AccountCreateView(views.APIView):
                 utils.OpenApiExample(
                     "Example request",
                     value={
-                        constants.PlayerFields.USER: {
-                            constants.UserFields.EMAIL: "user@example.com",
-                            constants.UserFields.PASSWORD: "password",
-                        }
+                        constants.UserFields.EMAIL: "user@example.com",
+                        constants.UserFields.PASSWORD: "passwordpassword",
                     },
                 ),
             ],
@@ -96,12 +94,12 @@ class AccountCreateView(views.APIView):
             user_data[constants.UserFields.USERNAME] = (
                 create_account.get_unique_random_username()
             )
+            # user_dataの中に必須fieldが存在しない場合は、UserSerializerでエラーになる
             return user_serializers.UserSerializer(data=user_data)
 
         # サインアップ専用のUserSerializerを作成
-        user_serializer: user_serializers.UserSerializer = _create_user_serializer(
-            # popしたいfieldが存在しない場合は空dictを渡し、UserSerializerでエラーになる
-            request.data.pop(constants.PlayerFields.USER, {})
+        user_serializer: user_serializers.UserSerializer = (
+            _create_user_serializer(request.data)
         )
         if not user_serializer.is_valid():
             return custom_response.CustomResponse(

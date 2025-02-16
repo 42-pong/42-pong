@@ -13,7 +13,6 @@ from ..player import models
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
 PASSWORD: Final[str] = constants.UserFields.PASSWORD
-USER: Final[str] = constants.PlayerFields.USER
 
 DATA: Final[str] = custom_response.DATA
 ERRORS: Final[str] = custom_response.ERRORS
@@ -36,11 +35,10 @@ class AccountsTests(test.APITestCase):
         有効なデータでアカウントを作成するテスト
         status 201, username, email が返されることを確認
         """
-        user_data: dict = {
+        account_data: dict = {
             EMAIL: "testuser@example.com",
             PASSWORD: "testpassword12345",
         }
-        account_data: dict = {USER: user_data}
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
         )
@@ -54,7 +52,7 @@ class AccountsTests(test.APITestCase):
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response_user[EMAIL], user_data[EMAIL])
+        self.assertEqual(response_user[EMAIL], account_data[EMAIL])
         # passwordは返されない
         self.assertNotIn(PASSWORD, response_user)
 
@@ -64,7 +62,7 @@ class AccountsTests(test.APITestCase):
 
         # emailからplayerを取得できる/例外がraiseされないことを確認
         player: models.Player = models.Player.objects.get(
-            user__email=user_data[EMAIL]
+            user__email=account_data[EMAIL]
         )
         # playerから取得したランダム文字列usernameのUserが実際にDBに存在するか確認
         self.assertTrue(
@@ -100,10 +98,8 @@ class AccountsTests(test.APITestCase):
         errorsにemailが含まれることを確認
         """
         account_data: dict = {
-            USER: {
-                EMAIL: invalid_email,  # 不正なemail形式
-                PASSWORD: "testpassword12345",
-            }
+            EMAIL: invalid_email,  # 不正なemail形式
+            PASSWORD: "testpassword12345",
         }
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
@@ -156,10 +152,8 @@ class AccountsTests(test.APITestCase):
         errorsにpasswordが含まれることを確認
         """
         account_data: dict = {
-            USER: {
-                EMAIL: "valid@example.com",
-                PASSWORD: invalid_password,  # 不正なpassword形式
-            }
+            EMAIL: "valid@example.com",
+            PASSWORD: invalid_password,  # 不正なpassword形式
         }
         response: drf_response.Response = self.client.post(
             self.url, account_data, format="json"
