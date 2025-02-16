@@ -11,10 +11,14 @@ class UserSerializer(serializers.ModelSerializer):
     """
 
     # EmailField: デフォルトがrequired=True, allow_blank=False
-    # todo: max_length、min_lengthの設定
+    # EmailValidator: EmailFieldがデフォルトで使用しているバリデーター
+    #   - emailの形式チェック
+    #   - max_length=320
     email = serializers.EmailField(
-        # UniqueValidator: emailをユニークにする
-        validators=[validators.UniqueValidator(queryset=User.objects.all())],
+        validators=[
+            # emailをユニークにする
+            validators.UniqueValidator(queryset=User.objects.all()),
+        ]
     )
 
     class Meta:
