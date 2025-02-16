@@ -50,7 +50,7 @@ class AccountsTests(test.APITestCase):
         #         "user": {...}
         #     },
         # }
-        response_user: dict = response.data[DATA][USER]
+        response_user: dict = response.data[DATA]
 
         # responseの内容を確認
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

@@ -4,6 +4,7 @@ from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
 from pong.custom_response import custom_response
+from users import constants as users_constants
 
 from . import constants
 from .create_account import create_account
@@ -46,11 +47,13 @@ class AccountCreateView(views.APIView):
                         value={
                             "status": "ok",
                             "data": {
-                                constants.PlayerFields.USER: {
-                                    constants.UserFields.ID: 1,
-                                    constants.UserFields.USERNAME: "username",
-                                    constants.UserFields.EMAIL: "user@example.com",
-                                },
+                                constants.UserFields.ID: 2,
+                                constants.UserFields.USERNAME: "username",
+                                constants.UserFields.EMAIL: "user@example.com",
+                                constants.PlayerFields.DISPLAY_NAME: "default",
+                                constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                users_constants.UsersFields.IS_FRIEND: False,
+                                # todo: is_blocked,is_online,win_match,lose_match追加
                             },
                         },
                     ),
@@ -121,6 +124,6 @@ class AccountCreateView(views.APIView):
 
         user_serializer_data: dict = create_account_result.unwrap()
         return custom_response.CustomResponse(
-            data={constants.PlayerFields.USER: user_serializer_data},
+            data=user_serializer_data,
             status=status.HTTP_201_CREATED,
         )
