@@ -11,8 +11,9 @@ class ParticipationSerializer(drf_serializers.ModelSerializer):
     class Meta:
         model = models.Participation
         fields = (
+            # 作成時間や更新時間はあまり重要ではないので送らない
             constants.ParticipationFields.PLAYER_ID,
             constants.ParticipationFields.TEAM,
-            constants.ParticipationFields.CREATED_AT,
+            constants.ParticipationFields.IS_WIN,
             "scores",
         )
