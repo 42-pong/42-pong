@@ -241,6 +241,16 @@ class FriendsViewSet(viewsets.ModelViewSet):
             data=list_serializer.data, status=status.HTTP_200_OK
         )
 
+    @utils.extend_schema(exclude=True)
+    def retrieve(
+        self, request: request.Request, *args: tuple, **kwargs: dict
+    ) -> response.Response:
+        """
+        `/api/users/me/friends/{friend_id}/`,GETメソッド用の関数
+        自動的に使用できるが仕様上不要なため、405を返しswagger-uiに表示されないようにしている
+        """
+        return response.Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     # --------------------------------------------------------------------------
     # POST method
     # --------------------------------------------------------------------------
