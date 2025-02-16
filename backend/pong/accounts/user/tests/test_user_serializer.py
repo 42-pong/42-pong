@@ -59,6 +59,38 @@ class UserSerializerTests(TestCase):
         # hash化されているので元のパスワードとは異なる
         self.assertNotEqual(user.password, self.user_data[PASSWORD])
 
+    @parameterized.parameterized.expand(
+        [
+            ("8文字の場合", "-g3wicPg"),
+            ("50文字の場合", "z" * 50),
+            ("英子文字のみ", "abcdefghijklmnopqrstuvwxyz"),
+            ("英大文字のみ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+            ("記号(-_)のみ", "-_-_-_-_"),
+            ("有名なパスワード以外", "uncommon"),
+            ("数字以外が含まれる1", "12x34567"),
+        ]
+    )
+    def test_create_user_with_valid_password(
+        self, testcase_name: str, valid_password: str
+    ) -> None:
+        """
+        正常なパスワードでUserを作成できることを確認する
+          - 8文字以上・50文字以下
+          - 英子文字・英大文字・数字・記号(-_)のみ
+          - 有名なパスワード以外
+          - 数字以外が含まれる
+        """
+        user_data: dict = {
+            USERNAME: "testuser2",
+            EMAIL: "testuser2@example.com",
+            PASSWORD: valid_password,
+        }
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=user_data
+        )
+
+        self.assertTrue(serializer.is_valid())
+
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
