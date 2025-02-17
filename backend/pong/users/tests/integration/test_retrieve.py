@@ -68,7 +68,20 @@ class UsersRetrieveViewTests(test.APITestCase):
             self.user_data2, self.player_data2
         )
 
-        # todo: ログイン
+        # user1がtokenを取得してログイン
+        # todo: 自作jwtができたらnamespaceを変更
+        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_response: drf_response.Response = self.client.post(
+            token_url,
+            {
+                USERNAME: self.user_data1[USERNAME],
+                PASSWORD: self.user_data1[PASSWORD],
+            },
+            format="json",
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+        )
 
     def _create_url(self, user_id: int) -> str:
         return reverse("users:retrieve", kwargs={"user_id": user_id})
@@ -105,7 +118,19 @@ class UsersRetrieveViewTests(test.APITestCase):
                 },
             )
 
-    # todo: IsAuthenticatedにしたら、test_401_unauthenticated_user()を追加
+    def test_get_401_unauthenticated_user(self) -> None:
+        """
+        認証されていないユーザーが自分のプロフィールを取得しようとするとエラーになることを確認
+        """
+        # 認証情報をクリア
+        self.client.credentials()
+        url: str = self._create_url(self.user1.id)
+        response: drf_response.Response = self.client.get(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
+        # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
+        self.assertEqual(response.data["detail"].code, "not_authenticated")
 
     def test_get_user_returns_404_with_nonexistent_user_id(self) -> None:
         """
