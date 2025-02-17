@@ -12,12 +12,14 @@ from users import constants as users_constants
 
 from ... import constants, models
 
+ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
 
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
@@ -100,12 +102,13 @@ class FriendsCreateViewTests(test.APITestCase):
         self.assertEqual(
             response.data[DATA],
             {
-                USER_ID: self.user1.id,
-                FRIEND_USER_ID: self.user2.id,
                 FRIEND: {
+                    ID: self.user2.id,
                     USERNAME: self.user_data2[USERNAME],
                     DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
                     AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                    IS_FRIEND: True,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
                 },
             },
         )

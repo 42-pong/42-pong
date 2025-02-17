@@ -12,6 +12,10 @@ class UsersSerializer(serializers.Serializer):
     """
     users app全体で共通のシリアライザ
     Playerとそれに紐づくUserから、返しても良い情報のみをまとめてシリアライズする
+
+    Usage:
+        - __init__時にkwargsにfieldsを渡すことで、返す情報を動的に変更可能
+        - is_friendを使用する際は、get_is_friend()で使用するためcontextにUSER_IDを渡す必要がある
     """
 
     id = serializers.IntegerField(source="user.id")
