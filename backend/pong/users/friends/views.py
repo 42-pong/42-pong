@@ -73,7 +73,6 @@ logger = logging.getLogger(__name__)
                     ),
                 ],
             ),
-            # todo: 404は確定したら追加する
             500: utils.OpenApiResponse(
                 description="Internal server error",
                 response={
@@ -188,7 +187,6 @@ logger = logging.getLogger(__name__)
                     ),
                 ],
             ),
-            # todo: 404は確定したら追加する
             500: utils.OpenApiResponse(
                 description="Internal server error",
                 response={
@@ -328,6 +326,21 @@ class FriendsViewSet(viewsets.ModelViewSet):
         )
         return response
 
+    def _get_authenticated_user(self, user: User | AnonymousUser) -> User:
+        """
+        ログインユーザーを取得する
+        AnonymousUserの場合は各メソッド関数関数に入る前にpermission_classesで弾かれるが、
+        AnonymousUserだとuser.playerが使えずmypyでエラーになるため、事前にチェックが必要
+
+        Raises:
+            exceptions.NotAuthenticated: AnonymousUserの場合
+        """
+        if isinstance(user, AnonymousUser):
+            raise exceptions.NotAuthenticated(
+                "AnonymousUser is not authenticated."
+            )
+        return user
+
     # --------------------------------------------------------------------------
     # GET method
     # --------------------------------------------------------------------------
@@ -336,13 +349,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
         自分のフレンドのユーザープロフィール一覧を取得するGETメソッド
         """
         # ログインユーザーの取得
-        user: User | AnonymousUser = request.user
-        if isinstance(user, AnonymousUser):
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
-            )
+        user: User = self._get_authenticated_user(request.user)
 
         # 自分のフレンド一覧を取得
         friends: QuerySet[models.Friendship] = self.queryset.filter(user=user)
@@ -413,13 +420,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
         自分のフレンドに特定の新しいユーザーを追加するPOSTメソッド
         """
         # ログインユーザーの取得
-        user: User | AnonymousUser = request.user
-        if isinstance(user, AnonymousUser):
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
-            )
+        user: User = self._get_authenticated_user(request.user)
+
         # Noneの場合はそのままserializerに渡してエラーになる
         friend_user_id: Optional[int] = request.data.get(
             constants.FriendshipFields.FRIEND_USER_ID
@@ -493,13 +495,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
         自分のフレンドから特定のユーザーを削除するDELETEメソッド
         """
         # ログインユーザーの取得
-        user: User | AnonymousUser = request.user
-        if isinstance(user, AnonymousUser):
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも
-            )
+        user: User = self._get_authenticated_user(request.user)
 
         destroy_serializer: destroy_serializers.FriendshipDestroySerializer = (
             self._create_destroy_serializer(user.id, friend_id)
