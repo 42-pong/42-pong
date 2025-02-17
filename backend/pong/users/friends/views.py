@@ -403,11 +403,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 f"[500] Failed to create friendship\
                 (user_id={user_id},friend_user_id={friend_user_id}): {str(e)} from {errors}"
             )
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise
 
     def create(self, request: request.Request) -> response.Response:
         """
@@ -445,11 +441,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 f"[500] Failed to create friendship\
                 (user_id={user.id},friend_user_id={friend_user_id}): {str(e)}"
             )
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise
 
     # --------------------------------------------------------------------------
     # DELETE method
@@ -489,11 +481,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 f"[500] Failed to delete friendship\
                 (user_id={user_id},friend_user_id={friend_id}): {str(e)} from {errors}"
             )
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise
 
     def destroy(
         self, request: request.Request, friend_id: int
@@ -533,8 +521,4 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 f"[500] Failed to delete friendship\
                 (user_id={user.id},friend_user_id={friend_id}): {str(e)}"
             )
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise
