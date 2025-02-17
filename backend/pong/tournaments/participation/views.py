@@ -137,7 +137,7 @@ from . import models, serializers
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
                         custom_response.CODE: {"type": "list"},
-                        custom_response.ERRORS: {"type": "string"},
+                        custom_response.ERRORS: {"type": "dict"},
                     },
                 },
                 examples=[
