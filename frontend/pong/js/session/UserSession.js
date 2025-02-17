@@ -1,4 +1,4 @@
-import { DataSubject } from "./DataSubject";
+import { DataSubject } from "../core/DataSubject";
 
 export class UserSession {
   #myInfo;
