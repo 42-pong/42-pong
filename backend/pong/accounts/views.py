@@ -59,14 +59,24 @@ class AccountCreateView(views.APIView):
                 ],
             ),
             400: utils.OpenApiResponse(
+                description="Invalid Request (複数例あり)",
                 response={
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": ["string"]},
-                        custom_response.ERRORS: {"type": ["dict"]},
+                        custom_response.CODE: {"type": ["list"]},
                     },
                 },
                 examples=[
+                    utils.OpenApiExample(
+                        "Example 400 response - already_exists",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.ALREADY_EXISTS
+                            ],
+                        },
+                    ),
                     utils.OpenApiExample(
                         "Example 400 response - invalid_email",
                         value={
