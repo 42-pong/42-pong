@@ -3,6 +3,7 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from drf_spectacular import utils
 from rest_framework import (
+    exceptions,
     permissions,
     request,
     response,
@@ -26,6 +27,28 @@ class UsersRetrieveView(views.APIView):
     """
 
     permission_classes = (permissions.IsAuthenticated,)
+
+    def handle_exception(self, exc: Exception) -> response.Response:
+        """
+        APIViewのhandle_exception()をオーバーライド
+        viewでtry-exceptしていない例外をカスタムレスポンスに変換して返す
+        """
+        if isinstance(
+            exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
+        ):
+            logger.error(f"[401] Authentication error: {str(exc)}")
+            # 401はCustomResponseにせずそのまま返す
+            return super().handle_exception(exc)
+
+        logger.error(f"[500] Internal server error: {str(exc)}")
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        )
+        return response
 
     @utils.extend_schema(
         operation_id="get_users_retrieve",
@@ -88,8 +111,27 @@ class UsersRetrieveView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     )
     def get(self, request: request.Request, user_id: int) -> response.Response:
@@ -119,6 +161,7 @@ class UsersRetrieveView(views.APIView):
                     friends_constants.FriendshipFields.USER_ID: request.user.id
                 },
             )
+            # todo: logger.info()追加
             return custom_response.CustomResponse(
                 data=users_serializer.data,
                 status=status.HTTP_200_OK,
@@ -130,12 +173,4 @@ class UsersRetrieveView(views.APIView):
                 code=[constants.Code.INTERNAL_ERROR],
                 errors={"user_id": "The user does not exist."},
                 status=status.HTTP_404_NOT_FOUND,
-            )
-        except Exception as e:
-            # MultipleObjectsReturnedなどの場合
-            logger.error(f"[500] Internal server error: {str(e)}")
-            return custom_response.CustomResponse(
-                code=[constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
