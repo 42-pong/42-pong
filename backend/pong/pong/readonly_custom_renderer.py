@@ -13,10 +13,10 @@ class ReadOnlyCustomJSONRenderer(JSONRenderer):
 
     def render(
         self,
-        data: Optional[dict],
+        data: Optional[Any],
         accepted_media_type: Optional[str] = None,
         renderer_context: Optional[Mapping[str, Any]] = None,
-    ) -> str:
+    ) -> bytes:
         if renderer_context is None:
             return super().render(data, accepted_media_type, renderer_context)
 
