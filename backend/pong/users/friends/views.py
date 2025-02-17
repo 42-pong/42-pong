@@ -3,6 +3,7 @@ from typing import Optional
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import transaction
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, viewsets
@@ -232,7 +233,9 @@ logger = logging.getLogger(__name__)
 )
 # todo: 各メソッドにtry-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
 class FriendsViewSet(viewsets.ModelViewSet):
-    queryset = models.Friendship.objects.all().select_related("user", "friend")
+    queryset = models.Friendship.objects.filter(
+        Q(friend__player__isnull=False)
+    ).select_related("user", "friend")
     permission_classes = (permissions.IsAuthenticated,)
 
     # URLから取得するID名
