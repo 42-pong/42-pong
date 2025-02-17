@@ -21,8 +21,7 @@ class UsersListView(views.APIView):
     ユーザープロフィールの一覧を取得するビュー
     """
 
-    # todo: IsAuthenticatedに変更する。extend_schemaにも401を追加する
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     @utils.extend_schema(
         operation_id="get_users_list",
@@ -41,7 +40,7 @@ class UsersListView(views.APIView):
                                     accounts_constants.UserFields.ID: 2,
                                     accounts_constants.UserFields.USERNAME: "username1",
                                     accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                    accounts_constants.PlayerFields.AVATAR: "avatars/sample1.png",
+                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample1.png",
                                     constants.UsersFields.IS_FRIEND: False,
                                     # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
@@ -49,12 +48,28 @@ class UsersListView(views.APIView):
                                     accounts_constants.UserFields.ID: 3,
                                     accounts_constants.UserFields.USERNAME: "username2",
                                     accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                    accounts_constants.PlayerFields.AVATAR: "avatars/sample2.png",
+                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample2.png",
                                     constants.UsersFields.IS_FRIEND: False,
                                     # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
                                 {"...", "..."},
                             ],
+                        },
+                    ),
+                ],
+            ),
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
                         },
                     ),
                 ],
