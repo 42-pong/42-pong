@@ -5,7 +5,14 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.db import transaction
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
-from rest_framework import permissions, request, response, status, viewsets
+from rest_framework import (
+    exceptions,
+    permissions,
+    request,
+    response,
+    status,
+    viewsets,
+)
 
 from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
@@ -66,8 +73,27 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             # todo: 404は確定したら追加する
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     ),
     create=utils.extend_schema(
@@ -162,8 +188,27 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             # todo: 404は確定したら追加する
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     ),
     destroy=utils.extend_schema(
@@ -225,12 +270,30 @@ logger = logging.getLogger(__name__)
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     ),
 )
-# todo: 各メソッドにtry-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
 class FriendsViewSet(viewsets.ModelViewSet):
     queryset = models.Friendship.objects.all().select_related("user", "friend")
     permission_classes = (permissions.IsAuthenticated,)
@@ -239,6 +302,28 @@ class FriendsViewSet(viewsets.ModelViewSet):
     lookup_field = "friend_id"
 
     http_method_names = ["get", "post", "delete"]
+
+    def handle_exception(self, exc: Exception) -> response.Response:
+        """
+        ModelViewSetのhandle_exception()をオーバーライド
+        viewでtry-exceptしていない例外をカスタムレスポンスに変換して返す
+        """
+        if isinstance(
+            exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
+        ):
+            logger.error(f"[401] Authentication error: {str(exc)}")
+            # 401はCustomResponseにせずそのまま返す
+            return super().handle_exception(exc)
+
+        logger.error(f"[500] Internal server error: {str(exc)}")
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        )
+        return response
 
     # --------------------------------------------------------------------------
     # GET method
