@@ -1,6 +1,6 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from accounts.player import models as players_models
 from users import constants as users_constants
 
 from .. import constants, models
@@ -16,7 +16,7 @@ def invalid_same_user_validator(user_id: int, friend_user_id: int) -> None:
         friend_user_id: フレンド追加対象・削除対象のユーザーのID
 
     Raises:
-        serializers.ValidationError: フレンドとして追加したいユーザーが自分自身の場合
+        serializers.ValidationError: フレンドとして追加・削除したいユーザーが自分自身の場合
     """
     if user_id == friend_user_id:
         raise serializers.ValidationError(
@@ -41,8 +41,10 @@ def _is_friendship_exists(user_id: int, friend_user_id: int) -> bool:
     Raises:
         serializers.ValidationError: フレンドに追加したいidがDBに存在せず、フレンドかどうかの判定ができない場合
     """
-    # フレンドに追加したいidがDBに存在しない場合はエラー
-    if not User.objects.filter(id=friend_user_id).exists():
+    # フレンドに追加したいidのPlayerがDBに存在しない場合はエラー
+    if not players_models.Player.objects.filter(
+        user_id=friend_user_id
+    ).exists():
         raise serializers.ValidationError(
             {
                 constants.FriendshipFields.FRIEND_USER_ID: "The user does not exist."
