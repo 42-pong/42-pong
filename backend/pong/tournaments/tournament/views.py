@@ -447,11 +447,11 @@ class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         filters = Q()
 
         status: Optional[str] = self.request.query_params.get("status")
-        if status:
+        if status is not None:
             filters &= Q(status=status)
 
         user_id: Optional[str] = self.request.query_params.get("user-id")
-        if user_id:
+        if user_id is not None:
             filters &= Q(tournament_participations__player__user_id=user_id)
 
         return queryset.filter(filters)

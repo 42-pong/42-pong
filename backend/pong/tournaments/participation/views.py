@@ -171,7 +171,7 @@ class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         filters = Q()
 
         user_id: Optional[str] = self.request.query_params.get("user-id")
-        if user_id:
+        if user_id is not None:
             filters &= Q(
                 player__user_id=user_id
             )  # 直接関連をたどってフィルタリング
@@ -179,7 +179,7 @@ class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         tournament_id: Optional[str] = self.request.query_params.get(
             "tournament-id"
         )
-        if tournament_id:
+        if tournament_id is not None:
             filters &= Q(tournament_id=tournament_id)
 
         return queryset.filter(filters)
