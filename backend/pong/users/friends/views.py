@@ -34,12 +34,13 @@ logger = logging.getLogger(__name__)
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: [
                                 {
-                                    constants.FriendshipFields.USER_ID: 1,
-                                    constants.FriendshipFields.FRIEND_USER_ID: 2,
                                     constants.FriendshipFields.FRIEND: {
+                                        accounts_constants.UserFields.ID: 2,
                                         accounts_constants.UserFields.USERNAME: "username2",
                                         accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                        users_constants.UsersFields.IS_FRIEND: True,
+                                        # todo: is_blocked,is_online,win_match,lose_match追加
                                     },
                                 },
                                 {"...", "..."},
@@ -80,7 +81,31 @@ logger = logging.getLogger(__name__)
             ],
         ),
         responses={
-            201: create_serializers.FriendshipCreateSerializer,
+            201: utils.OpenApiResponse(
+                description="Successfully added a new user to the authenticated user's friends list.",
+                response=list_serializers.FriendshipListSerializer(many=True),
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 201 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: [
+                                {
+                                    constants.FriendshipFields.FRIEND: {
+                                        accounts_constants.UserFields.ID: 2,
+                                        accounts_constants.UserFields.USERNAME: "username2",
+                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                        users_constants.UsersFields.IS_FRIEND: True,
+                                        # todo: is_blocked,is_online,win_match,lose_match追加
+                                    },
+                                },
+                                {"...", "..."},
+                            ],
+                        },
+                    ),
+                ],
+            ),
             400: utils.OpenApiResponse(
                 description="Invalid friend_user_id",
                 response={
@@ -234,7 +259,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
         # 自分のフレンド一覧を取得
         friends: QuerySet[models.Friendship] = self.queryset.filter(user=user)
         list_serializer: list_serializers.FriendshipListSerializer = (
-            list_serializers.FriendshipListSerializer(friends, many=True)
+            list_serializers.FriendshipListSerializer(
+                friends,
+                many=True,
+                context={constants.FriendshipFields.USER_ID: user.id},
+            )
         )
         # todo: logger.info追加
         return custom_response.CustomResponse(
@@ -258,11 +287,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
         self, user_id: int, friend_user_id: Optional[int]
     ) -> create_serializers.FriendshipCreateSerializer:
         friendship_data: dict = {
-            constants.FriendshipFields.USER_ID: user_id,
-            constants.FriendshipFields.FRIEND_USER_ID: friend_user_id,
+            constants.FriendshipFields.FRIEND_USER_ID: friend_user_id
         }
         return create_serializers.FriendshipCreateSerializer(
-            data=friendship_data
+            data=friendship_data,
+            context={constants.FriendshipFields.USER_ID: user_id},
         )
 
     def _handle_create_validation_error(
@@ -344,11 +373,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
         self, user_id: int, friend_id: int
     ) -> destroy_serializers.FriendshipDestroySerializer:
         friendship_data: dict = {
-            constants.FriendshipFields.USER_ID: user_id,
-            constants.FriendshipFields.FRIEND_USER_ID: friend_id,
+            constants.FriendshipFields.FRIEND_USER_ID: friend_id
         }
         return destroy_serializers.FriendshipDestroySerializer(
-            data=friendship_data
+            data=friendship_data,
+            context={constants.FriendshipFields.USER_ID: user_id},
         )
 
     def _handle_destroy_validation_error(
