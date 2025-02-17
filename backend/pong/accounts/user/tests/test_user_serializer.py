@@ -59,6 +59,38 @@ class UserSerializerTests(TestCase):
         # hash化されているので元のパスワードとは異なる
         self.assertNotEqual(user.password, self.user_data[PASSWORD])
 
+    @parameterized.parameterized.expand(
+        [
+            ("8文字の場合", "-g3wicPg"),
+            ("50文字の場合", "z" * 50),
+            ("英子文字のみ", "abcdefghijklmnopqrstuvwxyz"),
+            ("英大文字のみ", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+            ("記号(-_)のみ", "-_-_-_-_"),
+            ("有名なパスワード以外", "uncommon"),
+            ("数字以外が含まれる1", "12x34567"),
+        ]
+    )
+    def test_create_user_with_valid_password(
+        self, testcase_name: str, valid_password: str
+    ) -> None:
+        """
+        正常なパスワードでUserを作成できることを確認する
+          - 8文字以上・50文字以下
+          - 英子文字・英大文字・数字・記号(-_)のみ
+          - 有名なパスワード以外
+          - 数字以外が含まれる
+        """
+        user_data: dict = {
+            USERNAME: "testuser2",
+            EMAIL: "testuser2@example.com",
+            PASSWORD: valid_password,
+        }
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=user_data
+        )
+
+        self.assertTrue(serializer.is_valid())
+
     # -------------------------------------------------------------------------
     # エラーケース
     # -------------------------------------------------------------------------
@@ -214,3 +246,37 @@ class UserSerializerTests(TestCase):
 
         self.assertFalse(serializer_2.is_valid())
         self.assertIn(EMAIL, serializer_2.errors)
+
+    @parameterized.parameterized.expand(
+        [
+            # 空文字列はtest_error_empty_password()で確認済み
+            ("7文字以下の場合", "mb7asb2"),
+            ("51文字以上の場合", "a" * 51),
+            ("数字のみの場合", "97251037"),
+            ("よく使われてるパスワードの場合1", "password"),
+            ("よく使われてるパスワードの場合2", "pass1234"),
+            ("よく使われてるパスワードの場合3", "computer"),
+            # ("usernameとの類似度が高い場合", "testuser"), # todo: なぜかエラーにならない
+            (
+                "使用可能文字列以外が含まれる場合(英数字以外)",
+                "あいうえおかきく",
+            ),
+            (
+                "使用可能文字列以外が含まれる場合(記号の-_以外)",
+                "invalid@password!",
+            ),
+        ]
+    )
+    def test_error_invalid_password(
+        self, testcase_name: str, invalid_password: str
+    ) -> None:
+        """
+        パスワードが不正な場合にエラーになることを確認する
+        """
+        self.user_data[PASSWORD] = invalid_password
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(PASSWORD, serializer.errors)

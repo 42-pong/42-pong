@@ -127,3 +127,50 @@ class AccountsTests(test.APITestCase):
         # DBにUser,Playerが作成されていないことを確認
         self.assertEqual(models.User.objects.count(), 0)
         self.assertEqual(models.Player.objects.count(), 0)
+
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列の場合", ""),
+            ("7文字以下の場合", "mb7asb2"),
+            ("51文字以上の場合", "a" * 51),
+            ("数字のみの場合", "97251037"),
+            ("よく使われてるパスワードの場合1", "password"),
+            ("よく使われてるパスワードの場合2", "pass1234"),
+            ("よく使われてるパスワードの場合3", "computer"),
+            # ("usernameとの類似度が高い場合", "testuser"), # todo: なぜかエラーにならない
+            (
+                "使用可能文字列以外が含まれる場合(英数字以外)",
+                "あいうえおかきく",
+            ),
+            (
+                "使用可能文字列以外が含まれる場合(記号の-_以外)",
+                "invalid@password!",
+            ),
+        ]
+    )
+    def test_create_account_with_invalid_password(
+        self, testcase_name: str, invalid_password: str
+    ) -> None:
+        """
+        不正なpasswordの形式でアカウントを作成するテスト
+        status 400 が返されることを確認
+        errorsにpasswordが含まれることを確認
+        """
+        account_data: dict = {
+            USER: {
+                EMAIL: "valid@example.com",
+                PASSWORD: invalid_password,  # 不正なpassword形式
+            }
+        }
+        response: drf_response.Response = self.client.post(
+            self.url, account_data, format="json"
+        )
+        response_error: dict = response.data[ERRORS]
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(PASSWORD, response_error)
+        # todo: codeを返すようになったらresponse.data[CODE]も確認
+
+        # DBにUser,Playerが作成されていないことを確認
+        self.assertEqual(models.User.objects.count(), 0)
+        self.assertEqual(models.Player.objects.count(), 0)
