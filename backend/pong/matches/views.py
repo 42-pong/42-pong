@@ -61,7 +61,7 @@ from .match import serializers
                                     constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                     "participations": [
                                         {
-                                            constants.ParticipationFields.PLAYER_ID: 1,
+                                            "user_id": 1,
                                             constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.ONE.value,
                                             constants.ParticipationFields.IS_WIN: True,
                                             "scores": [
@@ -74,7 +74,7 @@ from .match import serializers
                                             ],
                                         },
                                         {
-                                            constants.ParticipationFields.PLAYER_ID: 2,
+                                            "user_id": 2,
                                             constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.TWO.value,
                                             constants.ParticipationFields.IS_WIN: False,
                                             "scores": [
@@ -151,7 +151,7 @@ from .match import serializers
                                     constants.MatchFields.UPDATED_AT: "2025-01-01T00:03:00.000000+09:00",
                                     "participations": [
                                         {
-                                            constants.ParticipationFields.PLAYER_ID: 1,
+                                            "user_id": 1,
                                             constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.ONE.value,
                                             constants.ParticipationFields.IS_WIN: True,
                                             "scores": [
@@ -164,7 +164,7 @@ from .match import serializers
                                             ],
                                         },
                                         {
-                                            constants.ParticipationFields.PLAYER_ID: 2,
+                                            "user_id": 2,
                                             constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.TWO.value,
                                             constants.ParticipationFields.IS_WIN: False,
                                             "scores": [

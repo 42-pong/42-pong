@@ -13,6 +13,7 @@ from rest_framework import permissions, viewsets
 from pong import readonly_custom_renderer
 from pong.custom_response import custom_response
 
+from .. import constants
 from . import models, serializers
 
 
@@ -46,25 +47,25 @@ from . import models, serializers
                     OpenApiExample(
                         "Example 200 response",
                         value={
-                            "status": "ok",
-                            "data": [
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: [
                                 {
-                                    "id": 1,
-                                    "tournament_id": 4,
+                                    constants.ParticipationFields.ID: 1,
+                                    constants.ParticipationFields.TOURNAMENT_ID: 4,
                                     "user_id": 7,
-                                    "participation_name": "player_x",
-                                    "ranking": 4,
-                                    "created_at": "2025-01-01T00:00:00.000000+09:00",
-                                    "updated_at": "2025-01-01T00:30:00.000000+09:00",
+                                    constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
+                                    constants.ParticipationFields.RANKING: 4,
+                                    constants.ParticipationFields.CREATED_AT: "2025-01-01T00:00:00.000000+09:00",
+                                    constants.ParticipationFields.UPDATED_AT: "2025-01-01T00:30:00.000000+09:00",
                                 },
                                 {
-                                    "id": 2,
-                                    "tournament_id": 5,
+                                    constants.ParticipationFields.ID: 2,
+                                    constants.ParticipationFields.TOURNAMENT_ID: 5,
                                     "user_id": 7,
-                                    "participation_name": "player_y",
-                                    "ranking": None,
-                                    "created_at": "2025-01-01T00:01:00.000000+09:00",
-                                    "updated_at": "2025-01-01T00:01:00.000000+09:00",
+                                    constants.ParticipationFields.PARTICIPATION_NAME: "player_y",
+                                    constants.ParticipationFields.RANKING: None,
+                                    constants.ParticipationFields.CREATED_AT: "2025-01-01T00:01:00.000000+09:00",
+                                    constants.ParticipationFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                 },
                                 {"...", "..."},
                             ],
@@ -101,15 +102,15 @@ from . import models, serializers
                     OpenApiExample(
                         "Example 200 response",
                         value={
-                            "status": "ok",
-                            "data": {
-                                "id": 1,
-                                "participation_name": "player_x",
-                                "ranking": 1,
-                                "created_at": "2025-01-01T00:00:00.000000+09:00",
-                                "updated_at": "2025-01-01T00:30:00.000000+09:00",
-                                "tournament_id": 2,
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: {
+                                constants.ParticipationFields.ID: 4,
+                                constants.ParticipationFields.TOURNAMENT_ID: 2,
                                 "user_id": 3,
+                                constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
+                                constants.ParticipationFields.RANKING: 1,
+                                constants.ParticipationFields.CREATED_AT: "2025-01-01T00:15:00.000000+09:00",
+                                constants.ParticipationFields.UPDATED_AT: "2025-01-01T00:20:00.000000+09:00",
                             },
                         },
                     ),
