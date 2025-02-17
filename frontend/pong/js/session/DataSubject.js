@@ -9,13 +9,13 @@ export class DataSubject {
 
   init(data = {}) {
     this.#data = data;
-    this.#notifyAll();
+    this.#notify();
   }
 
   updateData(newData) {
     if (!newData) return;
     Object.assign(this.#data, newData);
-    this.#notifyAll();
+    this.#notify();
   }
 
   attach(observer) {
@@ -31,13 +31,13 @@ export class DataSubject {
     this.#observers.delete(observer);
   }
 
-  #notify(observer) {
+  #observe(observer) {
     observer(this.#data);
   }
 
-  #notifyAll() {
+  #notify() {
     for (const observer of this.#observers) {
-      this.#notify(observer);
+      this.#observe(observer);
     }
   }
 }
