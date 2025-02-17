@@ -1,4 +1,6 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.validators import RegexValidator
 from rest_framework import serializers, validators
 
 from .. import constants
@@ -20,6 +22,20 @@ class UserSerializer(serializers.ModelSerializer):
             validators.UniqueValidator(queryset=User.objects.all()),
         ]
     )
+    # validate_password: 4つのvalidatorでチェックされる
+    # https://docs.djangoproject.com/ja/5.1/topics/auth/passwords/#included-validators
+    password = serializers.CharField(
+        write_only=True,
+        max_length=50,
+        validators=[
+            validate_password,
+            # 使用可能文字列を指定: 英子文字・英大文字・数字・記号(-_)
+            RegexValidator(
+                regex=r"^[a-zA-Z0-9-_]+$",
+                message="Must contain only alphanumeric characters or some symbols(-_)",
+            ),
+        ],
+    )
 
     class Meta:
         model = User
@@ -29,9 +45,6 @@ class UserSerializer(serializers.ModelSerializer):
             constants.UserFields.EMAIL,
             constants.UserFields.PASSWORD,
         )
-        extra_kwargs = {
-            constants.UserFields.PASSWORD: {"write_only": True},
-        }
 
     # PlayerSerializerのuser_serializer.save()の内部で呼ばれる
     def create(self, validated_data: dict) -> User:
