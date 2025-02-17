@@ -1,4 +1,6 @@
-from django.db.models import QuerySet
+from typing import Optional
+
+from django.db.models import Q, QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -8,7 +10,6 @@ from drf_spectacular.utils import (
 )
 from rest_framework import permissions, viewsets
 
-from accounts.player import models as player_models
 from pong import readonly_custom_renderer
 from pong.custom_response import custom_response
 
@@ -166,22 +167,18 @@ class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         queryset = models.Participation.objects.all()
-        user_id = self.request.query_params.get("user-id")
-        tournament_id = self.request.query_params.get("tournament-id")
+        filters = Q()
 
+        user_id: Optional[str] = self.request.query_params.get("user-id")
         if user_id:
-            # 例外を出すと面倒なのでfilterとfirstを使っている
-            player = player_models.Player.objects.filter(
-                user_id=user_id
-            ).first()
-            if player:
-                queryset = queryset.filter(player_id=player.id)
-            else:
-                queryset = (
-                    queryset.none()
-                )  # プレイヤーが見つからなければ空のクエリセットを返す
+            filters &= Q(
+                player__user_id=user_id
+            )  # 直接関連をたどってフィルタリング
 
+        tournament_id: Optional[str] = self.request.query_params.get(
+            "tournament-id"
+        )
         if tournament_id:
-            queryset = queryset.filter(tournament_id=tournament_id)
+            filters &= Q(tournament_id=tournament_id)
 
-        return queryset
+        return queryset.filter(filters)

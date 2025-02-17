@@ -1,4 +1,6 @@
-from django.db.models import QuerySet
+from typing import Optional
+
+from django.db.models import Q, QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -441,15 +443,15 @@ class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = models.Tournament.objects.all().prefetch_related(
             "round__matches__match_participations__scores"
         )
-        status = self.request.query_params.get("status")
-        user_id = self.request.query_params.get("user-id")
 
+        filters = Q()
+
+        status: Optional[str] = self.request.query_params.get("status")
         if status:
-            queryset = queryset.filter(status=status)
+            filters &= Q(status=status)
 
+        user_id: Optional[str] = self.request.query_params.get("user-id")
         if user_id:
-            queryset = queryset.filter(
-                tournament_participations__player__user_id=user_id
-            )
+            filters &= Q(tournament_participations__player__user_id=user_id)
 
-        return queryset
+        return queryset.filter(filters)
