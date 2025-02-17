@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
 from rest_framework import (
@@ -16,6 +18,8 @@ from users.friends import constants as friends_constants
 
 from .. import constants, serializers
 
+logger = logging.getLogger(__name__)
+
 
 class UsersListView(views.APIView):
     """
@@ -32,9 +36,11 @@ class UsersListView(views.APIView):
         if isinstance(
             exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
         ):
+            logger.error(f"[401] Authentication error: {str(exc)}")
             # 401はCustomResponseにせずそのまま返す
             return super().handle_exception(exc)
 
+        logger.error(f"[500] Internal server error: {str(exc)}")
         response: custom_response.CustomResponse = (
             custom_response.CustomResponse(
                 code=[constants.Code.INTERNAL_ERROR],
@@ -145,6 +151,7 @@ class UsersListView(views.APIView):
                 friends_constants.FriendshipFields.USER_ID: request.user.id
             },
         )
+        # todo: logger.info()追加
         return custom_response.CustomResponse(
             data=serializer.data, status=status.HTTP_200_OK
         )
