@@ -96,7 +96,7 @@ class UsersRetrieveView(views.APIView):
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "list"},
+                        custom_response.CODE: {"type": "list"},
                     },
                 },
                 examples=[

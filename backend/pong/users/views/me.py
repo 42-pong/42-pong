@@ -184,7 +184,7 @@ class UsersMeView(views.APIView):
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "dict"},
+                        custom_response.CODE: {"type": "list"},
                     },
                 },
                 examples=[
