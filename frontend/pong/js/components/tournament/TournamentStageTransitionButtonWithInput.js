@@ -26,9 +26,10 @@ export class TournamentStageTransitionButtonWithInput extends Component {
       buttonAttributes,
       tournamentStage,
     );
-    this.#input.attach(
-      this.#button.setTournamentId.bind(this.#button),
-    );
+    this.#input.subject.attach((data) => {
+      const { value } = data;
+      this.#button.setTournamentId(value);
+    });
   }
 
   _setStyle() {
