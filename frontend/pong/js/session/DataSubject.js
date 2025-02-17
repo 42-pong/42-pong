@@ -31,13 +31,13 @@ export class DataSubject {
     this.#observers.delete(observer);
   }
 
-  #observe(observer) {
+  observe(observer) {
     observer(this.#data);
   }
 
   #notify() {
     for (const observer of this.#observers) {
-      this.#observe(observer);
+      this.observe(observer);
     }
   }
 }
