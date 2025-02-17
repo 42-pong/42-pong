@@ -146,7 +146,17 @@ class UsersRetrieveView(views.APIView):
             player: player_models.Player = player_models.Player.objects.get(
                 user_id=user_id
             )
-            users_serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+        except ObjectDoesNotExist as e:
+            # user_idに紐づくPlayerが存在しない場合
+            logger.error(f"[404] {str(e)}: user_id={user_id} does not exist.")
+            return custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
+                errors={"user_id": "The user does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        users_serializer: serializers.UsersSerializer = (
+            serializers.UsersSerializer(
                 player,
                 # emailは含めない
                 fields=(
@@ -161,16 +171,9 @@ class UsersRetrieveView(views.APIView):
                     friends_constants.FriendshipFields.USER_ID: request.user.id
                 },
             )
-            # todo: logger.info()追加
-            return custom_response.CustomResponse(
-                data=users_serializer.data,
-                status=status.HTTP_200_OK,
-            )
-        except ObjectDoesNotExist as e:
-            # user_idに紐づくPlayerが存在しない場合
-            logger.error(f"[404] {str(e)}: user_id={user_id} does not exist.")
-            return custom_response.CustomResponse(
-                code=[constants.Code.INTERNAL_ERROR],
-                errors={"user_id": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        )
+        # todo: logger.info()追加
+        return custom_response.CustomResponse(
+            data=users_serializer.data,
+            status=status.HTTP_200_OK,
+        )
