@@ -180,6 +180,29 @@ class FriendsCreateViewTests(test.APITestCase):
             models.Friendship.objects.filter(user=self.user1).exists()
         )
 
+    def test_400_not_player(self) -> None:
+        """
+        紐づくPlayerが存在しないユーザー(superuser含む)をフレンドに追加しようとした場合に
+        エラーでcode=not_existsが返ることを確認
+        """
+        # user2に紐づくPlayer情報のみ削除
+        players_models.Player.objects.get(user=self.user2).delete()
+        # user1が、Player情報を持たないuser2をフレンドに追加しようとする
+        friendship_data: dict = {
+            FRIEND_USER_ID: self.user2.id,
+        }
+        response: drf_response.Response = self.client.post(
+            self.url, friendship_data, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data[CODE][0], users_constants.Code.NOT_EXISTS
+        )
+        self.assertFalse(
+            models.Friendship.objects.filter(user=self.user1).exists()
+        )
+
     def test_401_unauthenticated_user(self) -> None:
         """
         認証されていないユーザーがフレンド一覧を取得しようとするとエラーになることを確認
