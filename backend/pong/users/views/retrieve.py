@@ -43,7 +43,7 @@ class UsersRetrieveView(views.APIView):
                                 accounts_constants.UserFields.ID: 2,
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
+                                accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: True,
                                 # todo: is_blocked,is_online,win_match,lose_match追加
                             },
