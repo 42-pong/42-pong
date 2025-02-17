@@ -1,6 +1,7 @@
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
 from rest_framework import (
+    exceptions,
     permissions,
     request,
     response,
@@ -22,6 +23,26 @@ class UsersListView(views.APIView):
     """
 
     permission_classes = (permissions.IsAuthenticated,)
+
+    def handle_exception(self, exc: Exception) -> response.Response:
+        """
+        APIViewのhandle_exception()をオーバーライド
+        viewでtry-exceptしていない例外をカスタムレスポンスに変換して返す
+        """
+        if isinstance(
+            exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
+        ):
+            # 401はCustomResponseにせずそのまま返す
+            return super().handle_exception(exc)
+
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        )
+        return response
 
     @utils.extend_schema(
         operation_id="get_users_list",
@@ -74,11 +95,29 @@ class UsersListView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     )
-    # todo: try-exceptで全体を囲って500を返す？
     def get(self, request: request.Request) -> response.Response:
         """
         ユーザープロフィール一覧を取得するGETメソッド
