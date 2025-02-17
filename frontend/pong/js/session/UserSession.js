@@ -1,15 +1,15 @@
-import { DataManager } from "./DataManager";
+import { DataSubject } from "./DataSubject";
 
 export class UserSession {
-  #myInfoManager;
+  #myInfo;
 
   constructor() {
-    this.#myInfoManager = new DataManager();
+    this.#myInfo = new DataSubject();
     this.init();
   }
 
   signIn(userData) {
-    this.#myInfoManager.updateData({ ...userData, isSignedIn: true });
+    this.#myInfo.updateData({ ...userData, isSignedIn: true });
   }
 
   signOut() {
@@ -17,10 +17,10 @@ export class UserSession {
   }
 
   init() {
-    this.#myInfoManager.init({ isSignedIn: false });
+    this.#myInfo.init({ isSignedIn: false });
   }
 
-  get myInfoManager() {
-    return this.#myInfoManager;
+  get myInfo() {
+    return this.#myInfo;
   }
 }

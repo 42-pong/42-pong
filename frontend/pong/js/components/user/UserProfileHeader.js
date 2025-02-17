@@ -28,11 +28,11 @@ export class UserProfileHeader extends Component {
   }
 
   _onConnect() {
-    UserSessionManager.myInfoManager.attach(this.#userDataObserver);
+    UserSessionManager.myInfo.attach(this.#userDataObserver);
   }
 
   _onDisconnect() {
-    UserSessionManager.myInfoManager.detach(this.#userDataObserver);
+    UserSessionManager.myInfo.detach(this.#userDataObserver);
   }
 
   _render() {

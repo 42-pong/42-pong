@@ -1,4 +1,4 @@
-export class DataManager {
+export class DataSubject {
   #data;
   #observers;
 

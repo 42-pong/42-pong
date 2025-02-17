@@ -12,6 +12,6 @@ export const UserSessionManager = (() => {
     getInstance,
     signIn: getInstance().signIn.bind(getInstance()),
     signOut: getInstance().signOut.bind(getInstance()),
-    myInfoManager: getInstance().myInfoManager,
+    myInfo: getInstance().myInfo,
   };
 })();
