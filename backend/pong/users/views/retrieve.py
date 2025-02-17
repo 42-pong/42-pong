@@ -25,8 +25,7 @@ class UsersRetrieveView(views.APIView):
     特定のuser_idのユーザープロフィールを取得するビュー
     """
 
-    # todo: IsAuthenticatedに変更する。extend_schemaにも401を追加する
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     @utils.extend_schema(
         operation_id="get_users_retrieve",
@@ -44,10 +43,26 @@ class UsersRetrieveView(views.APIView):
                                 accounts_constants.UserFields.ID: 2,
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
+                                accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: True,
                                 # todo: is_blocked,is_online,win_match,lose_match追加
                             },
+                        },
+                    ),
+                ],
+            ),
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
                         },
                     ),
                 ],
