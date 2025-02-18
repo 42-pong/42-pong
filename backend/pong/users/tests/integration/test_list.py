@@ -134,7 +134,7 @@ class UsersListViewTests(test.APITestCase):
         # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
         self.assertEqual(response.data["detail"].code, "not_authenticated")
 
-    def test_401_no_users_exist(self) -> None:
+    def test_get_401_no_users_exist(self) -> None:
         """
         ユーザーが存在しない場合はログインユーザーもいないので、401になりauthentication_failedが返ることを確認
         """

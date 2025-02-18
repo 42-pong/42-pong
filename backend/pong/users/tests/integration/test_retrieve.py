@@ -132,7 +132,7 @@ class UsersRetrieveViewTests(test.APITestCase):
         # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
         self.assertEqual(response.data["detail"].code, "not_authenticated")
 
-    def test_get_user_returns_404_with_nonexistent_user_id(self) -> None:
+    def test_get_404_nonexistent_user_id(self) -> None:
         """
         存在しないuser_idを指定した場合に、エラーが返されることを確認
         """
