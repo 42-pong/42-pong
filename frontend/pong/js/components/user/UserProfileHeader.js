@@ -12,14 +12,7 @@ export class UserProfileHeader extends Component {
   constructor(state = {}) {
     super(state);
     this.#userDataObserver = (myInfoData) => {
-      const { isSignedIn, id, username, displayName, avatar } =
-        myInfoData;
-
-      const user = isSignedIn
-        ? { id, username, displayName, avatar }
-        : null;
-
-      this._updateState({ user });
+      this._updateState({ user: createUser(myInfoData) });
     };
   }
 
@@ -28,6 +21,9 @@ export class UserProfileHeader extends Component {
   }
 
   _onConnect() {
+    UserSessionManager.myInfo.observe((myInfoData) => {
+      Object.assign(this._state, { user: createUser(myInfoData) });
+    });
     UserSessionManager.myInfo.attach(this.#userDataObserver);
   }
 
@@ -49,3 +45,12 @@ export class UserProfileHeader extends Component {
     this.append(nameplate, signOutButton);
   }
 }
+
+const createUser = (myInfoData) => {
+  const { isSignedIn, id, username, displayName, avatar } =
+    myInfoData;
+  const user = isSignedIn
+    ? { id, username, displayName, avatar }
+    : null;
+  return user;
+};
