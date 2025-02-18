@@ -1,4 +1,5 @@
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
+import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Component } from "../../core/Component";
 import { UserSessionManager } from "../../session/UserSessionManager";
@@ -18,6 +19,8 @@ export class UserProfileHeader extends Component {
 
   _setStyle() {
     BootstrapDisplay.setFlex(this);
+    BootstrapFlex.setAlignItemsCenter(this);
+    BootstrapFlex.setJustifyContentCenter(this);
   }
 
   _onConnect() {
