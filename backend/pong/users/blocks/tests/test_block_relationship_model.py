@@ -1,6 +1,7 @@
 from typing import Final
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from accounts import constants
@@ -129,3 +130,42 @@ class BlockRelationshipModelTestCase(TestCase):
         self.assertTrue(User.objects.filter(id=user_id).exists())
         self.assertFalse(User.objects.filter(id=blocked_user_id).exists())
 
+    def test_reverse_block_relationship(self) -> None:
+        """
+        user2が自分をブロックする、という逆のBlockRelationshipであれば作成できることを確認
+        """
+        block_relationship: models.BlockRelationship = (
+            models.BlockRelationship.objects.create(
+                user=self.user2,
+                blocked_user=self.user1,
+            )
+        )
+
+        self.assertTrue(
+            models.BlockRelationship.objects.filter(
+                id=block_relationship.id
+            ).exists()
+        )
+        self.assertEqual(models.BlockRelationship.objects.count(), 2)
+
+    def test_error_duplicate_block_relationship(self) -> None:
+        """
+        同じBlockRelationshipは作成できないことを確認
+        """
+        with self.assertRaises(ValidationError):
+            models.BlockRelationship.objects.create(
+                user=self.user1,
+                blocked_user=self.user2,
+            )
+        self.assertEqual(models.BlockRelationship.objects.count(), 1)
+
+    def test_error_self_block_relationship(self) -> None:
+        """
+        自分自身をブロックするBlockRelationshipは作成できないことを確認
+        """
+        with self.assertRaises(ValidationError):
+            models.BlockRelationship.objects.create(
+                user=self.user1,
+                blocked_user=self.user1,
+            )
+        self.assertEqual(models.BlockRelationship.objects.count(), 1)
