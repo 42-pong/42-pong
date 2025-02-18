@@ -108,7 +108,7 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             400: utils.OpenApiResponse(
-                description="Invalid friend_user_id",
+                description="Invalid friend_user_id (複数例あり)",
                 response={
                     "type": "object",
                     "properties": {
@@ -188,7 +188,7 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             404: utils.OpenApiResponse(
-                description="Invalid friend_user_id",
+                description="Invalid friend_user_id (複数例あり)",
                 response={
                     "type": "object",
                     "properties": {
