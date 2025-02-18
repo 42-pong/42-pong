@@ -1,5 +1,7 @@
 import dataclasses
 
+from pong.custom_response import custom_response
+
 
 @dataclasses.dataclass(frozen=True)
 class UserFields:
@@ -11,8 +13,17 @@ class UserFields:
 
 @dataclasses.dataclass(frozen=True)
 class PlayerFields:
+    ID: str = "id"
     USER: str = "user"
     DISPLAY_NAME: str = "display_name"
     AVATAR: str = "avatar"
     CREATED_AT: str = "created_at"
     UPDATED_AT: str = "updated_at"
+
+
+@dataclasses.dataclass(frozen=True)
+class Code:
+    ALREADY_EXISTS: str = "already_exists"
+    INVALID_EMAIL: str = "invalid_email"
+    INVALID_PASSWORD: str = "invalid_password"
+    INTERNAL_ERROR: str = custom_response.Code.INTERNAL_ERROR

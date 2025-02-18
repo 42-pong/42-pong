@@ -280,3 +280,17 @@ class UserSerializerTests(TestCase):
 
         self.assertFalse(serializer.is_valid())
         self.assertIn(PASSWORD, serializer.errors)
+
+    def test_error_invalid_email_and_invalid_password(self) -> None:
+        """
+        emailとpasswordの両方が不正な場合に両方エラーになることを確認する
+        """
+        self.user_data[EMAIL] = "invalid_email"
+        self.user_data[PASSWORD] = "invalid_password!!"
+        serializer: serializers.UserSerializer = serializers.UserSerializer(
+            data=self.user_data
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(EMAIL, serializer.errors)
+        self.assertIn(PASSWORD, serializer.errors)
