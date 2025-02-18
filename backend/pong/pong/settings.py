@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     "accounts",
     "users",
     "users.friends",
+    "users.blocks",
     "ws",
     "tournaments",
     "matches",

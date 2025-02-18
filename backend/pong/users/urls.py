@@ -18,4 +18,5 @@ urlpatterns = [
         "me/friends/",
         include("users.friends.urls", namespace="friends"),
     ),
+    path("me/blocks/", include("users.blocks.urls", namespace="blocks")),
 ]
