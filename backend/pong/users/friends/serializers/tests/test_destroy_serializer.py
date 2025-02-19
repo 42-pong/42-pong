@@ -148,3 +148,26 @@ class FriendshipCreateSerializerTests(TestCase):
             destroy_serializer.errors[FRIEND_USER_ID][0].code,
             users_constants.Code.NOT_EXISTS,
         )
+
+    def test_error_not_player(self) -> None:
+        """
+        紐づくPlayerが存在しないユーザー(superuser含む)をフレンドから削除しようとした場合にエラーになることを確認
+        """
+        # user2に紐づくPlayer情報のみ削除
+        players_models.Player.objects.get(user=self.user2).delete()
+        # user1が、Player情報を持たないuser2をフレンドから削除しようとする
+        friendship_data: dict = {
+            FRIEND_USER_ID: self.user2.id,
+        }
+        create_serializer: destroy_serializers.FriendshipDestroySerializer = (
+            destroy_serializers.FriendshipDestroySerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
+        )
+
+        self.assertFalse(create_serializer.is_valid())
+        self.assertIn(FRIEND_USER_ID, create_serializer.errors)
+        self.assertEqual(
+            create_serializer.errors[FRIEND_USER_ID][0].code,
+            CODE_NOT_EXISTS,
+        )

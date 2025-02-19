@@ -180,6 +180,32 @@ class FriendsListViewTests(test.APITestCase):
             ],
         )
 
+    def test_200_exists_non_player(self) -> None:
+        """
+        紐づくPlayerが存在しないユーザー(superuser含む)はフレンド一覧に含まれないことを確認
+        """
+        # user3をフレンドから削除はせず、紐づくPlayer情報のみ削除
+        players_models.Player.objects.get(user=self.user3).delete()
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # user2のみフレンド一覧に表示される
+        self.assertEqual(
+            response.data[DATA],
+            [
+                {
+                    FRIEND: {
+                        ID: self.user2.id,
+                        USERNAME: self.user_data2[USERNAME],
+                        DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
+                        AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                        IS_FRIEND: True,
+                        # todo: is_blocked,is_online,win_match,lose_match追加
+                    },
+                },
+            ],
+        )
+
     def test_401_unauthenticated_user(self) -> None:
         """
         認証されていないユーザーがフレンド一覧を取得しようとするとエラーになることを確認

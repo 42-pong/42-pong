@@ -161,3 +161,26 @@ class FriendshipCreateSerializerTests(TestCase):
         )
 
     # todo: requestから取得するfriend_user_idがNoneの場合のテストを追加(今は自動でcode="null"が返る)
+
+    def test_error_not_player(self) -> None:
+        """
+        紐づくPlayerが存在しないユーザー(superuser含む)をフレンドに追加しようとした場合にエラーになることを確認
+        """
+        # user2に紐づくPlayer情報のみ削除
+        players_models.Player.objects.get(user=self.user2).delete()
+        # user1が、Player情報を持たないuser2をフレンドに追加しようとする
+        friendship_data: dict = {
+            FRIEND_USER_ID: self.user2.id,
+        }
+        create_serializer: create_serializers.FriendshipCreateSerializer = (
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
+        )
+
+        self.assertFalse(create_serializer.is_valid())
+        self.assertIn(FRIEND_USER_ID, create_serializer.errors)
+        self.assertEqual(
+            create_serializer.errors[FRIEND_USER_ID][0].code,
+            CODE_NOT_EXISTS,
+        )

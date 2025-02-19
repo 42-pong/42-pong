@@ -3,6 +3,7 @@ from typing import Optional
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import transaction
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
 from rest_framework import (
@@ -133,7 +134,7 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             400: utils.OpenApiResponse(
-                description="Invalid friend_user_id",
+                description="Invalid friend_user_id (複数例あり)",
                 response={
                     "type": "object",
                     "properties": {
@@ -232,7 +233,7 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             404: utils.OpenApiResponse(
-                description="Invalid friend_user_id",
+                description="Invalid friend_user_id (複数例あり)",
                 response={
                     "type": "object",
                     "properties": {
@@ -295,7 +296,9 @@ logger = logging.getLogger(__name__)
     ),
 )
 class FriendsViewSet(viewsets.ModelViewSet):
-    queryset = models.Friendship.objects.all().select_related("user", "friend")
+    queryset = models.Friendship.objects.filter(
+        Q(friend__player__isnull=False)
+    ).select_related("user", "friend")
     permission_classes = (permissions.IsAuthenticated,)
 
     # URLから取得するID名
