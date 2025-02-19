@@ -1,7 +1,7 @@
+import { Endpoints } from "../../constants/Endpoints";
 import { FrontendMessage } from "../../constants/message/FrontendMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
-import { Endpoints } from "../../constants/Endpoints";
 
 export class LoginContainer extends Component {
   #container;
@@ -83,8 +83,6 @@ export class LoginContainer extends Component {
       const email = this.#form.elements.email.value;
       const password = this.#form.elements.password.value;
       try {
-        // todo
-        // FEの画面に表示するエラーを実装
         const response = await fetch(Endpoints.TOKEN.href, {
           method: "POST",
           headers: {
@@ -105,7 +103,7 @@ export class LoginContainer extends Component {
         }
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
         // todo
-        // responseからaccess,refresh tokenを取得する
+        // access tokenとrefresh tokenの管理を行う
         console.log("AccessToken:", res.data.access);
         console.log("RefreshToken:", res.data.refresh);
       } catch (error) {

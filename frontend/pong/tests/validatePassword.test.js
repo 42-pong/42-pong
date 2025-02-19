@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { validatePassword } from "../js/utils/validator/validatePassword";
 import { MessageEnums } from "../js/enums/MessageEnums";
+import { validatePassword } from "../js/utils/validator/validatePassword";
 
 describe("validatePassword", () => {
   it("should return valid for a correct password format", () => {
@@ -47,7 +47,7 @@ describe("validatePassword", () => {
     const result = validatePassword("12345678");
     expect(result).toEqual({
       valid: false,
-      message: MessageEnums.AuthCode.PASSWROD_INVALID_ALL_NUMS,
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_ALL_NUMS,
     });
   });
 });

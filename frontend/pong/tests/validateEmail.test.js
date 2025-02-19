@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { validateEmail } from "../js/utils/validator/validateEmail";
 import { MessageEnums } from "../js/enums/MessageEnums";
+import { validateEmail } from "../js/utils/validator/validateEmail";
 
 describe("validateEmail", () => {
   it("should return valid for a correct email format", () => {
