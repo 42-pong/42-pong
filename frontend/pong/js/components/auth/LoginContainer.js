@@ -96,6 +96,7 @@ export class LoginContainer extends Component {
         const res = await response.json();
 
         if (res.status !== "ok") {
+          this.#form.reset();
           this.#loginError.textContent =
             FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
           this.#loginError.style.display = "block"; //エラーメッセージを表示する
@@ -107,7 +108,7 @@ export class LoginContainer extends Component {
         console.log("AccessToken:", res.data.access);
         console.log("RefreshToken:", res.data.refresh);
       } catch (error) {
-        console.log(error);
+        console.error("ログインエラー:", error);
       }
     });
   }
