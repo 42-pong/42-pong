@@ -1,3 +1,4 @@
+import { BootstrapBorders } from "../../bootstrap/utilities/borders";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { Component } from "../../core/Component";
 import { DataSubject } from "../../core/DataSubject";
@@ -30,5 +31,9 @@ export class ObservableInput extends Component {
 
   _render() {
     this.append(this.#input);
+  }
+
+  setError() {
+    BootstrapBorders.setDanger(this.#input);
   }
 }
