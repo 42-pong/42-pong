@@ -1,6 +1,8 @@
 import logging
+from typing import Optional
 
 from django.contrib.auth.models import AnonymousUser, User
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
@@ -18,7 +20,7 @@ from pong.custom_response import custom_response
 from users import constants as users_constants
 
 from . import constants, models
-from .serializers import list_serializers
+from .serializers import create_serializers, list_serializers
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +94,119 @@ logger = logging.getLogger(__name__)
             ),
         },
     ),
+    create=utils.extend_schema(
+        request=utils.OpenApiRequest(
+            create_serializers.BlockRelationshipCreateSerializer,
+            examples=[
+                utils.OpenApiExample(
+                    "Example request",
+                    value={
+                        constants.BlockRelationshipFields.BLOCKED_USER_ID: 1
+                    },
+                ),
+            ],
+        ),
+        responses={
+            201: utils.OpenApiResponse(
+                description="Successfully added a new user to the authenticated user's block list.",
+                response=create_serializers.BlockRelationshipCreateSerializer,
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 201 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: {
+                                constants.BlockRelationshipFields.BLOCKED_USER: {
+                                    accounts_constants.UserFields.ID: 2,
+                                    accounts_constants.UserFields.USERNAME: "username2",
+                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                    users_constants.UsersFields.IS_FRIEND: False,
+                                    # todo: is_blocked,is_online,win_match,lose_match追加
+                                },
+                            },
+                        },
+                    ),
+                ],
+            ),
+            400: utils.OpenApiResponse(
+                description="Invalid blocked_user_id (複数例あり)",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 400 response - not_exists",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.NOT_EXISTS
+                            ],
+                        },
+                    ),
+                    utils.OpenApiExample(
+                        "Example 400 response - invalid",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INVALID
+                            ],
+                        },
+                    ),
+                    utils.OpenApiExample(
+                        "Example 400 response - internal_error",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
+                        },
+                    ),
+                ],
+            ),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
+        },
+    ),
 )
 class BlocksViewSet(viewsets.ViewSet):
     queryset = models.BlockRelationship.objects.filter(
@@ -99,7 +214,7 @@ class BlocksViewSet(viewsets.ViewSet):
     ).select_related("user", "blocked_user")
     permission_classes = (permissions.IsAuthenticated,)
 
-    http_method_names = ["get"]
+    http_method_names = ["get", "post"]
 
     def handle_exception(self, exc: Exception) -> response.Response:
         """
@@ -173,3 +288,76 @@ class BlocksViewSet(viewsets.ViewSet):
         自動的に使用できるが仕様上不要なため、405を返しswagger-uiに表示されないようにしている
         """
         return response.Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # --------------------------------------------------------------------------
+    # POST method
+    # --------------------------------------------------------------------------
+    def _create_block_relationship_serializer(
+        self, user_id: int, blocked_user_id: Optional[int]
+    ) -> create_serializers.BlockRelationshipCreateSerializer:
+        block_relationship_data: dict = {
+            constants.BlockRelationshipFields.BLOCKED_USER_ID: blocked_user_id
+        }
+        return create_serializers.BlockRelationshipCreateSerializer(
+            data=block_relationship_data,
+            context={constants.BlockRelationshipFields.USER_ID: user_id},
+        )
+
+    def _handle_create_validation_error(
+        self, errors: dict, user_id: int, blocked_user_id: Optional[int]
+    ) -> response.Response:
+        try:
+            # blocked_user_idしか入っていない想定のためignoreで対応
+            code: str = errors.get(  # type: ignore
+                constants.BlockRelationshipFields.BLOCKED_USER_ID
+            )[0].code
+            # codeの取得に成功した場合
+            logger.error(
+                f"[400] ValidationError: failed to create block_relationship\
+                (user_id={user_id},blocked_user_id={blocked_user_id}): code={code}: {errors}"
+            )
+            return custom_response.CustomResponse(
+                code=[code],
+                errors=errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            # codeの取得に失敗した場合
+            logger.error(
+                f"[500] Failed to create block_relationship\
+                (user_id={user_id},blocked_user_id={blocked_user_id}): {str(e)} from {errors}"
+            )
+            raise
+
+    def create(self, request: request.Request) -> response.Response:
+        """
+        自分のブロックリストに特定の新しいユーザーを追加するPOSTメソッド
+        """
+        # ログインユーザーの取得
+        user: User = self._get_authenticated_user(request.user)
+
+        # Noneの場合はそのままserializerに渡してエラーになる
+        blocked_user_id: Optional[int] = request.data.get(
+            constants.BlockRelationshipFields.BLOCKED_USER_ID
+        )
+        create_serializer: create_serializers.BlockRelationshipCreateSerializer = self._create_block_relationship_serializer(
+            user.id, blocked_user_id
+        )
+        try:
+            with transaction.atomic():
+                if not create_serializer.is_valid():
+                    return self._handle_create_validation_error(
+                        create_serializer.errors, user.id, blocked_user_id
+                    )
+                create_serializer.save()
+            # todo: logger.info追加
+            return custom_response.CustomResponse(
+                data=create_serializer.data, status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            # DatabaseErrorなど
+            logger.error(
+                f"[500] Failed to create block_relationship\
+                (user_id={user.id},blocked_user_id={blocked_user_id}): {str(e)}"
+            )
+            raise
