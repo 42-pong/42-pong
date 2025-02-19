@@ -205,12 +205,15 @@ class FriendsCreateViewTests(test.APITestCase):
 
     def test_401_unauthenticated_user(self) -> None:
         """
-        認証されていないユーザーがフレンド一覧を取得しようとするとエラーになることを確認
+        認証されていないユーザーがフレンド追加しようとするとエラーになることを確認
         """
         # 認証情報をクリア
         self.client.credentials()
+        friendship_data: dict = {
+            FRIEND_USER_ID: self.user2.id,
+        }
         response: drf_response.Response = self.client.post(
-            self.url, format="json"
+            self.url, friendship_data, format="json"
         )
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
