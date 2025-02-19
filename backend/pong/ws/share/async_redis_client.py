@@ -25,6 +25,9 @@ class AsyncRedisClient:
         """
         非同期の Redis クライアントを取得する。
         シングルトンとしてインスタンスを1つだけ作成する。
+
+        Exceptions：
+            redis.exceptions.ConnectionError: Redisサーバーに接続できない場合。
         """
         if cls._instance is None:
             cls._instance = redis.Redis(
@@ -50,6 +53,10 @@ class AsyncRedisClient:
         """
         指定したキーの Set に値を追加する。
         - `namespace="user", identifier="123", resource="channels"` → `"user:123:channels"` に `value` を追加
+
+        Exceptions：
+            redis.exceptions.ConnectionError: Redisサーバーに接続できない場合。
+            redis.exceptions.ResponseError: 登録した型と取り出す型が違う場合。
         """
         client = await cls.get_client()
         key = cls._generate_key(namespace, identifier, resource)
@@ -61,6 +68,10 @@ class AsyncRedisClient:
     ) -> None:
         """
         指定したキーの Set から値を削除し、空ならキーごと削除する。
+
+        Exceptions：
+            redis.exceptions.ConnectionError: Redisサーバーに接続できない場合。
+            redis.exceptions.ResponseError: 登録した型と取り出す型が違う場合。
         """
         client = await cls.get_client()
         key = cls._generate_key(namespace, identifier, resource)
@@ -75,6 +86,10 @@ class AsyncRedisClient:
     ) -> set[str]:
         """
         指定したキーの Set に含まれるすべての値をsetで取得。
+
+        Exceptions：
+            redis.exceptions.ConnectionError: Redisサーバーに接続できない場合。
+            redis.exceptions.ResponseError: 登録した型と取り出す型が違う場合。
         """
         client = await cls.get_client()
         key = cls._generate_key(namespace, identifier, resource)
@@ -87,6 +102,9 @@ class AsyncRedisClient:
         """
         指定したキーが1つ以上存在するか確認。
         ワイルドカードなどで複数に合致することもあるので、1以上だったらTrueを返す。
+
+        Exceptions：
+            redis.exceptions.ConnectionError: Redisサーバーに接続できない場合。
         """
         client = await cls.get_client()
         key = cls._generate_key(namespace, identifier, resource)
@@ -100,6 +118,9 @@ class AsyncRedisClient:
         指定したキーを削除。
         keyでワイルドカードが使用されれば複数のキーが削除される場合もある。
         存在しないキーを削除してもエラーにはならず、0を返す
+
+        Exceptions：
+            redis.exceptions.ConnectionError: Redisサーバーに接続できない場合。
         """
         client = await cls.get_client()
         key = cls._generate_key(namespace, identifier, resource)
@@ -109,6 +130,9 @@ class AsyncRedisClient:
     async def close(cls) -> None:
         """
         Redis クライアントを閉じる。
+
+        Exceptions：
+            redis.exceptions.ConnectionError: Redisサーバーに接続していないときにclose使用とした場合。
         """
         if cls._instance:
             await cls._instance.close()
