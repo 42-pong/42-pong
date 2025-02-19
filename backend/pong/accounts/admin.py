@@ -38,6 +38,7 @@ class AccountAdmin(ModelAdmin):
     # Playerに紐づくUserの情報をadminサイトで表示する為にはメソッド名をそのまま指定
     # メソッド名はアンダースコアがスペースに変換されてカラム名として扱われる
     list_display: tuple = (
+        constants.PlayerFields.ID,
         "user_id",
         "username",
         constants.PlayerFields.DISPLAY_NAME,

@@ -12,9 +12,10 @@ class Participation(models.Model):
     各試合におけるプレイヤーの情報を管理する。
 
     Attributes:
-        match : 参加している試合への外部キー。
-        player : 参加するプレイヤーへの外部キー。
-        team : プレイヤーが所属するチーム（"1", "2"）。
+        match   : 参加している試合への外部キー。
+        player  : 参加するプレイヤーへの外部キー。
+        team    : プレイヤーが所属するチーム（"1", "2"）。
+        is_win  : 試合に勝利したかどうかを表すフラッグ。
         created_at : 参加情報が作成された日時。
     """
 
@@ -36,7 +37,9 @@ class Participation(models.Model):
         ],
         default=constants.ParticipationFields.TeamEnum.ONE.value,
     )
+    is_win = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "match_participations"
