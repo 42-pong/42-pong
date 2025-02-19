@@ -17,6 +17,7 @@ PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
 
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
@@ -65,30 +66,31 @@ class FriendshipCreateSerializerTests(TestCase):
         """
         # user1がuser2をフレンドに追加する
         friendship_data: dict = {
-            USER_ID: self.user1.id,
             FRIEND_USER_ID: self.user2.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
         )
 
         # validate()確認
         self.assertTrue(create_serializer.is_valid())
         self.assertEqual(
-            create_serializer.validated_data,
-            {USER: {ID: self.user1.id}, FRIEND: {ID: self.user2.id}},
+            create_serializer.validated_data, {FRIEND: {ID: self.user2.id}}
         )
         # create()確認
         create_serializer.save()
         self.assertEqual(
             create_serializer.data,
             {
-                USER_ID: self.user1.id,
-                FRIEND_USER_ID: self.user2.id,
                 FRIEND: {
+                    ID: self.user2.id,
                     USERNAME: self.user_data_2[USERNAME],
                     DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
                     AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                    IS_FRIEND: True,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
                 },
             },
         )
@@ -99,11 +101,12 @@ class FriendshipCreateSerializerTests(TestCase):
         """
         # user1が自分自身をフレンドに追加しようとする
         friendship_data: dict = {
-            USER_ID: self.user1.id,
             FRIEND_USER_ID: self.user1.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
         )
 
         self.assertFalse(create_serializer.is_valid())
@@ -121,11 +124,12 @@ class FriendshipCreateSerializerTests(TestCase):
         models.Friendship.objects.create(user=self.user1, friend=self.user2)
         # 再度、user1がuser2をフレンドに追加しようとする
         friendship_data: dict = {
-            USER_ID: self.user1.id,
             FRIEND_USER_ID: self.user2.id,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
         )
 
         self.assertFalse(create_serializer.is_valid())
@@ -141,11 +145,12 @@ class FriendshipCreateSerializerTests(TestCase):
         """
         # user1が存在しないユーザーをフレンドに追加しようとする
         friendship_data: dict = {
-            USER_ID: self.user1.id,
             FRIEND_USER_ID: 9999,
         }
         create_serializer: create_serializers.FriendshipCreateSerializer = (
-            create_serializers.FriendshipCreateSerializer(data=friendship_data)
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
         )
 
         self.assertFalse(create_serializer.is_valid())
@@ -156,3 +161,26 @@ class FriendshipCreateSerializerTests(TestCase):
         )
 
     # todo: requestから取得するfriend_user_idがNoneの場合のテストを追加(今は自動でcode="null"が返る)
+
+    def test_error_not_player(self) -> None:
+        """
+        紐づくPlayerが存在しないユーザー(superuser含む)をフレンドに追加しようとした場合にエラーになることを確認
+        """
+        # user2に紐づくPlayer情報のみ削除
+        players_models.Player.objects.get(user=self.user2).delete()
+        # user1が、Player情報を持たないuser2をフレンドに追加しようとする
+        friendship_data: dict = {
+            FRIEND_USER_ID: self.user2.id,
+        }
+        create_serializer: create_serializers.FriendshipCreateSerializer = (
+            create_serializers.FriendshipCreateSerializer(
+                data=friendship_data, context={USER_ID: self.user1.id}
+            )
+        )
+
+        self.assertFalse(create_serializer.is_valid())
+        self.assertIn(FRIEND_USER_ID, create_serializer.errors)
+        self.assertEqual(
+            create_serializer.errors[FRIEND_USER_ID][0].code,
+            CODE_NOT_EXISTS,
+        )

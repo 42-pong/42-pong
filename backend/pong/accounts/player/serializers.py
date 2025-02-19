@@ -43,10 +43,4 @@ class PlayerSerializer(serializers.ModelSerializer):
             constants.PlayerFields.USER,
             constants.PlayerFields.DISPLAY_NAME,
             constants.PlayerFields.AVATAR,
-            constants.PlayerFields.CREATED_AT,
-            constants.PlayerFields.UPDATED_AT,
         )
-        extra_kwargs = {
-            constants.PlayerFields.CREATED_AT: {"read_only": True},
-            constants.PlayerFields.UPDATED_AT: {"read_only": True},
-        }

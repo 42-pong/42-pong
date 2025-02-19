@@ -166,3 +166,19 @@ class FriendsListViewTests(test.APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data[CODE][0], CODE_NOT_EXISTS)
+
+    def test_404_not_player(self) -> None:
+        """
+        紐づくPlayerが存在しないユーザー(superuser含む)をフレンドから削除しようとした場合にエラーになることを確認
+        """
+        # user2に紐づくPlayer情報のみ削除
+        players_models.Player.objects.get(user=self.user2).delete()
+        # user1が、Player情報を持たないuser2をフレンドから削除しようとする
+        response: drf_response.Response = self.client.delete(
+            self._create_url(self.user2.id)
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            response.data[CODE][0], users_constants.Code.NOT_EXISTS
+        )

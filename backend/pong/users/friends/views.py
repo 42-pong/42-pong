@@ -3,9 +3,17 @@ from typing import Optional
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import transaction
+from django.db.models import Q
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
-from rest_framework import permissions, request, response, status, viewsets
+from rest_framework import (
+    exceptions,
+    permissions,
+    request,
+    response,
+    status,
+    viewsets,
+)
 
 from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
@@ -34,12 +42,13 @@ logger = logging.getLogger(__name__)
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: [
                                 {
-                                    constants.FriendshipFields.USER_ID: 1,
-                                    constants.FriendshipFields.FRIEND_USER_ID: 2,
                                     constants.FriendshipFields.FRIEND: {
+                                        accounts_constants.UserFields.ID: 2,
                                         accounts_constants.UserFields.USERNAME: "username2",
                                         accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                        users_constants.UsersFields.IS_FRIEND: True,
+                                        # todo: is_blocked,is_online,win_match,lose_match追加
                                     },
                                 },
                                 {"...", "..."},
@@ -65,8 +74,27 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             # todo: 404は確定したら追加する
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     ),
     create=utils.extend_schema(
@@ -80,9 +108,33 @@ logger = logging.getLogger(__name__)
             ],
         ),
         responses={
-            201: create_serializers.FriendshipCreateSerializer,
+            201: utils.OpenApiResponse(
+                description="Successfully added a new user to the authenticated user's friends list.",
+                response=list_serializers.FriendshipListSerializer(many=True),
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 201 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: [
+                                {
+                                    constants.FriendshipFields.FRIEND: {
+                                        accounts_constants.UserFields.ID: 2,
+                                        accounts_constants.UserFields.USERNAME: "username2",
+                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                        users_constants.UsersFields.IS_FRIEND: True,
+                                        # todo: is_blocked,is_online,win_match,lose_match追加
+                                    },
+                                },
+                                {"...", "..."},
+                            ],
+                        },
+                    ),
+                ],
+            ),
             400: utils.OpenApiResponse(
-                description="Invalid friend_user_id",
+                description="Invalid friend_user_id (複数例あり)",
                 response={
                     "type": "object",
                     "properties": {
@@ -137,8 +189,27 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             # todo: 404は確定したら追加する
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     ),
     destroy=utils.extend_schema(
@@ -162,7 +233,7 @@ logger = logging.getLogger(__name__)
                 ],
             ),
             404: utils.OpenApiResponse(
-                description="Invalid friend_user_id",
+                description="Invalid friend_user_id (複数例あり)",
                 response={
                     "type": "object",
                     "properties": {
@@ -200,20 +271,62 @@ logger = logging.getLogger(__name__)
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     ),
 )
-# todo: 各メソッドにtry-exceptを書いて予期せぬエラー(実装上のミスを含む)の場合に500を返す
 class FriendsViewSet(viewsets.ModelViewSet):
-    queryset = models.Friendship.objects.all().select_related("user", "friend")
+    queryset = models.Friendship.objects.filter(
+        Q(friend__player__isnull=False)
+    ).select_related("user", "friend")
     permission_classes = (permissions.IsAuthenticated,)
 
     # URLから取得するID名
     lookup_field = "friend_id"
 
     http_method_names = ["get", "post", "delete"]
+
+    def handle_exception(self, exc: Exception) -> response.Response:
+        """
+        ModelViewSetのhandle_exception()をオーバーライド
+        viewでtry-exceptしていない例外をカスタムレスポンスに変換して返す
+        """
+        if isinstance(
+            exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
+        ):
+            logger.error(f"[401] Authentication error: {str(exc)}")
+            # 401はCustomResponseにせずそのまま返す
+            return super().handle_exception(exc)
+
+        logger.error(f"[500] Internal server error: {str(exc)}")
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        )
+        return response
 
     # --------------------------------------------------------------------------
     # GET method
@@ -234,7 +347,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
         # 自分のフレンド一覧を取得
         friends: QuerySet[models.Friendship] = self.queryset.filter(user=user)
         list_serializer: list_serializers.FriendshipListSerializer = (
-            list_serializers.FriendshipListSerializer(friends, many=True)
+            list_serializers.FriendshipListSerializer(
+                friends,
+                many=True,
+                context={constants.FriendshipFields.USER_ID: user.id},
+            )
         )
         # todo: logger.info追加
         return custom_response.CustomResponse(
@@ -258,11 +375,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
         self, user_id: int, friend_user_id: Optional[int]
     ) -> create_serializers.FriendshipCreateSerializer:
         friendship_data: dict = {
-            constants.FriendshipFields.USER_ID: user_id,
-            constants.FriendshipFields.FRIEND_USER_ID: friend_user_id,
+            constants.FriendshipFields.FRIEND_USER_ID: friend_user_id
         }
         return create_serializers.FriendshipCreateSerializer(
-            data=friendship_data
+            data=friendship_data,
+            context={constants.FriendshipFields.USER_ID: user_id},
         )
 
     def _handle_create_validation_error(
@@ -289,11 +406,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 f"[500] Failed to create friendship\
                 (user_id={user_id},friend_user_id={friend_user_id}): {str(e)} from {errors}"
             )
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise
 
     def create(self, request: request.Request) -> response.Response:
         """
@@ -331,11 +444,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 f"[500] Failed to create friendship\
                 (user_id={user.id},friend_user_id={friend_user_id}): {str(e)}"
             )
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise
 
     # --------------------------------------------------------------------------
     # DELETE method
@@ -344,11 +453,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
         self, user_id: int, friend_id: int
     ) -> destroy_serializers.FriendshipDestroySerializer:
         friendship_data: dict = {
-            constants.FriendshipFields.USER_ID: user_id,
-            constants.FriendshipFields.FRIEND_USER_ID: friend_id,
+            constants.FriendshipFields.FRIEND_USER_ID: friend_id
         }
         return destroy_serializers.FriendshipDestroySerializer(
-            data=friendship_data
+            data=friendship_data,
+            context={constants.FriendshipFields.USER_ID: user_id},
         )
 
     def _handle_destroy_validation_error(
@@ -375,11 +484,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 f"[500] Failed to delete friendship\
                 (user_id={user_id},friend_user_id={friend_id}): {str(e)} from {errors}"
             )
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise
 
     def destroy(
         self, request: request.Request, friend_id: int
@@ -419,8 +524,4 @@ class FriendsViewSet(viewsets.ModelViewSet):
                 f"[500] Failed to delete friendship\
                 (user_id={user.id},friend_user_id={friend_id}): {str(e)}"
             )
-            return custom_response.CustomResponse(
-                code=[users_constants.Code.INTERNAL_ERROR],
-                errors={"detail": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            raise

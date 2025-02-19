@@ -1,6 +1,9 @@
+import logging
+
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
 from rest_framework import (
+    exceptions,
     permissions,
     request,
     response,
@@ -15,14 +18,37 @@ from users.friends import constants as friends_constants
 
 from .. import constants, serializers
 
+logger = logging.getLogger(__name__)
+
 
 class UsersListView(views.APIView):
     """
     ユーザープロフィールの一覧を取得するビュー
     """
 
-    # todo: IsAuthenticatedに変更する。extend_schemaにも401を追加する
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def handle_exception(self, exc: Exception) -> response.Response:
+        """
+        APIViewのhandle_exception()をオーバーライド
+        viewでtry-exceptしていない例外をカスタムレスポンスに変換して返す
+        """
+        if isinstance(
+            exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
+        ):
+            logger.error(f"[401] Authentication error: {str(exc)}")
+            # 401はCustomResponseにせずそのまま返す
+            return super().handle_exception(exc)
+
+        logger.error(f"[500] Internal server error: {str(exc)}")
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        )
+        return response
 
     @utils.extend_schema(
         operation_id="get_users_list",
@@ -41,7 +67,7 @@ class UsersListView(views.APIView):
                                     accounts_constants.UserFields.ID: 2,
                                     accounts_constants.UserFields.USERNAME: "username1",
                                     accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                    accounts_constants.PlayerFields.AVATAR: "avatars/sample1.png",
+                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample1.png",
                                     constants.UsersFields.IS_FRIEND: False,
                                     # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
@@ -49,7 +75,7 @@ class UsersListView(views.APIView):
                                     accounts_constants.UserFields.ID: 3,
                                     accounts_constants.UserFields.USERNAME: "username2",
                                     accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                    accounts_constants.PlayerFields.AVATAR: "avatars/sample2.png",
+                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample2.png",
                                     constants.UsersFields.IS_FRIEND: False,
                                     # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
@@ -59,11 +85,45 @@ class UsersListView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
+                        },
+                    ),
+                ],
+            ),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     )
-    # todo: try-exceptで全体を囲って500を返す？
     def get(self, request: request.Request) -> response.Response:
         """
         ユーザープロフィール一覧を取得するGETメソッド
@@ -91,6 +151,7 @@ class UsersListView(views.APIView):
                 friends_constants.FriendshipFields.USER_ID: request.user.id
             },
         )
+        # todo: logger.info()追加
         return custom_response.CustomResponse(
             data=serializer.data, status=status.HTTP_200_OK
         )

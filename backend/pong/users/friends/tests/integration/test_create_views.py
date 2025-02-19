@@ -12,12 +12,14 @@ from users import constants as users_constants
 
 from ... import constants, models
 
+ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
 
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
@@ -100,12 +102,13 @@ class FriendsCreateViewTests(test.APITestCase):
         self.assertEqual(
             response.data[DATA],
             {
-                USER_ID: self.user1.id,
-                FRIEND_USER_ID: self.user2.id,
                 FRIEND: {
+                    ID: self.user2.id,
                     USERNAME: self.user_data2[USERNAME],
                     DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
                     AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                    IS_FRIEND: True,
+                    # todo: is_blocked,is_online,win_match,lose_match追加
                 },
             },
         )
@@ -170,6 +173,29 @@ class FriendsCreateViewTests(test.APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        self.assertEqual(
+            response.data[CODE][0], users_constants.Code.NOT_EXISTS
+        )
+        self.assertFalse(
+            models.Friendship.objects.filter(user=self.user1).exists()
+        )
+
+    def test_400_not_player(self) -> None:
+        """
+        紐づくPlayerが存在しないユーザー(superuser含む)をフレンドに追加しようとした場合に
+        エラーでcode=not_existsが返ることを確認
+        """
+        # user2に紐づくPlayer情報のみ削除
+        players_models.Player.objects.get(user=self.user2).delete()
+        # user1が、Player情報を持たないuser2をフレンドに追加しようとする
+        friendship_data: dict = {
+            FRIEND_USER_ID: self.user2.id,
+        }
+        response: drf_response.Response = self.client.post(
+            self.url, friendship_data, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             response.data[CODE][0], users_constants.Code.NOT_EXISTS
         )

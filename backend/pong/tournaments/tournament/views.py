@@ -1,3 +1,6 @@
+from typing import Optional
+
+from django.db.models import Q, QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
@@ -5,9 +8,11 @@ from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from rest_framework import viewsets
+from rest_framework import permissions, viewsets
 
 from matches import constants as matches_constants
+from pong import readonly_custom_renderer
+from pong.custom_response import custom_response
 
 from .. import constants as tournaments_constants
 from . import models, serializers
@@ -47,8 +52,8 @@ from . import models, serializers
                     OpenApiExample(
                         "Example 200 response",
                         value={
-                            "status": "ok",
-                            "data": [
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: [
                                 {
                                     tournaments_constants.TournamentFields.ID: 1,
                                     tournaments_constants.TournamentFields.STATUS: tournaments_constants.TournamentFields.StatusEnum.COMPLETED.value,
@@ -69,7 +74,7 @@ from . import models, serializers
                                                     matches_constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                                     "participations": [
                                                         {
-                                                            matches_constants.ParticipationFields.PLAYER_ID: 1,
+                                                            "user_id": 1,
                                                             matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.ONE.value,
                                                             matches_constants.ParticipationFields.IS_WIN: True,
                                                             "scores": [
@@ -82,7 +87,7 @@ from . import models, serializers
                                                             ],
                                                         },
                                                         {
-                                                            matches_constants.ParticipationFields.PLAYER_ID: 2,
+                                                            "user_id": 2,
                                                             matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.TWO.value,
                                                             matches_constants.ParticipationFields.IS_WIN: False,
                                                             "scores": [
@@ -109,7 +114,7 @@ from . import models, serializers
                                                     matches_constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                                     "participations": [
                                                         {
-                                                            matches_constants.ParticipationFields.PLAYER_ID: 3,
+                                                            "user_id": 3,
                                                             matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.ONE.value,
                                                             matches_constants.ParticipationFields.IS_WIN: False,
                                                             "scores": [
@@ -122,7 +127,7 @@ from . import models, serializers
                                                             ],
                                                         },
                                                         {
-                                                            matches_constants.ParticipationFields.PLAYER_ID: 4,
+                                                            "user_id": 4,
                                                             matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.TWO.value,
                                                             matches_constants.ParticipationFields.IS_WIN: True,
                                                             "scores": [
@@ -157,7 +162,7 @@ from . import models, serializers
                                                     matches_constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                                     "participations": [
                                                         {
-                                                            matches_constants.ParticipationFields.PLAYER_ID: 2,
+                                                            "user_id": 2,
                                                             matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.ONE.value,
                                                             matches_constants.ParticipationFields.IS_WIN: True,
                                                             "scores": [
@@ -170,7 +175,7 @@ from . import models, serializers
                                                             ],
                                                         },
                                                         {
-                                                            matches_constants.ParticipationFields.PLAYER_ID: 3,
+                                                            "user_id": 3,
                                                             matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.TWO.value,
                                                             matches_constants.ParticipationFields.IS_WIN: False,
                                                             "scores": [
@@ -206,6 +211,23 @@ from . import models, serializers
                     ),
                 ],
             ),
+            401: OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
+                        },
+                    ),
+                ],
+            ),
+            # todo: 詳細のschemaが必要であれば追加する
+            500: OpenApiResponse(description="Internal server error"),
         },
     ),
     retrieve=extend_schema(
@@ -218,8 +240,8 @@ from . import models, serializers
                     OpenApiExample(
                         "Example 200 response",
                         value={
-                            "status": "ok",
-                            "data": {
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: {
                                 tournaments_constants.TournamentFields.ID: 1,
                                 tournaments_constants.TournamentFields.STATUS: tournaments_constants.TournamentFields.StatusEnum.COMPLETED.value,
                                 tournaments_constants.TournamentFields.CREATED_AT: "2025-01-01T00:00:00.000000+09:00",
@@ -239,7 +261,7 @@ from . import models, serializers
                                                 matches_constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                                 "participations": [
                                                     {
-                                                        matches_constants.ParticipationFields.PLAYER_ID: 1,
+                                                        "user_id": 1,
                                                         matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.ONE.value,
                                                         matches_constants.ParticipationFields.IS_WIN: False,
                                                         "scores": [
@@ -252,7 +274,7 @@ from . import models, serializers
                                                         ],
                                                     },
                                                     {
-                                                        matches_constants.ParticipationFields.PLAYER_ID: 2,
+                                                        "user_id": 2,
                                                         matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.TWO.value,
                                                         matches_constants.ParticipationFields.IS_WIN: True,
                                                         "scores": [
@@ -279,7 +301,7 @@ from . import models, serializers
                                                 matches_constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                                 "participations": [
                                                     {
-                                                        matches_constants.ParticipationFields.PLAYER_ID: 3,
+                                                        "user_id": 3,
                                                         matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.ONE.value,
                                                         matches_constants.ParticipationFields.IS_WIN: True,
                                                         "scores": [
@@ -292,7 +314,7 @@ from . import models, serializers
                                                         ],
                                                     },
                                                     {
-                                                        matches_constants.ParticipationFields.PLAYER_ID: 4,
+                                                        "user_id": 4,
                                                         matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.TWO.value,
                                                         matches_constants.ParticipationFields.IS_WIN: False,
                                                         "scores": [
@@ -327,7 +349,7 @@ from . import models, serializers
                                                 matches_constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
                                                 "participations": [
                                                     {
-                                                        matches_constants.ParticipationFields.PLAYER_ID: 2,
+                                                        "user_id": 2,
                                                         matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.ONE.value,
                                                         matches_constants.ParticipationFields.IS_WIN: False,
                                                         "scores": [
@@ -340,7 +362,7 @@ from . import models, serializers
                                                         ],
                                                     },
                                                     {
-                                                        matches_constants.ParticipationFields.PLAYER_ID: 3,
+                                                        "user_id": 3,
                                                         matches_constants.ParticipationFields.TEAM: matches_constants.ParticipationFields.TeamEnum.TWO.value,
                                                         matches_constants.ParticipationFields.IS_WIN: True,
                                                         "scores": [
@@ -367,11 +389,69 @@ from . import models, serializers
                     ),
                 ],
             ),
+            401: OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
+                        },
+                    ),
+                ],
+            ),
+            404: OpenApiResponse(
+                description="Not Found",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                        custom_response.ERRORS: {"type": "dict"},
+                    },
+                },
+                examples=[
+                    OpenApiExample(
+                        "Example 404 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                custom_response.Code.INTERNAL_ERROR
+                            ],
+                            custom_response.ERRORS: {
+                                "id": "The resource does not exist."
+                            },
+                        },
+                    ),
+                ],
+            ),
+            # todo: 詳細のschemaが必要であれば追加する
+            500: OpenApiResponse(description="Internal server error"),
         },
     ),
 )
 class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = models.Tournament.objects.all().prefetch_related(
-        "round__matches__match_participations__scores"
-    )
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.TournamentSerializer
+    renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]
+
+    def get_queryset(self) -> QuerySet:
+        queryset = models.Tournament.objects.all().prefetch_related(
+            "round__matches__match_participations__scores"
+        )
+
+        filters = Q()
+
+        status: Optional[str] = self.request.query_params.get("status")
+        if status is not None:
+            filters &= Q(status=status)
+
+        user_id: Optional[str] = self.request.query_params.get("user-id")
+        if user_id is not None:
+            filters &= Q(tournament_participations__player__user_id=user_id)
+
+        return queryset.filter(filters)

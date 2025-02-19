@@ -3,6 +3,7 @@ import logging
 from django.contrib.auth.models import AnonymousUser, User
 from drf_spectacular import utils
 from rest_framework import (
+    exceptions,
     permissions,
     request,
     response,
@@ -27,6 +28,28 @@ class UsersMeView(views.APIView):
     # プロフィールを全て返すのでIsAuthenticatedをセットする必要がある
     permission_classes = [permissions.IsAuthenticated]
 
+    def handle_exception(self, exc: Exception) -> response.Response:
+        """
+        APIViewのhandle_exception()をオーバーライド
+        viewでtry-exceptしていない例外をカスタムレスポンスに変換して返す
+        """
+        if isinstance(
+            exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
+        ):
+            logger.error(f"[401] Authentication error: {str(exc)}")
+            # 401はCustomResponseにせずそのまま返す
+            return super().handle_exception(exc)
+
+        logger.error(f"[500] Internal server error: {str(exc)}")
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        )
+        return response
+
     @utils.extend_schema(
         request=None,
         responses={
@@ -43,7 +66,7 @@ class UsersMeView(views.APIView):
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.UserFields.EMAIL: "username1@example.com",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
+                                accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: False,
                                 # todo: is_blocked,is_online,win_match,lose_match追加
                             },
@@ -67,11 +90,29 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     )
-    # todo: try-exceptで全体を囲って500を返す？
     def get(self, request: request.Request) -> response.Response:
         """
         自分のユーザープロフィールを取得するGETメソッド
@@ -96,6 +137,7 @@ class UsersMeView(views.APIView):
                 context={friends_constants.FriendshipFields.USER_ID: user.id},
             )
         )
+        # todo: logger.info()追加
         return custom_response.CustomResponse(
             data=users_serializer.data,
             status=status.HTTP_200_OK,
@@ -128,7 +170,7 @@ class UsersMeView(views.APIView):
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.UserFields.EMAIL: "username1@example.com",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
+                                accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: False,
                                 # todo: is_blocked,is_online,win_match,lose_match追加
                             },
@@ -142,7 +184,7 @@ class UsersMeView(views.APIView):
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "dict"},
+                        custom_response.CODE: {"type": "list"},
                     },
                 },
                 examples=[
@@ -171,11 +213,29 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     )
-    # todo: try-exceptで全体を囲って500を返す
     def patch(self, request: request.Request) -> response.Response:
         """
         自分のユーザープロフィールを更新するPATCHメソッド
@@ -211,6 +271,7 @@ class UsersMeView(views.APIView):
             )
         # 更新
         users_serializer.save()
+        # todo: logger.info()追加
         return custom_response.CustomResponse(
             data=users_serializer.data,
             status=status.HTTP_200_OK,
