@@ -50,6 +50,22 @@ class UsersMeView(views.APIView):
         )
         return response
 
+    def _get_authenticated_user(self, user: User | AnonymousUser) -> User:
+        """
+        ログインユーザーを取得する
+        AnonymousUserの場合は各メソッド関数関数に入る前にpermission_classesで弾かれるはずだが、
+        AnonymousUserだとuser.id=Noneになったりuser.playerが使えずmypyでエラーになったりするため、
+        先にエラーとして例外を発生させる
+
+        Raises:
+            exceptions.NotAuthenticated: AnonymousUserの場合
+        """
+        if isinstance(user, AnonymousUser):
+            raise exceptions.NotAuthenticated(
+                "AnonymousUser is not authenticated."
+            )
+        return user
+
     @utils.extend_schema(
         request=None,
         responses={
@@ -117,19 +133,9 @@ class UsersMeView(views.APIView):
         """
         自分のユーザープロフィールを取得するGETメソッド
         """
-        # リクエストのtokenからuserを取得
-        user: User | AnonymousUser = request.user
-
-        # AnonymousUserの場合はget()に入る前にpermission_classesで弾かれるが、
-        # AnonymousUserだとuser.playerが使えずmypyでエラーになるため、事前にチェックが必要
-        if not hasattr(user, "player"):
-            # todo: この処理が必要ならlogger書く
-            return custom_response.CustomResponse(
-                code=[constants.Code.INTERNAL_ERROR],
-                errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
-            )
-
+        # ログインユーザーの取得
+        user: User = self._get_authenticated_user(request.user)
+        # serializer作成
         users_serializer: serializers.UsersSerializer = (
             serializers.UsersSerializer(
                 user.player,
@@ -240,15 +246,8 @@ class UsersMeView(views.APIView):
         """
         自分のユーザープロフィールを更新するPATCHメソッド
         """
-        # リクエストのtokenからuserを取得
-        user: User | AnonymousUser = request.user
-        if not hasattr(user, "player"):
-            # todo: この処理が必要ならlogger書く
-            return custom_response.CustomResponse(
-                code=[constants.Code.INTERNAL_ERROR],
-                errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
-            )
+        # ログインユーザーの取得
+        user: User = self._get_authenticated_user(request.user)
         # serializer作成
         users_serializer: serializers.UsersSerializer = (
             serializers.UsersSerializer(

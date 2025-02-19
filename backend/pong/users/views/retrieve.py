@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ObjectDoesNotExist
 from drf_spectacular import utils
 from rest_framework import (
@@ -49,6 +50,21 @@ class UsersRetrieveView(views.APIView):
             )
         )
         return response
+
+    def _get_authenticated_user(self, user: User | AnonymousUser) -> User:
+        """
+        ログインユーザーを取得する
+        AnonymousUserの場合は各メソッド関数関数に入る前にpermission_classesで弾かれるはずだが、
+        AnonymousUserだとuser.id=Noneになるので先にエラーとして例外を発生させる
+
+        Raises:
+            exceptions.NotAuthenticated: AnonymousUserの場合
+        """
+        if isinstance(user, AnonymousUser):
+            raise exceptions.NotAuthenticated(
+                "AnonymousUser is not authenticated."
+            )
+        return user
 
     @utils.extend_schema(
         operation_id="get_users_retrieve",
@@ -141,6 +157,8 @@ class UsersRetrieveView(views.APIView):
         Args:
             user_id: URLから取得したユーザーのID
         """
+        # ログインユーザーの取得
+        user: User = self._get_authenticated_user(request.user)
         try:
             # user_idに紐づくPlayerを取得
             player: player_models.Player = player_models.Player.objects.get(
@@ -167,9 +185,7 @@ class UsersRetrieveView(views.APIView):
                     constants.UsersFields.IS_FRIEND,
                     # todo: is_blocked,is_online,win_match,lose_match追加
                 ),
-                context={
-                    friends_constants.FriendshipFields.USER_ID: request.user.id
-                },
+                context={friends_constants.FriendshipFields.USER_ID: user.id},
             )
         )
         # todo: logger.info()追加
