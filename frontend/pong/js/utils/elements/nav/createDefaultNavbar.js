@@ -1,5 +1,6 @@
 import { BootstrapNavbar } from "../../../bootstrap/components/navbar";
 import { BootstrapContainers } from "../../../bootstrap/layout/containers";
+import { UserProfileHeader } from "../../../components/user/UserProfileHeader";
 import { createBrandAnchor } from "../anchor/createBrandAnchor";
 import { createElement } from "../createElement";
 import { createNavbarNavList } from "./createNavbarNavList";
@@ -12,12 +13,13 @@ export const createDefaultNavbar = (links) => {
   BootstrapNavbar.setNavbarBrand(brand);
 
   const navListWrapper = createElement("div");
-  navListWrapper.appendChild(navList);
+  navListWrapper.append(navList);
+
+  const profileHeader = new UserProfileHeader();
 
   const containerFluid = createElement("div");
   BootstrapContainers.setFluid(containerFluid);
-  containerFluid.appendChild(brand);
-  containerFluid.appendChild(navListWrapper);
+  containerFluid.append(brand, navListWrapper, profileHeader);
 
   const navbar = createElement("nav");
   BootstrapNavbar.setNavbarExpand(navbar);
