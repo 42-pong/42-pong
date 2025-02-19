@@ -20,7 +20,11 @@ from pong.custom_response import custom_response
 from users import constants as users_constants
 
 from . import constants, models
-from .serializers import create_serializers, list_serializers
+from .serializers import (
+    create_serializers,
+    destroy_serializers,
+    list_serializers,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -207,6 +211,88 @@ logger = logging.getLogger(__name__)
             ),
         },
     ),
+    destroy=utils.extend_schema(
+        request=destroy_serializers.BlockRelationshipDestroySerializer,
+        responses={
+            204: None,
+            # todo: 現在Djangoが自動で返している。CustomResponseが使えたら併せて変更する
+            401: utils.OpenApiResponse(
+                description="Not authenticated",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 401 response",
+                        value={
+                            "detail": "Authentication credentials were not provided."
+                        },
+                    ),
+                ],
+            ),
+            404: utils.OpenApiResponse(
+                description="Invalid blocked_user_id (複数例あり)",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 404 response - not_exists",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.NOT_EXISTS
+                            ],
+                        },
+                    ),
+                    utils.OpenApiExample(
+                        "Example 404 response - invalid",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INVALID
+                            ],
+                        },
+                    ),
+                    utils.OpenApiExample(
+                        "Example 404 response - internal_error",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
+        },
+    ),
 )
 class BlocksViewSet(viewsets.ViewSet):
     queryset = models.BlockRelationship.objects.filter(
@@ -214,7 +300,10 @@ class BlocksViewSet(viewsets.ViewSet):
     ).select_related("user", "blocked_user")
     permission_classes = (permissions.IsAuthenticated,)
 
-    http_method_names = ["get", "post"]
+    # URLから取得するID名
+    lookup_field = constants.BlockRelationshipFields.BLOCKED_USER_ID
+
+    http_method_names = ["get", "post", "delete"]
 
     def handle_exception(self, exc: Exception) -> response.Response:
         """
@@ -358,6 +447,82 @@ class BlocksViewSet(viewsets.ViewSet):
             # DatabaseErrorなど
             logger.error(
                 f"[500] Failed to create block_relationship\
+                (user_id={user.id},blocked_user_id={blocked_user_id}): {str(e)}"
+            )
+            raise
+
+    # --------------------------------------------------------------------------
+    # DELETE method
+    # --------------------------------------------------------------------------
+    def _create_destroy_serializer(
+        self, user_id: int, blocked_user_id: int
+    ) -> destroy_serializers.BlockRelationshipDestroySerializer:
+        block_relationship_data: dict = {
+            constants.BlockRelationshipFields.BLOCKED_USER_ID: blocked_user_id
+        }
+        return destroy_serializers.BlockRelationshipDestroySerializer(
+            data=block_relationship_data,
+            context={constants.BlockRelationshipFields.USER_ID: user_id},
+        )
+
+    def _handle_destroy_validation_error(
+        self, errors: dict, user_id: int, blocked_user_id: int
+    ) -> response.Response:
+        try:
+            # blocked_user_idしか入っていない想定のためignoreで対応
+            code: str = errors.get(  # type: ignore
+                constants.BlockRelationshipFields.BLOCKED_USER_ID
+            )[0].code
+            logger.error(
+                f"[404] ValidationError: failed to delete block_relationship\
+                (user_id={user_id},blocked_user_id={blocked_user_id}): {errors}"
+            )
+            return custom_response.CustomResponse(
+                # "not_exists" or "invalid" or "internal_error"
+                code=[code],
+                errors=errors,
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            # codeの取得に失敗した場合
+            logger.error(
+                f"[500] Failed to delete block_relationship\
+                (user_id={user_id},blocked_user_id={blocked_user_id}): {str(e)} from {errors}"
+            )
+            raise
+
+    def destroy(
+        self, request: request.Request, blocked_user_id: int
+    ) -> response.Response:
+        """
+        自分のブロックリストから特定のユーザーを削除するDELETEメソッド
+        """
+        # ログインユーザーの取得
+        user: User = self._get_authenticated_user(request.user)
+
+        destroy_serializer: destroy_serializers.BlockRelationshipDestroySerializer = self._create_destroy_serializer(
+            user.id, blocked_user_id
+        )
+        try:
+            with transaction.atomic():
+                if not destroy_serializer.is_valid():
+                    return self._handle_destroy_validation_error(
+                        destroy_serializer.errors, user.id, blocked_user_id
+                    )
+                block_relationship: models.BlockRelationship = (
+                    models.BlockRelationship.objects.get(
+                        user_id=user.id, blocked_user_id=blocked_user_id
+                    )
+                )
+                block_relationship.delete()
+            # todo: logger.info追加
+            return custom_response.CustomResponse(
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Exception as e:
+            # DatabaseErrorなど
+            logger.error(
+                f"[500] Failed to delete block_relationship\
                 (user_id={user.id},blocked_user_id={blocked_user_id}): {str(e)}"
             )
             raise
