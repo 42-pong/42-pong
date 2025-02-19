@@ -1,8 +1,7 @@
 import { FrontendMessage } from "../../constants/message/FrontendMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
-import { Endpoints } from "../../constants/Endpoints"
-
+import { Endpoints } from "../../constants/Endpoints";
 
 export class LoginContainer extends Component {
   #container;
@@ -84,13 +83,12 @@ export class LoginContainer extends Component {
       const email = this.#form.elements.email.value;
       const password = this.#form.elements.password.value;
       try {
-
         // todo
         // FEの画面に表示するエラーを実装
         const response = await fetch(Endpoints.TOKEN.href, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             email: email,
@@ -100,16 +98,16 @@ export class LoginContainer extends Component {
         const res = await response.json();
 
         if (res.status !== "ok") {
-          this.#loginError.textContent = FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
+          this.#loginError.textContent =
+            FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
           this.#loginError.style.display = "block"; //エラーメッセージを表示する
-          throw new Error(response.code)
+          throw new Error(response.code);
         }
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
         // todo
         // responseからaccess,refresh tokenを取得する
         console.log("AccessToken:", res.data.access);
         console.log("RefreshToken:", res.data.refresh);
-
       } catch (error) {
         console.log(error);
       }
