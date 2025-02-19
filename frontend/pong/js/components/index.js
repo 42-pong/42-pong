@@ -11,11 +11,10 @@ import { MainNavbar } from "./navigation/MainNavbar";
 import { TournamentContainer } from "./tournament/TournamentContainer";
 import { TournamentEntrance } from "./tournament/TournamentEntrance";
 import { TournamentFinished } from "./tournament/TournamentFinished";
+import { TournamentJoinButton } from "./tournament/TournamentJoinButton";
 import { TournamentOngoing } from "./tournament/TournamentOngoing";
 import { TournamentProgress } from "./tournament/TournamentProgress";
 import { TournamentProgressTransitionButton } from "./tournament/TournamentProgressTransitionButton";
-import { TournamentStageTransitionButton } from "./tournament/TournamentStageTransitionButton";
-import { TournamentStageTransitionButtonWithInput } from "./tournament/TournamentStageTransitionButtonWithInput";
 import { TournamentWaiting } from "./tournament/TournamentWaiting";
 import { BlockUserButton } from "./user/BlockUserButton";
 import { UserListContainer } from "./user/UserListContainer";
@@ -60,21 +59,16 @@ customElements.define(
 );
 customElements.define("tournament-entrance", TournamentEntrance, {});
 customElements.define("tournament-finished", TournamentFinished, {});
+customElements.define(
+  "tournament-join-button",
+  TournamentJoinButton,
+  {},
+);
 customElements.define("tournament-ongoing", TournamentOngoing, {});
 customElements.define("tournament-progress", TournamentProgress, {});
 customElements.define(
   "tournament-progress-transition-button",
   TournamentProgressTransitionButton,
-  {},
-);
-customElements.define(
-  "tournament-stage-transition-button",
-  TournamentStageTransitionButton,
-  {},
-);
-customElements.define(
-  "tournament-stage-transition-button-with-input",
-  TournamentStageTransitionButtonWithInput,
   {},
 );
 customElements.define("tournament-waiting", TournamentWaiting, {});
