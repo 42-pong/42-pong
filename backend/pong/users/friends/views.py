@@ -109,7 +109,7 @@ logger = logging.getLogger(__name__)
         responses={
             201: utils.OpenApiResponse(
                 description="Successfully added a new user to the authenticated user's friends list.",
-                response=list_serializers.FriendshipListSerializer(many=True),
+                response=create_serializers.FriendshipCreateSerializer,
                 examples=[
                     utils.OpenApiExample(
                         "Example 201 response",
