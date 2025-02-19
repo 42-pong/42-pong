@@ -115,19 +115,16 @@ logger = logging.getLogger(__name__)
                         "Example 201 response",
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
-                            custom_response.DATA: [
-                                {
-                                    constants.FriendshipFields.FRIEND: {
-                                        accounts_constants.UserFields.ID: 2,
-                                        accounts_constants.UserFields.USERNAME: "username2",
-                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
-                                        users_constants.UsersFields.IS_FRIEND: True,
-                                        # todo: is_blocked,is_online,win_match,lose_match追加
-                                    },
+                            custom_response.DATA: {
+                                constants.FriendshipFields.FRIEND: {
+                                    accounts_constants.UserFields.ID: 2,
+                                    accounts_constants.UserFields.USERNAME: "username2",
+                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                    users_constants.UsersFields.IS_FRIEND: True,
+                                    # todo: is_blocked,is_online,win_match,lose_match追加
                                 },
-                                {"...", "..."},
-                            ],
+                            },
                         },
                     ),
                 ],
