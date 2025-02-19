@@ -1,28 +1,40 @@
 import "./components";
-import { ChatGlobal } from "./components/chat/ChatGlobal";
+import { MainView } from "./components/views/MainView";
 import { PongEvents } from "./constants/PongEvents";
+import { Route } from "./core/Route";
 import { appRouter } from "./routers/appRouter";
-import { initWebSocket } from "./websocket";
+import { UserSessionManager } from "./session/UserSessionManager";
 
 function main() {
+  const app = document.getElementById("app");
   const appLocal = document.getElementById("app-local");
+  const appGlobal = document.getElementById("app-global");
   const router = appRouter(appLocal);
   const updateWindowPath = () => {
     router.update(window.location.pathname);
   };
+  window.addEventListener("popstate", updateWindowPath);
 
-  const app = document.getElementById("app");
   app.addEventListener(PongEvents.UPDATE_ROUTER.type, (event) => {
     const { path } = event.detail;
     const isUpdated = router.update(path);
     if (isUpdated) window.history.pushState({}, "", path);
   });
-  window.addEventListener("popstate", updateWindowPath);
-  initWebSocket();
 
-  const appGlobal = document.getElementById("app-global");
-  initGlobalFeatures(appGlobal);
-  updateWindowPath();
+  UserSessionManager.main({
+    app,
+    appLocal,
+    appGlobal,
+    updateWindowPath,
+    displayMainLoading: () =>
+      router.display(
+        Route.createRoute(MainView, MainView.Paths.LOADING),
+      ),
+    displayMainError: () =>
+      router.display(
+        Route.createRoute(MainView, MainView.Paths.ERROR),
+      ),
+  });
 }
 
 async function enableMocking() {
@@ -34,9 +46,3 @@ async function enableMocking() {
 }
 
 enableMocking().then(main);
-
-const initGlobalFeatures = (globalRoot) => {
-  const chatFeature = new ChatGlobal();
-
-  globalRoot.append(chatFeature);
-};
