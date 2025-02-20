@@ -36,7 +36,7 @@ charset-normalizer==3.4.1
     # via requests
 constantly==23.10.4
     # via twisted
-cryptography==44.0.0
+cryptography==44.0.1
     # via
     #   autobahn
     #   djangorestframework-simplejwt
@@ -122,7 +122,9 @@ pyopenssl==25.0.0
 pyyaml==6.0.2
     # via drf-spectacular
 redis==5.2.1
-    # via channels-redis
+    # via
+    #   -r requirements.in
+    #   channels-redis
 referencing==0.36.2
     # via
     #   jsonschema
