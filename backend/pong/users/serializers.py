@@ -3,7 +3,8 @@ from rest_framework import serializers
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from accounts.player import serializers as player_serializers
-from users.friends import constants, models
+from users.friends import constants as friends_constants
+from users.friends import models as friends_models
 
 from . import constants as users_constants
 
@@ -69,11 +70,13 @@ class UsersSerializer(serializers.Serializer):
         """
         if not hasattr(self, "_friendships_cache"):
             # ログインユーザーのフレンド全員をsetでキャッシュしておく
-            user_id: int = self.context[constants.FriendshipFields.USER_ID]
+            user_id: int = self.context[
+                friends_constants.FriendshipFields.USER_ID
+            ]
             self._friendships_cache: set[int] = set(
-                models.Friendship.objects.filter(user_id=user_id).values_list(
-                    "friend_id", flat=True
-                )
+                friends_models.Friendship.objects.filter(
+                    user_id=user_id
+                ).values_list("friend_id", flat=True)
             )
         return player.user.id in self._friendships_cache
 
