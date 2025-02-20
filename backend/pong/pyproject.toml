@@ -137,3 +137,6 @@ django_settings_module = "pong.settings"
 [tool.pytest.ini_options]
 python_files = "pytest_*.py"
 DJANGO_SETTINGS_MODULE = "pong.settings"
+# 非同期テスト用のイベントループのスコープを指定。
+# 各テスト関数ごとに新しいasyncioイベントループを作成し、テスト終了後に破棄する。
+asyncio_default_fixture_loop_scope = "function"
