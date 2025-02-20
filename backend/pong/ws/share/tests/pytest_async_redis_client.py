@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
+from pytest_mock import MockerFixture
 
 # AsyncRedisClientをtype: ignoreしているのでそのimport先でもtype: ignoreが必要
 from ws.share.async_redis_client import AsyncRedisClient  # type: ignore
@@ -21,7 +22,7 @@ test内で使われているassert関数の説明
 
 # defaultでscope=functionなので関数ごとに呼ばれる
 @pytest.fixture(autouse=True)
-def reset_redis_client():
+def reset_redis_client() -> None:
     """
     テスト実行ごとにシングルトンのインスタンスをリセット
     すべてのテストでRedisインスタンスはモックで作成しているのでcloseする必要はない
@@ -30,7 +31,7 @@ def reset_redis_client():
 
 
 @pytest.mark.asyncio
-async def test_get_client_called_once(mocker):
+async def test_get_client_called_once(mocker: MockerFixture) -> None:
     """get_client() を100回呼んでも Redis インスタンスが1回しか作成されないことを確認"""
     # AsyncRedisClient.get_client()内で使用されるredis.asyncio.Redisをモック
     mock_redis = mocker.patch("redis.asyncio.Redis", autospec=True)
@@ -43,7 +44,7 @@ async def test_get_client_called_once(mocker):
 
 
 @pytest.mark.asyncio
-async def test_close(mocker):
+async def test_close(mocker: MockerFixture) -> None:
     """close() 関数が Redis の close() を正しく呼び出しているかをテスト"""
     mock_redis_instance = AsyncMock()
     # AsyncRedisClient.get_client()内で使用されるredis.asyncio.Redisをモック
@@ -56,8 +57,8 @@ async def test_close(mocker):
 
 
 @pytest.mark.asyncio
-async def test_sadd_value(mocker):
-    """sadd_value() が Redis の sadd() を正しく呼び出しているかをテスト"""
+async def test_sadd_value(mocker: MockerFixture) -> None:
+    """sadd_value() が Redis の sadd_value() を正しく呼び出しているかをテスト"""
     mock_redis_instance = AsyncMock()
     # AsyncRedisClient.get_client()をモック
     mocker.patch.object(
@@ -72,8 +73,8 @@ async def test_sadd_value(mocker):
 
 
 @pytest.mark.asyncio
-async def test_srem_value(mocker):
-    """srem_value() が Redis の srem() を正しく呼び出し、セットが空なら delete() を呼ぶかテスト"""
+async def test_srem_value(mocker: MockerFixture) -> None:
+    """srem_value() が Redis の srem_value() を正しく呼び出し、セットが空なら delete_key() を呼ぶかテスト"""
     mock_redis_instance = AsyncMock()
     # AsyncRedisClient.get_client()をモック
     mocker.patch.object(
@@ -91,8 +92,8 @@ async def test_srem_value(mocker):
 
 
 @pytest.mark.asyncio
-async def test_smembers_value(mocker):
-    """smembers_value() が Redis の smembers() を正しく呼び出しているかをテスト"""
+async def test_smembers_value(mocker: MockerFixture) -> None:
+    """smembers_value() が Redis の smembers_value() を正しく呼び出しているかをテスト"""
     mock_redis_instance = AsyncMock()
     # AsyncRedisClient.get_client()をモック
     mocker.patch.object(
@@ -107,7 +108,7 @@ async def test_smembers_value(mocker):
 
 
 @pytest.mark.asyncio
-async def test_exists(mocker):
+async def test_exists(mocker: MockerFixture) -> None:
     """exists() が Redis の exists() を正しく呼び出しているかをテスト"""
     mock_redis_instance = AsyncMock()
     # AsyncRedisClient.get_client()をモック
@@ -123,8 +124,8 @@ async def test_exists(mocker):
 
 
 @pytest.mark.asyncio
-async def test_delete_key(mocker):
-    """delete_key() が Redis の delete() を正しく呼び出しているかをテスト"""
+async def test_delete_key(mocker: MockerFixture) -> None:
+    """delete_key() が Redis の delete_key() を正しく呼び出しているかをテスト"""
     mock_redis_instance = AsyncMock()
     # AsyncRedisClient.get_client()をモック
     mocker.patch.object(
