@@ -56,9 +56,11 @@ test:
 	@if [ -z "$(ARG)" ]; then \
 		echo "Running all tests..."; \
 		python manage.py test -v2 --parallel; \
+		pytest -v -n auto; \
 	else \
 		echo "Running tests for: $(ARG)..."; \
 		python manage.py test $(ARG) -v2 --parallel; \
+		pytest $(ARG) -v -n auto || (test $$? -eq 5 && exit 0); \
 	fi
 
 # -------------------------------------------------------
