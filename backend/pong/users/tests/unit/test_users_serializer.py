@@ -19,6 +19,7 @@ USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
+IS_BLOCKED: Final[str] = constants.UsersFields.IS_BLOCKED
 
 USER_ID: Final[str] = friends_constants.FriendshipFields.USER_ID
 
@@ -84,7 +85,8 @@ class UsersSerializerTests(TestCase):
                     DISPLAY_NAME: self.player_data_1[DISPLAY_NAME],
                     AVATAR: self.player_1.avatar.url,
                     IS_FRIEND: False,
-                    # todo: is_blocked,is_online,win_match,lose_match追加
+                    IS_BLOCKED: False,
+                    # todo: is_online,win_match,lose_match追加
                 },
                 {
                     ID: self.user_2.id,
@@ -93,7 +95,8 @@ class UsersSerializerTests(TestCase):
                     DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
                     AVATAR: self.player_2.avatar.url,
                     IS_FRIEND: False,
-                    # todo: is_blocked,is_online,win_match,lose_match追加
+                    IS_BLOCKED: False,
+                    # todo: is_online,win_match,lose_match追加
                 },
             ],
         )
