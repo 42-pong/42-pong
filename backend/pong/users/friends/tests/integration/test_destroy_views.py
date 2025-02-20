@@ -26,7 +26,7 @@ CODE_NOT_EXISTS: Final[str] = users_constants.Code.NOT_EXISTS
 CODE_INTERNAL_ERROR: Final[str] = users_constants.Code.INTERNAL_ERROR
 
 
-class FriendsListViewTests(test.APITestCase):
+class FriendsDestroyViewTests(test.APITestCase):
     def setUp(self) -> None:
         """
         APITestCaseのsetUpメソッドのオーバーライド
