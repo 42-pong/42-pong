@@ -1,5 +1,8 @@
 SEPARATOR = @echo "----------------------------------------------"
 
+# 定数
+TESTCASE_DOESNOT_EXISTS = 5
+
 .PHONY: all
 all: check
 
@@ -60,7 +63,7 @@ test:
 	else \
 		echo "Running tests for: $(ARG)..."; \
 		python manage.py test $(ARG) -v2 --parallel; \
-		pytest $(ARG) -v -n auto || (test $$? -eq 5 && exit 0); \
+		pytest $(ARG) -v -n auto || (test $$? -eq $(TESTCASE_DOESNOT_EXISTS) && exit 0); \
 	fi
 
 # -------------------------------------------------------
