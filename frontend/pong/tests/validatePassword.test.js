@@ -23,7 +23,7 @@ describe("validatePassword", () => {
     const result = validatePassword("short");
     expect(result).toEqual({
       valid: false,
-      message: MessageEnums.AuthCode.PASSWORD_INVALID_MIN_LENGTH,
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_LENGTH,
     });
   });
 
@@ -31,7 +31,7 @@ describe("validatePassword", () => {
     const result = validatePassword("a".repeat(51));
     expect(result).toEqual({
       valid: false,
-      message: MessageEnums.AuthCode.PASSWORD_INVALID_MAX_LENGTH,
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_LENGTH,
     });
   });
 

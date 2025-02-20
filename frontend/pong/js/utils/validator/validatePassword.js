@@ -5,25 +5,25 @@ const isValidPasswordFormat = (password) => {
   if (!password) {
     return {
       valid: false,
-      message: MessageEnums.AuthCode.PASSWORD_INVALID_MIN_LENGTH,
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_LENGTH,
     };
   }
 
-  if (password.length < AuthConstants.MIN_LENGTH) {
+  if (password.length < AuthConstants.PASSWORD_MIN_LENGTH) {
     return {
       valid: false,
-      message: MessageEnums.AuthCode.PASSWORD_INVALID_MIN_LENGTH,
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_LENGTH,
     };
   }
 
-  if (password.length > AuthConstants.MAX_LENGTH) {
+  if (password.length > AuthConstants.PASSWORD_MAX_LENGTH) {
     return {
       valid: false,
-      message: MessageEnums.AuthCode.PASSWORD_INVALID_MAX_LENGTH,
+      message: MessageEnums.AuthCode.PASSWORD_INVALID_LENGTH,
     };
   }
 
-  if (!AuthConstants.VALID_CHARS.test(password)) {
+  if (!AuthConstants.PASSWORD_REGEX.test(password)) {
     return {
       valid: false,
       message: MessageEnums.AuthCode.PASSWORD_INVALID_CHAR,

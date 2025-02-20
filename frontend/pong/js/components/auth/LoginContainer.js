@@ -103,10 +103,10 @@ export class LoginContainer extends Component {
           throw new Error(response.code);
         }
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
-        // todo
         // access tokenとrefresh tokenの管理を行う
-        console.log("AccessToken:", res.data.access);
-        console.log("RefreshToken:", res.data.refresh);
+        // TODO delete
+        // console.log("AccessToken:", res.data.access);
+        // console.log("RefreshToken:", res.data.refresh);
       } catch (error) {
         console.error("ログインエラー:", error);
       }
