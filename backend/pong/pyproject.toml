@@ -133,3 +133,7 @@ plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
 django_settings_module = "pong.settings"
+
+[tool.pytest.ini_options]
+python_files = "pytest_*.py"
+DJANGO_SETTINGS_MODULE = "pong.settings"
