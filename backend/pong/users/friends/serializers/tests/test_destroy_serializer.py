@@ -26,7 +26,7 @@ CODE_NOT_EXISTS: Final[str] = users_constants.Code.NOT_EXISTS
 CODE_INTERNAL_ERROR: Final[str] = users_constants.Code.INTERNAL_ERROR
 
 
-class FriendshipCreateSerializerTests(TestCase):
+class FriendshipDestroySerializerTests(TestCase):
     def setUp(self) -> None:
         """
         TestCaseのsetUpメソッドのオーバーライド
