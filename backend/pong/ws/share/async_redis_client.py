@@ -17,8 +17,9 @@ class AsyncRedisClient:
 
     _instance = None
     HOST: Final[str] = "redis"
-    PORT: Final[int] = 6379
-    DB: Final[int] = 1  # デフォルトのデータベース
+    PORT: Final[int] = int(settings.REDIS_PORT)
+    DB: Final[int] = int(settings.REDIS_STORE_DB)  # デフォルトのデータベース
+    PASSWORD: Final[str] = settings.REDIS_PASSWORD
 
     @classmethod
     async def get_client(cls) -> redis.Redis:
@@ -34,7 +35,7 @@ class AsyncRedisClient:
                 host=cls.HOST,
                 port=cls.PORT,
                 db=cls.DB,
-                password=settings.REDIS_PASSWORD,
+                password=cls.PASSWORD,
                 decode_responses=True,
             )
         return cls._instance
