@@ -1,6 +1,8 @@
 from typing import Optional
 
 from channels.layers import BaseChannelLayer  # type: ignore
+from django.contrib.auth.models import User
+from rest_framework import serializers
 
 from ws.share.async_redis_client import AsyncRedisClient  # type: ignore
 
@@ -55,8 +57,18 @@ class LoginHandler:
             self.channel_handler.channel_name,
         )
 
-    async def validate_user_id(self, user_id):
+    async def _validate_user_id(self) -> None:
         """
         messageで受け取ったuser_idが有効かどうかバリデーションを行う
         """
-        pass
+        exists = None
+        # Noneなら呼ばれない想定だがtype checkのために確認
+        if isinstance(self.user_id, int):
+            # 非同期にUserを取得
+            exists = await User.objects.filter(id=self.user_id).aexists()
+
+        if not exists:
+            self.user_id = None
+            raise serializers.ValidationError(
+                f"Invalid user_id: {self.user_id}"
+            )
