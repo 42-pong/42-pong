@@ -69,6 +69,16 @@ class LoginHandler:
 
         if not exists:
             self.user_id = None
+            await self._send_login_result(login_constants.Status.ERROR.value)
             raise serializers.ValidationError(
                 f"Invalid user_id: {self.user_id}"
             )
+
+    async def _send_login_result(self, login_status: str) -> None:
+        message = {
+            ws_constants.Category.key(): ws_constants.Category.LOGIN,
+            ws_constants.PAYLOAD_KEY: {login_constants.Status: login_status},
+        }
+        await self.channel_handler.send_to_consumer(
+            message, self.channel_handler.channel_name
+        )
