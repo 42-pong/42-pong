@@ -48,7 +48,8 @@ logger = logging.getLogger(__name__)
                                         accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                         users_constants.UsersFields.IS_FRIEND: True,
-                                        # todo: is_blocked,is_online,win_match,lose_match追加
+                                        users_constants.UsersFields.IS_BLOCKED: False,
+                                        # todo: is_online,win_match,lose_match追加
                                     },
                                 },
                                 {"...", "..."},
