@@ -16,3 +16,7 @@ parameterized
 channels-redis
 Pillow
 redis
+pytest-django
+pytest-asyncio
+pytest-mock
+pytest-xdist
