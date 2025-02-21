@@ -1,12 +1,19 @@
 import { Endpoints } from "../constants/Endpoints";
+import { WebSocketEnums } from "../enums/WebSocketEnums";
 
 export class WebSocketWrapper {
   #socket;
   #handlers;
 
-  constructor(url) {
-    this.#socket = null;
+  constructor() {
+    this.init(null);
+  }
+
+  init(socket) {
+    this.#socket = socket;
     this.#handlers = {};
+    for (const category of Object.values(WebSocketEnums.Category))
+      this.#handlers[category] = new Set();
   }
 
   get readyState() {
@@ -26,10 +33,7 @@ export class WebSocketWrapper {
     socket.addEventListener("message", this.onMessage.bind(this));
 
     const isConnected = await isOpenWebSocket(socket);
-    if (isConnected) {
-      this.#socket = socket;
-      this.#handlers = {};
-    }
+    if (isConnected) this.init(socket);
     return isConnected;
   }
 
@@ -37,13 +41,13 @@ export class WebSocketWrapper {
   close() {
     if (this.#socket === null) return;
     this.#socket.close();
-    this.#socket = null;
+    this.init(null);
   }
 
   onOpen(event) {}
 
   onClose(event) {
-    this.#socket = null;
+    this.init(null);
   }
 
   onError(event) {
@@ -52,17 +56,15 @@ export class WebSocketWrapper {
 
   onMessage(event) {
     const { category, payload } = JSON.parse(event.data);
-    const handler = this.#handlers[category];
-
-    if (handler) handler(payload);
+    for (const handler of this.#handlers[category]) handler(payload);
   }
 
   attachHandler(category, handler) {
-    this.#handlers[category] = handler;
+    this.#handlers[category].add(handler);
   }
 
-  detachHandler(category) {
-    delete this.#handlers[category];
+  detachHandler(category, handler) {
+    this.#handlers[category].delete(handler);
   }
 }
 
