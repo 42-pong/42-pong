@@ -7,6 +7,7 @@ from django.test import TestCase
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from users.blocks import models as blocks_models
 from users.friends import constants as friends_constants
 from users.friends import models as friends_models
 
@@ -222,3 +223,34 @@ class UsersSerializerTests(TestCase):
         )
         # is_friendがFalseになっていることを確認
         self.assertFalse(serializer.data[IS_FRIEND])
+
+    def test_is_blocked(self) -> None:
+        """
+        ブロックするとis_blockedがTrue、ブロック解除をするとFalseになることを確認
+        """
+        # user1がuser2をブロック
+        block_relationship: blocks_models.BlockRelationship = (
+            blocks_models.BlockRelationship.objects.create(
+                user=self.user_1, blocked_user=self.user_2
+            )
+        )
+        # user2のPlayerを取得
+        blocked_player: player_models.Player = (
+            player_models.Player.objects.get(user=self.user_2)
+        )
+        # user1をログインユーザーとしてserializer作成
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            blocked_player,
+            context={USER_ID: self.user_1.id},
+        )
+        # is_blockedがTrueになっていることを確認
+        self.assertTrue(serializer.data[IS_BLOCKED])
+
+        # ブロック解除
+        block_relationship.delete()
+        serializer = serializers.UsersSerializer(
+            blocked_player,
+            context={USER_ID: self.user_1.id},
+        )
+        # is_blockedがFalseになっていることを確認
+        self.assertFalse(serializer.data[IS_BLOCKED])
