@@ -76,3 +76,24 @@ def already_block_validator(user_id: int, block_user_id: int) -> None:
             },
             code=users_constants.Code.INVALID,
         )
+
+
+def not_block_validator(user_id: int, block_user_id: int) -> None:
+    """
+    user_idがblock_user_idをブロックしていない場合に例外を発生させる
+    destroyのserializerのvalidate()で呼ばれる想定
+
+    Args:
+        user_id: リクエストを送信したユーザーのID
+        block_user_id: ブロック解除対象のユーザーのID
+
+    Raises:
+        serializers.ValidationError: ブロック解除したいユーザーをブロックしていない場合
+    """
+    if not _is_block_relationship_exists(user_id, block_user_id):
+        raise serializers.ValidationError(
+            {
+                constants.BlockRelationshipFields.BLOCKED_USER_ID: "The user is not blocked."
+            },
+            code=users_constants.Code.INVALID,
+        )
