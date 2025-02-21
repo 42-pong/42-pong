@@ -8,6 +8,7 @@ from django.test import TestCase
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from users.friends import constants as friends_constants
+from users.friends import models as friends_models
 
 from ... import constants, serializers
 
@@ -190,3 +191,34 @@ class UsersSerializerTests(TestCase):
         )
 
         self.assertEqual(serializer.data[AVATAR], self.player_1.avatar.url)
+
+    def test_is_friend(self) -> None:
+        """
+        フレンドに追加するとis_friendがTrue、フレンド関係を削除するとFalseになることを確認
+        """
+        # user1がuser2をフレンドに追加
+        friendship: friends_models.Friendship = (
+            friends_models.Friendship.objects.create(
+                user=self.user_1, friend=self.user_2
+            )
+        )
+        # user2のPlayerを取得
+        friend_player: player_models.Player = player_models.Player.objects.get(
+            user=self.user_2
+        )
+        # user1をログインユーザーとしてserializer作成
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            friend_player,
+            context={USER_ID: self.user_1.id},
+        )
+        # is_friendがTrueになっていることを確認
+        self.assertTrue(serializer.data[IS_FRIEND])
+
+        # フレンド関係を削除
+        friendship.delete()
+        serializer = serializers.UsersSerializer(
+            friend_player,
+            context={USER_ID: self.user_1.id},
+        )
+        # is_friendがFalseになっていることを確認
+        self.assertFalse(serializer.data[IS_FRIEND])
