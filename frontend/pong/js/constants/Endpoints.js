@@ -16,4 +16,8 @@ export const Endpoints = Object.freeze({
   },
   TOKEN: new URL("/api/token/", BASE_URL),
   FRIENDS: new URL("/api/users/me/friends/", BASE_URL),
+  PARTICIPATIONS: new URL(
+    "/api/tournaments/participations/",
+    BASE_URL,
+  ),
 });
