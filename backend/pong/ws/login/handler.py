@@ -58,8 +58,9 @@ class LoginHandler:
             login_constants.CHANNEL_RESOURCE,
             self.channel_handler.channel_name,
         )
+        # TODO: 現在フレンド登録している人のオンライン状況も送ってあげる
         await self._send_login_result(login_constants.Status.OK.value)
-        # TODO: followerに通知する処理をmessageルールが決まったら追加
+        # TODO: 接続数が0->1の時だけfollowerに通知する
 
     async def logout(self) -> None:
         """
@@ -73,7 +74,7 @@ class LoginHandler:
             self.channel_handler.channel_name,
         )
         self.user_id = None
-        # TODO: followerに通知する処理をmessageルールが決まったら追加
+        # TODO: 接続数が1->0の時だけfollowerに通知する
 
     async def _validate_user_id(self, input_user_id: int) -> None:
         """
