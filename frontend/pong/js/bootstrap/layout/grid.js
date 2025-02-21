@@ -1,5 +1,7 @@
 import { setClassNames } from "../../utils/elements/setClassNames";
 
+const FULL_COLUMN_COUNT = 12;
+
 const setContainer = (element) => {
   return setClassNames(element, "container");
 };
@@ -16,6 +18,7 @@ const setCol = (element, colSize, breakpoint = "") => {
 };
 
 export const BootstrapGrid = {
+  FULL_COLUMN_COUNT,
   setContainer,
   setRow,
   setCol,
