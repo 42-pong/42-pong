@@ -4,8 +4,8 @@ import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { Component } from "../../core/Component";
 import { TournamentEnums } from "../../enums/TournamentEnums";
 import { createElement } from "../../utils/elements/createElement";
+import { TournamentJoinButton } from "./TournamentJoinButton";
 import { TournamentProgressTransitionButton } from "./TournamentProgressTransitionButton";
-import { TournamentStageTransitionButton } from "./TournamentStageTransitionButton";
 
 export class TournamentWaiting extends Component {
   #toTournamentEntrance;
@@ -23,7 +23,7 @@ export class TournamentWaiting extends Component {
   }
 
   _onConnect() {
-    this.#toTournamentEntrance = new TournamentStageTransitionButton(
+    this.#toTournamentEntrance = new TournamentJoinButton(
       { textContent: "戻る" },
       {},
       TournamentEnums.Stage.ENTRANCE,
