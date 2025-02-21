@@ -6,7 +6,7 @@ from django.test import TestCase
 
 from accounts import constants
 
-from .. import models
+from ... import models
 
 USERNAME: Final[str] = constants.UserFields.USERNAME
 EMAIL: Final[str] = constants.UserFields.EMAIL
