@@ -35,10 +35,10 @@ class LoginHandler:
 
         Exceptions:
             ValidationError: user_idが有効でなかった場合
-            KeyError: user_idがint出なかった場合
+            KeyError: payload内のkeyが'user_id'ではなかった場合
         """
         # すでにログイン済みであれば無視
-        if self.user_id:
+        if self.user_id is not None:
             return
 
         self.user_id = payload[login_constants.USER_ID]
@@ -77,7 +77,7 @@ class LoginHandler:
         """
         messageで受け取ったuser_idが有効かどうかバリデーションを行う
         """
-        exists = None
+        exists = False
         # Noneなら呼ばれない想定だがtype checkのために確認
         if isinstance(self.user_id, int):
             # 非同期にUserを取得
