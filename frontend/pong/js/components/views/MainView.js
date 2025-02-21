@@ -20,6 +20,8 @@ export class MainView extends View {
     MYPAGE: "/mypage",
     TOURNAMENTS: "/tournaments",
     NOT_FOUND: "/not-found",
+    LOADING: "/loading",
+    ERROR: "/error",
   });
 
   _setStyle() {

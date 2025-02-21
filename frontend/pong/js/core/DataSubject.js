@@ -32,7 +32,7 @@ export class DataSubject {
   }
 
   observe(observer) {
-    observer(this.#data);
+    return observer(this.#data);
   }
 
   #notify() {
