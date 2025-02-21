@@ -41,16 +41,17 @@ class LoginHandler:
         if self.user_id is not None:
             return
 
-        self.user_id = payload[login_constants.USER_ID]
+        input_user_id: int = payload[login_constants.USER_ID]
 
         # バリデーション失敗したら例外を投げる
-        await self._validate_user_id()
-        await self._login()
+        await self._validate_user_id(input_user_id)
+        await self._login(input_user_id)
 
-    async def _login(self) -> None:
+    async def _login(self, input_user_id: int) -> None:
         """
         redisにlogin情報を登録
         """
+        self.user_id = input_user_id
         await AsyncRedisClient.sadd_value(
             login_constants.USER_NAMESPACE,
             self.user_id,
@@ -71,23 +72,23 @@ class LoginHandler:
             login_constants.CHANNEL_RESOURCE,
             self.channel_handler.channel_name,
         )
+        self.user_id = None
         # TODO: followerに通知する処理をmessageルールが決まったら追加
 
-    async def _validate_user_id(self) -> None:
+    async def _validate_user_id(self, input_user_id: int) -> None:
         """
         messageで受け取ったuser_idが有効かどうかバリデーションを行う
         """
         exists = False
         # Noneなら呼ばれない想定だがtype checkのために確認
-        if isinstance(self.user_id, int):
+        if isinstance(input_user_id, int):
             # 非同期にUserを取得
-            exists = await User.objects.filter(id=self.user_id).aexists()
+            exists = await User.objects.filter(id=input_user_id).aexists()
 
         if not exists:
-            self.user_id = None
             await self._send_login_result(login_constants.Status.ERROR.value)
             raise serializers.ValidationError(
-                f"Invalid user_id: {self.user_id}"
+                f"Invalid user_id: {input_user_id}"
             )
 
     async def _send_login_result(self, login_status: str) -> None:
