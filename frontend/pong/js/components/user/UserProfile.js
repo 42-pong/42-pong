@@ -12,7 +12,7 @@ import { BlockUserButton } from "./BlockUserButton";
 
 export class UserProfile extends Component {
   constructor(state) {
-    super({ userId: "", user: null, ...state });
+    super({ user: null, ...state });
   }
 
   _setStyle() {

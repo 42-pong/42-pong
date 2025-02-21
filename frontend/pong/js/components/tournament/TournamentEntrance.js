@@ -9,7 +9,7 @@ import { TournamentEnums } from "../../enums/TournamentEnums";
 import { WebSocketEnums } from "../../enums/WebSocketEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
-import { isValidTournamentId } from "../../utils/tournament/isValidTournamentId";
+import { isValidIdStr } from "../../utils/isValidIdStr";
 import { isValidDisplayName } from "../../utils/user/isValidDisplayName";
 import { LinkButton } from "../utils/LinkButton";
 import { ObservableInput } from "../utils/ObservableInput";
@@ -177,7 +177,7 @@ const createJoinWithInput = ({
   const getTournamentId = () =>
     inputTournamentId.subject.observe((data) => {
       const { value } = data;
-      if (!isValidTournamentId(value)) {
+      if (!isValidIdStr(value)) {
         inputTournamentId.setError();
         return { id: null, error: new Error() };
       }
