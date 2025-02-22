@@ -1,8 +1,12 @@
-import { View } from "../../core/View";
+import { AuthView } from "../../core/AuthView";
 import { LoginContainer } from "../auth/LoginContainer";
 
-export class LoginView extends View {
+export class LoginView extends AuthView {
   #main;
+
+  constructor(state = {}) {
+    super({ authType: AuthView.Type.PROHIBITED });
+  }
 
   _onConnect() {
     this.#main = new LoginContainer();
