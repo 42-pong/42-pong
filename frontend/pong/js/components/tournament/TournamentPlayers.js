@@ -7,15 +7,36 @@ import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { TournamentConstants } from "../../constants/TournamentConstants";
 import { Component } from "../../core/Component";
+import { WebSocketEnums } from "../../enums/WebSocketEnums";
+import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
 import { sliceWithDefaults } from "../../utils/sliceWithDefaults";
+import { isPlayerReload } from "../../utils/tournament/isPlayerReload";
 import { PlayerProfile } from "./PlayerProfile";
 
 export class TournamentPlayers extends Component {
+  #reloadPlayers;
+
   static #COLS_PER_ROW = 2;
 
   constructor(state = {}) {
     super({ tournamentId: null, participations: [], ...state });
+
+    this.#reloadPlayers = (payload) => {
+      const {
+        type,
+        data: { event },
+      } = payload;
+      if (!isPlayerReload(type, event)) return;
+
+      const { tournamentId } = this._getState();
+      getParticipations(tournamentId).then(
+        ({ participations, error }) => {
+          if (error) return;
+          this._updateState({ participations });
+        },
+      );
+    };
   }
 
   _setStyle() {
@@ -35,6 +56,18 @@ export class TournamentPlayers extends Component {
         if (error) return;
         this._updateState({ participations });
       },
+    );
+
+    UserSessionManager.getInstance().webSocket.attachHandler(
+      WebSocketEnums.Category.TOURNAMENT,
+      this.#reloadPlayers,
+    );
+  }
+
+  _onDisconnect() {
+    UserSessionManager.getInstance().webSocket.detachHandler(
+      WebSocketEnums.Category.TOURNAMENT,
+      this.#reloadPlayers,
     );
   }
 
