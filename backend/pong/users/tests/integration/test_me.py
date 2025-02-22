@@ -20,6 +20,7 @@ USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
+IS_BLOCKED: Final[str] = constants.UsersFields.IS_BLOCKED
 
 DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
@@ -91,7 +92,8 @@ class UsersMeViewTests(test.APITestCase):
                 DISPLAY_NAME: self.player_data[DISPLAY_NAME],
                 AVATAR: self.player.avatar.url,
                 IS_FRIEND: False,
-                # todo: is_blocked,is_online,win_match,lose_match追加
+                IS_BLOCKED: False,
+                # todo: is_online,win_match,lose_match追加
             },
         )
 

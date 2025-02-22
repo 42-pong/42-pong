@@ -14,4 +14,5 @@ class Code:
 @dataclasses.dataclass(frozen=True)
 class UsersFields:
     IS_FRIEND: Final[str] = "is_friend"
-    # todo: is_blocked,is_online,win_match,lose_match追加
+    IS_BLOCKED: Final[str] = "is_blocked"
+    # todo: is_online,win_match,lose_match追加
