@@ -111,14 +111,18 @@ class UsersSerializer(serializers.Serializer):
     ) -> player_models.Player:
         """
         Playerインスタンスを更新するupdate()のオーバーライド
+        更新するフィールドに新しい値を代入し、update_fieldsに指定する
         """
-        player.display_name = validated_data.get(
-            accounts_constants.PlayerFields.DISPLAY_NAME, player.display_name
-        )
+        update_fields: list[str] = []
+
+        # display_nameがあれば更新
+        if accounts_constants.PlayerFields.DISPLAY_NAME in validated_data:
+            player.display_name = validated_data[
+                accounts_constants.PlayerFields.DISPLAY_NAME
+            ]
+            update_fields.append(accounts_constants.PlayerFields.DISPLAY_NAME)
         # todo: avatarも新しいものを代入・save()のupdate_fieldsにも追加
 
         # create()をオーバーライドしない場合、update()内でsave()は必須
-        player.save(
-            update_fields=[accounts_constants.PlayerFields.DISPLAY_NAME]
-        )
+        player.save(update_fields=update_fields)
         return player
