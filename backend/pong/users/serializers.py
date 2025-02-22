@@ -1,3 +1,5 @@
+import os
+
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 
@@ -115,9 +117,11 @@ class UsersSerializer(serializers.Serializer):
         if player.avatar.name != "avatars/sample.png":
             player.avatar.delete(save=False)
 
+        # ファイル名を変更
+        # mypyにnew_avatar.nameがNoneの可能性を指摘されるが、ImageFieldのvalidatorでextensionがあることは確認済みのため無視
+        _, extension = os.path.splitext(new_avatar.name)  # type: ignore[type-var]
         # todo: 一意なためusernameをファイル名にしているが、良くない場合はuuidなどを追加する
-        # todo: 拡張子も新しい画像に合わせる
-        new_avatar.name = f"avatars/{player.user.username}.png"
+        new_avatar.name = f"avatars/{player.user.username}{extension}"
         return new_avatar
 
     def update(
