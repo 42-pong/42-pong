@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
@@ -106,12 +107,22 @@ class UsersSerializer(serializers.Serializer):
             )
         return player.user.id in self._blocked_relationships_cache
 
+    def _update_avatar(
+        self, player: player_models.Player, new_avatar: InMemoryUploadedFile
+    ) -> InMemoryUploadedFile:
+        # todo: 一意なためusernameをファイル名にしているが、良くない場合はuuidなどを追加する
+        # todo: 拡張子も新しい画像に合わせる
+        new_avatar.name = f"avatars/{player.user.username}.png"
+        return new_avatar
+
     def update(
         self, player: player_models.Player, validated_data: dict
     ) -> player_models.Player:
         """
         Playerインスタンスを更新するupdate()のオーバーライド
         更新するフィールドに新しい値を代入し、update_fieldsに指定する
+        display_nameはapplication/json、avatarはmultipart/form-dataで受け取るため、
+        どちらかのみ更新される
         """
         update_fields: list[str] = []
 
@@ -121,7 +132,14 @@ class UsersSerializer(serializers.Serializer):
                 accounts_constants.PlayerFields.DISPLAY_NAME
             ]
             update_fields.append(accounts_constants.PlayerFields.DISPLAY_NAME)
-        # todo: avatarも新しいものを代入・save()のupdate_fieldsにも追加
+
+        # avatarがあれば更新
+        if accounts_constants.PlayerFields.AVATAR in validated_data:
+            new_avatar: InMemoryUploadedFile = validated_data[
+                accounts_constants.PlayerFields.AVATAR
+            ]
+            player.avatar = self._update_avatar(player, new_avatar)
+            update_fields.append(accounts_constants.PlayerFields.AVATAR)
 
         # create()をオーバーライドしない場合、update()内でsave()は必須
         player.save(update_fields=update_fields)
