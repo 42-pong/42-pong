@@ -14,6 +14,7 @@ logger = logging.getLogger("django")
 
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self) -> None:
+        # TODO:login用のハンドラが作成したら追加
         # match用のハンドラを作成
         self.match_handler = match_handler.MatchHandler(
             self.channel_layer, self.channel_name
@@ -34,6 +35,7 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
             ]
             payload: dict = serializer.validated_data[ws_constants.PAYLOAD_KEY]
 
+            # TODO: LOGINメッセージルール確定したら追加
             match category:
                 case ws_constants.Category.MATCH.value:
                     await self.match_handler.handle(payload)

@@ -7,7 +7,9 @@ from django.test import TestCase
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from users.blocks import models as blocks_models
 from users.friends import constants as friends_constants
+from users.friends import models as friends_models
 
 from ... import constants, serializers
 
@@ -19,6 +21,7 @@ USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
+IS_BLOCKED: Final[str] = constants.UsersFields.IS_BLOCKED
 
 USER_ID: Final[str] = friends_constants.FriendshipFields.USER_ID
 
@@ -84,7 +87,8 @@ class UsersSerializerTests(TestCase):
                     DISPLAY_NAME: self.player_data_1[DISPLAY_NAME],
                     AVATAR: self.player_1.avatar.url,
                     IS_FRIEND: False,
-                    # todo: is_blocked,is_online,win_match,lose_match追加
+                    IS_BLOCKED: False,
+                    # todo: is_online,win_match,lose_match追加
                 },
                 {
                     ID: self.user_2.id,
@@ -93,7 +97,8 @@ class UsersSerializerTests(TestCase):
                     DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
                     AVATAR: self.player_2.avatar.url,
                     IS_FRIEND: False,
-                    # todo: is_blocked,is_online,win_match,lose_match追加
+                    IS_BLOCKED: False,
+                    # todo: is_online,win_match,lose_match追加
                 },
             ],
         )
@@ -187,3 +192,65 @@ class UsersSerializerTests(TestCase):
         )
 
         self.assertEqual(serializer.data[AVATAR], self.player_1.avatar.url)
+
+    def test_is_friend(self) -> None:
+        """
+        フレンドに追加するとis_friendがTrue、フレンド関係を削除するとFalseになることを確認
+        """
+        # user1がuser2をフレンドに追加
+        friendship: friends_models.Friendship = (
+            friends_models.Friendship.objects.create(
+                user=self.user_1, friend=self.user_2
+            )
+        )
+        # user2のPlayerを取得
+        friend_player: player_models.Player = player_models.Player.objects.get(
+            user=self.user_2
+        )
+        # user1をログインユーザーとしてserializer作成
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            friend_player,
+            context={USER_ID: self.user_1.id},
+        )
+        # is_friendがTrueになっていることを確認
+        self.assertTrue(serializer.data[IS_FRIEND])
+
+        # フレンド関係を削除
+        friendship.delete()
+        serializer = serializers.UsersSerializer(
+            friend_player,
+            context={USER_ID: self.user_1.id},
+        )
+        # is_friendがFalseになっていることを確認
+        self.assertFalse(serializer.data[IS_FRIEND])
+
+    def test_is_blocked(self) -> None:
+        """
+        ブロックするとis_blockedがTrue、ブロック解除をするとFalseになることを確認
+        """
+        # user1がuser2をブロック
+        block_relationship: blocks_models.BlockRelationship = (
+            blocks_models.BlockRelationship.objects.create(
+                user=self.user_1, blocked_user=self.user_2
+            )
+        )
+        # user2のPlayerを取得
+        blocked_player: player_models.Player = (
+            player_models.Player.objects.get(user=self.user_2)
+        )
+        # user1をログインユーザーとしてserializer作成
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            blocked_player,
+            context={USER_ID: self.user_1.id},
+        )
+        # is_blockedがTrueになっていることを確認
+        self.assertTrue(serializer.data[IS_BLOCKED])
+
+        # ブロック解除
+        block_relationship.delete()
+        serializer = serializers.UsersSerializer(
+            blocked_player,
+            context={USER_ID: self.user_1.id},
+        )
+        # is_blockedがFalseになっていることを確認
+        self.assertFalse(serializer.data[IS_BLOCKED])

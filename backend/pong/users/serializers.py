@@ -3,7 +3,10 @@ from rest_framework import serializers
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from accounts.player import serializers as player_serializers
-from users.friends import constants, models
+from users.blocks import constants as blocks_constants
+from users.blocks import models as blocks_models
+from users.friends import constants as friends_constants
+from users.friends import models as friends_models
 
 from . import constants as users_constants
 
@@ -28,9 +31,10 @@ class UsersSerializer(serializers.Serializer):
     avatar = player_serializers.PlayerSerializer().fields[
         accounts_constants.PlayerFields.AVATAR
     ]
-    # get_is_friend()の返り値が格納される
+    # `get_{field名}()`の返り値が格納される
     is_friend = serializers.SerializerMethodField()
-    # todo: is_blocked,is_online,win_match,lose_match追加
+    is_blocked = serializers.SerializerMethodField()
+    # todo: is_online,win_match,lose_match追加
 
     class Meta:
         model = player_models.Player
@@ -41,7 +45,8 @@ class UsersSerializer(serializers.Serializer):
             accounts_constants.PlayerFields.DISPLAY_NAME,
             accounts_constants.PlayerFields.AVATAR,
             users_constants.UsersFields.IS_FRIEND,
-            # todo: is_blocked,is_online,win_match,lose_match追加
+            users_constants.UsersFields.IS_BLOCKED,
+            # todo: is_online,win_match,lose_match追加
         )
 
     # args,kwargsは型ヒントが複雑かつそのままsuper()に渡したいためignoreで対処
@@ -69,13 +74,37 @@ class UsersSerializer(serializers.Serializer):
         """
         if not hasattr(self, "_friendships_cache"):
             # ログインユーザーのフレンド全員をsetでキャッシュしておく
-            user_id: int = self.context[constants.FriendshipFields.USER_ID]
+            user_id: int = self.context[
+                friends_constants.FriendshipFields.USER_ID
+            ]
             self._friendships_cache: set[int] = set(
-                models.Friendship.objects.filter(user_id=user_id).values_list(
-                    "friend_id", flat=True
-                )
+                friends_models.Friendship.objects.filter(
+                    user_id=user_id
+                ).values_list("friend_id", flat=True)
             )
         return player.user.id in self._friendships_cache
+
+    def get_is_blocked(self, player: player_models.Player) -> bool:
+        """
+        playerがログインユーザーにブロックされているかどうかを取得する
+
+        Args:
+            player: Playerインスタンス
+
+        Returns:
+            bool: ログインユーザーにブロックされていればTrue、そうでなければFalse
+        """
+        if not hasattr(self, "_blocked_relationships_cache"):
+            # ログインユーザーにブロックされているユーザー全員をsetでキャッシュしておく
+            user_id: int = self.context[
+                blocks_constants.BlockRelationshipFields.USER_ID
+            ]
+            self._blocked_relationships_cache: set[int] = set(
+                blocks_models.BlockRelationship.objects.filter(
+                    user_id=user_id
+                ).values_list("blocked_user_id", flat=True)
+            )
+        return player.user.id in self._blocked_relationships_cache
 
     def update(
         self, player: player_models.Player, validated_data: dict

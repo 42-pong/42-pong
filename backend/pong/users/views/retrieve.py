@@ -84,7 +84,8 @@ class UsersRetrieveView(views.APIView):
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
                                 accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: True,
-                                # todo: is_blocked,is_online,win_match,lose_match追加
+                                constants.UsersFields.IS_BLOCKED: False,
+                                # todo: is_online,win_match,lose_match追加
                             },
                         },
                     ),
@@ -183,7 +184,8 @@ class UsersRetrieveView(views.APIView):
                     accounts_constants.PlayerFields.DISPLAY_NAME,
                     accounts_constants.PlayerFields.AVATAR,
                     constants.UsersFields.IS_FRIEND,
-                    # todo: is_blocked,is_online,win_match,lose_match追加
+                    constants.UsersFields.IS_BLOCKED,
+                    # todo: is_online,win_match,lose_match追加
                 ),
                 context={friends_constants.FriendshipFields.USER_ID: user.id},
             )

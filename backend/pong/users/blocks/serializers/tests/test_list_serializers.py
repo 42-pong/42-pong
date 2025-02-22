@@ -19,6 +19,7 @@ USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
+IS_BLOCKED: Final[str] = users_constants.UsersFields.IS_BLOCKED
 
 USER_ID: Final[str] = constants.BlockRelationshipFields.USER_ID
 BLOCKED_USER: Final[str] = constants.BlockRelationshipFields.BLOCKED_USER
@@ -97,7 +98,8 @@ class BlockRelationshipListSerializerTests(TestCase):
                         DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
                         IS_FRIEND: False,
-                        # todo: is_blocked,is_online,win_match,lose_match追加
+                        IS_BLOCKED: True,
+                        # todo: is_online,win_match,lose_match追加
                     },
                 },
                 {
@@ -107,7 +109,8 @@ class BlockRelationshipListSerializerTests(TestCase):
                         DISPLAY_NAME: self.player_data_3[DISPLAY_NAME],
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
                         IS_FRIEND: False,
-                        # todo: is_blocked,is_online,win_match,lose_match追加
+                        IS_BLOCKED: True,
+                        # todo: is_online,win_match,lose_match追加
                     },
                 },
             ],

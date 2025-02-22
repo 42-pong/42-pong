@@ -21,7 +21,8 @@ class FriendshipCreateSerializer(serializers.ModelSerializer):
             accounts_constants.PlayerFields.DISPLAY_NAME,
             accounts_constants.PlayerFields.AVATAR,
             users_constants.UsersFields.IS_FRIEND,
-            # todo: is_blocked,is_online,win_match,lose_match追加
+            users_constants.UsersFields.IS_BLOCKED,
+            # todo: is_online,win_match,lose_match追加
         ),
     )
 
