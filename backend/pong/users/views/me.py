@@ -10,6 +10,7 @@ from rest_framework import (
     status,
     views,
 )
+from rest_framework.parsers import JSONParser, MultiPartParser
 
 from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
@@ -27,6 +28,8 @@ class UsersMeView(views.APIView):
 
     # プロフィールを全て返すのでIsAuthenticatedをセットする必要がある
     permission_classes = [permissions.IsAuthenticated]
+    # アバター画像用にMultiPartParserを追加
+    parser_classes = (JSONParser, MultiPartParser)
 
     def handle_exception(self, exc: Exception) -> response.Response:
         """
