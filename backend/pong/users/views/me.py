@@ -154,18 +154,27 @@ class UsersMeView(views.APIView):
         )
 
     @utils.extend_schema(
-        request=utils.OpenApiRequest(
-            serializers.UsersSerializer,
-            examples=[
-                utils.OpenApiExample(
-                    "Example request",
-                    value={
-                        accounts_constants.PlayerFields.DISPLAY_NAME: "new_name",
-                        # todo: avatarも追加？
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    accounts_constants.PlayerFields.DISPLAY_NAME: {
+                        "type": "string",
+                        "example": "new_name",
                     },
-                ),
-            ],
-        ),
+                },
+            },
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    accounts_constants.PlayerFields.AVATAR: {
+                        "type": "string",
+                        "format": "binary",
+                        "example": "example.png",
+                    },
+                },
+            },
+        },
         responses={
             200: utils.OpenApiResponse(
                 description="My user profile",
