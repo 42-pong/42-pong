@@ -110,6 +110,11 @@ class UsersSerializer(serializers.Serializer):
     def _update_avatar(
         self, player: player_models.Player, new_avatar: InMemoryUploadedFile
     ) -> InMemoryUploadedFile:
+        # 更新前の画像がデフォルト画像ではない場合は削除してから新しい画像を保存する
+        # todo: デフォルト画像がなくなったら、古いアバターを必ず削除するように変更
+        if player.avatar.name != "avatars/sample.png":
+            player.avatar.delete(save=False)
+
         # todo: 一意なためusernameをファイル名にしているが、良くない場合はuuidなどを追加する
         # todo: 拡張子も新しい画像に合わせる
         new_avatar.name = f"avatars/{player.user.username}.png"
