@@ -210,3 +210,33 @@ class UsersMeViewTests(test.APITestCase):
         self.assertEqual(self.player.avatar.name, "avatars/" + file_name)
         # todo: デフォルト画像がなくなったらtearDown()で必ず削除するように変更
         self.player.avatar.delete()  # 画像を削除
+
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列の場合", ""),
+            ("拡張子がない場合", "not_exist_extension"),
+            ("拡張子が不正な場合", "testuser.invalid_extension"),
+        ]
+    )
+    def test_patch_400_update_invalid_avatar(
+        self, testcase_name: str, new_file_name: str
+    ) -> None:
+        """
+        不正なファイル名でavatarを更新しようとするとエラーになることを確認
+        """
+        image_io: io.BytesIO = self._create_image(new_file_name)
+        response: drf_response.Response = self.client.patch(
+            self.url,
+            {AVATAR: image_io},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data[CODE], [constants.Code.INVALID])
+        self.assertIn(AVATAR, response.data[ERRORS])
+        # 画像がmediaディレクトリに保存されていないことを確認
+        if new_file_name:
+            self.assertFalse(os.path.exists(AVATAR_DIR + new_file_name))
+        # 最新のDBの情報に更新し、DBの値が変更されていないことを確認
+        self.player.refresh_from_db()
+        self.assertEqual(self.player.avatar.name, "avatars/sample.png")
