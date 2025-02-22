@@ -111,3 +111,33 @@ class CustomPaginationTests(TestCase):
                 RESULTS: [self.data3],  # 1アイテム
             },
         )
+
+    def test_get_200_non_item(self) -> None:
+        """
+        アイテムが0の場合、エラーにならず空のリストが返ることを確認
+        """
+        paginator: custom_pagination.CustomPagination = (
+            custom_pagination.CustomPagination()  # page_sizeの指定なし(デフォルト)
+        )
+        request: drf_request.Request = drf_request.Request(
+            self.factory.get("/")
+        )
+        # アイテム0という意味の空リストを渡す
+        paginated_data: Optional[list] = paginator.paginate_queryset(
+            [],  # type: ignore[arg-type]
+            request,
+        )
+        response: drf_response.Response = paginator.get_paginated_response(
+            paginated_data  # type: ignore[arg-type]
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data[DATA],
+            {
+                COUNT: 0,
+                NEXT: None,
+                PREVIOUS: None,
+                RESULTS: [],  # 0アイテム
+            },
+        )
