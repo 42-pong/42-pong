@@ -154,3 +154,23 @@ class ParticipationCommandSerializerTestCase(TestCase):
         self.assertIn(
             constants.ParticipationFields.RANKING, update_serializer.errors
         )
+
+    # TODO: ユニーク制約をシリアライザ―でできたら追加
+    # def test_unique_together_constraint(self):
+    #    """ユニーク制約が正しく適用されることを確認"""
+    #    # 既に存在する参加者のデータ
+    #    participation_models.Participation.objects.create(
+    #        tournament=self.tournament,
+    #        player=self.player,
+    #        participation_name="Player 1",
+    #    )
+
+    #    # 同じ組み合わせで再度データを作成しようとするとエラー
+    #    data = {
+    #        constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
+    #        constants.ParticipationFields.PLAYER_ID: self.player.id,
+    #        constants.ParticipationFields.PARTICIPATION_NAME: "Player 2",
+    #    }
+    #    serializer = ParticipationCommandSerializer(data=data)
+    #    with self.assertRaises(ValidationError):
+    #        serializer.is_valid(raise_exception=True)
