@@ -23,3 +23,29 @@ class TournamentQuerySerializer(drf_serializers.ModelSerializer):
             constants.TournamentFields.UPDATED_AT,
             "rounds",
         )
+
+
+class TournamentCommandSerializer(drf_serializers.ModelSerializer):
+    """
+    Tournamentモデルのコマンド(書き込み)操作のためのシリアライザ
+    """
+
+    class Meta:
+        model = models.Tournament
+        fields = (
+            constants.TournamentFields.ID,
+            constants.TournamentFields.STATUS,
+            constants.TournamentFields.CREATED_AT,
+            constants.TournamentFields.UPDATED_AT,
+        )
+        read_only_fields = (
+            constants.TournamentFields.ID,
+            constants.TournamentFields.CREATED_AT,
+            constants.TournamentFields.UPDATED_AT,
+        )
+        extra_kwargs = {
+            constants.TournamentFields.STATUS: {
+                "required": False,
+                "default": constants.TournamentFields.StatusEnum.NOT_STARTED.value,
+            }
+        }
