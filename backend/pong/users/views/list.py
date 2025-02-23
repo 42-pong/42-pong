@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.query import QuerySet
@@ -14,6 +15,7 @@ from rest_framework import (
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users.friends import constants as friends_constants
 
@@ -155,9 +157,15 @@ class UsersListView(views.APIView):
                 accounts_constants.PlayerFields.USER
             ).all()
         )
+        paginator: custom_pagination.CustomPagination = (
+            custom_pagination.CustomPagination()
+        )
+        paginated_players: Optional[list[player_models.Player]] = (
+            paginator.paginate_queryset(all_players_with_users, request)
+        )
         # 複数のオブジェクトをシリアライズ
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            all_players_with_users,
+            paginated_players,
             many=True,
             # emailは含めない
             fields=(
@@ -172,6 +180,4 @@ class UsersListView(views.APIView):
             context={friends_constants.FriendshipFields.USER_ID: user.id},
         )
         # todo: logger.info()追加
-        return custom_response.CustomResponse(
-            data=serializer.data, status=status.HTTP_200_OK
-        )
+        return paginator.get_paginated_response(list(serializer.data))
