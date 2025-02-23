@@ -64,7 +64,7 @@ class TournamentCommandSerializer(drf_serializers.ModelSerializer):
         # return data
         new_status = data.get(constants.TournamentFields.STATUS)
 
-        if self.instance:  # 更新時
+        if isinstance(self.instance, models.Tournament):
             # ON_GOING に変更する場合のバリデーション
             if (
                 new_status
