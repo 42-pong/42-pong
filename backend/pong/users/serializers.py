@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
@@ -108,6 +109,24 @@ class UsersSerializer(serializers.Serializer):
                 ).values_list("blocked_user_id", flat=True)
             )
         return player.user.id in self._blocked_relationships_cache
+
+    def validate(self, data: dict) -> dict:
+        """
+        validate()のオーバーライド
+        """
+        # avatar更新時
+        if accounts_constants.PlayerFields.AVATAR in data:
+            avatar: Optional[InMemoryUploadedFile] = data[
+                accounts_constants.PlayerFields.AVATAR
+            ]
+            # 更新時(既にinstanceが存在している時)にNoneの場合はエラー
+            if self.instance and avatar is None:
+                raise serializers.ValidationError(
+                    {
+                        accounts_constants.PlayerFields.AVATAR: "This field may not be blank."
+                    }
+                )
+        return data
 
     def _update_avatar(
         self, player: player_models.Player, new_avatar: InMemoryUploadedFile
