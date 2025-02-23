@@ -73,3 +73,21 @@ async def create_tournament_with_participation(
 
     # 使う想定なのはidだけだが、一応dictごとと返す
     return CreateTournamentResult.ok(tournament_serializer.data)
+
+
+async def get_waiting_tournament() -> Optional[int]:
+    """
+    募集中のトーナメントクエリセットの中で最初の1件を取得する
+
+    Return:
+        int: 正常に取得できた場合
+        None: 募集中のトーナメントが一つもない場合
+    """
+    tournament = await tournament_models.Tournament.objects.filter(
+        status=constants.TournamentFields.StatusEnum.NOT_STARTED.value
+    ).afirst()
+
+    if tournament is not None:
+        return tournament.id
+
+    return None
