@@ -43,20 +43,25 @@ logger = logging.getLogger(__name__)
                         "Example 200 response",
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
-                            custom_response.DATA: [
-                                {
-                                    constants.BlockRelationshipFields.BLOCKED_USER: {
-                                        accounts_constants.UserFields.ID: 2,
-                                        accounts_constants.UserFields.USERNAME: "username2",
-                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
-                                        users_constants.UsersFields.IS_FRIEND: False,
-                                        users_constants.UsersFields.IS_BLOCKED: True,
-                                        # todo: is_online,win_match,lose_match追加
+                            custom_response.DATA: {
+                                custom_pagination.PaginationFields.COUNT: 25,
+                                custom_pagination.PaginationFields.NEXT: "http://localhost:8000/api/users/me/blocks/?page=2",
+                                custom_pagination.PaginationFields.PREVIOUS: None,
+                                custom_pagination.PaginationFields.RESULTS: [
+                                    {
+                                        constants.BlockRelationshipFields.BLOCKED_USER: {
+                                            accounts_constants.UserFields.ID: 2,
+                                            accounts_constants.UserFields.USERNAME: "username2",
+                                            accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                            accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                            users_constants.UsersFields.IS_FRIEND: False,
+                                            users_constants.UsersFields.IS_BLOCKED: True,
+                                            # todo: is_online,win_match,lose_match追加
+                                        },
                                     },
-                                },
-                                {"...", "..."},
-                            ],
+                                    "...",
+                                ],
+                            },
                         },
                     ),
                 ],
