@@ -1,3 +1,7 @@
+import os
+from typing import Optional
+
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
@@ -106,19 +110,65 @@ class UsersSerializer(serializers.Serializer):
             )
         return player.user.id in self._blocked_relationships_cache
 
+    def validate(self, data: dict) -> dict:
+        """
+        validate()のオーバーライド
+        """
+        # avatar更新時
+        if accounts_constants.PlayerFields.AVATAR in data:
+            avatar: Optional[InMemoryUploadedFile] = data[
+                accounts_constants.PlayerFields.AVATAR
+            ]
+            # 更新時(既にinstanceが存在している時)にNoneの場合はエラー
+            if self.instance and avatar is None:
+                raise serializers.ValidationError(
+                    {
+                        accounts_constants.PlayerFields.AVATAR: "This field may not be blank."
+                    }
+                )
+        return data
+
+    def _update_avatar(
+        self, player: player_models.Player, new_avatar: InMemoryUploadedFile
+    ) -> InMemoryUploadedFile:
+        # 更新前の画像がデフォルト画像ではない場合は削除してから新しい画像を保存する
+        # todo: デフォルト画像がなくなったら、古いアバターを必ず削除するように変更
+        if player.avatar.name != "avatars/sample.png":
+            player.avatar.delete(save=False)
+
+        # ファイル名を変更
+        # mypyにnew_avatar.nameがNoneの可能性を指摘されるが、ImageFieldのvalidatorでextensionがあることは確認済みのため無視
+        _, extension = os.path.splitext(new_avatar.name)  # type: ignore[type-var]
+        # todo: 一意なためusernameをファイル名にしているが、良くない場合はuuidなどを追加する
+        new_avatar.name = f"avatars/{player.user.username}{extension}"
+        return new_avatar
+
     def update(
         self, player: player_models.Player, validated_data: dict
     ) -> player_models.Player:
         """
         Playerインスタンスを更新するupdate()のオーバーライド
+        更新するフィールドに新しい値を代入し、update_fieldsに指定する
+        display_nameはapplication/json、avatarはmultipart/form-dataで受け取るため、
+        どちらかのみ更新される
         """
-        player.display_name = validated_data.get(
-            accounts_constants.PlayerFields.DISPLAY_NAME, player.display_name
-        )
-        # todo: avatarも新しいものを代入・save()のupdate_fieldsにも追加
+        update_fields: list[str] = []
+
+        # display_nameがあれば更新
+        if accounts_constants.PlayerFields.DISPLAY_NAME in validated_data:
+            player.display_name = validated_data[
+                accounts_constants.PlayerFields.DISPLAY_NAME
+            ]
+            update_fields.append(accounts_constants.PlayerFields.DISPLAY_NAME)
+
+        # avatarがあれば更新
+        if accounts_constants.PlayerFields.AVATAR in validated_data:
+            new_avatar: InMemoryUploadedFile = validated_data[
+                accounts_constants.PlayerFields.AVATAR
+            ]
+            player.avatar = self._update_avatar(player, new_avatar)
+            update_fields.append(accounts_constants.PlayerFields.AVATAR)
 
         # create()をオーバーライドしない場合、update()内でsave()は必須
-        player.save(
-            update_fields=[accounts_constants.PlayerFields.DISPLAY_NAME]
-        )
+        player.save(update_fields=update_fields)
         return player

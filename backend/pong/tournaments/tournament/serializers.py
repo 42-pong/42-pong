@@ -60,11 +60,8 @@ class TournamentCommandSerializer(drf_serializers.ModelSerializer):
                     状態をON_GOINGにするときにまだ参加者がMAX_PARTICIPATIONS人いない場合。
                     状態をCANCELEDにするときにまだ参加者がいる場合。
         """
-        # 作成時のバリデーション
-        # return data
-        new_status = data.get(constants.TournamentFields.STATUS)
-
         if isinstance(self.instance, models.Tournament):
+            new_status = data.get(constants.TournamentFields.STATUS)
             # ON_GOING に変更する場合のバリデーション
             if (
                 new_status
@@ -81,10 +78,10 @@ class TournamentCommandSerializer(drf_serializers.ModelSerializer):
                     raise drf_serializers.ValidationError(
                         f"Cannot set the status to ON_GOING with less than {max_participations} participants."
                     )
+
             # CANCELEDに変更する場合のバリデーション
             if (
-                self.instance
-                and new_status
+                new_status
                 == constants.TournamentFields.StatusEnum.CANCELED.value
             ):
                 if self.instance.tournament_participations.exists():
