@@ -16,6 +16,7 @@ from rest_framework import (
 )
 
 from accounts import constants as accounts_constants
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users import constants as users_constants
 
@@ -352,17 +353,21 @@ class FriendsViewSet(viewsets.ModelViewSet):
 
         # 自分のフレンド一覧を取得
         friends: QuerySet[models.Friendship] = self.queryset.filter(user=user)
+        paginator: custom_pagination.CustomPagination = (
+            custom_pagination.CustomPagination()
+        )
+        paginated_friends: Optional[list[models.Friendship]] = (
+            paginator.paginate_queryset(friends, request)
+        )
         list_serializer: list_serializers.FriendshipListSerializer = (
             list_serializers.FriendshipListSerializer(
-                friends,
+                paginated_friends,
                 many=True,
                 context={constants.FriendshipFields.USER_ID: user.id},
             )
         )
         # todo: logger.info追加
-        return custom_response.CustomResponse(
-            data=list_serializer.data, status=status.HTTP_200_OK
-        )
+        return paginator.get_paginated_response(list(list_serializer.data))
 
     @utils.extend_schema(exclude=True)
     def retrieve(
