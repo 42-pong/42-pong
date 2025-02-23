@@ -97,7 +97,16 @@ async def get_waiting_tournament() -> Optional[int]:
 async def update_tournament_status(
     id: int, new_status: str
 ) -> UpdateTournamentResult:
+    """
+    tournamentテーブルの状態を更新するための関数。
+
+    Returns:
+        UpdateTournamentResult: 作成されたtournamentのシリアライズ後のデータのResult
+          - ok: Tournamentのstatus更新に成功した場合
+          - error: TournamentSerializerに渡すstatusが存在しないか、存在しても他の条件により不正な場合のValidationError、またはDatabaseError
+    """
     try:
+        # 他の操作が間に入り込むこともありそうなのでトランザクションで一応かこっている。
         with transaction.atomic():
             tournament = tournament_models.Tournament.objects.aget(id=id)
             data = {
@@ -129,21 +138,32 @@ async def update_tournament_status(
 async def update_participation_ranking(
     tournament_id: int, user_id: int, ranking: int
 ) -> UpdateParticipationResult:
-    participation = await sync_to_async(
-        participation_models.Participation.objects.select_for_update().get
-    )(
-        tournament_id=tournament_id,
-        player__user_id=user_id,  # ここで逆引き
-    )
+    """
+    大会終了時にtournament_participationsテーブルのランキングを更新
 
-    # シリアライザーを使ってバリデーション & 更新
-    serializer = participation_serializers.ParticipationCommandSerializer(
-        participation,
-        data={constants.ParticipationFields.RANKING: ranking},
-        partial=True,
-    )
+    同じプレーヤーが同じトーナメントに参加することはないため、同時にトーナメント参加レコードに対して更新処理をすることはない。よってここではトランザクションで処理をまとめていない。
+
+    Returns:
+        UpdateTournamentResult: 作成されたtournamentのシリアライズ後のデータのResult
+          - ok: Participationのranking更新に成功した場合
+          - error: rankingの値が不正な場合のValidationError、またはDatabaseError
+    """
 
     try:
+        participation = await sync_to_async(
+            participation_models.Participation.objects.select_for_update().get
+        )(
+            tournament_id=tournament_id,
+            player__user_id=user_id,  # ここで逆引き
+        )
+
+        # シリアライザーを使ってバリデーション & 更新
+        serializer = participation_serializers.ParticipationCommandSerializer(
+            participation,
+            data={constants.ParticipationFields.RANKING: ranking},
+            partial=True,
+        )
+
         serializer.is_valid(raise_exception=True)
         await sync_to_async(serializer.save)()
 
