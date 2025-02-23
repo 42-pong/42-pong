@@ -1,3 +1,4 @@
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 from accounts.player.models import Player
@@ -37,6 +38,16 @@ class ParticipationCommandSerializer(serializers.ModelSerializer):
     )
     player_id = serializers.PrimaryKeyRelatedField(
         queryset=Player.objects.all(), source="player"
+    )
+    participation_name: serializers.CharField = serializers.CharField(
+        max_length=15,
+        validators=[
+            # 使用可能文字列を指定: 英子文字・英大文字・数字・記号(-_.~)
+            RegexValidator(
+                regex=r"^[a-zA-Z0-9-_.~]+$",
+                message="Must contain only alphanumeric characters or some symbols(-_.~)",
+            )
+        ],
     )
 
     class Meta:
