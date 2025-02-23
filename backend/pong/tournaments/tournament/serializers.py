@@ -5,9 +5,9 @@ from ..round import serializers as round_serializers
 from . import models
 
 
-class TournamentSerializer(drf_serializers.ModelSerializer):
+class TournamentQuerySerializer(drf_serializers.ModelSerializer):
     """
-    Tournamentモデルのシリアライザ
+    Tournamentモデルのクエリ(読み取り)操作のためのシリアライザ
     """
 
     rounds = round_serializers.RoundSerializer(
