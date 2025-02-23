@@ -101,3 +101,56 @@ class ParticipationCommandSerializerTestCase(TestCase):
         serializer = ParticipationCommandSerializer(data=data)
         with self.assertRaises(ValidationError):
             serializer.is_valid(raise_exception=True)
+
+    def test_ranking_validation_upper_limit(self):
+        """ランキング更新時の範囲チェック"""
+        # 参加テーブルを作成
+        creation_data = {
+            constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
+            constants.ParticipationFields.PLAYER_ID: self.player.id,
+            constants.ParticipationFields.PARTICIPATION_NAME: "New Player",
+        }
+        create_serializer = ParticipationCommandSerializer(data=creation_data)
+        self.assertTrue(create_serializer.is_valid())
+        participation = create_serializer.save()
+
+        # ランキングを更新
+        update_data = {
+            constants.ParticipationFields.RANKING: constants.MAX_PARTICIPATIONS
+            + 1
+        }  # 不正なランキング
+
+        # エラーになるか
+        update_serializer = ParticipationCommandSerializer(
+            instance=participation, data=update_data, partial=True
+        )
+        self.assertFalse(update_serializer.is_valid())
+        self.assertIn(
+            constants.ParticipationFields.RANKING, update_serializer.errors
+        )
+
+    def test_ranking_validation_lower_limit(self) -> None:
+        """ランキング更新時の範囲チェック"""
+        # 参加テーブルを作成
+        creation_data = {
+            constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
+            constants.ParticipationFields.PLAYER_ID: self.player.id,
+            constants.ParticipationFields.PARTICIPATION_NAME: "New Player",
+        }
+        create_serializer = ParticipationCommandSerializer(data=creation_data)
+        self.assertTrue(create_serializer.is_valid())
+        participation = create_serializer.save()
+
+        # ランキングを更新
+        update_data = {
+            constants.ParticipationFields.RANKING: 0
+        }  # 不正なランキング
+
+        # エラーになるか
+        update_serializer = ParticipationCommandSerializer(
+            instance=participation, data=update_data, partial=True
+        )
+        self.assertFalse(update_serializer.is_valid())
+        self.assertIn(
+            constants.ParticipationFields.RANKING, update_serializer.errors
+        )
