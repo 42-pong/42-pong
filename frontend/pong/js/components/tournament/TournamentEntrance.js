@@ -20,6 +20,7 @@ export class TournamentEntrance extends Component {
   #toHome;
   #displayNameInput;
   #tournamentJoinHandler;
+  #syncDefaultDisplayName;
 
   constructor(state = {}) {
     super({ isJoinError: false, ...state });
@@ -103,12 +104,22 @@ export class TournamentEntrance extends Component {
       WebSocketEnums.Category.TOURNAMENT,
       this.#tournamentJoinHandler,
     );
+
+    this.#syncDefaultDisplayName = ({ displayName }) => {
+      this.#displayNameInput.setValue(displayName);
+    };
+    UserSessionManager.getInstance().myInfo.attach(
+      this.#syncDefaultDisplayName,
+    );
   }
 
   _onDisconnect() {
     UserSessionManager.getInstance().webSocket.detachHandler(
       WebSocketEnums.Category.TOURNAMENT,
       this.#tournamentJoinHandler,
+    );
+    UserSessionManager.getInstance().myInfo.attach(
+      this.#syncDefaultDisplayName,
     );
   }
 
