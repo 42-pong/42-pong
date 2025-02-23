@@ -3,10 +3,11 @@ const Stage = {
   PROGRESS: "PROGRESS",
 };
 
-const Progress = {
+const Status = {
   WAITING: "WAITING",
   ONGOING: "ONGOING",
   FINISHED: "FINISHED",
+  CANCELED: "CANCELED",
 };
 
 const JoinType = {
@@ -17,6 +18,6 @@ const JoinType = {
 
 export const TournamentEnums = Object.freeze({
   Stage,
-  Progress,
+  Status,
   JoinType,
 });
