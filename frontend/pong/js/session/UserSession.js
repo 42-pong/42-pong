@@ -35,7 +35,7 @@ export class UserSession {
 
     const isValid = await this.#reset();
     if (isValid) {
-      this.signIn();
+      await this.signIn();
       this.updateWindowPath();
     }
     return isValid;
