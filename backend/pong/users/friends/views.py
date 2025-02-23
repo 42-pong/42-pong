@@ -322,6 +322,14 @@ class FriendsViewSet(viewsets.ModelViewSet):
             # 401はCustomResponseにせずそのまま返す
             return super().handle_exception(exc)
 
+        if isinstance(exc, exceptions.NotFound):
+            logger.error(f"[404] Not found: {str(exc)}")
+            return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         logger.error(f"[500] Internal server error: {str(exc)}")
         response: custom_response.CustomResponse = (
             custom_response.CustomResponse(
@@ -362,6 +370,7 @@ class FriendsViewSet(viewsets.ModelViewSet):
         paginator: custom_pagination.CustomPagination = (
             custom_pagination.CustomPagination()
         )
+        # クエリパラメータのpage番号が存在しない場合はraise exceptions.NotFound()される
         paginated_friends: Optional[list[models.Friendship]] = (
             paginator.paginate_queryset(friends, request)
         )
