@@ -11,13 +11,13 @@ from ..serializers import TournamentCommandSerializer
 
 
 class TournamentCommandSerializerTest(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # テスト用のトーナメントインスタンスを作成
         self.tournament = models.Tournament.objects.create(
             status=constants.TournamentFields.StatusEnum.NOT_STARTED.value
         )
 
-    def test_default_status(self):
+    def test_default_status(self) -> None:
         """
         `status` が指定されていない場合にデフォルト値が設定されているかを確認するテスト
         """
@@ -31,7 +31,7 @@ class TournamentCommandSerializerTest(TestCase):
             constants.TournamentFields.StatusEnum.NOT_STARTED.value,
         )
 
-    def test_on_going_status_with_insufficient_participants(self):
+    def test_on_going_status_with_insufficient_participants(self) -> None:
         """
         `status` を `ON_GOING` に変更する際、参加者が足りない場合にエラーが発生するかを確認するテスト
         """
@@ -44,7 +44,7 @@ class TournamentCommandSerializerTest(TestCase):
         with self.assertRaises(ValidationError):
             serializer.is_valid(raise_exception=True)
 
-    def test_cancelled_status_with_participants(self):
+    def test_cancelled_status_with_participants(self) -> None:
         """
         参加者がいる場合に `status` を `CANCELED` に変更できないことを確認するテスト
         """
@@ -74,7 +74,7 @@ class TournamentCommandSerializerTest(TestCase):
         with self.assertRaises(ValidationError):
             serializer.is_valid(raise_exception=True)
 
-    def test_cancelled_status_without_participants(self):
+    def test_cancelled_status_without_participants(self) -> None:
         """
         参加者がいない場合に `status` を `CANCELED` に変更できることを確認するテスト
         """
