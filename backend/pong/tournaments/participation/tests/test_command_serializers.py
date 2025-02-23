@@ -72,3 +72,32 @@ class ParticipationCommandSerializerTestCase(TestCase):
         self.assertIn(
             constants.ParticipationFields.PARTICIPATION_NAME, serializer.errors
         )
+
+    def test_max_participation_limit(self) -> None:
+        """トーナメントの最大参加者数に達している場合のチェック"""
+        # 最大参加者数を超えるデータを作成
+        for i in range(constants.MAX_PARTICIPATIONS):
+            user = User.objects.create(
+                username=f"already_existuser_{i}",
+                email=f"already_existtuser_{i}@example.com",
+                password="testpassword",
+            )
+            player = player_models.Player.objects.create(
+                user=user, display_name="Test Player"
+            )
+
+            participation_models.Participation.objects.create(
+                tournament_id=self.tournament.id,
+                player_id=player.id,
+                participation_name="Player {}".format(i + 1),
+            )
+
+        # 参加者がMAX_PARTICIPATIONSを超えた場合、エラーが発生
+        data = {
+            constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
+            constants.ParticipationFields.PLAYER_ID: self.player.id,
+            constants.ParticipationFields.PARTICIPATION_NAME: "New Player",
+        }
+        serializer = ParticipationCommandSerializer(data=data)
+        with self.assertRaises(ValidationError):
+            serializer.is_valid(raise_exception=True)
