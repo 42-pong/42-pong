@@ -80,27 +80,32 @@ class UsersListView(views.APIView):
                         "Example 200 response",
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
-                            custom_response.DATA: [
-                                {
-                                    accounts_constants.UserFields.ID: 2,
-                                    accounts_constants.UserFields.USERNAME: "username1",
-                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample1.png",
-                                    constants.UsersFields.IS_FRIEND: False,
-                                    constants.UsersFields.IS_BLOCKED: False,
-                                    # todo: is_online,win_match,lose_match追加
-                                },
-                                {
-                                    accounts_constants.UserFields.ID: 3,
-                                    accounts_constants.UserFields.USERNAME: "username2",
-                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample2.png",
-                                    constants.UsersFields.IS_FRIEND: False,
-                                    constants.UsersFields.IS_BLOCKED: False,
-                                    # todo: is_online,win_match,lose_match追加
-                                },
-                                {"...", "..."},
-                            ],
+                            custom_response.DATA: {
+                                custom_pagination.PaginationFields.COUNT: 25,
+                                custom_pagination.PaginationFields.NEXT: "http://localhost:8000/api/users/?page=2",
+                                custom_pagination.PaginationFields.PREVIOUS: None,
+                                custom_pagination.PaginationFields.RESULTS: [
+                                    {
+                                        accounts_constants.UserFields.ID: 2,
+                                        accounts_constants.UserFields.USERNAME: "username1",
+                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample1.png",
+                                        constants.UsersFields.IS_FRIEND: False,
+                                        constants.UsersFields.IS_BLOCKED: False,
+                                        # todo: is_online,win_match,lose_match追加
+                                    },
+                                    {
+                                        accounts_constants.UserFields.ID: 3,
+                                        accounts_constants.UserFields.USERNAME: "username2",
+                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample2.png",
+                                        constants.UsersFields.IS_FRIEND: False,
+                                        constants.UsersFields.IS_BLOCKED: False,
+                                        # todo: is_online,win_match,lose_match追加
+                                    },
+                                    "...",
+                                ],
+                            },
                         },
                     ),
                 ],
