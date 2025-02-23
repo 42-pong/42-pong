@@ -1,44 +1,64 @@
-import { BootstrapDisplay } from "../../bootstrap/utilities/display";
-import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
+import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Paths } from "../../constants/Paths";
 import { Component } from "../../core/Component";
-import { createElement } from "../../utils/elements/createElement";
+import { createDefaultFlexBox } from "../../utils/elements/div/createFlexBox";
+import { createHorizontalSplitLayout } from "../../utils/elements/div/createHorizontalSplitLayout";
+import { setHeight } from "../../utils/elements/style/setHeight";
 import { LinkButton } from "../utils/LinkButton";
+import { TournamentLeaveButton } from "./TournamentLeaveButton";
+import { TournamentScoreboard } from "./TournamentScoreboard";
 
 export class TournamentFinished extends Component {
-  #toTournamentEntrance;
-  #toHome;
+  #buttons;
 
   _setStyle() {
-    BootstrapDisplay.setFlex(this);
-    BootstrapFlex.setFlexColumn(this);
-    BootstrapFlex.setJustifyContentAround(this);
-    BootstrapFlex.setAlignItemsCenter(this);
     BootstrapSizing.setWidth100(this);
     BootstrapSizing.setHeight100(this);
 
-    BootstrapSizing.setWidth50(this.#toTournamentEntrance);
-    this.#toTournamentEntrance.setPrimary();
-
-    BootstrapSizing.setWidth50(this.#toHome);
-    this.#toHome.setSecondary();
+    BootstrapSpacing.setPadding(this.#buttons, 4);
   }
 
   _onConnect() {
-    this.#toHome = new LinkButton({
-      textContent: "[ホーム] に戻る",
-      pathname: Paths.HOME,
-    });
+    const {
+      tournamentState: { tournamentId },
+    } = this._getState();
+    this.#buttons = createReturningButtons(tournamentId);
   }
 
   _render() {
-    // TODO: タイトル要素を作成する関数でまとめる
-    const title = createElement("h1", {
-      textContent: "トーナメント終了",
-    });
-    this.appendChild(title);
+    const { tournamentState } = this._getState();
 
-    this.appendChild(this.#toHome);
+    const scoreboard = new TournamentScoreboard({ tournamentState });
+    BootstrapSizing.setWidth100(scoreboard);
+    setHeight(scoreboard, "80%");
+    setHeight(this.#buttons, "20%");
+
+    const split = createHorizontalSplitLayout(
+      scoreboard,
+      this.#buttons,
+    );
+    this.append(split);
   }
 }
+
+const createReturningButtons = (tournamentId) => {
+  const backToTournamentEntrance = new TournamentLeaveButton({
+    textContent: "もう一度",
+    tournamentId,
+  });
+  backToTournamentEntrance.setPrimary();
+  BootstrapSpacing.setMargin(backToTournamentEntrance, 3);
+
+  const backToHome = new LinkButton({
+    textContent: "ホームに戻る",
+    pathname: Paths.HOME,
+  });
+  backToHome.setOutlinePrimary();
+  BootstrapSpacing.setMargin(backToHome, 3);
+
+  return createDefaultFlexBox(
+    createDefaultFlexBox(backToTournamentEntrance),
+    createDefaultFlexBox(backToHome),
+  );
+};

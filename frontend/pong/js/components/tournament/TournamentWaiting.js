@@ -1,5 +1,4 @@
 import { getFriends } from "../../api/users/getFriends";
-import { BootstrapBorders } from "../../bootstrap/utilities/borders";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
@@ -18,9 +17,8 @@ export class TournamentWaiting extends Component {
     BootstrapFlex.setFlexColumn(this);
     BootstrapFlex.setJustifyContentAround(this);
     BootstrapFlex.setAlignItemsCenter(this);
-    BootstrapBorders.setBorder(this);
-    BootstrapBorders.setRounded(this);
     BootstrapSizing.setWidth100(this);
+    BootstrapSizing.setHeight100(this);
 
     setHeight(this.#friendList, "80%");
     BootstrapSizing.setWidth75(this.#leaveButton);
