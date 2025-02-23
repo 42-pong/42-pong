@@ -15,6 +15,7 @@ from tournaments.tournament import serializers as tournament_serializers
 logger = logging.getLogger("django")
 CreateTournamentResult = utils.result.Result[dict, dict]
 UpdateTournamentResult = utils.result.Result[dict, dict]
+UpdateParticipationResult = utils.result.Result[dict, dict]
 
 
 async def create_tournament_with_participation(
@@ -123,3 +124,41 @@ async def update_tournament_status(
         )
 
     return UpdateTournamentResult.ok(serializer.data)
+
+
+async def update_participation_ranking(
+    tournament_id: int, user_id: int, ranking: int
+) -> UpdateParticipationResult:
+    participation = await sync_to_async(
+        participation_models.Participation.objects.select_for_update().get
+    )(
+        tournament_id=tournament_id,
+        player__user_id=user_id,  # ここで逆引き
+    )
+
+    # シリアライザーを使ってバリデーション & 更新
+    serializer = participation_serializers.ParticipationCommandSerializer(
+        participation,
+        data={constants.ParticipationFields.RANKING: ranking},
+        partial=True,
+    )
+
+    try:
+        serializer.is_valid(raise_exception=True)
+        await sync_to_async(serializer.save)()
+
+    except drf_serializers.ValidationError as e:
+        logger.error(f"VaridationError: {e}")
+        if isinstance(e.detail, list):
+            return UpdateParticipationResult.error(
+                {"ValidationError": e.detail}
+            )
+        return UpdateParticipationResult.error(e.detail)
+
+    except DatabaseError as e:
+        logger.error(f"DatabaseError: {e}")
+        return UpdateParticipationResult.error(
+            {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
+        )
+
+    return UpdateParticipationResult.ok(serializer.data)
