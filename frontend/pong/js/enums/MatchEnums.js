@@ -21,9 +21,16 @@ const Move = {
   DOWN: "DOWN",
 };
 
+const Result = {
+  WIN: "WIN",
+  LOSE: "LOSE",
+  PENDING: "PENDING",
+};
+
 export const MatchEnums = Object.freeze({
   Stage,
   Mode,
   Team,
   Move,
+  Result,
 });
