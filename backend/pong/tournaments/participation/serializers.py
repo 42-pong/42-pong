@@ -76,3 +76,35 @@ class ParticipationCommandSerializer(serializers.ModelSerializer):
         #        message="このトーナメントとプレイヤーの組み合わせは既に存在します。",
         #    )
         # ]
+
+    def validate(self, data: dict) -> dict:
+        """
+        validate()のオーバーライド関数。
+
+        Raises:
+            ValidationError:
+                作成時:
+                    すでに参加者がMAX＿PARTICIPATION分いる場合。
+        """
+        if self.instance is None:  # 新規作成時
+            tournament_id = data.get("tournament")
+            if tournament_id is not None:
+                # 紐づくトーナメントに関連する参加者数をカウント
+                participation_count = models.Participation.objects.filter(
+                    tournament_id=tournament_id
+                ).count()
+                if participation_count >= constants.MAX_PARTICIPATIONS:
+                    raise serializers.ValidationError(
+                        f"This tournament already has the maximum number of participants ({constants.MAX_PARTICIPATIONS})."
+                    )
+
+        return data
+
+    def validate_ranking(self, value):
+        if value is not None and (
+            value < 1 or value > constants.MAX_PARTICIPATIONS
+        ):
+            raise serializers.ValidationError(
+                f"Ranking must be between 1 and {constants.MAX_PARTICIPATIONS}."
+            )
+        return value
