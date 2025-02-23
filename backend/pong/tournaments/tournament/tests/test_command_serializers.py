@@ -1,10 +1,10 @@
-from django.test import TestCase
 from django.contrib.auth.models import User
+from django.test import TestCase
 from rest_framework.serializers import ValidationError
 
+from accounts.player import models as player_models
 from tournaments import constants
 from tournaments.participation import models as participation_models
-from accounts.player import models as player_models
 
 from .. import models
 from ..serializers import TournamentCommandSerializer
@@ -58,7 +58,6 @@ class TournamentCommandSerializerTest(TestCase):
             user=user, display_name="Test Player"
         )
 
-
         # 参加者を追加
         participation_models.Participation.objects.create(
             tournament=self.tournament,
@@ -74,3 +73,19 @@ class TournamentCommandSerializerTest(TestCase):
         )
         with self.assertRaises(ValidationError):
             serializer.is_valid(raise_exception=True)
+
+    def test_cancelled_status_without_participants(self):
+        """
+        参加者がいない場合に `status` を `CANCELED` に変更できることを確認するテスト
+        """
+        serializer_data = {
+            constants.TournamentFields.STATUS: constants.TournamentFields.StatusEnum.CANCELED.value,
+        }
+        serializer = TournamentCommandSerializer(
+            self.tournament, data=serializer_data
+        )
+        self.assertTrue(serializer.is_valid())  # バリデーション成功
+        self.assertEqual(
+            serializer.validated_data[constants.TournamentFields.STATUS],
+            constants.TournamentFields.StatusEnum.CANCELED.value,
+        )
