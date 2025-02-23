@@ -38,18 +38,19 @@ const retryWithRefreshToken = async (url, options = {}) => {
     UserSessionManager.getInstance().getRefreshToken();
 
   try {
-    const {
-      data: { access },
-      error,
-    } = await fetchData(Endpoints.REFRESH_TOKEN.href, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const { data, error } = await fetchData(
+      Endpoints.REFRESH_TOKEN.href,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refresh: refreshToken }),
       },
-      body: JSON.stringify({ refreshToken }),
-    });
+    );
     if (error) throw new Error("Refresh: NOT OK");
 
+    const { access } = data;
     UserSessionManager.getInstance().setAccessToken(access);
   } catch (error) {
     return { data: null, error };
