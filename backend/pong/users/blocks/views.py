@@ -16,6 +16,7 @@ from rest_framework import (
 )
 
 from accounts import constants as accounts_constants
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users import constants as users_constants
 
@@ -358,17 +359,21 @@ class BlocksViewSet(viewsets.ViewSet):
         block_users: QuerySet[models.BlockRelationship] = self.queryset.filter(
             user=user
         )
+        paginator: custom_pagination.CustomPagination = (
+            custom_pagination.CustomPagination()
+        )
+        paginated_block_users: Optional[list[models.BlockRelationship]] = (
+            paginator.paginate_queryset(block_users, request)
+        )
         list_serializer: list_serializers.BlockRelationshipListSerializer = (
             list_serializers.BlockRelationshipListSerializer(
-                block_users,
+                paginated_block_users,
                 many=True,
                 context={constants.BlockRelationshipFields.USER_ID: user.id},
             )
         )
         # todo: logger.info追加
-        return custom_response.CustomResponse(
-            data=list_serializer.data, status=status.HTTP_200_OK
-        )
+        return paginator.get_paginated_response(list(list_serializer.data))
 
     @utils.extend_schema(exclude=True)
     def retrieve(
