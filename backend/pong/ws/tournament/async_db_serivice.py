@@ -2,19 +2,19 @@ import logging
 from typing import Optional
 
 from asgiref.sync import sync_to_async
-
 from django.db import DatabaseError, transaction
 from rest_framework import serializers as drf_serializers
 
 import utils.result
 from tournaments import constants
-
+from tournaments.participation import models as participation_models
 from tournaments.participation import serializers as participation_serializers
 from tournaments.tournament import models as tournament_models
 from tournaments.tournament import serializers as tournament_serializers
 
 logger = logging.getLogger("django")
 CreateTournamentResult = utils.result.Result[dict, dict]
+UpdateTournamentResult = utils.result.Result[dict, dict]
 
 
 async def create_tournament_with_participation(
@@ -91,3 +91,35 @@ async def get_waiting_tournament() -> Optional[int]:
         return tournament.id
 
     return None
+
+
+async def update_tournament_status(
+    id: int, new_status: str
+) -> UpdateTournamentResult:
+    try:
+        with transaction.atomic():
+            tournament = tournament_models.Tournament.objects.aget(id=id)
+            data = {
+                constants.TournamentFields.STATUS: new_status,
+            }
+
+            serializer = tournament_serializers.TournamentCommandSerializer(
+                instance=tournament, data=data
+            )
+
+            serializer.is_valid(raise_exception=True)
+            await sync_to_async(serializer.save)()
+
+    except drf_serializers.ValidationError as e:
+        logger.error(f"VaridationError: {e}")
+        if isinstance(e.detail, list):
+            return UpdateTournamentResult.error({"ValidationError": e.detail})
+        return UpdateTournamentResult.error(e.detail)
+
+    except DatabaseError as e:
+        logger.error(f"DatabaseError: {e}")
+        return UpdateTournamentResult.error(
+            {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
+        )
+
+    return UpdateTournamentResult.ok(serializer.data)
