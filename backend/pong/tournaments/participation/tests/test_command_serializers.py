@@ -28,7 +28,7 @@ class ParticipationCommandSerializerTestCase(TestCase):
         data = {
             constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
             constants.ParticipationFields.PLAYER_ID: self.player.id,
-            constants.ParticipationFields.PARTICIPATION_NAME: "New Player",
+            constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
         }
         serializer = ParticipationCommandSerializer(data=data)
         self.assertTrue(serializer.is_valid())
@@ -83,20 +83,20 @@ class ParticipationCommandSerializerTestCase(TestCase):
                 password="testpassword",
             )
             player = player_models.Player.objects.create(
-                user=user, display_name="Test Player"
+                user=user, display_name="Test_Player"
             )
 
             participation_models.Participation.objects.create(
                 tournament_id=self.tournament.id,
                 player_id=player.id,
-                participation_name="Player {}".format(i + 1),
+                participation_name=f"player_{i}",
             )
 
         # 参加者がMAX_PARTICIPATIONSを超えた場合、エラーが発生
         data = {
             constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
             constants.ParticipationFields.PLAYER_ID: self.player.id,
-            constants.ParticipationFields.PARTICIPATION_NAME: "New Player",
+            constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
         }
         serializer = ParticipationCommandSerializer(data=data)
         with self.assertRaises(ValidationError):
@@ -108,7 +108,7 @@ class ParticipationCommandSerializerTestCase(TestCase):
         creation_data = {
             constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
             constants.ParticipationFields.PLAYER_ID: self.player.id,
-            constants.ParticipationFields.PARTICIPATION_NAME: "New Player",
+            constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
         }
         create_serializer = ParticipationCommandSerializer(data=creation_data)
         self.assertTrue(create_serializer.is_valid())
@@ -135,7 +135,7 @@ class ParticipationCommandSerializerTestCase(TestCase):
         creation_data = {
             constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
             constants.ParticipationFields.PLAYER_ID: self.player.id,
-            constants.ParticipationFields.PARTICIPATION_NAME: "New Player",
+            constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
         }
         create_serializer = ParticipationCommandSerializer(data=creation_data)
         self.assertTrue(create_serializer.is_valid())
@@ -154,6 +154,7 @@ class ParticipationCommandSerializerTestCase(TestCase):
         self.assertIn(
             constants.ParticipationFields.RANKING, update_serializer.errors
         )
+
 
     # TODO: ユニーク制約をシリアライザ―でできたら追加
     # def test_unique_together_constraint(self):
