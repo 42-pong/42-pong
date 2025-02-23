@@ -102,7 +102,7 @@ class ParticipationCommandSerializerTestCase(TestCase):
         with self.assertRaises(ValidationError):
             serializer.is_valid(raise_exception=True)
 
-    def test_ranking_validation_upper_limit(self):
+    def test_ranking_validation_upper_limit(self) -> None:
         """ランキング更新時の範囲チェック"""
         # 参加テーブルを作成
         creation_data = {

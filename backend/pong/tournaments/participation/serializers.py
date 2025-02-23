@@ -100,7 +100,7 @@ class ParticipationCommandSerializer(serializers.ModelSerializer):
 
         return data
 
-    def validate_ranking(self, value):
+    def validate_ranking(self, value: int) -> int:
         if value is not None and (
             value < 1 or value > constants.MAX_PARTICIPATIONS
         ):
