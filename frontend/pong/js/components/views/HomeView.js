@@ -2,6 +2,7 @@ import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { View } from "../../core/View";
+import { setBorderWithShadow } from "../../utils/setBorderWithShadow";
 import { GameStartPanel } from "../game/GameStartPanel";
 
 export class HomeView extends View {
@@ -14,6 +15,8 @@ export class HomeView extends View {
     BootstrapFlex.setAlignItemsCenter(this);
     BootstrapSizing.setWidth100(this);
     BootstrapSizing.setHeight100(this);
+
+    setBorderWithShadow(this);
   }
 
   _onConnect() {
