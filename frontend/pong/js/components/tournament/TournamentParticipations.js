@@ -12,9 +12,9 @@ import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
 import { sliceWithDefaults } from "../../utils/sliceWithDefaults";
 import { isPlayerReload } from "../../utils/tournament/isPlayerReload";
-import { PlayerProfile } from "./PlayerProfile";
+import { ParticipationProfile } from "./ParticipationProfile";
 
-export class TournamentPlayers extends Component {
+export class TournamentParticipations extends Component {
   #reloadPlayers;
 
   static #COLS_PER_ROW = 2;
@@ -29,14 +29,18 @@ export class TournamentPlayers extends Component {
       } = payload;
       if (!isPlayerReload(type, event)) return;
 
-      const { tournamentId } = this._getState();
-      getParticipations(tournamentId).then(
-        ({ participations, error }) => {
-          if (error) return;
-          this._updateState({ participations });
-        },
-      );
+      this.#reload();
     };
+  }
+
+  #reload() {
+    const { tournamentId } = this._getState();
+    getParticipations(tournamentId).then(
+      ({ participations, error }) => {
+        if (error) return;
+        this._updateState({ participations });
+      },
+    );
   }
 
   _setStyle() {
@@ -50,13 +54,7 @@ export class TournamentPlayers extends Component {
   }
 
   _onConnect() {
-    const { tournamentId } = this._getState();
-    getParticipations(tournamentId).then(
-      ({ participations, error }) => {
-        if (error) return;
-        this._updateState({ participations });
-      },
-    );
+    this.#reload();
 
     UserSessionManager.getInstance().webSocket.attachHandler(
       WebSocketEnums.Category.TOURNAMENT,
@@ -74,12 +72,12 @@ export class TournamentPlayers extends Component {
   _render() {
     const { participations } = this._getState();
     const createComponent = (item) =>
-      new PlayerProfile({ participation: item });
+      new ParticipationProfile({ participation: item });
     this.append(
       createGridLayout(
         participations,
         TournamentConstants.PLAYER_NUM,
-        TournamentPlayers.#COLS_PER_ROW,
+        TournamentParticipations.#COLS_PER_ROW,
         createComponent,
       ),
     );
