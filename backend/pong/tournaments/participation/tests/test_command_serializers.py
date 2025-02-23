@@ -36,3 +36,39 @@ class ParticipationCommandSerializerTestCase(TestCase):
             None,
             serializer.validated_data[constants.ParticipationFields.RANKING],
         )
+
+    def test_missing_tournament_id(self) -> None:
+        """必須フィールドであるtournament_idが不足している場合のテスト"""
+        data = {
+            constants.ParticipationFields.PLAYER_ID: self.player.id,
+            constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
+        }
+        serializer = ParticipationCommandSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            constants.ParticipationFields.TOURNAMENT_ID, serializer.errors
+        )
+
+    def test_missing_player_id(self) -> None:
+        """必須フィールドであるplayer_idが不足している場合のテスト"""
+        data = {
+            constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
+            constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
+        }
+        serializer = ParticipationCommandSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            constants.ParticipationFields.PLAYER_ID, serializer.errors
+        )
+
+    def test_missing_participation_name(self) -> None:
+        """必須フィールドであるparticipation_nameが不足している場合のテスト"""
+        data = {
+            constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
+            constants.ParticipationFields.PLAYER_ID: self.player.id,
+        }
+        serializer = ParticipationCommandSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            constants.ParticipationFields.PARTICIPATION_NAME, serializer.errors
+        )
