@@ -1,3 +1,4 @@
+import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.serializers import ValidationError
@@ -155,6 +156,33 @@ class ParticipationCommandSerializerTestCase(TestCase):
             constants.ParticipationFields.RANKING, update_serializer.errors
         )
 
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列のparticipation_name", ""),
+            ("max_lengthを超えるparticipation_name", "a" * 16),
+            ("不正な文字が含まれるparticipation_name", "あ"),
+            ("不正な記号が含まれるparticipation_name", "/"),
+        ]
+    )
+    def test_invalid_participation_name(
+        self, testcase_name: str, invalid_participation_name: str
+    ) -> None:
+        """
+        参加名が不正な場合にエラーが出ることをチェック
+
+        正しいdisplay_name:
+            - 1文字以上、15文字以下
+            - 使用可能な文字である英文字・数字・記号(-_.~)で構成される
+        """
+        # 参加テーブルを作成
+        data = {
+            constants.ParticipationFields.TOURNAMENT_ID: self.tournament.id,
+            constants.ParticipationFields.PLAYER_ID: self.player.id,
+            constants.ParticipationFields.PARTICIPATION_NAME: invalid_participation_name,
+        }
+        serializer = ParticipationCommandSerializer(data=data)
+        with self.assertRaises(ValidationError):
+            serializer.is_valid(raise_exception=True)
 
     # TODO: ユニーク制約をシリアライザ―でできたら追加
     # def test_unique_together_constraint(self):
