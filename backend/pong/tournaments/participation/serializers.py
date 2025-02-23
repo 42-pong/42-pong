@@ -4,7 +4,11 @@ from .. import constants
 from . import models
 
 
-class ParticipationSerializer(serializers.ModelSerializer):
+class ParticipationQuerySerializer(serializers.ModelSerializer):
+    """
+    Participationモデルのクエリ(読み取り)操作のためのシリアライザ
+    """
+
     user_id = serializers.IntegerField(source="player.user.id", read_only=True)
 
     class Meta:
