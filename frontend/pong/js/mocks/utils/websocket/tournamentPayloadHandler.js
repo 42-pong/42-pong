@@ -1,4 +1,3 @@
-import { delay } from "msw";
 import { WebSocketEnums } from "../../../enums/WebSocketEnums";
 import { sendTournament } from "./sendPayloads";
 
@@ -10,10 +9,6 @@ export const tournamentPayloadHandler = async (client, payload) => {
       sendTournament(client, WebSocketEnums.Tournament.Type.JOIN, {
         status: "OK",
         tournament_id: tournament_id ? tournament_id : 42,
-      });
-      await delay(1000);
-      sendTournament(client, WebSocketEnums.Tournament.Type.RELOAD, {
-        event: WebSocketEnums.Tournament.ReloadEvent.PLAYER_CHANGE,
       });
       break;
     }

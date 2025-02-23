@@ -17,12 +17,19 @@ export const handlers = [
       const tournamentId = Number.parseInt(
         requestUrl.searchParams.get("tournament-id"),
       );
+      const userId = Number.parseInt(
+        requestUrl.searchParams.get("user-id"),
+      );
 
       let participations = sampleParticipations;
       if (tournamentId)
         participations = participations.filter(
           (participation) =>
             participation.tournament_id === tournamentId,
+        );
+      if (userId)
+        participations = participations.filter(
+          (participation) => participation.user_id === userId,
         );
 
       return HttpResponse.json({
