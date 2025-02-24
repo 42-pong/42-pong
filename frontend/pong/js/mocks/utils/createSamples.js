@@ -156,7 +156,7 @@ const sampleTournaments = [
             participations: [
               {
                 user_id: 3,
-                team: "1",
+                team: "2",
                 is_win: true,
                 scores: [
                   {
@@ -188,7 +188,7 @@ const sampleTournaments = [
               },
               {
                 user_id: 4,
-                team: "2",
+                team: "1",
                 is_win: false,
                 scores: [
                   {
@@ -332,7 +332,7 @@ const sampleTournaments = [
             participations: [
               {
                 user_id: 3,
-                team: "1",
+                team: "2",
                 is_win: true,
                 scores: [
                   {
@@ -364,7 +364,7 @@ const sampleTournaments = [
               },
               {
                 user_id: 4,
-                team: "2",
+                team: "1",
                 is_win: false,
                 scores: [
                   {
