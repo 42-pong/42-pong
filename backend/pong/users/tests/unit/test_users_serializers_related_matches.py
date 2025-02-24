@@ -11,11 +11,15 @@ from tournaments.round import models as round_models
 from tournaments.tournament import models as tournament_models
 from users.friends import constants as friends_constants
 
+from ... import constants, serializers
+
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+MATCH_WINS: Final[str] = constants.UsersFields.MATCH_WINS
+MATCH_LOSSES: Final[str] = constants.UsersFields.MATCH_LOSSES
 
 USER_ID: Final[str] = friends_constants.FriendshipFields.USER_ID
 
@@ -66,3 +70,21 @@ class UsersSerializerTests(TestCase):
                 )
             )
             self.participation_list.append(participation)
+
+    def test_field_match_wins(self) -> None:
+        """
+        勝利した試合の数が正しく取得できることを確認
+        """
+        # 3つの内2つのmatchに勝利
+        for participation in self.participation_list[:2]:
+            participation.is_win = True
+            participation.save()
+        # user1をログインユーザーとしてserializer作成
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            self.player,
+            context={USER_ID: self.user.id},
+        )
+
+        # 勝利した試合の数が2であることを確認
+        self.assertEqual(serializer.data[MATCH_WINS], 2)
+        # todo: 負けたCOMPLETEDな試合の数が0であることを確認
