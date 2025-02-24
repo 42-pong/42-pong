@@ -167,15 +167,6 @@ class AccountCreateView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        def _handle_unexpected_error(errors: dict) -> response.Response:
-            # 実装上のミスor予期せぬエラーのみ
-            logger.error("[500] Failed to create account")
-            return custom_response.CustomResponse(
-                code=[constants.Code.INTERNAL_ERROR],
-                errors=errors,
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
         # サインアップ専用のUserSerializerを作成
         user_serializer: user_serializers.UserSerializer = (
             _create_user_serializer(request.data)
@@ -191,9 +182,11 @@ class AccountCreateView(views.APIView):
             )
         )
         if create_account_result.is_error:
-            return _handle_unexpected_error(
-                create_account_result.unwrap_error()
+            logger.error(
+                f"Unexpected error occurred while creating account: \
+                {create_account_result.unwrap_error()}"
             )
+            raise Exception
 
         user_serializer_data: dict = create_account_result.unwrap()
         # todo: logger.info()追加
