@@ -115,8 +115,27 @@ class AccountCreateView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     )
     def post(
