@@ -15,4 +15,5 @@ class Code:
 class UsersFields:
     IS_FRIEND: Final[str] = "is_friend"
     IS_BLOCKED: Final[str] = "is_blocked"
-    # todo: is_online,win_match,lose_match追加
+    MATCH_WINS: Final[str] = "match_wins"
+    MATCH_LOSSES: Final[str] = "match_losses"

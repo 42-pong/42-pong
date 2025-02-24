@@ -7,6 +7,7 @@ from rest_framework import serializers
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from accounts.player import serializers as player_serializers
+from matches import constants as matches_constants
 from users.blocks import constants as blocks_constants
 from users.blocks import models as blocks_models
 from users.friends import constants as friends_constants
@@ -38,7 +39,8 @@ class UsersSerializer(serializers.Serializer):
     # `get_{field名}()`の返り値が格納される
     is_friend = serializers.SerializerMethodField()
     is_blocked = serializers.SerializerMethodField()
-    # todo: is_online,win_match,lose_match追加
+    match_wins = serializers.SerializerMethodField()
+    match_losses = serializers.SerializerMethodField()
 
     class Meta:
         model = player_models.Player
@@ -50,7 +52,8 @@ class UsersSerializer(serializers.Serializer):
             accounts_constants.PlayerFields.AVATAR,
             users_constants.UsersFields.IS_FRIEND,
             users_constants.UsersFields.IS_BLOCKED,
-            # todo: is_online,win_match,lose_match追加
+            users_constants.UsersFields.MATCH_WINS,
+            users_constants.UsersFields.MATCH_LOSSES,
         )
 
     # args,kwargsは型ヒントが複雑かつそのままsuper()に渡したいためignoreで対処
@@ -109,6 +112,34 @@ class UsersSerializer(serializers.Serializer):
                 ).values_list("blocked_user_id", flat=True)
             )
         return player.user.id in self._blocked_relationships_cache
+
+    def get_match_wins(self, player: player_models.Player) -> int:
+        """
+        playerが勝利したmatchの数を取得する
+
+        Args:
+            player: Playerインスタンス
+
+        Returns:
+            int: 勝利した試合数
+        """
+        return player.match_participations.filter(is_win=True).count()
+
+    def get_match_losses(self, player: player_models.Player) -> int:
+        """
+        playerが敗北したmatchの数を取得する
+        matchのstatusがCOMPLETEDかつis_win==Falseのものをカウントする
+
+        Args:
+            player: Playerインスタンス
+
+        Returns:
+            int: 敗北した試合数
+        """
+        return player.match_participations.filter(
+            match__status=matches_constants.MatchFields.StatusEnum.COMPLETED.value,
+            is_win=False,
+        ).count()
 
     def validate(self, data: dict) -> dict:
         """

@@ -88,7 +88,8 @@ class UsersMeView(views.APIView):
                                 accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: False,
                                 constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
@@ -192,7 +193,8 @@ class UsersMeView(views.APIView):
                                 accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: False,
                                 constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
