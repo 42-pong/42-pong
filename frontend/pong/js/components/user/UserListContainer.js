@@ -6,7 +6,6 @@ import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { setHeight } from "../../utils/elements/style/setHeight";
-import { setBorderWithShadow } from "../../utils/setBorderWithShadow";
 import { ErrorContainer } from "../utils/ErrorContainer";
 import { ListContainer } from "../utils/ListContainer";
 import { UserListItem } from "./UserListItem";
@@ -30,8 +29,6 @@ export class UserListContainer extends Component {
     setHeight(this.#userList, "75vh");
     BootstrapGrid.setCol(this.#userList, "3");
     BootstrapGrid.setCol(this.#userProfileContainer, "7");
-
-    setBorderWithShadow(this);
   }
 
   _onConnect() {

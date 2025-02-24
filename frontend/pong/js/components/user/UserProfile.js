@@ -7,7 +7,6 @@ import { Component } from "../../core/Component";
 import { createElement } from "../../utils/elements/createElement";
 import { createDefaultCard } from "../../utils/elements/div/createDefaultCard";
 import { createNameplate } from "../../utils/elements/div/createNameplate";
-import { setBorderWithShadow } from "../../utils/setBorderWithShadow";
 import { AddFriendButton } from "../friend/AddFriendButton";
 import { BlockUserButton } from "./BlockUserButton";
 
@@ -19,8 +18,6 @@ export class UserProfile extends Component {
   _setStyle() {
     BootstrapSizing.setWidth50(this);
     BootstrapText.setTextCenter(this);
-
-    setBorderWithShadow(this);
   }
 
   _render() {

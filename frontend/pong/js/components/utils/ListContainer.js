@@ -46,6 +46,7 @@ export class ListContainer extends Component {
 
     this.#list = createDefaultUnorderedList(listItemElements);
     this.append(this.#list);
+    setBorderWithShadow(this);
     if (isInitiallyScrolled) scrollAll(this.#list);
   }
 }
