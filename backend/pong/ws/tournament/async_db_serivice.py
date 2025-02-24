@@ -127,6 +127,14 @@ def update_tournament_status(
             return UpdateTournamentResult.error({"ValidationError": e.detail})
         return UpdateTournamentResult.error(e.detail)
 
+    except tournament_models.Tournament.DoesNotExist as e:
+        logger.error(f"DoesNotExist: {e}")
+        return UpdateTournamentResult.error(
+            {
+                "DoesNotExist": f"Tournament object does not exists. Details: {str(e)}."
+            }
+        )
+
     except DatabaseError as e:
         logger.error(f"DatabaseError: {e}")
         return UpdateTournamentResult.error(
@@ -179,6 +187,12 @@ def update_participation_ranking(
         return UpdateParticipationResult.error(e.detail)
 
     except DatabaseError as e:
+        logger.error(f"DatabaseError: {e}")
+        return UpdateParticipationResult.error(
+            {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
+        )
+
+    except participation_models.Participation.DoesNotExist as e:
         logger.error(f"DatabaseError: {e}")
         return UpdateParticipationResult.error(
             {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
