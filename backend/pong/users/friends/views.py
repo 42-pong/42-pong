@@ -45,7 +45,6 @@ logger = logging.getLogger(__name__)
             200: utils.OpenApiResponse(
                 description="A list of friends for the authenticated user.",
                 response=list_serializers.FriendshipListSerializer(many=True),
-                # response=custom_response.CustomResponse,
                 examples=[
                     utils.OpenApiExample(
                         "Example 200 response",
