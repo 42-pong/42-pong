@@ -5,6 +5,7 @@ from django.test import TestCase
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from matches import constants as matches_constants
 from matches.match import models as match_models
 from matches.participation import models as participation_models
 from tournaments.round import models as round_models
@@ -87,4 +88,24 @@ class UsersSerializerTests(TestCase):
 
         # 勝利した試合の数が2であることを確認
         self.assertEqual(serializer.data[MATCH_WINS], 2)
-        # todo: 負けたCOMPLETEDな試合の数が0であることを確認
+        # 負けたCOMPLETEDな試合の数が0であることを確認
+        self.assertEqual(serializer.data[MATCH_LOSSES], 0)
+
+    def test_field_match_losses(self) -> None:
+        """
+        敗北した試合の数が正しく取得できることを確認
+        """
+        # is_win==Falseの3つのmatchの内、2つのmatchのstatusをCOMPLETEDに変更
+        for participation in self.participation_list[:2]:
+            participation.match.status = (
+                matches_constants.MatchFields.StatusEnum.COMPLETED.value
+            )
+            participation.match.save()
+        # user1をログインユーザーとしてserializer作成
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            self.player,
+            context={USER_ID: self.user.id},
+        )
+
+        # 敗北した試合の数がis_win==FalseかつCOMPLETEDの2であることを確認
+        self.assertEqual(serializer.data[MATCH_LOSSES], 2)
