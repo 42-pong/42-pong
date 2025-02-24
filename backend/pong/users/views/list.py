@@ -79,6 +79,15 @@ class UsersListView(views.APIView):
     @utils.extend_schema(
         operation_id="get_users_list",
         request=None,
+        parameters=[
+            utils.OpenApiParameter(
+                name="page",
+                description="paginationのページ数",
+                required=False,
+                type=int,
+                location=utils.OpenApiParameter.QUERY,
+            ),
+        ],
         responses={
             200: utils.OpenApiResponse(
                 description="A list of user profiles",

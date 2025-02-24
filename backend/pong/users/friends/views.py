@@ -32,6 +32,15 @@ logger = logging.getLogger(__name__)
 
 @utils.extend_schema_view(
     list=utils.extend_schema(
+        parameters=[
+            utils.OpenApiParameter(
+                name="page",
+                description="paginationのページ数",
+                required=False,
+                type=int,
+                location=utils.OpenApiParameter.QUERY,
+            ),
+        ],
         responses={
             200: utils.OpenApiResponse(
                 description="A list of friends for the authenticated user.",
