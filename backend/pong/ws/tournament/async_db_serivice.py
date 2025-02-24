@@ -12,7 +12,7 @@ from tournaments.participation import serializers as participation_serializers
 from tournaments.tournament import models as tournament_models
 from tournaments.tournament import serializers as tournament_serializers
 
-logger = logging.getLogger("django")
+logger = logging.getLogger(__name__)
 CreateTournamentResult = utils.result.Result[dict, dict]
 UpdateTournamentResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]

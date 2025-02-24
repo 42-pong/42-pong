@@ -9,7 +9,7 @@ from .match import handler as match_handler
 from .share import constants as ws_constants
 from .share import serializers as ws_serializers
 
-logger = logging.getLogger("django")
+logger = logging.getLogger(__name__)
 
 
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
