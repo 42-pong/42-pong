@@ -2,6 +2,7 @@ import os
 from typing import Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db.models import Count, Q
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
@@ -113,6 +114,28 @@ class UsersSerializer(serializers.Serializer):
             )
         return player.user.id in self._blocked_relationships_cache
 
+    def _get_match_stats(
+        self, player: player_models.Player, result: str
+    ) -> int:
+        if not hasattr(self, "_match_stats_cache"):
+            # playerの勝敗数を一度だけ取得してキャッシュしておく
+            self._match_stats_cache: dict[str, int] = (
+                player.match_participations.aggregate(
+                    wins=Count(
+                        accounts_constants.PlayerFields.ID,
+                        filter=Q(is_win=True),
+                    ),
+                    losses=Count(
+                        accounts_constants.PlayerFields.ID,
+                        filter=Q(
+                            match__status=matches_constants.MatchFields.StatusEnum.COMPLETED.value,
+                            is_win=False,
+                        ),
+                    ),
+                )
+            )
+        return self._match_stats_cache[result]
+
     def get_match_wins(self, player: player_models.Player) -> int:
         """
         playerが勝利したmatchの数を取得する
@@ -123,7 +146,7 @@ class UsersSerializer(serializers.Serializer):
         Returns:
             int: 勝利した試合数
         """
-        return player.match_participations.filter(is_win=True).count()
+        return self._get_match_stats(player, "wins")
 
     def get_match_losses(self, player: player_models.Player) -> int:
         """
@@ -136,10 +159,7 @@ class UsersSerializer(serializers.Serializer):
         Returns:
             int: 敗北した試合数
         """
-        return player.match_participations.filter(
-            match__status=matches_constants.MatchFields.StatusEnum.COMPLETED.value,
-            is_win=False,
-        ).count()
+        return self._get_match_stats(player, "losses")
 
     def validate(self, data: dict) -> dict:
         """
