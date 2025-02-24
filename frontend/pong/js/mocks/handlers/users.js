@@ -27,4 +27,15 @@ export const handlers = [
         };
     return HttpResponse.json(responseBody);
   }),
+  http.get(Endpoints.USERS.defaultAvatar.href, async () => {
+    const imageBuffer = await fetch("/sample.png").then((res) =>
+      res.arrayBuffer(),
+    );
+
+    return HttpResponse.arrayBuffer(imageBuffer, {
+      headers: {
+        "Content-Type": "image/png",
+      },
+    });
+  }),
 ];
