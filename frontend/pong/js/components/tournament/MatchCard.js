@@ -3,6 +3,7 @@ import { MatchEnums } from "../../enums/MatchEnums";
 import { createDefaultCard } from "../../utils/elements/div/createDefaultCard";
 import { createEndFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createThreeColumnLayout } from "../../utils/elements/div/createThreeColumnLayout";
+import { getMatchResult } from "../../utils/match/getMatchResult";
 import { createStatusBadge } from "../../utils/tournament/createStatusBadge";
 import { PlayerProfile } from "./PlayerProfile";
 
@@ -18,7 +19,7 @@ export class MatchCard extends Component {
     const player2 =
       players.find((player) => player.team === MatchEnums.Team.TWO) ??
       null;
-    const { result1, result2 } = getMatchResult(player1, player2);
+    const [result1, result2] = getMatchResult(player1, player2);
 
     const statusBadge = createStatusBadge(status);
 
@@ -34,30 +35,3 @@ export class MatchCard extends Component {
     this.append(card);
   }
 }
-
-const getMatchResult = (player1, player2) => {
-  if (!(player1 && player2))
-    return {
-      result1: MatchEnums.Result.PENDING,
-      result2: MatchEnums.Result.PENDING,
-    };
-
-  const { isWin: isWin1 } = player1;
-  const { isWin: isWin2 } = player2;
-
-  if (isWin1 === isWin2)
-    return {
-      result1: MatchEnums.Result.PENDING,
-      result2: MatchEnums.Result.PENDING,
-    };
-
-  if (isWin1)
-    return {
-      result1: MatchEnums.Result.WIN,
-      result2: MatchEnums.Result.LOSE,
-    };
-  return {
-    result1: MatchEnums.Result.WIN,
-    result2: MatchEnums.Result.LOSE,
-  };
-};
