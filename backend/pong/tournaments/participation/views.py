@@ -163,7 +163,7 @@ from . import models, serializers
 )
 class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = serializers.ParticipationSerializer
+    serializer_class = serializers.ParticipationQuerySerializer
     renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]
 
     def get_queryset(self) -> QuerySet:
