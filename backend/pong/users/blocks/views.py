@@ -16,6 +16,7 @@ from rest_framework import (
 )
 
 from accounts import constants as accounts_constants
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users import constants as users_constants
 
@@ -31,6 +32,15 @@ logger = logging.getLogger(__name__)
 
 @utils.extend_schema_view(
     list=utils.extend_schema(
+        parameters=[
+            utils.OpenApiParameter(
+                name="page",
+                description="paginationのページ数",
+                required=False,
+                type=int,
+                location=utils.OpenApiParameter.QUERY,
+            ),
+        ],
         responses={
             200: utils.OpenApiResponse(
                 description="A list of blocks for the authenticated user.",
@@ -42,20 +52,25 @@ logger = logging.getLogger(__name__)
                         "Example 200 response",
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
-                            custom_response.DATA: [
-                                {
-                                    constants.BlockRelationshipFields.BLOCKED_USER: {
-                                        accounts_constants.UserFields.ID: 2,
-                                        accounts_constants.UserFields.USERNAME: "username2",
-                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
-                                        users_constants.UsersFields.IS_FRIEND: False,
-                                        users_constants.UsersFields.IS_BLOCKED: True,
-                                        # todo: is_online,win_match,lose_match追加
+                            custom_response.DATA: {
+                                custom_pagination.PaginationFields.COUNT: 25,
+                                custom_pagination.PaginationFields.NEXT: "http://localhost:8000/api/users/me/blocks/?page=2",
+                                custom_pagination.PaginationFields.PREVIOUS: None,
+                                custom_pagination.PaginationFields.RESULTS: [
+                                    {
+                                        constants.BlockRelationshipFields.BLOCKED_USER: {
+                                            accounts_constants.UserFields.ID: 2,
+                                            accounts_constants.UserFields.USERNAME: "username2",
+                                            accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                            accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                            users_constants.UsersFields.IS_FRIEND: False,
+                                            users_constants.UsersFields.IS_BLOCKED: True,
+                                            # todo: is_online,win_match,lose_match追加
+                                        },
                                     },
-                                },
-                                {"...", "..."},
-                            ],
+                                    "...",
+                                ],
+                            },
                         },
                     ),
                 ],
@@ -319,6 +334,14 @@ class BlocksViewSet(viewsets.ViewSet):
             # 401はCustomResponseにせずそのまま返す
             return super().handle_exception(exc)
 
+        if isinstance(exc, exceptions.NotFound):
+            logger.error(f"[404] Not found: {str(exc)}")
+            return custom_response.CustomResponse(
+                code=[users_constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         logger.error(f"[500] Internal server error: {str(exc)}")
         response: custom_response.CustomResponse = (
             custom_response.CustomResponse(
@@ -358,17 +381,22 @@ class BlocksViewSet(viewsets.ViewSet):
         block_users: QuerySet[models.BlockRelationship] = self.queryset.filter(
             user=user
         )
+        paginator: custom_pagination.CustomPagination = (
+            custom_pagination.CustomPagination()
+        )
+        # クエリパラメータのpage番号が存在しない場合はraise exceptions.NotFound()される
+        paginated_block_users: Optional[list[models.BlockRelationship]] = (
+            paginator.paginate_queryset(block_users, request)
+        )
         list_serializer: list_serializers.BlockRelationshipListSerializer = (
             list_serializers.BlockRelationshipListSerializer(
-                block_users,
+                paginated_block_users,
                 many=True,
                 context={constants.BlockRelationshipFields.USER_ID: user.id},
             )
         )
         # todo: logger.info追加
-        return custom_response.CustomResponse(
-            data=list_serializer.data, status=status.HTTP_200_OK
-        )
+        return paginator.get_paginated_response(list(list_serializer.data))
 
     @utils.extend_schema(exclude=True)
     def retrieve(

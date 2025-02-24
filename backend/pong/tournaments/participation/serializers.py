@@ -1,8 +1,10 @@
+from typing import Optional
+
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 
-from accounts.player.models import Player
-from tournaments.tournament.models import Tournament
+from accounts.player import models as player_models
+from tournaments.tournament import models as tournament_models
 
 from .. import constants
 from . import models
@@ -34,12 +36,14 @@ class ParticipationCommandSerializer(serializers.ModelSerializer):
     """
 
     tournament_id = serializers.PrimaryKeyRelatedField(
-        queryset=Tournament.objects.all(), source="tournament"
+        queryset=tournament_models.Tournament.objects.all(),
+        source="tournament",
     )
     player_id = serializers.PrimaryKeyRelatedField(
-        queryset=Player.objects.all(), source="player"
+        queryset=player_models.Player.objects.all(),
+        source="player",
     )
-    participation_name: serializers.CharField = serializers.CharField(
+    participation_name = serializers.CharField(
         max_length=15,
         validators=[
             # 使用可能文字列を指定: 英子文字・英大文字・数字・記号(-_.~)
@@ -60,17 +64,8 @@ class ParticipationCommandSerializer(serializers.ModelSerializer):
             constants.ParticipationFields.RANKING,
         )
         extra_kwargs = {
-            constants.ParticipationFields.TOURNAMENT_ID: {
-                "required": True,
-            },
-            constants.ParticipationFields.PLAYER_ID: {
-                "required": True,
-            },
-            constants.ParticipationFields.PARTICIPATION_NAME: {
-                "required": True,
-            },
             constants.ParticipationFields.RANKING: {
-                "required": False,
+                "required": False,  # デフォルトではTrue
                 "allow_null": True,
                 "default": None,
             },
@@ -111,7 +106,7 @@ class ParticipationCommandSerializer(serializers.ModelSerializer):
 
         return data
 
-    def validate_ranking(self, value: int) -> int:
+    def validate_ranking(self, value: Optional[int]) -> Optional[int]:
         if value is not None and (
             value < 1 or value > constants.MAX_PARTICIPATIONS
         ):
