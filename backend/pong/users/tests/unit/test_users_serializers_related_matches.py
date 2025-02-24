@@ -1,0 +1,68 @@
+from typing import Final
+
+from django.contrib.auth.models import User
+from django.test import TestCase
+
+from accounts import constants as accounts_constants
+from accounts.player import models as player_models
+from matches.match import models as match_models
+from matches.participation import models as participation_models
+from tournaments.round import models as round_models
+from tournaments.tournament import models as tournament_models
+from users.friends import constants as friends_constants
+
+USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
+EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
+PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
+USER: Final[str] = accounts_constants.PlayerFields.USER
+DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
+
+USER_ID: Final[str] = friends_constants.FriendshipFields.USER_ID
+
+
+class UsersSerializerTests(TestCase):
+    def setUp(self) -> None:
+        """
+        TestCaseのsetUpメソッドのオーバーライド
+        1つのUserと、そのUserに紐づく1つのPlayerをDBに保存
+        """
+
+        def _create_user_and_related_player(
+            user_data: dict, player_data: dict
+        ) -> tuple[User, player_models.Player]:
+            user: User = User.objects.create_user(**user_data)
+            player_data[USER] = user
+            player: player_models.Player = player_models.Player.objects.create(
+                **player_data
+            )
+            return user, player
+
+        self.user_data: dict = {
+            USERNAME: "testuser_1",
+            EMAIL: "testuser_1@example.com",
+            PASSWORD: "testpassword",
+        }
+        self.player_data: dict = {DISPLAY_NAME: "display_name1"}
+        self.user, self.player = _create_user_and_related_player(
+            self.user_data, self.player_data
+        )
+
+        # tournament1つ作成
+        self.tournament: tournament_models.Tournament = (
+            tournament_models.Tournament.objects.create()
+        )
+        # round3つ・match3つ・participation3つを作成
+        self.participation_list: list[participation_models.Participation] = []
+        for i in range(1, 4):
+            round: round_models.Round = round_models.Round.objects.create(
+                tournament=self.tournament, round_number=i
+            )
+            match: match_models.Match = match_models.Match.objects.create(
+                round=round
+            )
+            participation: participation_models.Participation = (
+                participation_models.Participation.objects.create(
+                    match=match, player=self.player, team="1"
+                )
+            )
+            self.participation_list.append(participation)
