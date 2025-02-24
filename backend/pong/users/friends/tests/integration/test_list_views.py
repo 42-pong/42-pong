@@ -7,6 +7,7 @@ from rest_framework import status, test
 
 from accounts import constants as accounts_constants
 from accounts.player import models as players_models
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users import constants as users_constants
 
@@ -25,6 +26,11 @@ IS_BLOCKED: Final[str] = users_constants.UsersFields.IS_BLOCKED
 FRIEND: Final[str] = constants.FriendshipFields.FRIEND
 
 DATA: Final[str] = custom_response.DATA
+
+COUNT: Final[str] = custom_pagination.PaginationFields.COUNT
+NEXT: Final[str] = custom_pagination.PaginationFields.NEXT
+PREVIOUS: Final[str] = custom_pagination.PaginationFields.PREVIOUS
+RESULTS: Final[str] = custom_pagination.PaginationFields.RESULTS
 
 
 class FriendsListViewTests(test.APITestCase):
@@ -120,7 +126,10 @@ class FriendsListViewTests(test.APITestCase):
         response: drf_response.Response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[DATA], [])
+        self.assertEqual(
+            response.data[DATA],
+            {COUNT: 0, NEXT: None, PREVIOUS: None, RESULTS: []},
+        )
 
     def test_200_get_friends_list(self) -> None:
         """
@@ -131,30 +140,35 @@ class FriendsListViewTests(test.APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data[DATA],
-            [
-                {
-                    FRIEND: {
-                        ID: self.user2.id,
-                        USERNAME: self.user_data2[USERNAME],
-                        DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
-                        AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        IS_FRIEND: True,
-                        IS_BLOCKED: False,
-                        # todo: is_online,win_match,lose_match追加
+            {
+                COUNT: 2,
+                NEXT: None,
+                PREVIOUS: None,
+                RESULTS: [
+                    {
+                        FRIEND: {
+                            ID: self.user2.id,
+                            USERNAME: self.user_data2[USERNAME],
+                            DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
+                            AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                            IS_FRIEND: True,
+                            IS_BLOCKED: False,
+                            # todo: is_online,win_match,lose_match追加
+                        },
                     },
-                },
-                {
-                    FRIEND: {
-                        ID: self.user3.id,
-                        USERNAME: self.user_data3[USERNAME],
-                        DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
-                        AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        IS_FRIEND: True,
-                        IS_BLOCKED: False,
-                        # todo: is_online,win_match,lose_match追加
+                    {
+                        FRIEND: {
+                            ID: self.user3.id,
+                            USERNAME: self.user_data3[USERNAME],
+                            DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
+                            AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                            IS_FRIEND: True,
+                            IS_BLOCKED: False,
+                            # todo: is_online,win_match,lose_match追加
+                        },
                     },
-                },
-            ],
+                ],
+            },
         )
 
     def test_200_delete_friend(self) -> None:
@@ -169,19 +183,24 @@ class FriendsListViewTests(test.APITestCase):
         # user3のみフレンド一覧に残る
         self.assertEqual(
             response.data[DATA],
-            [
-                {
-                    FRIEND: {
-                        ID: self.user3.id,
-                        USERNAME: self.user_data3[USERNAME],
-                        DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
-                        AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        IS_FRIEND: True,
-                        IS_BLOCKED: False,
-                        # todo: is_online,win_match,lose_match追加
+            {
+                COUNT: 1,
+                NEXT: None,
+                PREVIOUS: None,
+                RESULTS: [
+                    {
+                        FRIEND: {
+                            ID: self.user3.id,
+                            USERNAME: self.user_data3[USERNAME],
+                            DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
+                            AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                            IS_FRIEND: True,
+                            IS_BLOCKED: False,
+                            # todo: is_online,win_match,lose_match追加
+                        },
                     },
-                },
-            ],
+                ],
+            },
         )
 
     def test_200_exists_non_player(self) -> None:
@@ -196,19 +215,24 @@ class FriendsListViewTests(test.APITestCase):
         # user2のみフレンド一覧に表示される
         self.assertEqual(
             response.data[DATA],
-            [
-                {
-                    FRIEND: {
-                        ID: self.user2.id,
-                        USERNAME: self.user_data2[USERNAME],
-                        DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
-                        AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
-                        IS_FRIEND: True,
-                        IS_BLOCKED: False,
-                        # todo: is_online,win_match,lose_match追加
+            {
+                COUNT: 1,
+                NEXT: None,
+                PREVIOUS: None,
+                RESULTS: [
+                    {
+                        FRIEND: {
+                            ID: self.user2.id,
+                            USERNAME: self.user_data2[USERNAME],
+                            DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
+                            AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                            IS_FRIEND: True,
+                            IS_BLOCKED: False,
+                            # todo: is_online,win_match,lose_match追加
+                        },
                     },
-                },
-            ],
+                ],
+            },
         )
 
     def test_401_unauthenticated_user(self) -> None:
