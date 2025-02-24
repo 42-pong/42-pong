@@ -118,7 +118,7 @@ export class TournamentEntrance extends Component {
       WebSocketEnums.Category.TOURNAMENT,
       this.#tournamentJoinHandler,
     );
-    UserSessionManager.getInstance().myInfo.attach(
+    UserSessionManager.getInstance().myInfo.detach(
       this.#syncDefaultDisplayName,
     );
   }
