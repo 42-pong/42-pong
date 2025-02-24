@@ -14,11 +14,12 @@ logger = logging.getLogger("django")
 
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self) -> None:
-        # TODO:login用のハンドラが作成したら追加
-        # match用のハンドラを作成
+        # TODO:login用のハンドラを作成したら追加
+        # それぞれのイベントのハンドラを作成
         self.match_handler = match_handler.MatchHandler(
             self.channel_layer, self.channel_name
         )
+        # TODO: トーナメントハンドラにself.scopeからグローバルなtournament_registryを取り出して、渡す。
 
         await self.accept()
 
