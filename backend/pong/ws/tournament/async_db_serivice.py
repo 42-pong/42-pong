@@ -151,8 +151,6 @@ def update_participation_ranking(
     """
     大会終了時にtournament_participationsテーブルのランキングを更新
 
-    同じプレーヤーが同じトーナメントに参加することはないため、同時にトーナメント参加レコードに対して更新処理をすることはない。よってここではトランザクションで処理をまとめていない。
-
     Returns:
         UpdateTournamentResult: 作成されたtournamentのシリアライズ後のデータのResult
           - ok: Participationのranking更新に成功した場合
