@@ -1,7 +1,7 @@
 import logging
 from typing import Optional
 
-from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async  # type: ignore
 from django.db import DatabaseError, transaction
 from rest_framework import serializers as drf_serializers
 
@@ -18,7 +18,8 @@ UpdateTournamentResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]
 
 
-async def create_tournament_with_participation(
+@database_sync_to_async
+def create_tournament_with_participation(
     player_id: int, participation_name: str
 ) -> CreateTournamentResult:
     """
@@ -40,9 +41,7 @@ async def create_tournament_with_participation(
                 tournament_serializers.TournamentCommandSerializer(data={})
             )
             tournament_serializer.is_valid(raise_exception=True)
-            tournament: dict = await sync_to_async(
-                tournament_serializer.save
-            )()
+            tournament: dict = tournament_serializer.save()
 
             # 2. 参加情報を作成
             participation_data = {
@@ -58,7 +57,7 @@ async def create_tournament_with_participation(
                 )
             )
             participation_serializer.is_valid(raise_exception=True)
-            await sync_to_async(participation_serializer.save)()
+            participation_serializer.save()
 
     except drf_serializers.ValidationError as e:
         logger.error(f"VaridationError: {e}")
@@ -76,7 +75,8 @@ async def create_tournament_with_participation(
     return CreateTournamentResult.ok(tournament_serializer.data)
 
 
-async def get_waiting_tournament() -> Optional[int]:
+@database_sync_to_async
+def get_waiting_tournament() -> Optional[int]:
     """
     募集中のトーナメントクエリセットの中で最初の1件を取得する
 
@@ -84,9 +84,9 @@ async def get_waiting_tournament() -> Optional[int]:
         int: 正常に取得できた場合
         None: 募集中のトーナメントが一つもない場合
     """
-    tournament = await tournament_models.Tournament.objects.filter(
+    tournament = tournament_models.Tournament.objects.filter(
         status=constants.TournamentFields.StatusEnum.NOT_STARTED.value
-    ).afirst()
+    ).first()
 
     if tournament is not None:
         return tournament.id
@@ -94,7 +94,8 @@ async def get_waiting_tournament() -> Optional[int]:
     return None
 
 
-async def update_tournament_status(
+@database_sync_to_async
+def update_tournament_status(
     id: int, new_status: str
 ) -> UpdateTournamentResult:
     """
@@ -118,7 +119,7 @@ async def update_tournament_status(
             )
 
             serializer.is_valid(raise_exception=True)
-            await sync_to_async(serializer.save)()
+            serializer.save()
 
     except drf_serializers.ValidationError as e:
         logger.error(f"VaridationError: {e}")
@@ -135,7 +136,8 @@ async def update_tournament_status(
     return UpdateTournamentResult.ok(serializer.data)
 
 
-async def update_participation_ranking(
+@database_sync_to_async
+def update_participation_ranking(
     tournament_id: int, user_id: int, ranking: int
 ) -> UpdateParticipationResult:
     """
@@ -150,22 +152,23 @@ async def update_participation_ranking(
     """
 
     try:
-        participation = await sync_to_async(
-            participation_models.Participation.objects.select_for_update().get
-        )(
-            tournament_id=tournament_id,
-            player__user_id=user_id,  # ここで逆引き
-        )
+        with transaction.atomic():
+            participation = participation_models.Participation.objects.select_for_update().get(
+                tournament_id=tournament_id,
+                player__user_id=user_id,  # ここで逆引き
+            )
 
-        # シリアライザーを使ってバリデーション & 更新
-        serializer = participation_serializers.ParticipationCommandSerializer(
-            participation,
-            data={constants.ParticipationFields.RANKING: ranking},
-            partial=True,
-        )
+            # シリアライザーを使ってバリデーション & 更新
+            serializer = (
+                participation_serializers.ParticipationCommandSerializer(
+                    participation,
+                    data={constants.ParticipationFields.RANKING: ranking},
+                    partial=True,
+                )
+            )
 
-        serializer.is_valid(raise_exception=True)
-        await sync_to_async(serializer.save)()
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
     except drf_serializers.ValidationError as e:
         logger.error(f"VaridationError: {e}")
