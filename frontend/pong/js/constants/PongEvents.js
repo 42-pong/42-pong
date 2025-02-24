@@ -38,10 +38,22 @@ const TOGGLE_CHAT_USER_SELECTION = {
   create: () => createPongEvent(TOGGLE_CHAT_USER_SELECTION.type, {}),
 };
 
+const START_MATCH = {
+  type: "start-match",
+  create: () => createPongEvent(START_MATCH.type, {}),
+};
+
+const END_MATCH = {
+  type: "end-match",
+  create: () => createPongEvent(END_MATCH.type, {}),
+};
+
 export const PongEvents = {
   UPDATE_ROUTER,
   UPDATE_TOURNAMENT_STAGE,
   UPDATE_USER_ID,
   TOGGLE_CHAT_GLOBAL,
   TOGGLE_CHAT_USER_SELECTION,
+  START_MATCH,
+  END_MATCH,
 };
