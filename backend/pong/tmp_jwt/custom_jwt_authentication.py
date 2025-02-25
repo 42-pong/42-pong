@@ -22,42 +22,37 @@ class CustomJWTAuthentication(BaseAuthentication):
             return None
 
         token: str = auth_header.split(" ")[1]
+        jwt_handler: jwt.JWT = jwt.JWT()
+        payload: dict = {}
         try:
-            jwt_handler: jwt.JWT = jwt.JWT()
-            payload: dict = jwt_handler.decode(token)
-            user_id = payload.get("sub")
-
-            if not user_id:
-                logger.error("user_id is not included in the payload")
-                raise AuthenticationFailed(
-                    {"status": "error", "code": "invalid_token"}
-                )
-
-            try:
-                user = User.objects.get(id=user_id)
-            except User.DoesNotExist:
-                logger.error("User does not exist")
-                raise AuthenticationFailed(
-                    {"status": "error", "code": "not_exist"}
-                )
-            return user, token
-
+            payload = jwt_handler.decode(token)
         # todo: 例外処理の詳細を記述
         # - jwt.TokenExpiredError: トークンが有効期限切れの場合
         # - jwt.InvalidTokenError: 不正なトークンの場合
         # except TokenExpiredError:
         #     raise AuthenticationFailed(
-        #         # todo: "auth": "token_expired" にするかも
         #         {"status": "error", "code": "token_expired"}
         #     )
-
         # except jwt.InvalidTokenError:
+        #     logger.error(e)
+        #     logger.error(f"Failed to decode token: {token}")
         #     raise AuthenticationFailed(
         #         {"status": "error", "code": "invalid_token"}
         #     )
-        except ValueError as e:
+        except Exception as e:
             logger.error(e)
-            logger.error(f"Failed to decode token: {token}")
-            raise AuthenticationFailed(
-                {"status": "error", "code": "invalid_token"}
-            )
+            raise AuthenticationFailed(str(e), code="invalid_token")
+
+        user_id = payload.get("sub")
+        if not user_id:
+            error_message = "user_id is not included in the payload"
+            logger.error(error_message)
+            raise AuthenticationFailed(error_message, code="invalid_token")
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            error_message = f"User does not exist: {user_id}"
+            logger.error(error_message)
+            raise AuthenticationFailed(error_message, code="not_exists")
+        return user, token
