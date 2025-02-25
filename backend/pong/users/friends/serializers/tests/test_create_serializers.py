@@ -1,4 +1,5 @@
 from typing import Final
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -30,6 +31,8 @@ CODE_INVALID: Final[str] = users_constants.Code.INVALID
 CODE_NOT_EXISTS: Final[str] = users_constants.Code.NOT_EXISTS
 CODE_INTERNAL_ERROR: Final[str] = users_constants.Code.INTERNAL_ERROR
 
+MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+
 
 class FriendshipCreateSerializerTests(TestCase):
     def setUp(self) -> None:
@@ -37,7 +40,13 @@ class FriendshipCreateSerializerTests(TestCase):
         TestCaseのsetUpメソッドのオーバーライド
         """
 
-        def _create_user(user_data: dict, player_data: dict) -> User:
+        @mock.patch(
+            "accounts.player.identicon.generate_identicon",
+            return_value=MOCK_AVATAR_NAME,
+        )
+        def _create_user(
+            user_data: dict, player_data: dict, mock_identicon: mock.MagicMock
+        ) -> User:
             user: User = User.objects.create_user(**user_data)
             player_data[USER] = user
             players_models.Player.objects.create(**player_data)
@@ -91,7 +100,7 @@ class FriendshipCreateSerializerTests(TestCase):
                     ID: self.user2.id,
                     USERNAME: self.user_data_2[USERNAME],
                     DISPLAY_NAME: self.player_data_2[DISPLAY_NAME],
-                    AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                    AVATAR: self.user2.player.avatar.url,
                     IS_FRIEND: True,
                     IS_BLOCKED: False,
                     MATCH_WINS: 0,
