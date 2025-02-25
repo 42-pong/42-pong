@@ -1,4 +1,5 @@
 from typing import Final
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -34,6 +35,8 @@ NEXT: Final[str] = custom_pagination.PaginationFields.NEXT
 PREVIOUS: Final[str] = custom_pagination.PaginationFields.PREVIOUS
 RESULTS: Final[str] = custom_pagination.PaginationFields.RESULTS
 
+MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+
 
 class BlocksListViewTests(test.APITestCase):
     def setUp(self) -> None:
@@ -42,8 +45,12 @@ class BlocksListViewTests(test.APITestCase):
         """
         self.url: str = reverse("users:blocks:blocks-list")
 
+        @mock.patch(
+            "accounts.player.identicon.generate_identicon",
+            return_value=MOCK_AVATAR_NAME,
+        )
         def _create_user_and_related_player(
-            user_data: dict, player_data: dict
+            user_data: dict, player_data: dict, mock_identicon: mock.MagicMock
         ) -> tuple[User, players_models.Player]:
             user: User = User.objects.create_user(**user_data)
             player_data[USER] = user
@@ -156,7 +163,7 @@ class BlocksListViewTests(test.APITestCase):
                             ID: self.user2.id,
                             USERNAME: self.user_data2[USERNAME],
                             DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
-                            AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                            AVATAR: self.player2.avatar.url,
                             IS_FRIEND: False,
                             IS_BLOCKED: True,
                             MATCH_WINS: 0,
@@ -168,7 +175,7 @@ class BlocksListViewTests(test.APITestCase):
                             ID: self.user3.id,
                             USERNAME: self.user_data3[USERNAME],
                             DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
-                            AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                            AVATAR: self.player3.avatar.url,
                             IS_FRIEND: False,
                             IS_BLOCKED: True,
                             MATCH_WINS: 0,
@@ -201,7 +208,7 @@ class BlocksListViewTests(test.APITestCase):
                             ID: self.user3.id,
                             USERNAME: self.user_data3[USERNAME],
                             DISPLAY_NAME: self.player_data3[DISPLAY_NAME],
-                            AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                            AVATAR: self.player3.avatar.url,
                             IS_FRIEND: False,
                             IS_BLOCKED: True,
                             MATCH_WINS: 0,
@@ -234,7 +241,7 @@ class BlocksListViewTests(test.APITestCase):
                             ID: self.user2.id,
                             USERNAME: self.user_data2[USERNAME],
                             DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
-                            AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
+                            AVATAR: self.player2.avatar.url,
                             IS_FRIEND: False,
                             IS_BLOCKED: True,
                             MATCH_WINS: 0,
