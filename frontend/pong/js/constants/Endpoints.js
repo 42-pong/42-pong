@@ -12,8 +12,14 @@ export const Endpoints = Object.freeze({
   USERS: {
     default: new URL("/api/users/", BASE_URL),
     withId: (userId) => new URL(`${userId}`, Endpoints.USERS.default),
+    me: () => new URL("me/", Endpoints.USERS.default),
     defaultAvatar: new URL(DEFAULT_AVATAR_IMAGE_PATH, BASE_URL),
   },
   TOKEN: new URL("/api/token/", BASE_URL),
+  REFRESH_TOKEN: new URL("/api/token/refresh/", BASE_URL),
   FRIENDS: new URL("/api/users/me/friends/", BASE_URL),
+  PARTICIPATIONS: new URL(
+    "/api/tournaments/participations/",
+    BASE_URL,
+  ),
 });

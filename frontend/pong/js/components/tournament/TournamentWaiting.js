@@ -1,52 +1,59 @@
+import { getFriends } from "../../api/users/getFriends";
+import { BootstrapBorders } from "../../bootstrap/utilities/borders";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { Component } from "../../core/Component";
-import { TournamentEnums } from "../../enums/TournamentEnums";
-import { createElement } from "../../utils/elements/createElement";
-import { TournamentJoinButton } from "./TournamentJoinButton";
-import { TournamentProgressTransitionButton } from "./TournamentProgressTransitionButton";
+import { setHeight } from "../../utils/elements/style/setHeight";
+import { UserListItem } from "../user/UserListItem";
+import { ListContainer } from "../utils/ListContainer";
+import { TournamentLeaveButton } from "./TournamentLeaveButton";
 
 export class TournamentWaiting extends Component {
-  #toTournamentEntrance;
+  #friendList;
+  #leaveButton;
 
   _setStyle() {
     BootstrapDisplay.setFlex(this);
     BootstrapFlex.setFlexColumn(this);
     BootstrapFlex.setJustifyContentAround(this);
     BootstrapFlex.setAlignItemsCenter(this);
+    BootstrapBorders.setBorder(this);
+    BootstrapBorders.setRounded(this);
     BootstrapSizing.setWidth100(this);
-    BootstrapSizing.setHeight100(this);
 
-    BootstrapSizing.setWidth50(this.#toTournamentEntrance);
-    this.#toTournamentEntrance.setSecondary();
+    setHeight(this.#friendList, "80%");
+    BootstrapSizing.setWidth75(this.#leaveButton);
+    this.#leaveButton.setSecondary();
   }
 
   _onConnect() {
-    this.#toTournamentEntrance = new TournamentJoinButton(
-      { textContent: "戻る" },
-      {},
-      TournamentEnums.Stage.ENTRANCE,
-    );
+    this.#friendList = new ListContainer({
+      ListItem: UserListItem,
+      items: [],
+    });
+    getFriends().then(({ users, error }) => {
+      if (error) {
+        this._updateState({ isError: true });
+        this.#friendList = null;
+        return;
+      }
+      this.#friendList._updateState({ items: users });
+    });
+
+    const { tournamentId } = this._getState();
+    this.#leaveButton = new TournamentLeaveButton({
+      textContent: "戻る",
+      tournamentId,
+    });
   }
 
   _render() {
-    // TODO: タイトル要素を作成する関数でまとめる
-    const title = createElement("h1", {
-      textContent: "トーナメント開始の待機",
-    });
-    this.appendChild(title);
+    const { isError } = this._getState();
+    if (isError) {
+      return;
+    }
 
-    // TODO: DELETE: 次の Progress に進むための一時的なもの
-    const nextProgress = new TournamentProgressTransitionButton(
-      { textContent: "次の PROGRESS (一時的)" },
-      {},
-      TournamentEnums.Progress.ONGOING,
-    );
-    nextProgress.setOutlineSecondary();
-    BootstrapSizing.setWidth50(nextProgress);
-    this.appendChild(nextProgress);
-
-    this.appendChild(this.#toTournamentEntrance);
+    this.append(this.#friendList, this.#leaveButton);
   }
 }

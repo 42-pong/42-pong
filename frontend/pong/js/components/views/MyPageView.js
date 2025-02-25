@@ -1,6 +1,6 @@
-import { View } from "../../core/View";
+import { AuthView } from "../../core/AuthView";
 
-export class MyPageView extends View {
+export class MyPageView extends AuthView {
   _render() {
     const title = document.createElement("h2");
     title.textContent = "My Page View";

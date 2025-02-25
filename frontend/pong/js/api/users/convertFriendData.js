@@ -5,7 +5,7 @@ export const convertFriendData = (friendData) => {
   } = friendData;
 
   return {
-    id: friend_user_id.toString(),
+    id: friend_user_id,
     username,
     displayName: display_name,
     avatar,

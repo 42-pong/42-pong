@@ -8,11 +8,12 @@ import { createElement } from "../createElement";
 import { setHeight } from "../style/setHeight";
 
 export const createNameplate = (user, avatarHeight = "") => {
-  const nameTagText = `${user.displayName}#${user.username}`;
+  const { nameTagText, avatarPathname, avatarAlt } =
+    formatUserInfo(user);
 
   const avatar = createAvatarImage({
-    pathname: user.avatar,
-    alt: `${nameTagText}'s avatar`,
+    pathname: avatarPathname,
+    alt: avatarAlt,
     height: avatarHeight,
   });
   const nameTag = createElement("span", {
@@ -42,3 +43,16 @@ const createAvatarImage = (params) => {
   BootstrapBorders.setRoundedCircle(image);
   return image;
 };
+
+const formatUserInfo = (user) =>
+  user
+    ? {
+        nameTagText: `${user.displayName}#${user.username}`,
+        avatarPathname: user.avatar,
+        avatarAlt: `${user.displayName}#${user.username}'s avatar`,
+      }
+    : {
+        nameTagText: "...",
+        avatarPathname: Endpoints.USERS.defaultAvatar.href,
+        avatarAlt: "placeholder",
+      };

@@ -19,7 +19,7 @@ export class TournamentJoinButton extends StyledButton {
       );
       if (isError) return;
 
-      UserSessionManager.webSocket.send(
+      UserSessionManager.getInstance().webSocket.send(
         WebSocketEnums.Category.TOURNAMENT,
         TournamentPayload.createJoin({
           joinType,

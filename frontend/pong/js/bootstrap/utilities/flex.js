@@ -4,6 +4,10 @@ const setFlexColumn = (element) => {
   return setClassNames(element, "flex-column");
 };
 
+const setFlexColumnReverse = (element) => {
+  return setClassNames(element, "flex-column-reverse");
+};
+
 const setFlexGrow1 = (element) => {
   return setClassNames(element, "flex-grow-1");
 };
@@ -22,6 +26,7 @@ const setAlignItemsCenter = (element) => {
 
 export const BootstrapFlex = {
   setFlexColumn,
+  setFlexColumnReverse,
   setFlexGrow1,
   setJustifyContentCenter,
   setJustifyContentAround,

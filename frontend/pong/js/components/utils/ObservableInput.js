@@ -33,6 +33,11 @@ export class ObservableInput extends Component {
     this.append(this.#input);
   }
 
+  setValue(value) {
+    this.#input.value = value;
+    this.#subject.updateData({ value });
+  }
+
   setError() {
     BootstrapBorders.setDanger(this.#input);
   }

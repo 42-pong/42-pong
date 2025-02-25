@@ -20,7 +20,8 @@ export class DataSubject {
 
   attach(observer) {
     const isAttachable = (observer) =>
-      observer instanceof Function && !this.#observers.has(observer);
+      typeof observer === "function" &&
+      !this.#observers.has(observer);
     if (!isAttachable(observer)) return;
 
     this.#observers.add(observer);
