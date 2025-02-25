@@ -65,7 +65,8 @@ logger = logging.getLogger(__name__)
                                             accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                             users_constants.UsersFields.IS_FRIEND: False,
                                             users_constants.UsersFields.IS_BLOCKED: True,
-                                            # todo: is_online,win_match,lose_match追加
+                                            users_constants.UsersFields.MATCH_WINS: 1,
+                                            users_constants.UsersFields.MATCH_LOSSES: 0,
                                         },
                                     },
                                     "...",
@@ -143,7 +144,8 @@ logger = logging.getLogger(__name__)
                                     accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                     users_constants.UsersFields.IS_FRIEND: False,
                                     users_constants.UsersFields.IS_BLOCKED: True,
-                                    # todo: is_online,win_match,lose_match追加
+                                    users_constants.UsersFields.MATCH_WINS: 1,
+                                    users_constants.UsersFields.MATCH_LOSSES: 0,
                                 },
                             },
                         },

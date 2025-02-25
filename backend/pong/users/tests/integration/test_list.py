@@ -21,6 +21,8 @@ DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
 IS_BLOCKED: Final[str] = constants.UsersFields.IS_BLOCKED
+MATCH_WINS: Final[str] = constants.UsersFields.MATCH_WINS
+MATCH_LOSSES: Final[str] = constants.UsersFields.MATCH_LOSSES
 
 DATA: Final[str] = custom_response.DATA
 
@@ -118,7 +120,8 @@ class UsersListViewTests(test.APITestCase):
                         AVATAR: self.player1.avatar.url,
                         IS_FRIEND: False,
                         IS_BLOCKED: False,
-                        # todo: is_online,win_match,lose_match追加
+                        MATCH_WINS: 0,
+                        MATCH_LOSSES: 0,
                     },
                     {
                         ID: self.user2.id,
@@ -127,7 +130,8 @@ class UsersListViewTests(test.APITestCase):
                         AVATAR: self.player2.avatar.url,
                         IS_FRIEND: False,
                         IS_BLOCKED: False,
-                        # todo: is_online,win_match,lose_match追加
+                        MATCH_WINS: 0,
+                        MATCH_LOSSES: 0,
                     },
                 ],
             },

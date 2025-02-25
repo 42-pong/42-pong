@@ -53,7 +53,8 @@ class AccountCreateView(views.APIView):
                                 constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 users_constants.UsersFields.IS_FRIEND: False,
                                 users_constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                users_constants.UsersFields.MATCH_WINS: 0,
+                                users_constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
