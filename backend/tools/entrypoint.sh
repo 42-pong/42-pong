@@ -3,9 +3,13 @@
 # エラーが発生した場合にスクリプトの実行を停止する
 set -eux
 
+ls -l
+chown -R pong:pong /pong/staticfiles /pong/media
+
 migrate_db() {
     python3 manage.py makemigrations --noinput
     python3 manage.py migrate --noinput
+    python3 manage.py collectstatic --noinput
 }
 
 create_superuser() {

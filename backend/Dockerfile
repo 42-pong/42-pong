@@ -16,6 +16,10 @@ RUN pip install --upgrade pip && \
 COPY ./tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# 静的ファイルを置くディレクトリの作成
+RUN mkdir -p /pong/staticfiles && \
+    mkdir -p /pong/media
+
 RUN chown -R pong:pong /pong
 # root権限が必要なinstall等を終えたら作成したuserに切り替え
 USER pong

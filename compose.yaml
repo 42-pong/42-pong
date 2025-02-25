@@ -11,6 +11,9 @@ services:
     restart: always
     ports:
       - "${FRONT_SERVER_PORT}:443"
+    volumes:
+      - ./backend/pong/staticfiles:/usr/share/nginx/html/static
+      - ./backend/pong/media:/usr/share/nginx/html/media
     networks:
       - transcendence
     healthcheck:
