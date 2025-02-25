@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class CustomJWTAuthentication(BaseAuthentication):
+    www_authenticate_realm: str = "api"
+
     def authenticate(self, request: Request) -> Optional[tuple]:
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
@@ -56,3 +58,10 @@ class CustomJWTAuthentication(BaseAuthentication):
             logger.error(error_message)
             raise AuthenticationFailed(error_message, code="not_exists")
         return user, token
+
+    # todo: viewsetに自作JWTクラスを設定後、401のステータスコードを確認するテストケース作成する
+    def authenticate_header(self, request: Request) -> str:
+        return '{} realm="{}"'.format(
+            "Bearer",
+            self.www_authenticate_realm,
+        )
