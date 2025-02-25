@@ -1,6 +1,8 @@
 import { LoginContainer } from "./auth/LoginContainer";
 import { SignInButton } from "./auth/SignInButton";
 import { SignOutButton } from "./auth/SignOutButton";
+import { SignUpButton } from "./auth/SignUpButton";
+import { SignUpContainer } from "./auth/SingUpContainer";
 import { ChatBuddyListContainer } from "./chat/ChatBuddyListContainer";
 import { ChatContainer } from "./chat/ChatContainer";
 import { ChatDmContainer } from "./chat/ChatDmContainer";
@@ -41,12 +43,15 @@ import { LoginView } from "./views/LoginView";
 import { MainView } from "./views/MainView";
 import { MyPageView } from "./views/MyPageView";
 import { NotFoundView } from "./views/NotFoundView";
+import { SignUpView } from "./views/SignupView";
 import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
+customElements.define("sign-up-button", SignUpButton, {});
+customElements.define("sign-up-container", SignUpContainer, {});
 customElements.define("chat-container", ChatContainer, {});
 customElements.define(
   "chat-buddy-list-container",
@@ -116,6 +121,7 @@ customElements.define("friends-view", FriendsView, {});
 customElements.define("home-view", HomeView, {});
 customElements.define("loading-view", LoadingView, {});
 customElements.define("login-view", LoginView, {});
+customElements.define("sign-up-view", SignUpView, {});
 customElements.define("main-view", MainView, {});
 customElements.define("my-page-view", MyPageView, {});
 customElements.define("not-found-view", NotFoundView, {});

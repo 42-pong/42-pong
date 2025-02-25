@@ -22,4 +22,5 @@ export const Endpoints = Object.freeze({
     "/api/tournaments/participations/",
     BASE_URL,
   ),
+  ACCOUNTS: new URL("/api/accounts/", BASE_URL),
 });

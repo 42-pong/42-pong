@@ -1,5 +1,6 @@
 import { LoginView } from "../components/views/LoginView";
 import { MainView } from "../components/views/MainView";
+import { SignUpView } from "../components/views/SignupView";
 import { TournamentsView } from "../components/views/TournamentsView";
 import { Paths } from "../constants/Paths";
 import { Route } from "../core/Route";
@@ -8,6 +9,7 @@ import { Router } from "../core/Router";
 export const appRouter = (target) => {
   const routes = {
     [Paths.LOGIN]: Route.defaultRoute(LoginView),
+    [Paths.SIGNUP]: Route.defaultRoute(SignUpView),
     [Paths.HOME]: Route.createRoute(MainView, MainView.Paths.HOME),
     [Paths.USERS]: Route.createRoute(MainView, MainView.Paths.USERS),
     [Paths.FRIENDS]: Route.createRoute(
