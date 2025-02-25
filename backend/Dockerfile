@@ -20,7 +20,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 # RUN mkdir -p /pong/staticfiles && \
 #     mkdir -p /pong/media
 
-# RUN chown -R pong:pong /pong
+RUN chown -R pong:pong /pong
 # root権限が必要なinstall等を終えたら作成したuserに切り替え
 # USER pong
 
