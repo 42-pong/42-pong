@@ -19,6 +19,10 @@ FROM nginxinc/nginx-unprivileged:${NGINX_TAG} AS production
 
 COPY --from=builder --chown=nginx:nginx /app/dist /usr/share/nginx/html
 
+# ssl
+COPY --chown=nginx:nginx ./ssl/certs/* /etc/ssl/certs/
+COPY --chown=nginx:nginx ./ssl/private/* /etc/ssl/private/
+
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/nginx.conf
 
 CMD ["nginx", "-g", "daemon off;"]
