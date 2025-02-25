@@ -5,7 +5,7 @@ FROM python:3.13
 WORKDIR /pong
 
 # 新規userを作成。この時点ではuserはroot
-RUN useradd -ms /bin/bash pong
+# RUN useradd -ms /bin/bash pong
 
 # pip-tools: 開発環境でrequirements.inからrequirements.txtを生成するために使用
 COPY tools/requirements.txt .
@@ -17,12 +17,12 @@ COPY ./tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # 静的ファイルを置くディレクトリの作成
-RUN mkdir -p /pong/staticfiles && \
-    mkdir -p /pong/media
+# RUN mkdir -p /pong/staticfiles && \
+#     mkdir -p /pong/media
 
-RUN chown -R pong:pong /pong
+# RUN chown -R pong:pong /pong
 # root権限が必要なinstall等を終えたら作成したuserに切り替え
-USER pong
+# USER pong
 
 EXPOSE 8000
 
