@@ -16,6 +16,7 @@ export class Component extends HTMLElement {
     this._update();
   }
 
+  _preConnect() {}
   _onConnect() {}
   _onDisconnect() {}
   _render() {}
@@ -25,6 +26,7 @@ export class Component extends HTMLElement {
   _setStyle() {}
 
   connectedCallback() {
+    this._preConnect();
     this._onConnect();
     this._setStyle();
     this._render();

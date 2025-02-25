@@ -1,4 +1,7 @@
+import { getMyInfo } from "../api/users/getMyInfo";
 import { ChatGlobal } from "../components/chat/ChatGlobal";
+import { Paths } from "../constants/Paths";
+import { PongEvents } from "../constants/PongEvents";
 import { DataSubject } from "../core/DataSubject";
 import { WebSocketWrapper } from "../websocket/WebSocketWrapper";
 
@@ -6,7 +9,10 @@ export class UserSession {
   #apps;
   #myInfo;
   #webSocket;
+
+  // TODO: manage tokens
   #accessToken;
+  #refreshToken;
 
   constructor() {
     this.#apps = {};
@@ -14,47 +20,84 @@ export class UserSession {
     this.#webSocket = new WebSocketWrapper();
   }
 
-  signIn(userData) {
-    this.#myInfo.updateData({ ...userData, isSignedIn: true });
-    // TODO: WebSocket LOGIN
+  redirect(path = Paths.HOME) {
+    const { app } = this.#apps;
+    app.dispatchEvent(PongEvents.UPDATE_ROUTER.create(path));
   }
 
-  signOut() {
-    this.#reset();
+  updateWindowPath() {
+    const { updateWindowPath } = this.#apps;
+    updateWindowPath();
   }
 
-  main(apps) {
+  async main(apps) {
     Object.assign(this.#apps, apps);
-    this.#reset();
+
+    const isValid = await this.#reset();
+    if (isValid) {
+      await this.signIn();
+      this.updateWindowPath();
+    }
+    return isValid;
   }
 
-  #reset() {
-    const {
-      appGlobal,
-      updateWindowPath,
-      displayMainLoading,
-      displayMainError,
-    } = this.#apps;
+  async #reset() {
+    const { displayMainLoading, displayMainError } = this.#apps;
 
-    clearGlobalFeatures(appGlobal);
     displayMainLoading();
 
-    this.#init().then((isGood) => {
-      if (isGood) {
-        initGlobalFeatures(appGlobal);
-        updateWindowPath();
-      } else {
-        displayMainError();
-      }
-    });
+    const isValid = await this.#init();
+    if (!isValid) displayMainError();
+    return isValid;
   }
 
   async #init() {
+    const { appGlobal } = this.#apps;
+    clearGlobalFeatures(appGlobal);
+    this.#initTokens();
     this.#myInfo.init({ isSignedIn: false });
     this.#webSocket.close();
 
     const isConnected = await this.#webSocket.connect();
     return isConnected;
+  }
+
+  async signIn(authData = null) {
+    if (authData) {
+      const { access, refresh } = authData;
+      this.setAccessToken(access);
+      this.setRefreshToken(refresh);
+    }
+    const isVerified = await this.verifyAuth();
+    // TODO: WebSocket LOGIN
+    // initGlobalFeatures(appGlobal);
+    return isVerified;
+  }
+
+  async signOut() {
+    const isValid = await this.#reset();
+    if (isValid) this.updateWindowPath();
+    return isValid;
+  }
+
+  async verifyAuth() {
+    const { myInfo, error } = await getMyInfo();
+    if (error) return false;
+    this.#myInfo.updateData({ ...myInfo, isSignedIn: true });
+    return true;
+  }
+
+  async assertAuth() {
+    const isVerified = await this.verifyAuth();
+    if (!isVerified && (await this.#reset()))
+      this.redirect(Paths.LOGIN);
+    return isVerified;
+  }
+
+  async assertNoAuth() {
+    const isVerified = await this.verifyAuth();
+    if (isVerified) this.redirect(Paths.HOME);
+    return isVerified;
   }
 
   get myInfo() {
@@ -63,6 +106,28 @@ export class UserSession {
 
   get webSocket() {
     return this.#webSocket;
+  }
+
+  // TODO: manage tokens
+  getAccessToken() {
+    return this.#accessToken;
+  }
+
+  getRefreshToken() {
+    return this.#refreshToken;
+  }
+
+  setAccessToken(access) {
+    this.#accessToken = access;
+  }
+
+  setRefreshToken(refresh) {
+    this.#refreshToken = refresh;
+  }
+
+  #initTokens() {
+    this.#accessToken = "";
+    this.#refreshToken = "";
   }
 }
 

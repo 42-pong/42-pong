@@ -1,6 +1,6 @@
 import { Endpoints } from "../../constants/Endpoints";
 import { isValidId } from "../../utils/isValidId";
-import { fetchData } from "../utils/fetchData";
+import { fetchAuthenticatedData } from "../utils/fetchAuthenticatedData";
 import { convertUserData } from "./convertUserData";
 
 export async function getUser(userId) {
@@ -11,7 +11,7 @@ export async function getUser(userId) {
     };
   }
 
-  const { data, error } = await fetchData(
+  const { data, error } = await fetchAuthenticatedData(
     Endpoints.USERS.withId(userId).href,
   );
 

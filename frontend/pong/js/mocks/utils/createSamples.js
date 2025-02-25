@@ -1,6 +1,7 @@
 const SAMPLE_COUNT = 30; // userId: 1 ~ SAMPLE_COUNT
 
 const MY_USER_ID = 1;
+const MY_EMAIL = "mock@example.com";
 
 const createSampleUser = (number) =>
   Object.freeze({
@@ -13,6 +14,11 @@ const createSampleUser = (number) =>
 const sampleUsers = Array.from({ length: SAMPLE_COUNT }).map(
   (_, idx) => createSampleUser(idx + 1),
 );
+
+const sampleMyInfo = {
+  ...sampleUsers.find(({ id }) => id === MY_USER_ID),
+  email: MY_EMAIL,
+};
 
 const createSampleFriend = (idx) =>
   Object.freeze({
@@ -68,4 +74,9 @@ const sampleParticipations = [
   },
 ];
 
-export { sampleUsers, sampleFriends, sampleParticipations };
+export {
+  sampleUsers,
+  sampleMyInfo,
+  sampleFriends,
+  sampleParticipations,
+};

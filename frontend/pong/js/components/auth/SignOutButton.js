@@ -17,8 +17,7 @@ export class SignOutButton extends StyledButton {
   _onConnect() {
     this._attachEventListener("click", (event) => {
       event.preventDefault();
-      event.stopPropagation();
-      UserSessionManager.signOut();
+      UserSessionManager.getInstance().signOut();
     });
   }
 }

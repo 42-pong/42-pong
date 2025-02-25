@@ -1,10 +1,10 @@
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
-import { View } from "../../core/View";
+import { AuthView } from "../../core/AuthView";
 import { TournamentContainer } from "../tournament/TournamentContainer";
 
-export class TournamentsView extends View {
+export class TournamentsView extends AuthView {
   #tournamentContainer;
 
   _setStyle() {

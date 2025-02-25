@@ -24,14 +24,18 @@ export class UserProfileHeader extends Component {
   }
 
   _onConnect() {
-    UserSessionManager.myInfo.observe((myInfoData) => {
+    UserSessionManager.getInstance().myInfo.observe((myInfoData) => {
       Object.assign(this._state, { user: createUser(myInfoData) });
     });
-    UserSessionManager.myInfo.attach(this.#userDataObserver);
+    UserSessionManager.getInstance().myInfo.attach(
+      this.#userDataObserver,
+    );
   }
 
   _onDisconnect() {
-    UserSessionManager.myInfo.detach(this.#userDataObserver);
+    UserSessionManager.getInstance().myInfo.detach(
+      this.#userDataObserver,
+    );
   }
 
   _render() {

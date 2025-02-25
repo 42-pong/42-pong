@@ -1,7 +1,9 @@
 import { Endpoints } from "../../constants/Endpoints";
+import { Paths } from "../../constants/Paths";
 import { FrontendMessage } from "../../constants/message/FrontendMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
+import { UserSessionManager } from "../../session/UserSessionManager";
 
 export class LoginContainer extends Component {
   #container;
@@ -93,9 +95,9 @@ export class LoginContainer extends Component {
             password: password,
           }),
         });
-        const res = await response.json();
+        const { status, data: tokens } = await response.json();
 
-        if (res.status !== "ok") {
+        if (status !== "ok") {
           this.#form.reset();
           this.#loginError.textContent =
             FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
@@ -103,10 +105,11 @@ export class LoginContainer extends Component {
           throw new Error(response.code);
         }
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
-        // access tokenとrefresh tokenの管理を行う
-        // TODO delete
-        // console.log("AccessToken:", res.data.access);
-        // console.log("RefreshToken:", res.data.refresh);
+
+        const isVerified =
+          await UserSessionManager.getInstance().signIn(tokens);
+        if (isVerified)
+          UserSessionManager.getInstance().redirect(Paths.HOME);
       } catch (error) {
         console.error("ログインエラー:", error);
       }

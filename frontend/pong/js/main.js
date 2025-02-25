@@ -21,7 +21,7 @@ function main() {
     if (isUpdated) window.history.pushState({}, "", path);
   });
 
-  UserSessionManager.main({
+  UserSessionManager.getInstance().main({
     app,
     appLocal,
     appGlobal,
