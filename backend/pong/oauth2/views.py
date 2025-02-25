@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 import requests
+import rest_framework_simplejwt
 from django.urls import reverse
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -28,6 +29,10 @@ class OAuth2BaseView(APIView):
     OAuth2関連の共通の変数を定義する基底クラス
     """
 
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (AllowAny,)
 
     @property

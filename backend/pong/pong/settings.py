@@ -207,7 +207,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django REST framework
 # https://drf-spectacular.readthedocs.io/en/latest/readme.html
-
 REST_FRAMEWORK = {
     # view setやserializerから自動的にOpenAPI3.0スキーマを生成
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
