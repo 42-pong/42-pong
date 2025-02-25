@@ -5,9 +5,16 @@ DOCKER_COMPOSE		:=	docker compose -f $(COMPOSE_FILE)
 BACKEND_SERVICE		:=	backend
 DATABASE_SERVICE	:=	db
 
+# ssl
+DOMAIN_NAME		:=	localhost
+SSL_DIR			:=	frontend/ssl
+SSL_CERT_DIR	:=	$(SSL_DIR)/certs
+SSL_KEY_DIR		:=	$(SSL_DIR)/private
+SSL_CA_CERT		:=	$(SSL_CERT_DIR)/certificate.crt
+SSL_CA_KEY		:=	$(SSL_KEY_DIR)/secret.key
 
 .PHONY: all
-all: up
+all: gen_ssl_cert up
 
 # -------------------------------------------------------
 # docker compose
@@ -65,3 +72,22 @@ logs-be:
 .PHONY: logs-db
 logs-db:
 	@$(DOCKER_COMPOSE) logs $(DATABASE_SERVICE)
+
+# -------------------------------------------------------
+# ssl
+# -------------------------------------------------------
+.PHONY: gen_ssl_cert
+gen_ssl_cert:
+	@mkdir -p ${SSL_DIR}
+	@mkdir -p ${SSL_CERT_DIR}
+	@mkdir -p ${SSL_KEY_DIR}
+
+	@openssl genrsa -out ${SSL_CA_KEY} 2048
+	@openssl req -new -x509 \
+		-key ${SSL_CA_KEY} \
+		-out ${SSL_CA_CERT} \
+		-subj "/C=JP/ST=Tokyo/L=Shinjuku/O=42Tokyo/OU=42-Pong/CN=${DOMAIN_NAME}/"
+
+.PHONY: rm_ssl_cert
+rm_ssl_cert:
+	@rm -rf ${SSL_DIR}
