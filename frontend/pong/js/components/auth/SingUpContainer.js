@@ -1,4 +1,5 @@
 import { Component } from "../../core/Component";
+import { Endpoints } from "../../constants/Endpoints";
 
 export class SignUpContainer extends Component {
 	#container;
@@ -42,7 +43,7 @@ export class SignUpContainer extends Component {
 	  // サインインアップボタンを作成
 	  const submitButton = document.createElement("button");
 	  submitButton.type = "submit";
-	  submitButton.textContent = "サインインアップ";
+	  submitButton.textContent = "サインアップ";
 
 	  form.append(
 		this.#loginError,
@@ -83,7 +84,6 @@ export class SignUpContainer extends Component {
 		  }
 		  this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
 
-		  console.log("userID:", data);
 
 		} catch (error) {
 		  console.error("ログインエラー:", error);
