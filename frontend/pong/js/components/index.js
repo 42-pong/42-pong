@@ -9,6 +9,7 @@ import { ChatInputForm } from "./chat/ChatInputForm";
 import { ChatMessageListItem } from "./chat/ChatMessageListItem";
 import { ChatPanel } from "./chat/ChatPanel";
 import { AddFriendButton } from "./friend/AddFriendButton";
+import { RemoveFriendButton } from "./friend/RemoveFriendButton";
 import { GameStartPanel } from "./game/GameStartPanel";
 import { MatchContainer } from "./match/MatchContainer";
 import { MatchRenderer } from "./match/MatchRenderer";
@@ -70,6 +71,7 @@ customElements.define(
 );
 customElements.define("chat-panel", ChatPanel, {});
 customElements.define("add-friend-button", AddFriendButton, {});
+customElements.define("remove-friend-button", RemoveFriendButton, {});
 customElements.define("game-start-panel", GameStartPanel, {});
 customElements.define("match-container", MatchContainer, {});
 customElements.define("match-renderer", MatchRenderer, {});
