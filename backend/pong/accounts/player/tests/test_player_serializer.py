@@ -1,8 +1,11 @@
+import io
 from typing import Final
 
 import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+from PIL import Image
 
 from ... import constants
 from .. import models, serializers
@@ -135,6 +138,41 @@ class PlayerSerializerTests(TestCase):
             player_serializer.validated_data[DISPLAY_NAME],
             player_data[DISPLAY_NAME],
         )
+
+    def _create_image(self, file_name: str) -> SimpleUploadedFile:
+        image: Image.Image = Image.new("RGB", (30, 30))
+        image_io: io.BytesIO = io.BytesIO()
+        image.save(image_io, format="PNG")
+        image_io.seek(0)
+        return SimpleUploadedFile(
+            file_name, image_io.read(), content_type="image/png"
+        )
+
+    @parameterized.parameterized.expand(
+        [
+            ("拡張子が.pngの場合", "test1.png"),
+            ("拡張子が.jpgの場合", "test2.jpg"),
+            ("拡張子が.jpegの場合", "test3.jpeg"),
+            ("拡張子が.gifの場合", "test4.gif"),
+            ("ファイル名が最大長の場合", "a" * (50 - len(".png")) + ".png"),
+        ]
+    )
+    def test_valid_avatar_filename(
+        self, testcase_name: str, valid_file_name: str
+    ) -> None:
+        """
+        正常なファイル名のavatarが渡された場合にエラーにならないことを確認
+        """
+        file: SimpleUploadedFile = self._create_image(valid_file_name)
+        player_data: dict = {
+            USER: self._create_user(self.user_data).id,
+            AVATAR: file,
+        }
+        player_serializer: serializers.PlayerSerializer = (
+            serializers.PlayerSerializer(data=player_data)
+        )
+
+        self.assertTrue(player_serializer.is_valid())
 
     # -------------------------------------------------------------------------
     # エラーケース
