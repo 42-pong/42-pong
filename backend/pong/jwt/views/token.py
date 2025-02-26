@@ -7,8 +7,8 @@ from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from jwt import create_access_and_refresh_token
 from pong.custom_response import custom_response
-from tmp_jwt import create_access_and_refresh_token
 
 logger = logging.getLogger(__name__)
 

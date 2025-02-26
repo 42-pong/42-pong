@@ -102,7 +102,7 @@ INSTALLED_APPS = [
     # apps
     # todo: jwt完成後、simple-jwtを削除
     "simple_jwt",
-    "tmp_jwt",
+    "jwt",
     "oauth2",
     "accounts",
     "users",
@@ -267,7 +267,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "custom": {
-            # (例) 2025-01-22 15:06:40 - tmp_jwt.jws - DEBUG - Signature verification failed.
+            # (例) 2025-01-22 15:06:40 - jwt.jws - DEBUG - Signature verification failed.
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
