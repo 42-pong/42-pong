@@ -208,3 +208,32 @@ class PlayerSerializerTests(TestCase):
 
         self.assertFalse(player_serializer.is_valid())
         self.assertIn(DISPLAY_NAME, player_serializer.errors)
+
+    @parameterized.parameterized.expand(
+        [
+            # 空文字列はファイル作成できないため試さない
+            ("拡張子がない場合", "not_exist_extension"),
+            ("拡張子が不正な場合", "testuser.invalid_extension"),
+            (
+                "ファイル名が最大長を超える場合",
+                "a" * (50 - len(".png") + 1) + ".png",
+            ),
+        ]
+    )
+    def test_invalid_avatar_filename(
+        self, testcase_name: str, invalid_file_name: str
+    ) -> None:
+        """
+        不正なファイル名のavatarが渡された場合に、エラーになることを確認
+        """
+        file: SimpleUploadedFile = self._create_image(invalid_file_name)
+        player_data: dict = {
+            USER: self._create_user(self.user_data).id,
+            AVATAR: file,
+        }
+        player_serializer: serializers.PlayerSerializer = (
+            serializers.PlayerSerializer(data=player_data)
+        )
+
+        self.assertFalse(player_serializer.is_valid())
+        self.assertIn(AVATAR, player_serializer.errors)
