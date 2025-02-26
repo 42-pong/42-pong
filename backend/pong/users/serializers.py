@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Final, Optional
 
@@ -16,6 +17,8 @@ from users.friends import constants as friends_constants
 from users.friends import models as friends_models
 
 from . import constants as users_constants
+
+logger = logging.getLogger(__name__)
 
 
 def resize_avatar(avatar: UploadedFile, max_dimension: int) -> UploadedFile:
@@ -238,7 +241,14 @@ class UsersSerializer(serializers.Serializer):
         self, player: player_models.Player, new_avatar: UploadedFile
     ) -> UploadedFile:
         # 更新前の画像を削除してから新しい画像を保存する
-        player.avatar.delete(save=False)
+        if player.avatar:
+            try:
+                player.avatar.delete(save=False)
+            except Exception as e:
+                logger.error(
+                    f"Failed to delete the previous avatar file: {str(e)}"
+                )
+                raise
 
         # ファイル名を変更
         # mypyにnew_avatar.nameがNoneの可能性を指摘されるが、ImageFieldのvalidatorでextensionがあることは確認済みのため無視
@@ -273,6 +283,10 @@ class UsersSerializer(serializers.Serializer):
             player.avatar = self._update_avatar(player, new_avatar)
             update_fields.append(accounts_constants.PlayerFields.AVATAR)
 
-        # create()をオーバーライドしない場合、update()内でsave()は必須
-        player.save(update_fields=update_fields)
+        try:
+            # create()をオーバーライドしない場合、update()内でsave()は必須
+            player.save(update_fields=update_fields)
+        except Exception as e:
+            logger.error(f"Failed to update the player fields: {str(e)}")
+            raise
         return player
