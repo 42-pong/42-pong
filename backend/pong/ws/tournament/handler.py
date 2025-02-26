@@ -3,6 +3,7 @@ from channels.layers import BaseChannelLayer  # type: ignore
 from ..share import channel_handler
 from ..share import constants as ws_constants
 from . import constants as tournament_constants
+from . import manager_registry
 
 
 class TournamentHandler:
@@ -14,7 +15,12 @@ class TournamentHandler:
         - Redisを通して、Tournament進行管理インスタンスとやり取り
     """
 
-    def __init__(self, channel_layer: BaseChannelLayer, channel_name: str):
+    def __init__(
+        self,
+        channel_layer: BaseChannelLayer,
+        channel_name: str,
+        manager_registry: manager_registry.TournamentManagerRegistry,
+    ):
         """
         TournamentHandlerの初期化。
 
@@ -28,6 +34,7 @@ class TournamentHandler:
         self.channel_handler: channel_handler.ChannelHandler = (
             channel_handler.ChannelHandler(channel_layer, channel_name)
         )
+        self.manager_registry = manager_registry
 
     def __str__(self) -> str:
         """

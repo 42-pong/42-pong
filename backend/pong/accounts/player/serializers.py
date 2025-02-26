@@ -33,7 +33,7 @@ class PlayerSerializer(serializers.ModelSerializer):
     avatar: serializers.ImageField = serializers.ImageField(
         required=False,
         allow_null=True,
-        # todo: 画像の最大サイズを指定
+        # todo: 画像の最大サイズを指定・拡張子を制限・リサイズする
         # max_length=constants.MAX_AVATAR_SIZE,
     )
 

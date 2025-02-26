@@ -1,5 +1,7 @@
 import logging
+from typing import Optional
 
+import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
@@ -14,6 +16,7 @@ from rest_framework import (
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users.friends import constants as friends_constants
 
@@ -27,6 +30,10 @@ class UsersListView(views.APIView):
     ユーザープロフィールの一覧を取得するビュー
     """
 
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.IsAuthenticated,)
 
     def handle_exception(self, exc: Exception) -> response.Response:
@@ -40,6 +47,14 @@ class UsersListView(views.APIView):
             logger.error(f"[401] Authentication error: {str(exc)}")
             # 401はCustomResponseにせずそのまま返す
             return super().handle_exception(exc)
+
+        if isinstance(exc, exceptions.NotFound):
+            logger.error(f"[404] Not found: {str(exc)}")
+            return custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         logger.error(f"[500] Internal server error: {str(exc)}")
         response: custom_response.CustomResponse = (
@@ -69,6 +84,15 @@ class UsersListView(views.APIView):
     @utils.extend_schema(
         operation_id="get_users_list",
         request=None,
+        parameters=[
+            utils.OpenApiParameter(
+                name="page",
+                description="paginationのページ数",
+                required=False,
+                type=int,
+                location=utils.OpenApiParameter.QUERY,
+            ),
+        ],
         responses={
             200: utils.OpenApiResponse(
                 description="A list of user profiles",
@@ -78,27 +102,34 @@ class UsersListView(views.APIView):
                         "Example 200 response",
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
-                            custom_response.DATA: [
-                                {
-                                    accounts_constants.UserFields.ID: 2,
-                                    accounts_constants.UserFields.USERNAME: "username1",
-                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample1.png",
-                                    constants.UsersFields.IS_FRIEND: False,
-                                    constants.UsersFields.IS_BLOCKED: False,
-                                    # todo: is_online,win_match,lose_match追加
-                                },
-                                {
-                                    accounts_constants.UserFields.ID: 3,
-                                    accounts_constants.UserFields.USERNAME: "username2",
-                                    accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
-                                    accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample2.png",
-                                    constants.UsersFields.IS_FRIEND: False,
-                                    constants.UsersFields.IS_BLOCKED: False,
-                                    # todo: is_online,win_match,lose_match追加
-                                },
-                                {"...", "..."},
-                            ],
+                            custom_response.DATA: {
+                                custom_pagination.PaginationFields.COUNT: 25,
+                                custom_pagination.PaginationFields.NEXT: "http://localhost:8000/api/users/?page=2",
+                                custom_pagination.PaginationFields.PREVIOUS: None,
+                                custom_pagination.PaginationFields.RESULTS: [
+                                    {
+                                        accounts_constants.UserFields.ID: 2,
+                                        accounts_constants.UserFields.USERNAME: "username1",
+                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
+                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample1.png",
+                                        constants.UsersFields.IS_FRIEND: False,
+                                        constants.UsersFields.IS_BLOCKED: False,
+                                        constants.UsersFields.MATCH_WINS: 1,
+                                        constants.UsersFields.MATCH_LOSSES: 0,
+                                    },
+                                    {
+                                        accounts_constants.UserFields.ID: 3,
+                                        accounts_constants.UserFields.USERNAME: "username2",
+                                        accounts_constants.PlayerFields.DISPLAY_NAME: "display_name2",
+                                        accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample2.png",
+                                        constants.UsersFields.IS_FRIEND: False,
+                                        constants.UsersFields.IS_BLOCKED: False,
+                                        constants.UsersFields.MATCH_WINS: 1,
+                                        constants.UsersFields.MATCH_LOSSES: 0,
+                                    },
+                                    "...",
+                                ],
+                            },
                         },
                     ),
                 ],
@@ -155,9 +186,16 @@ class UsersListView(views.APIView):
                 accounts_constants.PlayerFields.USER
             ).all()
         )
+        paginator: custom_pagination.CustomPagination = (
+            custom_pagination.CustomPagination()
+        )
+        # クエリパラメータのpage番号が存在しない場合はraise exceptions.NotFound()される
+        paginated_players: Optional[list[player_models.Player]] = (
+            paginator.paginate_queryset(all_players_with_users, request)
+        )
         # 複数のオブジェクトをシリアライズ
         serializer: serializers.UsersSerializer = serializers.UsersSerializer(
-            all_players_with_users,
+            paginated_players,
             many=True,
             # emailは含めない
             fields=(
@@ -167,11 +205,10 @@ class UsersListView(views.APIView):
                 accounts_constants.PlayerFields.AVATAR,
                 constants.UsersFields.IS_FRIEND,
                 constants.UsersFields.IS_BLOCKED,
-                # todo: is_online,win_match,lose_match追加
+                constants.UsersFields.MATCH_WINS,
+                constants.UsersFields.MATCH_LOSSES,
             ),
             context={friends_constants.FriendshipFields.USER_ID: user.id},
         )
         # todo: logger.info()追加
-        return custom_response.CustomResponse(
-            data=serializer.data, status=status.HTTP_200_OK
-        )
+        return paginator.get_paginated_response(list(serializer.data))

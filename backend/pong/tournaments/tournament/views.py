@@ -1,5 +1,6 @@
 from typing import Optional
 
+import rest_framework_simplejwt
 from django.db.models import Q, QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -47,7 +48,7 @@ from . import models, serializers
         request=None,
         responses={
             200: OpenApiResponse(
-                response=serializers.TournamentSerializer,
+                response=serializers.TournamentQuerySerializer,
                 examples=[
                     OpenApiExample(
                         "Example 200 response",
@@ -235,7 +236,7 @@ from . import models, serializers
         operation_id="tournaments_retrieve_by_id",  # 明示的にoperationIdを設定
         responses={
             200: OpenApiResponse(
-                response=serializers.TournamentSerializer,
+                response=serializers.TournamentQuerySerializer,
                 examples=[
                     OpenApiExample(
                         "Example 200 response",
@@ -435,8 +436,12 @@ from . import models, serializers
     ),
 )
 class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = serializers.TournamentSerializer
+    serializer_class = serializers.TournamentQuerySerializer
     renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]
 
     def get_queryset(self) -> QuerySet:

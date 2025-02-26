@@ -7,6 +7,7 @@ from rest_framework import status, test
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 
 from ... import constants
@@ -20,8 +21,15 @@ DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
 IS_BLOCKED: Final[str] = constants.UsersFields.IS_BLOCKED
+MATCH_WINS: Final[str] = constants.UsersFields.MATCH_WINS
+MATCH_LOSSES: Final[str] = constants.UsersFields.MATCH_LOSSES
 
 DATA: Final[str] = custom_response.DATA
+
+COUNT: Final[str] = custom_pagination.PaginationFields.COUNT
+NEXT: Final[str] = custom_pagination.PaginationFields.NEXT
+PREVIOUS: Final[str] = custom_pagination.PaginationFields.PREVIOUS
+RESULTS: Final[str] = custom_pagination.PaginationFields.RESULTS
 
 
 class UsersListViewTests(test.APITestCase):
@@ -100,26 +108,33 @@ class UsersListViewTests(test.APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
             response.data[DATA],
-            [
-                {
-                    ID: self.user1.id,
-                    USERNAME: self.user_data1[USERNAME],
-                    DISPLAY_NAME: self.player_data1[DISPLAY_NAME],
-                    AVATAR: self.player1.avatar.url,
-                    IS_FRIEND: False,
-                    IS_BLOCKED: False,
-                    # todo: is_online,win_match,lose_match追加
-                },
-                {
-                    ID: self.user2.id,
-                    USERNAME: self.user_data2[USERNAME],
-                    DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
-                    AVATAR: self.player2.avatar.url,
-                    IS_FRIEND: False,
-                    IS_BLOCKED: False,
-                    # todo: is_online,win_match,lose_match追加
-                },
-            ],
+            {
+                COUNT: 2,
+                NEXT: None,
+                PREVIOUS: None,
+                RESULTS: [
+                    {
+                        ID: self.user1.id,
+                        USERNAME: self.user_data1[USERNAME],
+                        DISPLAY_NAME: self.player_data1[DISPLAY_NAME],
+                        AVATAR: self.player1.avatar.url,
+                        IS_FRIEND: False,
+                        IS_BLOCKED: False,
+                        MATCH_WINS: 0,
+                        MATCH_LOSSES: 0,
+                    },
+                    {
+                        ID: self.user2.id,
+                        USERNAME: self.user_data2[USERNAME],
+                        DISPLAY_NAME: self.player_data2[DISPLAY_NAME],
+                        AVATAR: self.player2.avatar.url,
+                        IS_FRIEND: False,
+                        IS_BLOCKED: False,
+                        MATCH_WINS: 0,
+                        MATCH_LOSSES: 0,
+                    },
+                ],
+            },
         )
 
     def test_get_401_unauthenticated_user(self) -> None:

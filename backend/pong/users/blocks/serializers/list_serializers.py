@@ -18,7 +18,8 @@ class BlockRelationshipListSerializer(drf_serializers.ModelSerializer):
             accounts_constants.PlayerFields.AVATAR,
             users_constants.UsersFields.IS_FRIEND,
             users_constants.UsersFields.IS_BLOCKED,
-            # todo: is_online,win_match,lose_match追加
+            users_constants.UsersFields.MATCH_WINS,
+            users_constants.UsersFields.MATCH_LOSSES,
         ),
     )
 

@@ -1,5 +1,8 @@
 import dataclasses
 from enum import Enum
+from typing import Final
+
+MAX_PARTICIPATIONS: Final[int] = 4
 
 
 @dataclasses.dataclass(frozen=True)

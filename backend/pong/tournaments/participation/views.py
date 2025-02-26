@@ -1,5 +1,6 @@
 from typing import Optional
 
+import rest_framework_simplejwt
 from django.db.models import Q, QuerySet
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -162,8 +163,12 @@ from . import models, serializers
     ),
 )
 class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = serializers.ParticipationSerializer
+    serializer_class = serializers.ParticipationQuerySerializer
     renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]
 
     def get_queryset(self) -> QuerySet:

@@ -1,5 +1,6 @@
 import logging
 
+import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from drf_spectacular import utils
 from rest_framework import (
@@ -10,6 +11,7 @@ from rest_framework import (
     status,
     views,
 )
+from rest_framework.parsers import JSONParser, MultiPartParser
 
 from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
@@ -25,8 +27,14 @@ class UsersMeView(views.APIView):
     自分のユーザープロフィールを取得・更新する
     """
 
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     # プロフィールを全て返すのでIsAuthenticatedをセットする必要がある
     permission_classes = [permissions.IsAuthenticated]
+    # アバター画像用にMultiPartParserを追加
+    parser_classes = (JSONParser, MultiPartParser)
 
     def handle_exception(self, exc: Exception) -> response.Response:
         """
@@ -85,7 +93,8 @@ class UsersMeView(views.APIView):
                                 accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: False,
                                 constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
@@ -151,18 +160,27 @@ class UsersMeView(views.APIView):
         )
 
     @utils.extend_schema(
-        request=utils.OpenApiRequest(
-            serializers.UsersSerializer,
-            examples=[
-                utils.OpenApiExample(
-                    "Example request",
-                    value={
-                        accounts_constants.PlayerFields.DISPLAY_NAME: "new_name",
-                        # todo: avatarも追加？
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    accounts_constants.PlayerFields.DISPLAY_NAME: {
+                        "type": "string",
+                        "example": "new_name",
                     },
-                ),
-            ],
-        ),
+                },
+            },
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    accounts_constants.PlayerFields.AVATAR: {
+                        "type": "string",
+                        "format": "binary",
+                        "example": "example.png",
+                    },
+                },
+            },
+        },
         responses={
             200: utils.OpenApiResponse(
                 description="My user profile",
@@ -180,7 +198,8 @@ class UsersMeView(views.APIView):
                                 accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: False,
                                 constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),

@@ -35,6 +35,7 @@ export class ObservableInput extends Component {
 
   setValue(value) {
     this.#input.value = value;
+    this.#subject.updateData({ value });
   }
 
   setError() {

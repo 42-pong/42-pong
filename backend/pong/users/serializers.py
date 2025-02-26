@@ -1,8 +1,14 @@
+import os
+from typing import Optional
+
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db.models import Count, Q
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from accounts.player import serializers as player_serializers
+from matches import constants as matches_constants
 from users.blocks import constants as blocks_constants
 from users.blocks import models as blocks_models
 from users.friends import constants as friends_constants
@@ -34,7 +40,8 @@ class UsersSerializer(serializers.Serializer):
     # `get_{field名}()`の返り値が格納される
     is_friend = serializers.SerializerMethodField()
     is_blocked = serializers.SerializerMethodField()
-    # todo: is_online,win_match,lose_match追加
+    match_wins = serializers.SerializerMethodField()
+    match_losses = serializers.SerializerMethodField()
 
     class Meta:
         model = player_models.Player
@@ -46,7 +53,8 @@ class UsersSerializer(serializers.Serializer):
             accounts_constants.PlayerFields.AVATAR,
             users_constants.UsersFields.IS_FRIEND,
             users_constants.UsersFields.IS_BLOCKED,
-            # todo: is_online,win_match,lose_match追加
+            users_constants.UsersFields.MATCH_WINS,
+            users_constants.UsersFields.MATCH_LOSSES,
         )
 
     # args,kwargsは型ヒントが複雑かつそのままsuper()に渡したいためignoreで対処
@@ -106,19 +114,112 @@ class UsersSerializer(serializers.Serializer):
             )
         return player.user.id in self._blocked_relationships_cache
 
+    def _get_match_stats(
+        self, player: player_models.Player, result: str
+    ) -> int:
+        if not hasattr(self, "_match_stats_cache"):
+            # playerの勝敗数を一度だけ取得してキャッシュしておく
+            self._match_stats_cache: dict[str, int] = (
+                player.match_participations.aggregate(
+                    wins=Count(
+                        accounts_constants.PlayerFields.ID,
+                        filter=Q(is_win=True),
+                    ),
+                    losses=Count(
+                        accounts_constants.PlayerFields.ID,
+                        filter=Q(
+                            match__status=matches_constants.MatchFields.StatusEnum.COMPLETED.value,
+                            is_win=False,
+                        ),
+                    ),
+                )
+            )
+        return self._match_stats_cache[result]
+
+    def get_match_wins(self, player: player_models.Player) -> int:
+        """
+        playerが勝利したmatchの数を取得する
+
+        Args:
+            player: Playerインスタンス
+
+        Returns:
+            int: 勝利した試合数
+        """
+        return self._get_match_stats(player, "wins")
+
+    def get_match_losses(self, player: player_models.Player) -> int:
+        """
+        playerが敗北したmatchの数を取得する
+        matchのstatusがCOMPLETEDかつis_win==Falseのものをカウントする
+
+        Args:
+            player: Playerインスタンス
+
+        Returns:
+            int: 敗北した試合数
+        """
+        return self._get_match_stats(player, "losses")
+
+    def validate(self, data: dict) -> dict:
+        """
+        validate()のオーバーライド
+        """
+        # avatar更新時
+        if accounts_constants.PlayerFields.AVATAR in data:
+            avatar: Optional[InMemoryUploadedFile] = data[
+                accounts_constants.PlayerFields.AVATAR
+            ]
+            # 更新時(既にinstanceが存在している時)にNoneの場合はエラー
+            if self.instance and avatar is None:
+                raise serializers.ValidationError(
+                    {
+                        accounts_constants.PlayerFields.AVATAR: "This field may not be blank."
+                    }
+                )
+        return data
+
+    def _update_avatar(
+        self, player: player_models.Player, new_avatar: InMemoryUploadedFile
+    ) -> InMemoryUploadedFile:
+        # 更新前の画像がデフォルト画像ではない場合は削除してから新しい画像を保存する
+        # todo: デフォルト画像がなくなったら、古いアバターを必ず削除するように変更
+        if player.avatar.name != "avatars/sample.png":
+            player.avatar.delete(save=False)
+
+        # ファイル名を変更
+        # mypyにnew_avatar.nameがNoneの可能性を指摘されるが、ImageFieldのvalidatorでextensionがあることは確認済みのため無視
+        _, extension = os.path.splitext(new_avatar.name)  # type: ignore[type-var]
+        # todo: 一意なためusernameをファイル名にしているが、良くない場合はuuidなどを追加する
+        new_avatar.name = f"avatars/{player.user.username}{extension}"
+        return new_avatar
+
     def update(
         self, player: player_models.Player, validated_data: dict
     ) -> player_models.Player:
         """
         Playerインスタンスを更新するupdate()のオーバーライド
+        更新するフィールドに新しい値を代入し、update_fieldsに指定する
+        display_nameはapplication/json、avatarはmultipart/form-dataで受け取るため、
+        どちらかのみ更新される
         """
-        player.display_name = validated_data.get(
-            accounts_constants.PlayerFields.DISPLAY_NAME, player.display_name
-        )
-        # todo: avatarも新しいものを代入・save()のupdate_fieldsにも追加
+        update_fields: list[str] = []
+
+        # display_nameがあれば更新
+        if accounts_constants.PlayerFields.DISPLAY_NAME in validated_data:
+            player.display_name = validated_data[
+                accounts_constants.PlayerFields.DISPLAY_NAME
+            ]
+            update_fields.append(accounts_constants.PlayerFields.DISPLAY_NAME)
+
+        # avatarがあれば更新
+        if accounts_constants.PlayerFields.AVATAR in validated_data:
+            new_avatar: InMemoryUploadedFile = validated_data[
+                accounts_constants.PlayerFields.AVATAR
+            ]
+            player.avatar = self._update_avatar(player, new_avatar)
+            update_fields.append(accounts_constants.PlayerFields.AVATAR)
 
         # create()をオーバーライドしない場合、update()内でsave()は必須
-        player.save(
-            update_fields=[accounts_constants.PlayerFields.DISPLAY_NAME]
-        )
+        player.save(update_fields=update_fields)
         return player
