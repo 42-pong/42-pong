@@ -13,8 +13,6 @@ export class BorderEntity extends CanvasEntity {
   }
 
   _draw(ctx) {
-    // ctx.strokeStyle = 'black';
-    // ctx.lineWidth = 5;
     ctx.strokeRect(
       this.#upperLeft.x,
       this.#upperLeft.y,
