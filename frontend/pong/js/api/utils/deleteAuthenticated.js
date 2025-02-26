@@ -1,21 +1,14 @@
 import { Endpoints } from "../../constants/Endpoints";
 import { UserSessionManager } from "../../session/UserSessionManager";
+import { createDeleteMethodOption } from "./createDeleteMethodOption";
 import { createPostMethodOption } from "./createPostMethodOption";
 import { fetchData } from "./fetchData";
 
-export const fetchAuthenticatedData = async (
-  url,
-  options = {},
-  isRetry = false,
-) => {
-  const result = {
-    data: null,
-    error: null,
-  };
-
+export const deleteAuthenticated = async (url, isRetry = false) => {
   const accessToken =
     UserSessionManager.getInstance().getAccessToken();
 
+  const options = createDeleteMethodOption();
   try {
     const headers = new Headers(options.headers ?? {});
     headers.append("Authorization", `Bearer ${accessToken}`);
@@ -23,18 +16,16 @@ export const fetchAuthenticatedData = async (
     const res = await fetch(url, { ...options, headers });
 
     if (res.status === 401 && !isRetry)
-      return retryWithRefreshToken(url, options);
-
-    const { status, data } = await res.json();
-    if (status !== "ok") throw new Error("STATUS: NOT OK");
-    result.data = data;
+      return retryWithRefreshToken(url);
+    if (res.status !== 204)
+      throw new Error("DELETE: STATUS: NOT 204");
   } catch (error) {
-    result.error = error;
+    return { error };
   }
-  return result;
+  return { error: null };
 };
 
-const retryWithRefreshToken = async (url, options = {}) => {
+const retryWithRefreshToken = async (url = {}) => {
   const refreshToken =
     UserSessionManager.getInstance().getRefreshToken();
 
@@ -48,7 +39,7 @@ const retryWithRefreshToken = async (url, options = {}) => {
     const { access } = data;
     UserSessionManager.getInstance().setAccessToken(access);
   } catch (error) {
-    return { data: null, error };
+    return { error };
   }
-  return fetchAuthenticatedData(url, options, true);
+  return deleteAuthenticated(url, true);
 };

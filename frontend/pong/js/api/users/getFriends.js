@@ -4,7 +4,7 @@ import { convertFriendData } from "./convertFriendData";
 
 export async function getFriends() {
   const { data, error } = await fetchAuthenticatedData(
-    Endpoints.FRIENDS.href,
+    Endpoints.FRIENDS.default.href,
   );
 
   const users = error ? [] : data.map(convertFriendData);
