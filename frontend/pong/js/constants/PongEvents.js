@@ -48,6 +48,11 @@ const END_MATCH = {
   create: () => createPongEvent(END_MATCH.type, {}),
 };
 
+const TOGGLE_3D = {
+  type: "toggle-3d",
+  create: () => createPongEvent(TOGGLE_3D.type, {}),
+};
+
 export const PongEvents = {
   UPDATE_ROUTER,
   UPDATE_TOURNAMENT_STAGE,
@@ -56,4 +61,5 @@ export const PongEvents = {
   TOGGLE_CHAT_USER_SELECTION,
   START_MATCH,
   END_MATCH,
+  TOGGLE_3D,
 };

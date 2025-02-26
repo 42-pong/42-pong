@@ -18,6 +18,8 @@ const SCORE_2_INIT = 0;
 const SCORE_X_FROM_CENTER = BOARD_WIDTH / 4;
 const SCORE_Y = BOARD_HEIGHT / 12;
 
+const AFTER_END_LOCAL_MATCH_REDIRECT_MS = 3000;
+
 export const MatchConstants = Object.freeze({
   BOARD_WIDTH,
   BOARD_HEIGHT,
@@ -33,4 +35,5 @@ export const MatchConstants = Object.freeze({
   SCORE_2_INIT,
   SCORE_X_FROM_CENTER,
   SCORE_Y,
+  AFTER_END_LOCAL_MATCH_REDIRECT_MS,
 });
