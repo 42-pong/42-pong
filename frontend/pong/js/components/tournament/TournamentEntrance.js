@@ -20,6 +20,7 @@ export class TournamentEntrance extends Component {
   #toHome;
   #displayNameInput;
   #tournamentJoinHandler;
+  #syncDefaultDisplayName;
 
   constructor(state = {}) {
     super({ isJoinError: false, ...state });
@@ -62,12 +63,11 @@ export class TournamentEntrance extends Component {
   _onConnect() {
     const { defaultTournamentIdStr } = this._getState();
 
-    const defaultDisplayName = UserSessionManager.myInfo.observe(
-      (data) => {
+    const defaultDisplayName =
+      UserSessionManager.getInstance().myInfo.observe((data) => {
         const { displayName } = data;
         return displayName;
-      },
-    );
+      });
 
     this.#displayNameInput = new ObservableInput(
       {},
@@ -100,16 +100,26 @@ export class TournamentEntrance extends Component {
       pathname: Paths.HOME,
     });
 
-    UserSessionManager.webSocket.attachHandler(
+    UserSessionManager.getInstance().webSocket.attachHandler(
       WebSocketEnums.Category.TOURNAMENT,
       this.#tournamentJoinHandler,
+    );
+
+    this.#syncDefaultDisplayName = ({ displayName }) => {
+      this.#displayNameInput.setValue(displayName);
+    };
+    UserSessionManager.getInstance().myInfo.attach(
+      this.#syncDefaultDisplayName,
     );
   }
 
   _onDisconnect() {
-    UserSessionManager.webSocket.detachHandler(
+    UserSessionManager.getInstance().webSocket.detachHandler(
       WebSocketEnums.Category.TOURNAMENT,
       this.#tournamentJoinHandler,
+    );
+    UserSessionManager.getInstance().myInfo.detach(
+      this.#syncDefaultDisplayName,
     );
   }
 

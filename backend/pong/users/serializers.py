@@ -2,11 +2,13 @@ import os
 from typing import Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db.models import Count, Q
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
 from accounts.player import serializers as player_serializers
+from matches import constants as matches_constants
 from users.blocks import constants as blocks_constants
 from users.blocks import models as blocks_models
 from users.friends import constants as friends_constants
@@ -38,7 +40,8 @@ class UsersSerializer(serializers.Serializer):
     # `get_{field名}()`の返り値が格納される
     is_friend = serializers.SerializerMethodField()
     is_blocked = serializers.SerializerMethodField()
-    # todo: is_online,win_match,lose_match追加
+    match_wins = serializers.SerializerMethodField()
+    match_losses = serializers.SerializerMethodField()
 
     class Meta:
         model = player_models.Player
@@ -50,7 +53,8 @@ class UsersSerializer(serializers.Serializer):
             accounts_constants.PlayerFields.AVATAR,
             users_constants.UsersFields.IS_FRIEND,
             users_constants.UsersFields.IS_BLOCKED,
-            # todo: is_online,win_match,lose_match追加
+            users_constants.UsersFields.MATCH_WINS,
+            users_constants.UsersFields.MATCH_LOSSES,
         )
 
     # args,kwargsは型ヒントが複雑かつそのままsuper()に渡したいためignoreで対処
@@ -109,6 +113,53 @@ class UsersSerializer(serializers.Serializer):
                 ).values_list("blocked_user_id", flat=True)
             )
         return player.user.id in self._blocked_relationships_cache
+
+    def _get_match_stats(
+        self, player: player_models.Player, result: str
+    ) -> int:
+        if not hasattr(self, "_match_stats_cache"):
+            # playerの勝敗数を一度だけ取得してキャッシュしておく
+            self._match_stats_cache: dict[str, int] = (
+                player.match_participations.aggregate(
+                    wins=Count(
+                        accounts_constants.PlayerFields.ID,
+                        filter=Q(is_win=True),
+                    ),
+                    losses=Count(
+                        accounts_constants.PlayerFields.ID,
+                        filter=Q(
+                            match__status=matches_constants.MatchFields.StatusEnum.COMPLETED.value,
+                            is_win=False,
+                        ),
+                    ),
+                )
+            )
+        return self._match_stats_cache[result]
+
+    def get_match_wins(self, player: player_models.Player) -> int:
+        """
+        playerが勝利したmatchの数を取得する
+
+        Args:
+            player: Playerインスタンス
+
+        Returns:
+            int: 勝利した試合数
+        """
+        return self._get_match_stats(player, "wins")
+
+    def get_match_losses(self, player: player_models.Player) -> int:
+        """
+        playerが敗北したmatchの数を取得する
+        matchのstatusがCOMPLETEDかつis_win==Falseのものをカウントする
+
+        Args:
+            player: Playerインスタンス
+
+        Returns:
+            int: 敗北した試合数
+        """
+        return self._get_match_stats(player, "losses")
 
     def validate(self, data: dict) -> dict:
         """

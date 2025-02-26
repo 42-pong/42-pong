@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
@@ -29,6 +30,10 @@ class UsersListView(views.APIView):
     ユーザープロフィールの一覧を取得するビュー
     """
 
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.IsAuthenticated,)
 
     def handle_exception(self, exc: Exception) -> response.Response:
@@ -109,7 +114,8 @@ class UsersListView(views.APIView):
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample1.png",
                                         constants.UsersFields.IS_FRIEND: False,
                                         constants.UsersFields.IS_BLOCKED: False,
-                                        # todo: is_online,win_match,lose_match追加
+                                        constants.UsersFields.MATCH_WINS: 1,
+                                        constants.UsersFields.MATCH_LOSSES: 0,
                                     },
                                     {
                                         accounts_constants.UserFields.ID: 3,
@@ -118,7 +124,8 @@ class UsersListView(views.APIView):
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample2.png",
                                         constants.UsersFields.IS_FRIEND: False,
                                         constants.UsersFields.IS_BLOCKED: False,
-                                        # todo: is_online,win_match,lose_match追加
+                                        constants.UsersFields.MATCH_WINS: 1,
+                                        constants.UsersFields.MATCH_LOSSES: 0,
                                     },
                                     "...",
                                 ],
@@ -198,7 +205,8 @@ class UsersListView(views.APIView):
                 accounts_constants.PlayerFields.AVATAR,
                 constants.UsersFields.IS_FRIEND,
                 constants.UsersFields.IS_BLOCKED,
-                # todo: is_online,win_match,lose_match追加
+                constants.UsersFields.MATCH_WINS,
+                constants.UsersFields.MATCH_LOSSES,
             ),
             context={friends_constants.FriendshipFields.USER_ID: user.id},
         )

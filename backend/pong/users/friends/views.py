@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import transaction
 from django.db.models import Q
@@ -63,7 +64,8 @@ logger = logging.getLogger(__name__)
                                             accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                             users_constants.UsersFields.IS_FRIEND: True,
                                             users_constants.UsersFields.IS_BLOCKED: False,
-                                            # todo: is_online,win_match,lose_match追加
+                                            users_constants.UsersFields.MATCH_WINS: 1,
+                                            users_constants.UsersFields.MATCH_LOSSES: 0,
                                         },
                                     },
                                     "...",
@@ -139,7 +141,8 @@ logger = logging.getLogger(__name__)
                                     accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                     users_constants.UsersFields.IS_FRIEND: True,
                                     users_constants.UsersFields.IS_BLOCKED: False,
-                                    # todo: is_online,win_match,lose_match追加
+                                    users_constants.UsersFields.MATCH_WINS: 1,
+                                    users_constants.UsersFields.MATCH_LOSSES: 0,
                                 },
                             },
                         },
@@ -311,6 +314,11 @@ class FriendsViewSet(viewsets.ModelViewSet):
     queryset = models.Friendship.objects.filter(
         Q(friend__player__isnull=False)
     ).select_related("user", "friend")
+
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.IsAuthenticated,)
 
     # URLから取得するID名

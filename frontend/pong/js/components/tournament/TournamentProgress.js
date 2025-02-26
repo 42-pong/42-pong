@@ -56,10 +56,12 @@ export class TournamentProgress extends Component {
   _onConnect() {
     const { tournamentId } = this._getState();
 
-    const myId = UserSessionManager.myInfo.observe(({ id }) => id);
+    const myId = UserSessionManager.getInstance().myInfo.observe(
+      ({ id }) => id,
+    );
     this.#players = new TournamentPlayers({ tournamentId });
     const onMessageSubmit = (value) =>
-      UserSessionManager.webSocket.send(
+      UserSessionManager.getInstance().webSocket.send(
         WebSocketEnums.Category.CHAT,
         ChatPayload.createGroupChat({
           fromId: myId,
@@ -91,14 +93,14 @@ export class TournamentProgress extends Component {
       });
     };
 
-    UserSessionManager.webSocket.attachHandler(
+    UserSessionManager.getInstance().webSocket.attachHandler(
       WebSocketEnums.Category.CHAT,
       this.#listenGroupChat,
     );
   }
 
   _onDisconnect() {
-    UserSessionManager.webSocket.detachHandler(
+    UserSessionManager.getInstance().webSocket.detachHandler(
       WebSocketEnums.Category.CHAT,
       this.#listenGroupChat,
     );
@@ -106,7 +108,7 @@ export class TournamentProgress extends Component {
 
     const { tournamentId } = this._getState();
 
-    UserSessionManager.webSocket.send(
+    UserSessionManager.getInstance().webSocket.send(
       WebSocketEnums.Category.TOURNAMENT,
       TournamentPayload.createLeave({
         tournamentId,

@@ -1,5 +1,6 @@
 import logging
 
+import rest_framework_simplejwt
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
@@ -22,6 +23,10 @@ class AccountCreateView(views.APIView):
     serializer_class: type[player_serializers.PlayerSerializer] = (
         player_serializers.PlayerSerializer
     )
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.AllowAny,)
 
     def handle_exception(self, exc: Exception) -> response.Response:
@@ -70,7 +75,8 @@ class AccountCreateView(views.APIView):
                                 constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 users_constants.UsersFields.IS_FRIEND: False,
                                 users_constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                users_constants.UsersFields.MATCH_WINS: 0,
+                                users_constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),

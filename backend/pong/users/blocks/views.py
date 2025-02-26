@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import transaction
 from django.db.models import Q
@@ -65,7 +66,8 @@ logger = logging.getLogger(__name__)
                                             accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                             users_constants.UsersFields.IS_FRIEND: False,
                                             users_constants.UsersFields.IS_BLOCKED: True,
-                                            # todo: is_online,win_match,lose_match追加
+                                            users_constants.UsersFields.MATCH_WINS: 1,
+                                            users_constants.UsersFields.MATCH_LOSSES: 0,
                                         },
                                     },
                                     "...",
@@ -143,7 +145,8 @@ logger = logging.getLogger(__name__)
                                     accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                     users_constants.UsersFields.IS_FRIEND: False,
                                     users_constants.UsersFields.IS_BLOCKED: True,
-                                    # todo: is_online,win_match,lose_match追加
+                                    users_constants.UsersFields.MATCH_WINS: 1,
+                                    users_constants.UsersFields.MATCH_LOSSES: 0,
                                 },
                             },
                         },
@@ -315,6 +318,11 @@ class BlocksViewSet(viewsets.ViewSet):
     queryset = models.BlockRelationship.objects.filter(
         Q(blocked_user__player__isnull=False)
     ).select_related("user", "blocked_user")
+
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.IsAuthenticated,)
 
     # URLから取得するID名

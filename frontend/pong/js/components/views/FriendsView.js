@@ -2,10 +2,10 @@ import { getFriends } from "../../api/users/getFriends";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
-import { View } from "../../core/View";
+import { AuthView } from "../../core/AuthView";
 import { UserListContainer } from "../user/UserListContainer";
 
-export class FriendsView extends View {
+export class FriendsView extends AuthView {
   #friendsListContainer;
 
   _setStyle() {

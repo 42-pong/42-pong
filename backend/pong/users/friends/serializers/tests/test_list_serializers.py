@@ -20,6 +20,8 @@ DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
 IS_BLOCKED: Final[str] = users_constants.UsersFields.IS_BLOCKED
+MATCH_WINS: Final[str] = users_constants.UsersFields.MATCH_WINS
+MATCH_LOSSES: Final[str] = users_constants.UsersFields.MATCH_LOSSES
 
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND: Final[str] = constants.FriendshipFields.FRIEND
@@ -95,7 +97,8 @@ class FriendshipListSerializerTests(TestCase):
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
                         IS_FRIEND: True,
                         IS_BLOCKED: False,
-                        # todo: is_online,win_match,lose_match追加
+                        MATCH_WINS: 0,
+                        MATCH_LOSSES: 0,
                     },
                 },
                 {
@@ -106,7 +109,8 @@ class FriendshipListSerializerTests(TestCase):
                         AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
                         IS_FRIEND: True,
                         IS_BLOCKED: False,
-                        # todo: is_online,win_match,lose_match追加
+                        MATCH_WINS: 0,
+                        MATCH_LOSSES: 0,
                     },
                 },
             ],

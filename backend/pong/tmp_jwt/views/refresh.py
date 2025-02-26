@@ -1,3 +1,4 @@
+import rest_framework_simplejwt
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, views
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
@@ -8,6 +9,10 @@ class TokenRefreshView(views.APIView):
     リフレッシュトークンを使用して新しいアクセストークンを取得するエンドポイント
     """
 
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(

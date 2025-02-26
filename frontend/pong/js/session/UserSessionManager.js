@@ -10,10 +10,5 @@ export const UserSessionManager = (() => {
 
   return {
     getInstance,
-    main: getInstance().main.bind(getInstance()),
-    signIn: getInstance().signIn.bind(getInstance()),
-    signOut: getInstance().signOut.bind(getInstance()),
-    myInfo: getInstance().myInfo,
-    webSocket: getInstance().webSocket,
   };
 })();

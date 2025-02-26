@@ -1,6 +1,6 @@
 import { Endpoints } from "../../constants/Endpoints";
 import { isNullOrValidId } from "../../utils/isNullOrValidId";
-import { fetchData } from "../utils/fetchData";
+import { fetchAuthenticatedData } from "../utils/fetchAuthenticatedData";
 import { convertParticipationData } from "./convertParticipationData";
 
 export async function getParticipations(
@@ -21,7 +21,8 @@ export async function getParticipations(
     );
   if (userId) participationUrl.searchParams.append("user-id", userId);
 
-  const { data, error } = await fetchData(participationUrl);
+  const { data, error } =
+    await fetchAuthenticatedData(participationUrl);
 
   const participations = error
     ? []
