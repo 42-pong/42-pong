@@ -237,6 +237,25 @@ class UsersSerializerTests(TestCase):
 
         self.assertTrue(serializer.is_valid())
 
+    def test_update_with_invalid_avatar(self) -> None:
+        """
+        不正なavatarファイルサイズの場合にエラーになることを確認
+        """
+        # 最大ファイルサイズ200KBを超える画像
+        invalid_image_size: int = 200 * 1024 + 1
+        new_avatar: SimpleUploadedFile = self._create_image(
+            "valid_filename.png", invalid_image_size
+        )
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            self.player_1,
+            data={AVATAR: new_avatar},
+            partial=True,
+            context={USER_ID: self.user_1.id},
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(AVATAR, serializer.errors)
+
     def test_is_friend(self) -> None:
         """
         フレンドに追加するとis_friendがTrue、フレンド関係を削除するとFalseになることを確認
