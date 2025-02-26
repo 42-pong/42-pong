@@ -55,7 +55,7 @@ class PlayerSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
         # todo: 画像の最大サイズを指定・リサイズする
-        # max_length=constants.MAX_AVATAR_SIZE,
+        max_length=constants.MAX_AVATAR_FILE_NAME_LENGTH,  # 画像ファイル名の長さ
         validators=[validate_avatar_extension],
     )
 
