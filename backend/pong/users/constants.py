@@ -21,3 +21,4 @@ class UsersFields:
 
 # アバター更新用
 MAX_AVATAR_SIZE: Final[int] = 200 * 1024  # 200KB
+MAX_DIMENSION: Final[int] = 256  # 256*256(px)

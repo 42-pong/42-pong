@@ -3,6 +3,7 @@ from typing import Final, Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Count, Q
+from PIL import Image
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
@@ -15,6 +16,38 @@ from users.friends import constants as friends_constants
 from users.friends import models as friends_models
 
 from . import constants as users_constants
+
+
+def resize_avatar(
+    avatar: InMemoryUploadedFile, max_dimension: int
+) -> InMemoryUploadedFile:
+    """
+    max_dimension * max_dimension以内に画像をリサイズする
+    """
+    try:
+        tmp_file = avatar.file  # `_`始まりの型だったため型ヒントは書いていない
+        if tmp_file is None:
+            raise serializers.ValidationError(
+                {accounts_constants.PlayerFields.AVATAR: "Invalid file."}
+            )
+        with Image.open(avatar.file.name) as image:  # type: ignore[union-attr]
+            # 縦横比を維持したままmax_dimension以内にリサイズ
+            image.thumbnail((max_dimension, max_dimension))
+            # 古いファイルサイズをリセット
+            tmp_file.truncate()
+            image.save(tmp_file, format=image.format)
+            # ファイルポインタを先頭に戻す
+            tmp_file.seek(0)
+            # リサイズ後の画像でファイルオブジェクトを差し替え
+            avatar.file = tmp_file
+            avatar.size = os.path.getsize(tmp_file.name)
+            return avatar
+    except Exception as e:
+        raise serializers.ValidationError(
+            {
+                accounts_constants.PlayerFields.AVATAR: f"Failed to resize the image.: {str(e)}"
+            }
+        )
 
 
 class UsersSerializer(serializers.Serializer):
@@ -171,7 +204,7 @@ class UsersSerializer(serializers.Serializer):
         # 画像サイズが最大サイズを超える場合はリサイズ
         max_file_size: Final[int] = users_constants.MAX_AVATAR_SIZE
         if avatar.size > max_file_size:
-            # todo: resize
+            avatar = resize_avatar(avatar, users_constants.MAX_DIMENSION)
             # リサイズ後のサイズがまだ最大サイズを超える場合はエラー
             # mypyがsizeがNoneの可能性を指摘するが、数行上で確認済みなので無視
             if avatar.size > max_file_size:  # type: ignore[operator]
