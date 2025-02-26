@@ -1,10 +1,13 @@
+import io
 from typing import Final
 from unittest import mock
 
 import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models.query import QuerySet
 from django.test import TestCase
+from PIL import Image
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
@@ -203,6 +206,36 @@ class UsersSerializerTests(TestCase):
         )
 
         self.assertEqual(serializer.data[AVATAR], self.player_1.avatar.url)
+
+    def _create_image(self, file_name: str, size: int) -> SimpleUploadedFile:
+        image: Image.Image = Image.new("RGB", (30, 30))
+        image_io: io.BytesIO = io.BytesIO()
+        image.save(image_io, format="PNG")
+        # サイズ調整のため、sizeになるまでデータを追加
+        image_io.write(b"0" * (size - image_io.tell()))
+        image_io.seek(0)
+        return SimpleUploadedFile(
+            file_name, image_io.read(), content_type="image/png"
+        )
+
+    def test_update_with_valid_avatar(self) -> None:
+        """
+        正常なavatarの場合にエラーにならないことを確認
+        (実際の更新はファイルをアップロードしてしまうので今はしない)
+        """
+        # 最大ファイルサイズ200KBの画像
+        valid_image_size: int = 200 * 1024
+        new_avatar: SimpleUploadedFile = self._create_image(
+            "valid_filename.png", valid_image_size
+        )
+        serializer: serializers.UsersSerializer = serializers.UsersSerializer(
+            self.player_1,
+            data={AVATAR: new_avatar},
+            partial=True,
+            context={USER_ID: self.user_1.id},
+        )
+
+        self.assertTrue(serializer.is_valid())
 
     def test_is_friend(self) -> None:
         """
