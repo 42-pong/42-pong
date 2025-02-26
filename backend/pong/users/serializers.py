@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Final, Optional
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Count, Q
@@ -161,6 +161,26 @@ class UsersSerializer(serializers.Serializer):
         """
         return self._get_match_stats(player, "losses")
 
+    def _validate_avatar(self, avatar: InMemoryUploadedFile) -> None:
+        # avatarが存在していてsizeがNoneである場合は考えにくいがmypyのエラーを回避するためチェック
+        if avatar.size is None:
+            raise serializers.ValidationError(
+                {accounts_constants.PlayerFields.AVATAR: "Invalid file size."}
+            )
+
+        # 画像サイズが最大サイズを超える場合はリサイズ
+        max_file_size: Final[int] = users_constants.MAX_AVATAR_SIZE
+        if avatar.size > max_file_size:
+            # todo: resize
+            # リサイズ後のサイズがまだ最大サイズを超える場合はエラー
+            # mypyがsizeがNoneの可能性を指摘するが、数行上で確認済みなので無視
+            if avatar.size > max_file_size:  # type: ignore[operator]
+                raise serializers.ValidationError(
+                    {
+                        accounts_constants.PlayerFields.AVATAR: f"Image size must be less than {max_file_size} bytes."
+                    }
+                )
+
     def validate(self, data: dict) -> dict:
         """
         validate()のオーバーライド
@@ -180,6 +200,7 @@ class UsersSerializer(serializers.Serializer):
                         accounts_constants.PlayerFields.AVATAR: "This field may not be blank."
                     }
                 )
+            self._validate_avatar(avatar)
         return data
 
     def _update_avatar(
