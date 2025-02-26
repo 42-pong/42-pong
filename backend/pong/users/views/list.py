@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models.query import QuerySet
 from drf_spectacular import utils
@@ -29,6 +30,10 @@ class UsersListView(views.APIView):
     ユーザープロフィールの一覧を取得するビュー
     """
 
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     permission_classes = (permissions.IsAuthenticated,)
 
     def handle_exception(self, exc: Exception) -> response.Response:
