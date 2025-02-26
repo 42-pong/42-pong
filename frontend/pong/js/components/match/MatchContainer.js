@@ -52,7 +52,7 @@ export class MatchContainer extends Component {
   _setStyle() {
     BootstrapPosition.setFixed(this);
     BootstrapPosition.setTop(this);
-    BootstrapPosition.setBottom(this);
+    BootstrapPosition.setStart(this);
     BootstrapDisplay.setFlex(this);
     BootstrapFlex.setFlexColumn(this);
     BootstrapFlex.setAlignItemsCenter(this);

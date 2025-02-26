@@ -12,6 +12,10 @@ const setBottom = (element) => {
   return setClassNames(element, "bottom-0");
 };
 
+const setStart = (element) => {
+  return setClassNames(element, "start-0");
+};
+
 const setEnd = (element) => {
   return setClassNames(element, "end-0");
 };
@@ -20,5 +24,6 @@ export const BootstrapPosition = {
   setFixed,
   setTop,
   setBottom,
+  setStart,
   setEnd,
 };
