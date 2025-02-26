@@ -1,6 +1,5 @@
 import logging
 
-import rest_framework_simplejwt
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from drf_spectacular import utils
@@ -18,10 +17,7 @@ class TokenObtainView(views.APIView):
     アクセストークンとリフレッシュトークンを取得するエンドポイント
     """
 
-    # todo: 自作JWTの認証クラスを設定する
-    authentication_classes = [
-        rest_framework_simplejwt.authentication.JWTAuthentication
-    ]
+    authentication_classes = []
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
