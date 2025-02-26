@@ -30,20 +30,13 @@ const sampleMyInfo = {
   email: MY_EMAIL,
 };
 
-const createSampleFriend = (idx) =>
-  Object.freeze({
-    user_id: MY_USER_ID,
-    friend_user_id: sampleUsers[idx].id,
-    friend: {
-      username: sampleUsers[idx].username,
-      display_name: sampleUsers[idx].display_name,
-      avatar: sampleUsers[idx].avatar,
-    },
-  });
-
-const sampleFriends = Array.from({ length: SAMPLE_COUNT / 2 })
-  .map((_, idx) => createSampleFriend(2 * idx))
-  .filter((friend) => friend.user_id !== friend.friend_user_id);
+const sampleFriends = sampleUsers
+  .filter((user) => user.is_friend)
+  .map((userData) =>
+    Object.freeze({
+      friend: userData,
+    }),
+  );
 
 const sampleParticipations = [
   {
