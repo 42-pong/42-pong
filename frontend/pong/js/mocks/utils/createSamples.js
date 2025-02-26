@@ -6,20 +6,19 @@ const MY_USER_ID = 1;
 const MY_EMAIL = "mock@example.com";
 const MAX_MATCH_NUM = 999;
 
-const isFriend = (number) => number % 2 === 0;
+const isFriend = (number) => false;
 const isBlocked = (number) => number % 3 === 0;
 
-const createSampleUser = (number) =>
-  Object.freeze({
-    id: number,
-    username: `pong${number}`,
-    display_name: `DISPLAY${number}`,
-    avatar: "/media/avatars/sample.png",
-    is_friend: isFriend(number),
-    is_blocked: isBlocked(number),
-    match_wins: getRandomInt(0, MAX_MATCH_NUM),
-    match_losses: getRandomInt(0, MAX_MATCH_NUM),
-  });
+const createSampleUser = (number) => ({
+  id: number,
+  username: `pong${number}`,
+  display_name: `DISPLAY${number}`,
+  avatar: "/media/avatars/sample.png",
+  is_friend: isFriend(number),
+  is_blocked: isBlocked(number),
+  match_wins: getRandomInt(0, MAX_MATCH_NUM),
+  match_losses: getRandomInt(0, MAX_MATCH_NUM),
+});
 
 const sampleUsers = Array.from({ length: SAMPLE_COUNT }).map(
   (_, idx) => createSampleUser(idx + 1),
@@ -30,13 +29,14 @@ const sampleMyInfo = {
   email: MY_EMAIL,
 };
 
-const sampleFriends = sampleUsers
-  .filter((user) => user.is_friend)
-  .map((userData) =>
-    Object.freeze({
-      friend: userData,
-    }),
-  );
+const getSampleFriends = () =>
+  sampleUsers
+    .filter((user) => user.is_friend)
+    .map((userData) =>
+      Object.freeze({
+        friend: userData,
+      }),
+    );
 
 const sampleParticipations = [
   {
@@ -555,7 +555,7 @@ const sampleTournaments = [
 export {
   sampleUsers,
   sampleMyInfo,
-  sampleFriends,
+  getSampleFriends,
   sampleParticipations,
   sampleTournaments,
 };
