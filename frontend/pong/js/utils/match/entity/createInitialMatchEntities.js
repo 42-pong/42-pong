@@ -1,5 +1,5 @@
 import { MatchConstants } from "../../../constants/MatchConstants";
-import { BorderEntity } from "../BorderEntity";
+import { BorderEntity } from "./BorderEntity";
 import { RectangleEntity } from "./RectangleEntity";
 import { ScoreEntity } from "./ScoreEntity";
 

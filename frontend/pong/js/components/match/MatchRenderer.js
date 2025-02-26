@@ -6,15 +6,25 @@ import { CanvasEntity } from "../../utils/match/entity/CanvasEntity";
 
 export class MatchRenderer extends Component {
   #canvas;
+  #animationLoopId;
 
   constructor(state = {}) {
     super(state);
     this.#canvas = createMatchCanvas();
+    this.#animationLoopId = null;
   }
+
   _setStyle() {
     BootstrapDisplay.setFlex(this);
     BootstrapFlex.setAlignItemsCenter(this);
     BootstrapFlex.setJustifyContentCenter(this);
+  }
+
+  _onDisconnect() {
+    if (this.#animationLoopId) {
+      cancelAnimationFrame(this.#animationLoopId);
+      this.#animationLoopId = null;
+    }
   }
 
   _render() {
@@ -22,7 +32,7 @@ export class MatchRenderer extends Component {
     this.#canvas.focus();
 
     const { entities } = this._getState();
-    animate(this.#canvas, entities);
+    this.#animationLoopId = animate(this.#canvas, entities);
   }
 }
 
@@ -33,7 +43,7 @@ const animate = (canvas, entities) => {
     for (const entity of Object.values(entities)) {
       if (entity instanceof CanvasEntity) entity.draw(ctx);
     }
-    requestAnimationFrame(draw);
+    return requestAnimationFrame(draw);
   };
-  draw();
+  return draw();
 };
