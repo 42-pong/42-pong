@@ -112,31 +112,38 @@ export class MatchContainer extends Component {
       4,
     );
 
+    const { is3d, matchId } = this._getState();
+
     this.#toggle3d = new EventDispatchingButton(
       {
-        textContent: create3dConvertingMessage(this._getState().is3d),
+        textContent: create3dConvertingMessage(is3d),
       },
       {},
       PongEvents.TOGGLE_3D,
     );
     this.#toggle3d.setPrimary();
     BootstrapSpacing.setMargin(this.#toggle3d);
+    this.#buttons = createCenterFlexBox(this.#toggle3d);
 
-    const backToHome = new EventDispatchingButton(
-      { textContent: "ホームに戻る" },
-      {},
-      PongEvents.END_MATCH,
-    );
-    backToHome.setOutlinePrimary();
-    BootstrapSpacing.setMargin(backToHome);
-    this.#buttons = createCenterFlexBox(this.#toggle3d, backToHome);
+    if (!matchId) {
+      const backToHome = new EventDispatchingButton(
+        { textContent: "ホームに戻る" },
+        {},
+        PongEvents.END_MATCH,
+      );
+      backToHome.setOutlinePrimary();
+      BootstrapSpacing.setMargin(backToHome);
+
+      this.#buttons.append(backToHome);
+    }
 
     this._attachEventListener(PongEvents.TOGGLE_3D.type, () => {
       const { is3d } = this._getState();
-      this._updateState({ is3d: !is3d });
+      const newIs3d = !is3d;
       this.#toggle3d.setTextContent(
-        create3dConvertingMessage(this._getState().is3d),
+        create3dConvertingMessage(newIs3d),
       );
+      this._updateState({ is3d: newIs3d });
     });
 
     const keydownHandler = (team) => (event) => {
@@ -206,7 +213,6 @@ export class MatchContainer extends Component {
       this.#matchDataHandler,
     );
 
-    const { matchId } = this._getState();
     sendInit(matchId);
   }
 
