@@ -3,6 +3,7 @@ import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
+import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { DataSubject } from "../../core/DataSubject";
 import { WebSocketEnums } from "../../enums/WebSocketEnums";
@@ -13,9 +14,11 @@ import { createElement } from "../../utils/elements/createElement";
 import { createHorizontalSplitLayout } from "../../utils/elements/div/createHorizontalSplitLayout";
 import { createVerticalSplitLayout } from "../../utils/elements/div/createVerticalSplitLayout";
 import { setHeight } from "../../utils/elements/style/setHeight";
+import { isValidId } from "../../utils/isValidId";
 import { ChatPayload } from "../../websocket/payload/ChatPayload";
 import { TournamentPayload } from "../../websocket/payload/TournamentPayload";
 import { ChatContainer } from "../chat/ChatContainer";
+import { MatchContainer } from "../match/MatchContainer";
 import { TournamentParticipations } from "./TournamentParticipations";
 import { TournamentStateContainer } from "./TournamentStateContainer";
 
@@ -25,11 +28,14 @@ export class TournamentProgress extends Component {
   #chatSubject;
   #groupChat;
   #listenGroupChat;
+  #matchOverlay;
+  #assignMatch;
 
   constructor(state = {}) {
-    super(state);
+    super({ isPlayingMatch: false, matchId: null, ...state });
     this.#chatSubject = new DataSubject({ messages: [] });
     this.#listenGroupChat = null;
+    this.#matchOverlay = createElement("div");
   }
 
   _setStyle() {
@@ -86,6 +92,24 @@ export class TournamentProgress extends Component {
       WebSocketEnums.Category.CHAT,
       this.#listenGroupChat,
     );
+
+    this.#clearMatchOverlay();
+    this.#assignMatch = (payload) => {
+      const { type, data } = payload;
+      if (type !== WebSocketEnums.Tournament.Type.ASSIGNED) return;
+      const { match_id: matchId } = data;
+      if (isValidId(matchId)) this.#setMatchOverlay(matchId);
+    };
+
+    UserSessionManager.getInstance().webSocket.attachHandler(
+      WebSocketEnums.Category.TOURNAMENT,
+      this.#assignMatch,
+    );
+
+    this._attachEventListener(PongEvents.END_MATCH.type, (event) => {
+      event.preventDefault();
+      this.#clearMatchOverlay();
+    });
   }
 
   _onDisconnect() {
@@ -94,6 +118,12 @@ export class TournamentProgress extends Component {
       this.#listenGroupChat,
     );
     this.#listenGroupChat = null;
+
+    UserSessionManager.getInstance().webSocket.detachHandler(
+      WebSocketEnums.Category.TOURNAMENT,
+      this.#assignMatch,
+    );
+    this.assignMatch = null;
 
     const { tournamentId } = this._getState();
 
@@ -130,6 +160,16 @@ export class TournamentProgress extends Component {
     );
     BootstrapSizing.setHeight75(verticalSplit);
 
-    this.append(title, verticalSplit);
+    this.append(title, verticalSplit, this.#matchOverlay);
+  }
+
+  #clearMatchOverlay() {
+    BootstrapDisplay.setNone(this.#matchOverlay);
+    this.#matchOverlay.replaceChildren();
+  }
+
+  #setMatchOverlay(matchId) {
+    this.#matchOverlay.append(new MatchContainer({ matchId }));
+    BootstrapDisplay.unsetNone(this.#matchOverlay);
   }
 }
