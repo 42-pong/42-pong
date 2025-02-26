@@ -1,7 +1,7 @@
 import os
 from typing import Final, Optional
 
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Count, Q
 from PIL import Image
 from rest_framework import serializers
@@ -18,9 +18,7 @@ from users.friends import models as friends_models
 from . import constants as users_constants
 
 
-def resize_avatar(
-    avatar: InMemoryUploadedFile, max_dimension: int
-) -> InMemoryUploadedFile:
+def resize_avatar(avatar: UploadedFile, max_dimension: int) -> UploadedFile:
     """
     max_dimension * max_dimension以内に画像をリサイズする
     """
@@ -194,7 +192,7 @@ class UsersSerializer(serializers.Serializer):
         """
         return self._get_match_stats(player, "losses")
 
-    def _validate_avatar(self, avatar: InMemoryUploadedFile) -> None:
+    def _validate_avatar(self, avatar: UploadedFile) -> None:
         # avatarが存在していてsizeがNoneである場合は考えにくいがmypyのエラーを回避するためチェック
         if avatar.size is None:
             raise serializers.ValidationError(
@@ -223,7 +221,7 @@ class UsersSerializer(serializers.Serializer):
             accounts_constants.PlayerFields.AVATAR in data
             and self.instance is not None
         ):
-            avatar: Optional[InMemoryUploadedFile] = data[
+            avatar: Optional[UploadedFile] = data[
                 accounts_constants.PlayerFields.AVATAR
             ]
             # 更新時Noneの場合はエラー
@@ -237,8 +235,8 @@ class UsersSerializer(serializers.Serializer):
         return data
 
     def _update_avatar(
-        self, player: player_models.Player, new_avatar: InMemoryUploadedFile
-    ) -> InMemoryUploadedFile:
+        self, player: player_models.Player, new_avatar: UploadedFile
+    ) -> UploadedFile:
         # 更新前の画像を削除してから新しい画像を保存する
         player.avatar.delete(save=False)
 
@@ -269,7 +267,7 @@ class UsersSerializer(serializers.Serializer):
 
         # avatarがあれば更新
         if accounts_constants.PlayerFields.AVATAR in validated_data:
-            new_avatar: InMemoryUploadedFile = validated_data[
+            new_avatar: UploadedFile = validated_data[
                 accounts_constants.PlayerFields.AVATAR
             ]
             player.avatar = self._update_avatar(player, new_avatar)
