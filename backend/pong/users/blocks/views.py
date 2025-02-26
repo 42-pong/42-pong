@@ -1,7 +1,6 @@
 import logging
 from typing import Optional
 
-import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from django.db import transaction
 from django.db.models import Q
@@ -17,6 +16,7 @@ from rest_framework import (
 )
 
 from accounts import constants as accounts_constants
+from jwt.authentication import CustomJWTAuthentication
 from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users import constants as users_constants
@@ -317,10 +317,7 @@ class BlocksViewSet(viewsets.ViewSet):
         Q(blocked_user__player__isnull=False)
     ).select_related("user", "blocked_user")
 
-    # todo: 自作JWTの認証クラスを設定する
-    authentication_classes = [
-        rest_framework_simplejwt.authentication.JWTAuthentication
-    ]
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
     # URLから取得するID名

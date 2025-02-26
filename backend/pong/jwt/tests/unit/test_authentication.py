@@ -5,7 +5,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory, APITestCase
 
-from ... import custom_jwt_authentication, jwt
+from ... import authentication, jwt
 
 
 class CustomJWTAuthenticationTestCase(APITestCase):
@@ -14,7 +14,9 @@ class CustomJWTAuthenticationTestCase(APITestCase):
         self.url = "/api/"
         self.factory = APIRequestFactory()
         self.jwt_handler: jwt.JWT = jwt.JWT()
-        self.auth_handler: custom_jwt_authentication.CustomJWTAuthentication = custom_jwt_authentication.CustomJWTAuthentication()
+        self.auth_handler: authentication.CustomJWTAuthentication = (
+            authentication.CustomJWTAuthentication()
+        )
         self.user = User.objects.create_user(
             username="testuser", password="testpass"
         )
