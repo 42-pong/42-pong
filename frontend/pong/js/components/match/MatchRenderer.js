@@ -1,5 +1,8 @@
+import { BootstrapDisplay } from "../../bootstrap/utilities/display";
+import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { Component } from "../../core/Component";
 import { createMatchCanvas } from "../../utils/match/createMatchCanvas";
+import { CanvasEntity } from "../../utils/match/entity/CanvasEntity";
 
 export class MatchRenderer extends Component {
   #canvas;
@@ -7,6 +10,11 @@ export class MatchRenderer extends Component {
   constructor(state = {}) {
     super(state);
     this.#canvas = createMatchCanvas();
+  }
+  _setStyle() {
+    BootstrapDisplay.setFlex(this);
+    BootstrapFlex.setAlignItemsCenter(this);
+    BootstrapFlex.setJustifyContentCenter(this);
   }
 
   _render() {
@@ -23,7 +31,7 @@ const animate = (canvas, entities) => {
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (const entity of Object.values(entities)) {
-      entity.draw(ctx);
+      if (entity instanceof CanvasEntity) entity.draw(ctx);
     }
     requestAnimationFrame(draw);
   };
