@@ -165,13 +165,16 @@ class UsersSerializer(serializers.Serializer):
         """
         validate()のオーバーライド
         """
-        # avatar更新時
-        if accounts_constants.PlayerFields.AVATAR in data:
+        # avatar更新時(self.instanceが存在する場合のみ)
+        if (
+            accounts_constants.PlayerFields.AVATAR in data
+            and self.instance is not None
+        ):
             avatar: Optional[InMemoryUploadedFile] = data[
                 accounts_constants.PlayerFields.AVATAR
             ]
-            # 更新時(既にinstanceが存在している時)にNoneの場合はエラー
-            if self.instance and avatar is None:
+            # 更新時Noneの場合はエラー
+            if avatar is None:
                 raise serializers.ValidationError(
                     {
                         accounts_constants.PlayerFields.AVATAR: "This field may not be blank."
