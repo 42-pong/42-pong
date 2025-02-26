@@ -22,4 +22,12 @@ export class RectangleEntity extends CanvasEntity {
       this.#size.height,
     );
   }
+
+  get upperLeft() {
+    return this.#upperLeft;
+  }
+
+  get size() {
+    return this.#size;
+  }
 }

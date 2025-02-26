@@ -14,9 +14,11 @@ export class ScoreEntity extends CanvasEntity {
     this.#score = score;
   }
 
-  _draw(ctx) {
-    ctx.textAlign = "center";
-    ctx.font = "bold 30px sans-serif";
-    ctx.fillText(this.#score, this.#pos.x, this.#pos.y);
+  _draw() {
+    return;
+  }
+
+  get score() {
+    return this.#score;
   }
 }
