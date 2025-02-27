@@ -16,6 +16,11 @@ export class RemoveFriendButton extends StyledButton {
 
   _setStyle() {
     this.setOutlinePrimary();
+    const {
+      user: { isBlocked },
+    } = this._getState();
+    if (isBlocked) this.setDisabled();
+    else this.unsetDisabled();
   }
 
   _onConnect() {
@@ -25,9 +30,13 @@ export class RemoveFriendButton extends StyledButton {
       return;
     }
 
-    const { id } = user;
     this._attachEventListener("click", (event) => {
       event.preventDefault();
+      const {
+        user: { id, isBlocked },
+        reload,
+      } = this._getState();
+      if (isBlocked) return;
       deleteFriends(id).then(({ error }) => {
         if (error) return;
         reload();

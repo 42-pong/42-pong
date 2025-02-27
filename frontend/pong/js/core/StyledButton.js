@@ -21,6 +21,14 @@ export class StyledButton extends Component {
     this._button.textContent = textContent;
   }
 
+  setDisabled() {
+    this._button.setAttribute("disabled", "");
+  }
+
+  unsetDisabled() {
+    this._button.removeAttribute("disabled");
+  }
+
   setPrimary() {
     BootstrapButtons.setPrimary(this._button);
   }

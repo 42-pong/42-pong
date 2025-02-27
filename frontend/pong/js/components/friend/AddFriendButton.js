@@ -16,6 +16,11 @@ export class AddFriendButton extends StyledButton {
 
   _setStyle() {
     this.setPrimary();
+    const {
+      user: { isBlocked },
+    } = this._getState();
+    if (isBlocked) this.setDisabled();
+    else this.unsetDisabled();
   }
 
   _onConnect() {
@@ -25,9 +30,13 @@ export class AddFriendButton extends StyledButton {
       return;
     }
 
-    const { id } = user;
     this._attachEventListener("click", (event) => {
       event.preventDefault();
+      const {
+        user: { id, isBlocked },
+        reload,
+      } = this._getState();
+      if (isBlocked) return;
       postFriends(id).then(({ user, error }) => {
         if (error) return;
         reload();
