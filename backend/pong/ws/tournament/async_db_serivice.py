@@ -6,6 +6,7 @@ from django.db import DatabaseError, transaction
 from rest_framework import serializers as drf_serializers
 
 import utils.result
+from accounts.player import models as player_models
 from tournaments import constants
 from tournaments.participation import models as participation_models
 from tournaments.participation import serializers as participation_serializers
@@ -13,10 +14,83 @@ from tournaments.tournament import models as tournament_models
 from tournaments.tournament import serializers as tournament_serializers
 
 logger = logging.getLogger(__name__)
+CreateParticipationResult = utils.result.Result[dict, dict]
 CreateTournamentResult = utils.result.Result[dict, dict]
 DeleteParticipationResult = utils.result.Result[dict, dict]
 UpdateTournamentResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]
+
+
+@database_sync_to_async
+def get_player_id_by_user_id(user_id: int) -> Optional[int]:
+    """
+    user_idからplayer_idを取得する関数
+
+    Args:
+        user_id (int): ユーザーのID
+
+    Returns:
+        Optional[int]: player_id、見つからない場合はNone
+    """
+    try:
+        player = player_models.Player.objects.get(user_id=user_id)
+        return player.id
+    except player_models.Player.DoesNotExist:
+        return None
+
+
+@database_sync_to_async
+def create_participation(
+    tournament_id: int, user_id: int, participation_name: str
+) -> CreateParticipationResult:
+    """
+    新しいParticipationインスタンスを作成する関数。
+
+    tournament_id: トーナメントのID
+    user_id: プレイヤーのID
+    participation_name: プレイヤーの参加名
+    """
+    try:
+        # user_idからplayer_idを取得
+        player_id = get_player_id_by_user_id(user_id)
+        if player_id is None:
+            return CreateParticipationResult.error(
+                {"error": "Player not found for the given user_id"}
+            )
+
+        # 参加情報を作成
+        data = {
+            "tournament": tournament_id,
+            "player": player_id,
+            "participation_name": participation_name,
+        }
+
+        # シリアライザに渡すデータをバリデーション
+        participation_serializer = (
+            participation_serializers.ParticipationCommandSerializer(data=data)
+        )
+        participation_serializer.is_valid(raise_exception=True)
+
+        # バリデーションを通過したデータを元にインスタンスを作成
+        participation_serializer.save()
+
+    except drf_serializers.ValidationError as e:
+        logger.error(f"ValidationError: {e}")
+        if isinstance(e.detail, list):
+            return CreateParticipationResult.error(
+                {"ValidationError": e.detail}
+            )
+        return CreateParticipationResult.error(e.detail)
+
+    except DatabaseError as e:
+        logger.error(f"DatabaseError: {e}")
+        return CreateParticipationResult.error(
+            {
+                "DatabaseError": f"Failed to create participation. Details: {str(e)}."
+            }
+        )
+
+    return CreateParticipationResult.ok(participation_serializer.data)
 
 
 @database_sync_to_async
