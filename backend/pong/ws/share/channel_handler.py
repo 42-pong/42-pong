@@ -1,3 +1,5 @@
+from typing import Optional
+
 from channels.layers import BaseChannelLayer  # type: ignore
 
 
@@ -7,7 +9,7 @@ class ChannelHandler:
     """
 
     def __init__(
-        self, channel_layer: BaseChannelLayer, channel_name: str
+        self, channel_layer: BaseChannelLayer, channel_name: Optional[str]
     ) -> None:
         self.channel_layer = channel_layer
         self.channel_name = channel_name
@@ -32,7 +34,8 @@ class ChannelHandler:
 
         :param group_name: 追加するグループ名
         """
-        await self.channel_layer.group_add(group_name, self.channel_name)
+        if self.channel_name is not None:
+            await self.channel_layer.group_add(group_name, self.channel_name)
 
     async def remove_from_group(self, group_name: str) -> None:
         """
@@ -42,7 +45,10 @@ class ChannelHandler:
 
         :param group_name: 削除するグループ名
         """
-        await self.channel_layer.group_discard(group_name, self.channel_name)
+        if self.channel_name is not None:
+            await self.channel_layer.group_discard(
+                group_name, self.channel_name
+            )
 
     async def send_to_group(self, group_name: str, message: dict) -> None:
         """
