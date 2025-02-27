@@ -6,10 +6,16 @@ import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { createElement } from "../../utils/elements/createElement";
+import { MatchContainer } from "../match/MatchContainer";
+import { EventDispatchingButton } from "../utils/EventDispatchingButton";
 import { LinkButton } from "../utils/LinkButton";
 
 export class GameStartPanel extends Component {
   #menu;
+
+  constructor(state = {}) {
+    super({ isPlayingMatch: false, ...state });
+  }
 
   _setStyle() {
     BootstrapDisplay.setGrid(this.#menu);
@@ -28,13 +34,24 @@ export class GameStartPanel extends Component {
     this.#menu = createMenu();
 
     this._attachEventListener(
-      "click",
-      PongEvents.UPDATE_ROUTER.trigger,
+      PongEvents.START_MATCH.type,
+      (event) => {
+        event.preventDefault();
+        this._updateState({ isPlayingMatch: true });
+      },
     );
+
+    this._attachEventListener(PongEvents.END_MATCH.type, (event) => {
+      event.preventDefault();
+      this._updateState({ isPlayingMatch: false });
+    });
   }
 
   _render() {
-    this.appendChild(this.#menu);
+    const { isPlayingMatch } = this._getState();
+
+    if (isPlayingMatch) this.append(new MatchContainer());
+    else this.appendChild(this.#menu);
   }
 }
 
@@ -43,17 +60,16 @@ const createMenu = () => {
     { textContent: "トーナメント開始", pathname: Paths.TOURNAMENTS },
     { type: "button" },
   );
-  // TODO: DELETE "disabled": ローカルマッチの準備とともに削除
-  const localMatchStartButton = new LinkButton(
-    { textContent: "ローカル対戦" },
-    { type: "button", disabled: "" },
-  );
-
   tournamentStartButton.setPrimary();
+
+  const localMatchStartButton = new EventDispatchingButton(
+    { textContent: "ローカル対戦" },
+    { type: "button" },
+    PongEvents.START_MATCH,
+  );
   localMatchStartButton.setOutlinePrimary();
 
   const container = createElement("div");
-  container.appendChild(tournamentStartButton);
-  container.appendChild(localMatchStartButton);
+  container.append(tournamentStartButton, localMatchStartButton);
   return container;
 };

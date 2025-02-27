@@ -10,6 +10,9 @@ import { ChatMessageListItem } from "./chat/ChatMessageListItem";
 import { ChatPanel } from "./chat/ChatPanel";
 import { AddFriendButton } from "./friend/AddFriendButton";
 import { GameStartPanel } from "./game/GameStartPanel";
+import { MatchContainer } from "./match/MatchContainer";
+import { MatchRenderer } from "./match/MatchRenderer";
+import { MatchRenderer3D } from "./match/MatchRenderer3D";
 import { MainNavbar } from "./navigation/MainNavbar";
 import { MatchCard } from "./tournament/MatchCard";
 import { ParticipationProfile } from "./tournament/ParticipationProfile";
@@ -51,12 +54,12 @@ import { UsersView } from "./views/UsersView";
 customElements.define("login-container", LoginContainer, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
-customElements.define("chat-container", ChatContainer, {});
 customElements.define(
   "chat-buddy-list-container",
   ChatBuddyListContainer,
   {},
 );
+customElements.define("chat-container", ChatContainer, {});
 customElements.define("chat-dm-container", ChatDmContainer, {});
 customElements.define("chat-global", ChatGlobal, {});
 customElements.define("chat-input-form", ChatInputForm, {});
@@ -68,6 +71,9 @@ customElements.define(
 customElements.define("chat-panel", ChatPanel, {});
 customElements.define("add-friend-button", AddFriendButton, {});
 customElements.define("game-start-panel", GameStartPanel, {});
+customElements.define("match-container", MatchContainer, {});
+customElements.define("match-renderer", MatchRenderer, {});
+customElements.define("match-renderer-3d", MatchRenderer3D, {});
 customElements.define("main-navbar", MainNavbar, {});
 customElements.define("match-card", MatchCard, {});
 customElements.define(
