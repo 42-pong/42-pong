@@ -17,6 +17,10 @@ export class StyledButton extends Component {
     this.appendChild(this._button);
   }
 
+  setTextContent(textContent) {
+    this._button.textContent = textContent;
+  }
+
   setPrimary() {
     BootstrapButtons.setPrimary(this._button);
   }

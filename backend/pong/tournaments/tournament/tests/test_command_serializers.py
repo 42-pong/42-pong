@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.serializers import ValidationError
@@ -15,6 +17,17 @@ class TournamentCommandSerializerTest(TestCase):
         # テスト用のトーナメントインスタンスを作成
         self.tournament = models.Tournament.objects.create(
             status=constants.TournamentFields.StatusEnum.NOT_STARTED.value
+        )
+
+    @mock.patch(
+        "accounts.player.identicon.generate_identicon",
+        return_value="avatars/sample.png",
+    )
+    def _create_player(
+        self, user: User, display_name: str, mock_identicon: mock.MagicMock
+    ) -> player_models.Player:
+        return player_models.Player.objects.create(
+            user=user, display_name=display_name
         )
 
     def test_default_status(self) -> None:
@@ -54,9 +67,7 @@ class TournamentCommandSerializerTest(TestCase):
             email="testuser_1@example.com",
             password="testpassword",
         )
-        player = player_models.Player.objects.create(
-            user=user, display_name="Test Player"
-        )
+        player = self._create_player(user, "Test Player")
 
         # 参加者を追加
         participation_models.Participation.objects.create(

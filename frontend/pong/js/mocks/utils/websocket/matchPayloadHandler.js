@@ -1,3 +1,4 @@
+import { delay } from "msw";
 import { MatchConstants } from "../../../constants/MatchConstants";
 import { MatchEnums } from "../../../enums/MatchEnums";
 import { incrementWithBounds } from "../../../utils/incrementWithBounds";
@@ -7,18 +8,32 @@ import { sendMatch } from "./sendPayloads";
 
 const MILLISECONDS_PER_FRAME = 20;
 
-export const matchPayloadHandler = (client, payload, matchState) => {
+export const matchPayloadHandler = async (
+  client,
+  payload,
+  matchState,
+) => {
   const { stage, data } = payload;
   switch (stage) {
-    case MatchEnums.Stage.INIT:
+    case MatchEnums.Stage.INIT: {
       Object.assign(matchState, getInitialMatchState());
-      sendMatch(
-        client,
-        MatchEnums.Stage.INIT,
-        getFilteredMatchState(matchState),
-      );
+      const { match_id } = data;
+      if (match_id) {
+        sendMatch(client, MatchEnums.Stage.INIT, {
+          team: getRandomTeam(),
+          display_name1: "alice",
+          display_name2: "bob",
+          ...getFilteredMatchState(matchState),
+        });
+      } else
+        sendMatch(
+          client,
+          MatchEnums.Stage.INIT,
+          getFilteredMatchState(matchState),
+        );
       break;
-    case MatchEnums.Stage.READY:
+    }
+    case MatchEnums.Stage.READY: {
       sendMatch(client, MatchEnums.Stage.READY, {});
       matchState.intervalId = setInterval(
         playMatchRoutine,
@@ -26,7 +41,21 @@ export const matchPayloadHandler = (client, payload, matchState) => {
         client,
         matchState,
       );
+
+      await delay(10000);
+      clearInterval(matchState.intervalId);
+      matchState.intervalId = -1;
+
+      const win = getRandomTeam();
+      const score1 = win === MatchEnums.Team.ONE ? 5 : 3;
+      const score2 = win === MatchEnums.Team.TWO ? 5 : 3;
+      sendMatch(client, MatchEnums.Stage.END, {
+        win,
+        score1,
+        score2,
+      });
       break;
+    }
     case MatchEnums.Stage.PLAY:
       handleUserInput(data, matchState);
       break;
@@ -141,4 +170,9 @@ const handleUserInput = (data, matchState) => {
     0,
     matchState.paddleBound,
   );
+};
+
+const getRandomTeam = () => {
+  const randomOneOrTwo = Math.floor(Math.random() * 2) + 1;
+  return randomOneOrTwo.toString();
 };

@@ -1,5 +1,6 @@
 import io
 from typing import Final
+from unittest import mock
 
 import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
@@ -16,6 +17,8 @@ PASSWORD: Final[str] = constants.UserFields.PASSWORD
 USER: Final[str] = constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = constants.PlayerFields.AVATAR
+
+MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
 
 
 class PlayerSerializerTests(TestCase):
@@ -37,8 +40,12 @@ class PlayerSerializerTests(TestCase):
         user: User = User.objects.create_user(**user_data)
         return user
 
+    @mock.patch(
+        "accounts.player.identicon.generate_identicon",
+        return_value=MOCK_AVATAR_NAME,
+    )
     def _create_player(
-        self, player_data: dict
+        self, player_data: dict, mock_identicon: mock.MagicMock
     ) -> tuple[models.Player, serializers.PlayerSerializer]:
         """
         Playerを作成するヘルパーメソッド

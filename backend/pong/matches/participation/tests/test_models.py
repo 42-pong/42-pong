@@ -1,4 +1,5 @@
 from typing import ClassVar
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
@@ -37,8 +38,18 @@ class MatchParticipationModelTest(TestCase):
         """
         test caseごとに毎回初期化される
         """
+
+        @mock.patch(
+            "accounts.player.identicon.generate_identicon",
+            return_value="avatars/sample.png",
+        )
+        def _create_player(
+            user: User, mock_identicon: mock.MagicMock
+        ) -> Player:
+            return Player.objects.create(user=user)
+
         # ParticipationとPlayerとMatchを作成
-        self.player = Player.objects.create(user=self.user)
+        self.player = _create_player(self.user)
         self.match = Match.objects.create(round=self.round)
 
         self.participation = Participation.objects.create(
