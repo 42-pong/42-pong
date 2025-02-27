@@ -4,15 +4,17 @@ from channels.db import database_sync_to_async  # type: ignore
 from django.contrib.auth.models import User
 
 from accounts.player.models import Player
-from matches.constants import MatchFields, ParticipationFields
+from matches.constants import MatchFields, ParticipationFields, ScoreFields
 from matches.match.models import Match
 from matches.participation.models import Participation
+from matches.score.models import Score
 from tournaments.constants import RoundFields, TournamentFields
 from tournaments.round.models import Round
 from tournaments.tournament.models import Tournament
 from ws.match.async_db_service import (
     create_match,
     create_participation,
+    create_score,
     update_match_status,
     update_participation_is_win,
 )
@@ -174,3 +176,39 @@ async def test_update_participation_is_win(
     assert result_value[ParticipationFields.IS_WIN] is True
     await database_sync_to_async(participation.refresh_from_db)()
     assert participation.is_win is True
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_create_score(
+    tournament_and_round: tuple[Tournament, Round],
+    user_and_player: tuple[User, Player],
+) -> None:
+    tournament, round_instance = tournament_and_round
+    user, player = user_and_player
+
+    # 試合を作成
+    match = await database_sync_to_async(Match.objects.create)(
+        round_id=round_instance.id
+    )
+
+    # 参加者を作成
+    team = ParticipationFields.TeamEnum.TWO.value
+    participation = await database_sync_to_async(Participation.objects.create)(
+        match_id=match.id, player=player, team=team, is_win=False
+    )
+
+    # create_scoreを呼び出し、スコアを作成
+    pos_x = 0
+    pos_y = 120
+    result = await create_score(participation.id, pos_x, pos_y)
+
+    # 結果の検証
+    assert result.is_ok
+    result_value = result.unwrap()
+    assert result_value[ScoreFields.ID] is not None
+    score = await database_sync_to_async(Score.objects.get)(
+        id=result_value[ScoreFields.ID]
+    )
+    assert score.pos_x == pos_x
+    assert score.pos_y == pos_y
