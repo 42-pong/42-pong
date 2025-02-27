@@ -170,13 +170,35 @@ class PongLogic:
         """
         引数で受け取ったチームのパドルを上に動かす関数
         """
-        pass
+        if team == constants.Team.ONE.value:
+            y = self.paddle1_pos.y
+            if y > 0:
+                self.paddle1_pos = PosStruct(
+                    self.paddle1_pos.x, y - self.PADDLE_SPEED
+                )
+        elif team == constants.Team.TWO.value:
+            y = self.paddle2_pos.y
+            if y > 0:
+                self.paddle2_pos = PosStruct(
+                    self.paddle2_pos.x, y - self.PADDLE_SPEED
+                )
 
     async def move_paddle_down(self, team: str) -> None:
         """
         引数で受け取ったチームのパドルを下に動かす関数
         """
-        pass
+        if team == constants.Team.ONE.value:
+            y = self.paddle1_pos.y
+            if y < self.HEIGHT - self.PADDLE_HEIGHT:
+                self.paddle1_pos = PosStruct(
+                    self.paddle1_pos.x, y + self.PADDLE_SPEED
+                )
+        elif team == constants.Team.TWO.value:
+            y = self.paddle2_pos.y
+            if y < self.HEIGHT - self.PADDLE_HEIGHT:
+                self.paddle2_pos = PosStruct(
+                    self.paddle2_pos.x, y + self.PADDLE_SPEED
+                )
 
     async def reset_ball(self) -> None:
         """
