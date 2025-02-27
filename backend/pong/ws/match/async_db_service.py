@@ -94,7 +94,7 @@ def update_participation_is_win(
     try:
         with transaction.atomic():
             participation = participation_models.Participation.objects.get(
-                match_id=match_id, player_id=user_id
+                match_id=match_id, player__user_id=user_id
             )
             participation.is_win = True
             participation.save()
