@@ -1,7 +1,13 @@
+from typing import Final
+from unittest import mock
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 
+from ... import constants
 from .. import models
+
+MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
 
 
 # todo: PlayerModelにフィールドが追加された際にテストも追加
@@ -18,9 +24,19 @@ class PlayerModelTestCase(TestCase):
             password="testpassword",
         )
         # Player作成
-        self.player: models.Player = models.Player.objects.create(
-            user=self.user
+        self.player: models.Player = self._create_player(
+            {constants.PlayerFields.USER: self.user}
         )
+
+    @mock.patch(
+        "accounts.player.identicon.generate_identicon",
+        return_value=MOCK_AVATAR_NAME,
+    )
+    def _create_player(
+        self, player_data: dict, mock_identicon: mock.MagicMock
+    ) -> models.Player:
+        player: models.Player = models.Player.objects.create(**player_data)
+        return player
 
     def test_create_player_and_user(self) -> None:
         """
@@ -77,9 +93,11 @@ class PlayerModelTestCase(TestCase):
             password="testpassword",
         )
         # Player作成
-        player: models.Player = models.Player.objects.create(
-            user=user,
-            display_name="valid_name",  # 正しいdisplay_name
+        player: models.Player = self._create_player(
+            {
+                constants.PlayerFields.USER: user,
+                constants.PlayerFields.DISPLAY_NAME: "valid_name",  # 正しいdisplay_name
+            }
         )
 
         self.assertEqual(player.display_name, "valid_name")

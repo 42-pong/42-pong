@@ -22,12 +22,6 @@ const UPDATE_TOURNAMENT_STAGE = {
     }),
 };
 
-const UPDATE_TOURNAMENT_PROGRESS = {
-  type: "update-tournament-progress",
-  create: (progress) =>
-    createPongEvent(UPDATE_TOURNAMENT_PROGRESS.type, { progress }),
-};
-
 const UPDATE_USER_ID = {
   type: "update-user-id",
   create: (userId) =>
@@ -44,11 +38,28 @@ const TOGGLE_CHAT_USER_SELECTION = {
   create: () => createPongEvent(TOGGLE_CHAT_USER_SELECTION.type, {}),
 };
 
+const START_MATCH = {
+  type: "start-match",
+  create: () => createPongEvent(START_MATCH.type, {}),
+};
+
+const END_MATCH = {
+  type: "end-match",
+  create: () => createPongEvent(END_MATCH.type, {}),
+};
+
+const TOGGLE_3D = {
+  type: "toggle-3d",
+  create: () => createPongEvent(TOGGLE_3D.type, {}),
+};
+
 export const PongEvents = {
   UPDATE_ROUTER,
   UPDATE_TOURNAMENT_STAGE,
-  UPDATE_TOURNAMENT_PROGRESS,
   UPDATE_USER_ID,
   TOGGLE_CHAT_GLOBAL,
   TOGGLE_CHAT_USER_SELECTION,
+  START_MATCH,
+  END_MATCH,
+  TOGGLE_3D,
 };

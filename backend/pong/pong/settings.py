@@ -105,9 +105,7 @@ INSTALLED_APPS = [
     "channels",
     "corsheaders",  # for CORS
     # apps
-    # todo: jwt完成後、simple-jwtを削除
-    "simple_jwt",
-    "tmp_jwt",
+    "jwt",
     "oauth2",
     "accounts",
     "users",
@@ -212,13 +210,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django REST framework
 # https://drf-spectacular.readthedocs.io/en/latest/readme.html
-
 REST_FRAMEWORK = {
     # view setやserializerから自動的にOpenAPI3.0スキーマを生成
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    # djangorestframework_simplejwt
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "jwt.authentication.CustomJWTAuthentication",
     ],
 }
 
@@ -231,9 +227,17 @@ SPECTACULAR_SETTINGS = {
     # drf_spectacular_sidecar
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
-    # djangorestframework_simplejwt
-    "AUTHENTICATION_WHITELIST": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication"
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+        }
+    },
+    "SECURITY": [
+        {"jwtAuth": []},
     ],
 }
 
@@ -275,7 +279,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "custom": {
-            # (例) 2025-01-22 15:06:40 - tmp_jwt.jws - DEBUG - Signature verification failed.
+            # (例) 2025-01-22 15:06:40 - jwt.jws - DEBUG - Signature verification failed.
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },

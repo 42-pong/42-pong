@@ -10,17 +10,24 @@ import { ChatMessageListItem } from "./chat/ChatMessageListItem";
 import { ChatPanel } from "./chat/ChatPanel";
 import { AddFriendButton } from "./friend/AddFriendButton";
 import { GameStartPanel } from "./game/GameStartPanel";
+import { MatchContainer } from "./match/MatchContainer";
+import { MatchRenderer } from "./match/MatchRenderer";
+import { MatchRenderer3D } from "./match/MatchRenderer3D";
 import { MainNavbar } from "./navigation/MainNavbar";
+import { MatchCard } from "./tournament/MatchCard";
+import { ParticipationProfile } from "./tournament/ParticipationProfile";
 import { PlayerProfile } from "./tournament/PlayerProfile";
+import { RoundCard } from "./tournament/RoundCard";
 import { TournamentContainer } from "./tournament/TournamentContainer";
 import { TournamentEntrance } from "./tournament/TournamentEntrance";
 import { TournamentFinished } from "./tournament/TournamentFinished";
 import { TournamentJoinButton } from "./tournament/TournamentJoinButton";
 import { TournamentLeaveButton } from "./tournament/TournamentLeaveButton";
 import { TournamentOngoing } from "./tournament/TournamentOngoing";
-import { TournamentPlayers } from "./tournament/TournamentPlayers";
+import { TournamentParticipations } from "./tournament/TournamentParticipations";
 import { TournamentProgress } from "./tournament/TournamentProgress";
-import { TournamentProgressTransitionButton } from "./tournament/TournamentProgressTransitionButton";
+import { TournamentScoreboard } from "./tournament/TournamentScoreboard";
+import { TournamentStateContainer } from "./tournament/TournamentStateContainer";
 import { TournamentWaiting } from "./tournament/TournamentWaiting";
 import { BlockUserButton } from "./user/BlockUserButton";
 import { UserListContainer } from "./user/UserListContainer";
@@ -47,12 +54,12 @@ import { UsersView } from "./views/UsersView";
 customElements.define("login-container", LoginContainer, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
-customElements.define("chat-container", ChatContainer, {});
 customElements.define(
   "chat-buddy-list-container",
   ChatBuddyListContainer,
   {},
 );
+customElements.define("chat-container", ChatContainer, {});
 customElements.define("chat-dm-container", ChatDmContainer, {});
 customElements.define("chat-global", ChatGlobal, {});
 customElements.define("chat-input-form", ChatInputForm, {});
@@ -64,8 +71,18 @@ customElements.define(
 customElements.define("chat-panel", ChatPanel, {});
 customElements.define("add-friend-button", AddFriendButton, {});
 customElements.define("game-start-panel", GameStartPanel, {});
+customElements.define("match-container", MatchContainer, {});
+customElements.define("match-renderer", MatchRenderer, {});
+customElements.define("match-renderer-3d", MatchRenderer3D, {});
 customElements.define("main-navbar", MainNavbar, {});
+customElements.define("match-card", MatchCard, {});
+customElements.define(
+  "participation-profile",
+  ParticipationProfile,
+  {},
+);
 customElements.define("player-profile", PlayerProfile, {});
+customElements.define("round-card", RoundCard, {});
 customElements.define(
   "tournament-container",
   TournamentContainer,
@@ -84,11 +101,20 @@ customElements.define(
   {},
 );
 customElements.define("tournament-ongoing", TournamentOngoing, {});
-customElements.define("tournament-players", TournamentPlayers, {});
+customElements.define(
+  "tournament-players",
+  TournamentParticipations,
+  {},
+);
 customElements.define("tournament-progress", TournamentProgress, {});
 customElements.define(
-  "tournament-progress-transition-button",
-  TournamentProgressTransitionButton,
+  "tournament-scoreboard",
+  TournamentScoreboard,
+  {},
+);
+customElements.define(
+  "tournament-state-container",
+  TournamentStateContainer,
   {},
 );
 customElements.define("tournament-waiting", TournamentWaiting, {});

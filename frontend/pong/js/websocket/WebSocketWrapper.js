@@ -1,5 +1,6 @@
 import { Endpoints } from "../constants/Endpoints";
 import { WebSocketEnums } from "../enums/WebSocketEnums";
+import { customDelay } from "../utils/customDelay";
 
 export class WebSocketWrapper {
   #socket;
@@ -81,9 +82,6 @@ export class WebSocketWrapper {
 //   ex) 100ms -> 200ms -> 400ms -> 800ms
 const isOpenWebSocket = async (socket, checkLimit = 5) => {
   const DELAY_INTERVAL_INIT = 100;
-  // TODO: utils に移動
-  const delay = (timeInMilliseconds) =>
-    new Promise((resolve) => setTimeout(resolve, timeInMilliseconds));
 
   if (!socket) return false;
 
@@ -106,7 +104,7 @@ const isOpenWebSocket = async (socket, checkLimit = 5) => {
       ++checkCount;
       if (checkCount >= checkLimit) break;
 
-      await delay(delayInterval);
+      await customDelay(delayInterval);
       delayInterval *= 2;
     }
   } catch (error) {}

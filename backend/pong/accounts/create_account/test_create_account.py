@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Final
 from unittest import mock
 
 from django.contrib.auth.models import User
@@ -8,6 +9,8 @@ from rest_framework import serializers
 
 from ..player import models
 from . import create_account
+
+MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -48,7 +51,13 @@ class CreateAccountTests(TestCase):
     # -------------------------------------------------------------------------
     # 正常ケース
     # -------------------------------------------------------------------------
-    def test_create_account_with_valid_user_serializer(self) -> None:
+    @mock.patch(
+        "accounts.player.identicon.generate_identicon",
+        return_value=MOCK_AVATAR_NAME,
+    )
+    def test_create_account_with_valid_user_serializer(
+        self, mock_identicon: mock.MagicMock
+    ) -> None:
         """
         Userをmodelに設定した有効なUserSerializerを使ってアカウント作成できるかを確認する
         """

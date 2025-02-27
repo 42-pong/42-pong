@@ -14,6 +14,7 @@ from rest_framework import (
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from jwt.authentication import CustomJWTAuthentication
 from pong.custom_response import custom_response
 from users.friends import constants as friends_constants
 
@@ -27,6 +28,7 @@ class UsersRetrieveView(views.APIView):
     特定のuser_idのユーザープロフィールを取得するビュー
     """
 
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
     def handle_exception(self, exc: Exception) -> response.Response:
