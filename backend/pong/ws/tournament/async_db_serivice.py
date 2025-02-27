@@ -67,9 +67,15 @@ def create_participation(
     """
     新しいParticipationインスタンスを作成する関数。
 
-    tournament_id: トーナメントのID
-    user_id: プレイヤーのID
-    participation_name: プレイヤーの参加名
+    Args:
+        tournament_id: トーナメントのID
+        user_id: プレイヤーのID
+        participation_name: プレイヤーの参加名
+
+    Returns:
+        CreateParticipationResult:
+          - ok: Participationの作成に成功した場合
+          - error: ValidationError、DatabaseError、またはDoesNotExistError
     """
     try:
         # user_idからplayer_idを取得
@@ -180,6 +186,10 @@ def update_tournament_status(
     """
     tournamentテーブルの状態を更新するための関数。
 
+    Args:
+        id (int): トーナメントのID
+        new_status(str): 更新したいトーナメントの状態
+
     Returns:
         UpdateTournamentResult: 作成されたtournamentのシリアライズ後のデータのResult
           - ok: Tournamentのstatus更新に成功した場合
@@ -224,6 +234,11 @@ def update_participation_ranking(
 ) -> UpdateParticipationResult:
     """
     大会終了時にtournament_participationsテーブルのランキングを更新
+
+    Args:
+        tournament_id (int): トーナメントのID
+        user_id (int): ユーザーのID
+        ranking (int): 更新したいユーザーのトーナメント順位
 
     Returns:
         UpdateTournamentResult: 作成されたtournamentのシリアライズ後のデータのResult
