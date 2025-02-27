@@ -100,8 +100,6 @@ INSTALLED_APPS = [
     "channels",
     "corsheaders",  # for CORS
     # apps
-    # todo: jwt完成後、simple-jwtを削除
-    "simple_jwt",
     "jwt",
     "oauth2",
     "accounts",
