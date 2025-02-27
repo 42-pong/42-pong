@@ -37,6 +37,8 @@ export class RemoveFriendButton extends StyledButton {
         reload,
       } = this._getState();
       if (isBlocked) return;
+
+      this.setTextContent("...");
       deleteFriends(id).then(({ error }) => {
         if (error) return;
         reload();
