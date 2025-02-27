@@ -47,7 +47,7 @@ import { LoginView } from "./views/LoginView";
 import { MainView } from "./views/MainView";
 import { MyPageView } from "./views/MyPageView";
 import { NotFoundView } from "./views/NotFoundView";
-import { SignUpView } from "./views/SignupView";
+import { SignUpView } from "./views/SignUpView";
 import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 

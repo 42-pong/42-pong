@@ -1,6 +1,6 @@
 import { LoginView } from "../components/views/LoginView";
 import { MainView } from "../components/views/MainView";
-import { SignUpView } from "../components/views/SignupView";
+import { SignUpView } from "../components/views/SignUpView";
 import { TournamentsView } from "../components/views/TournamentsView";
 import { Paths } from "../constants/Paths";
 import { Route } from "../core/Route";
