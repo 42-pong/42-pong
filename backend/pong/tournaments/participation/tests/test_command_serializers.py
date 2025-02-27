@@ -1,3 +1,5 @@
+from unittest import mock
+
 import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -19,10 +21,19 @@ class ParticipationCommandSerializerTestCase(TestCase):
             email="testuser_1@example.com",
             password="testpassword",
         )
-        self.player = player_models.Player.objects.create(
-            user=self.user, display_name="Test Player"
-        )
+        self.player = self._create_player(self.user, "Test Player")
         self.tournament = tournament_models.Tournament.objects.create()
+
+    @mock.patch(
+        "accounts.player.identicon.generate_identicon",
+        return_value="avatars/sample.png",
+    )
+    def _create_player(
+        self, user: User, display_name: str, mock_identicon: mock.MagicMock
+    ) -> player_models.Player:
+        return player_models.Player.objects.create(
+            user=user, display_name=display_name
+        )
 
     def test_successful_creation(self) -> None:
         """正常にデータが作成できる場合"""
@@ -83,9 +94,7 @@ class ParticipationCommandSerializerTestCase(TestCase):
                 email=f"already_existtuser_{i}@example.com",
                 password="testpassword",
             )
-            player = player_models.Player.objects.create(
-                user=user, display_name="Test_Player"
-            )
+            player = self._create_player(user, "Test_Player")
 
             participation_models.Participation.objects.create(
                 tournament_id=self.tournament.id,

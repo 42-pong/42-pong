@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Final
 
 from pong.custom_response import custom_response
 
@@ -19,6 +20,9 @@ class PlayerFields:
     AVATAR: str = "avatar"
     CREATED_AT: str = "created_at"
     UPDATED_AT: str = "updated_at"
+
+
+MAX_AVATAR_FILE_NAME_LENGTH: Final[int] = 50
 
 
 @dataclasses.dataclass(frozen=True)

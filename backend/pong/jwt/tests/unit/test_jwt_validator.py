@@ -3,7 +3,7 @@ from datetime import datetime
 import parameterized  # type: ignore[import-untyped]
 from django.test import TestCase
 
-from tmp_jwt import jwt_validator
+from jwt import jwt_validator
 
 
 class JsonWebTokenValidatorFunctionTestCase(TestCase):

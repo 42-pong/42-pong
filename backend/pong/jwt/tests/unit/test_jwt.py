@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import parameterized  # type: ignore[import-untyped]
 from django.test import TestCase
 
-from tmp_jwt import jws, jwt
+from jwt import jws, jwt
 
 
 class JsonWebTokenFunctionTestCase(TestCase):
