@@ -4,14 +4,17 @@ from channels.db import database_sync_to_async  # type: ignore
 from django.contrib.auth.models import User
 
 from accounts.player.models import Player
-from matches.constants import MatchFields
+from matches.constants import MatchFields, ParticipationFields
 from matches.match.models import Match
+from matches.participation.models import Participation
 from tournaments.constants import RoundFields, TournamentFields
 from tournaments.round.models import Round
 from tournaments.tournament.models import Tournament
 from ws.match.async_db_service import (
     create_match,
+    create_participation,
     update_match_status,
+    update_participation_is_win,
 )
 
 
@@ -110,3 +113,64 @@ async def test_update_match_status(
     assert result_value[MatchFields.STATUS] == status
     await database_sync_to_async(match.refresh_from_db)()
     assert match.status == status
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_create_participation(
+    tournament_and_round: tuple[Tournament, Round],
+    user_and_player: tuple[User, Player],
+) -> None:
+    tournament, round_instance = tournament_and_round
+    user, player = user_and_player
+
+    # 試合を作成
+    match = await database_sync_to_async(Match.objects.create)(
+        round_id=round_instance.id
+    )
+
+    # create_participationを呼び出し、参加者を追加
+    team = ParticipationFields.TeamEnum.ONE.value
+    is_win = True
+    result = await create_participation(match.id, user.id, team, is_win)
+
+    # 結果の検証
+    assert result.is_ok
+    result_value = result.unwrap()
+    assert result_value[ParticipationFields.ID] is not None
+    participation = await database_sync_to_async(Participation.objects.get)(
+        id=result_value[ParticipationFields.ID]
+    )
+    assert participation.team == team
+    assert participation.is_win == is_win
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.asyncio
+async def test_update_participation_is_win(
+    tournament_and_round: tuple[Tournament, Round],
+    user_and_player: tuple[User, Player],
+) -> None:
+    tournament, round_instance = tournament_and_round
+    user, player = user_and_player
+
+    # 試合を作成
+    match = await database_sync_to_async(Match.objects.create)(
+        round_id=round_instance.id
+    )
+
+    # 参加者を作成
+    team = ParticipationFields.TeamEnum.ONE.value
+    participation = await database_sync_to_async(Participation.objects.create)(
+        match_id=match.id, player=player, team=team, is_win=False
+    )
+
+    # update_participation_is_winを呼び出し、勝利ステータスを更新
+    result = await update_participation_is_win(match.id, user.id)
+
+    # 結果の検証
+    assert result.is_ok
+    result_value = result.unwrap()
+    assert result_value[ParticipationFields.IS_WIN] is True
+    await database_sync_to_async(participation.refresh_from_db)()
+    assert participation.is_win is True
