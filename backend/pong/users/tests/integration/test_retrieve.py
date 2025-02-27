@@ -20,6 +20,8 @@ DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
 IS_BLOCKED: Final[str] = constants.UsersFields.IS_BLOCKED
+MATCH_WINS: Final[str] = constants.UsersFields.MATCH_WINS
+MATCH_LOSSES: Final[str] = constants.UsersFields.MATCH_LOSSES
 
 DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
@@ -70,18 +72,18 @@ class UsersRetrieveViewTests(test.APITestCase):
         )
 
         # user1がtokenを取得してログイン
-        # todo: 自作jwtができたらnamespaceを変更
-        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_url: str = reverse("jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {
-                USERNAME: self.user_data1[USERNAME],
+                EMAIL: self.user_data1[EMAIL],
                 PASSWORD: self.user_data1[PASSWORD],
             },
             format="json",
         )
         self.client.credentials(
-            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+            HTTP_AUTHORIZATION="Bearer "
+            + token_response.data["data"]["access"]
         )
 
     def _create_url(self, user_id: int) -> str:
@@ -117,7 +119,8 @@ class UsersRetrieveViewTests(test.APITestCase):
                     AVATAR: user.player.avatar.url,
                     IS_FRIEND: False,
                     IS_BLOCKED: False,
-                    # todo: is_online,win_match,lose_match追加
+                    MATCH_WINS: 0,
+                    MATCH_LOSSES: 0,
                 },
             )
 

@@ -1,31 +1,69 @@
-import { getUser } from "../../api/users/getUser";
+import { getParticipations } from "../../api/participations/getParticipations";
+import { BootstrapBadge } from "../../bootstrap/components/badge";
+import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { BootstrapText } from "../../bootstrap/utilities/text";
 import { Component } from "../../core/Component";
-import { createNameplate } from "../../utils/elements/div/createNameplate";
+import { MatchEnums } from "../../enums/MatchEnums";
+import { createElement } from "../../utils/elements/createElement";
+import { createStartFlexBox } from "../../utils/elements/div/createFlexBox";
+import { ParticipationProfile } from "./ParticipationProfile";
 
 export class PlayerProfile extends Component {
-  constructor(state) {
-    super({ participation: null, user: null, ...state });
-  }
-
-  _setStyle() {
-    BootstrapText.setTextCenter(this);
-  }
+  static #DEFAULT_HEIGHT = "max(15px, 3vh)";
 
   _onConnect() {
-    const { participation } = this._getState();
-    if (!participation) return;
+    const { player } = this._getState();
+    if (!player) return;
+    const { tournamentId, userId } = player;
 
-    const { displayName, userId } = participation;
-
-    getUser(userId).then(({ user, error }) => {
-      if (error) return;
-      this._updateState({ user: { ...user, displayName } });
-    });
+    getParticipations(tournamentId, userId).then(
+      ({ participations, error }) => {
+        if (error) return;
+        const participation =
+          participations.find(
+            (participation) => participation.userId === userId,
+          ) ?? null;
+        if (!participation) return;
+        this._updateState({ participation });
+      },
+    );
   }
 
   _render() {
-    const { user } = this._getState();
-    this.append(createNameplate(user, "max(20px, 5vh)"));
+    const { player, participation, height, matchResult } =
+      this._getState();
+
+    const score = createScore(player ? player.score : 0, matchResult);
+
+    const participationProfile = new ParticipationProfile({
+      participation,
+      height: height ?? PlayerProfile.#DEFAULT_HEIGHT,
+    });
+    BootstrapSpacing.setMarginLeft(participationProfile, 4);
+
+    const container = createStartFlexBox(score, participationProfile);
+    this.append(container);
   }
 }
+
+const createScore = (scoreNum, matchResult) => {
+  const score = createElement("div", { textContent: `${scoreNum}` });
+
+  BootstrapText.setFontSize(score, 4);
+
+  switch (matchResult) {
+    case MatchEnums.Result.WIN:
+      BootstrapBadge.setSuccess(score);
+      break;
+    case MatchEnums.Result.LOSE:
+      BootstrapBadge.setDanger(score);
+      break;
+    case MatchEnums.Result.PENDING:
+      BootstrapBadge.setSecondary(score);
+      break;
+    default:
+      BootstrapBadge.setSecondary(score);
+      break;
+  }
+  return score;
+};

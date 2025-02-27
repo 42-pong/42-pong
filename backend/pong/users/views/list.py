@@ -15,6 +15,7 @@ from rest_framework import (
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from jwt.authentication import CustomJWTAuthentication
 from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users.friends import constants as friends_constants
@@ -29,6 +30,7 @@ class UsersListView(views.APIView):
     ユーザープロフィールの一覧を取得するビュー
     """
 
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
     def handle_exception(self, exc: Exception) -> response.Response:
@@ -109,7 +111,8 @@ class UsersListView(views.APIView):
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample1.png",
                                         constants.UsersFields.IS_FRIEND: False,
                                         constants.UsersFields.IS_BLOCKED: False,
-                                        # todo: is_online,win_match,lose_match追加
+                                        constants.UsersFields.MATCH_WINS: 1,
+                                        constants.UsersFields.MATCH_LOSSES: 0,
                                     },
                                     {
                                         accounts_constants.UserFields.ID: 3,
@@ -118,7 +121,8 @@ class UsersListView(views.APIView):
                                         accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample2.png",
                                         constants.UsersFields.IS_FRIEND: False,
                                         constants.UsersFields.IS_BLOCKED: False,
-                                        # todo: is_online,win_match,lose_match追加
+                                        constants.UsersFields.MATCH_WINS: 1,
+                                        constants.UsersFields.MATCH_LOSSES: 0,
                                     },
                                     "...",
                                 ],
@@ -198,7 +202,8 @@ class UsersListView(views.APIView):
                 accounts_constants.PlayerFields.AVATAR,
                 constants.UsersFields.IS_FRIEND,
                 constants.UsersFields.IS_BLOCKED,
-                # todo: is_online,win_match,lose_match追加
+                constants.UsersFields.MATCH_WINS,
+                constants.UsersFields.MATCH_LOSSES,
             ),
             context={friends_constants.FriendshipFields.USER_ID: user.id},
         )

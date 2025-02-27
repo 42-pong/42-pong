@@ -13,6 +13,7 @@ from rest_framework import (
 from rest_framework.parsers import JSONParser, MultiPartParser
 
 from accounts import constants as accounts_constants
+from jwt.authentication import CustomJWTAuthentication
 from pong.custom_response import custom_response
 from users.friends import constants as friends_constants
 
@@ -26,6 +27,7 @@ class UsersMeView(views.APIView):
     自分のユーザープロフィールを取得・更新する
     """
 
+    authentication_classes = [CustomJWTAuthentication]
     # プロフィールを全て返すのでIsAuthenticatedをセットする必要がある
     permission_classes = [permissions.IsAuthenticated]
     # アバター画像用にMultiPartParserを追加
@@ -88,7 +90,8 @@ class UsersMeView(views.APIView):
                                 accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: False,
                                 constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
@@ -192,7 +195,8 @@ class UsersMeView(views.APIView):
                                 accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: False,
                                 constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),

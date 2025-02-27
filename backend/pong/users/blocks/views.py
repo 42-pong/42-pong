@@ -16,6 +16,7 @@ from rest_framework import (
 )
 
 from accounts import constants as accounts_constants
+from jwt.authentication import CustomJWTAuthentication
 from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users import constants as users_constants
@@ -65,7 +66,8 @@ logger = logging.getLogger(__name__)
                                             accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                             users_constants.UsersFields.IS_FRIEND: False,
                                             users_constants.UsersFields.IS_BLOCKED: True,
-                                            # todo: is_online,win_match,lose_match追加
+                                            users_constants.UsersFields.MATCH_WINS: 1,
+                                            users_constants.UsersFields.MATCH_LOSSES: 0,
                                         },
                                     },
                                     "...",
@@ -143,7 +145,8 @@ logger = logging.getLogger(__name__)
                                     accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                     users_constants.UsersFields.IS_FRIEND: False,
                                     users_constants.UsersFields.IS_BLOCKED: True,
-                                    # todo: is_online,win_match,lose_match追加
+                                    users_constants.UsersFields.MATCH_WINS: 1,
+                                    users_constants.UsersFields.MATCH_LOSSES: 0,
                                 },
                             },
                         },
@@ -315,6 +318,8 @@ class BlocksViewSet(viewsets.ViewSet):
     queryset = models.BlockRelationship.objects.filter(
         Q(blocked_user__player__isnull=False)
     ).select_related("user", "blocked_user")
+
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
     # URLから取得するID名

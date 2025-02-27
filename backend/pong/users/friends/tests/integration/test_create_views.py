@@ -21,6 +21,8 @@ DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
 IS_FRIEND: Final[str] = users_constants.UsersFields.IS_FRIEND
 IS_BLOCKED: Final[str] = users_constants.UsersFields.IS_BLOCKED
+MATCH_WINS: Final[str] = users_constants.UsersFields.MATCH_WINS
+MATCH_LOSSES: Final[str] = users_constants.UsersFields.MATCH_LOSSES
 
 USER_ID: Final[str] = constants.FriendshipFields.USER_ID
 FRIEND_USER_ID: Final[str] = constants.FriendshipFields.FRIEND_USER_ID
@@ -73,18 +75,18 @@ class FriendsCreateViewTests(test.APITestCase):
         )
 
         # user1がtokenを取得してログイン
-        # todo: 自作jwtができたらnamespaceを変更
-        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_url: str = reverse("jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {
-                USERNAME: self.user_data1[USERNAME],
+                EMAIL: self.user_data1[EMAIL],
                 PASSWORD: self.user_data1[PASSWORD],
             },
             format="json",
         )
         self.client.credentials(
-            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+            HTTP_AUTHORIZATION="Bearer "
+            + token_response.data["data"]["access"]
         )
 
     def test_201_valid_friendship_create(self) -> None:
@@ -110,7 +112,8 @@ class FriendsCreateViewTests(test.APITestCase):
                     AVATAR: "/media/avatars/sample.png",  # todo: デフォルト画像が変更になったら修正
                     IS_FRIEND: True,
                     IS_BLOCKED: False,
-                    # todo: is_online,win_match,lose_match追加
+                    MATCH_WINS: 0,
+                    MATCH_LOSSES: 0,
                 },
             },
         )

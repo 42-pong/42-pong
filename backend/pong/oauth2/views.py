@@ -9,8 +9,6 @@ from drf_spectacular.utils import (
     OpenApiResponse,
     extend_schema,
 )
-
-# todo: IsAuthenticatedが追加されたらAllowAnyは不要?
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -28,6 +26,7 @@ class OAuth2BaseView(APIView):
     OAuth2関連の共通の変数を定義する基底クラス
     """
 
+    authentication_classes = []
     permission_classes = (AllowAny,)
 
     @property

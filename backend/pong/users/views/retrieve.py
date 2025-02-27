@@ -14,6 +14,7 @@ from rest_framework import (
 
 from accounts import constants as accounts_constants
 from accounts.player import models as player_models
+from jwt.authentication import CustomJWTAuthentication
 from pong.custom_response import custom_response
 from users.friends import constants as friends_constants
 
@@ -27,6 +28,7 @@ class UsersRetrieveView(views.APIView):
     特定のuser_idのユーザープロフィールを取得するビュー
     """
 
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
     def handle_exception(self, exc: Exception) -> response.Response:
@@ -85,7 +87,8 @@ class UsersRetrieveView(views.APIView):
                                 accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                 constants.UsersFields.IS_FRIEND: True,
                                 constants.UsersFields.IS_BLOCKED: False,
-                                # todo: is_online,win_match,lose_match追加
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
@@ -185,7 +188,8 @@ class UsersRetrieveView(views.APIView):
                     accounts_constants.PlayerFields.AVATAR,
                     constants.UsersFields.IS_FRIEND,
                     constants.UsersFields.IS_BLOCKED,
-                    # todo: is_online,win_match,lose_match追加
+                    constants.UsersFields.MATCH_WINS,
+                    constants.UsersFields.MATCH_LOSSES,
                 ),
                 context={friends_constants.FriendshipFields.USER_ID: user.id},
             )

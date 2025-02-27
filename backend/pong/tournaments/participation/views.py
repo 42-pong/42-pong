@@ -10,6 +10,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import permissions, viewsets
 
+from jwt.authentication import CustomJWTAuthentication
 from pong import readonly_custom_renderer
 from pong.custom_response import custom_response
 
@@ -162,6 +163,7 @@ from . import models, serializers
     ),
 )
 class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.ParticipationQuerySerializer
     renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]

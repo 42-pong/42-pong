@@ -16,6 +16,7 @@ from rest_framework import (
 )
 
 from accounts import constants as accounts_constants
+from jwt.authentication import CustomJWTAuthentication
 from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 from users import constants as users_constants
@@ -63,7 +64,8 @@ logger = logging.getLogger(__name__)
                                             accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                             users_constants.UsersFields.IS_FRIEND: True,
                                             users_constants.UsersFields.IS_BLOCKED: False,
-                                            # todo: is_online,win_match,lose_match追加
+                                            users_constants.UsersFields.MATCH_WINS: 1,
+                                            users_constants.UsersFields.MATCH_LOSSES: 0,
                                         },
                                     },
                                     "...",
@@ -139,7 +141,8 @@ logger = logging.getLogger(__name__)
                                     accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
                                     users_constants.UsersFields.IS_FRIEND: True,
                                     users_constants.UsersFields.IS_BLOCKED: False,
-                                    # todo: is_online,win_match,lose_match追加
+                                    users_constants.UsersFields.MATCH_WINS: 1,
+                                    users_constants.UsersFields.MATCH_LOSSES: 0,
                                 },
                             },
                         },
@@ -311,6 +314,8 @@ class FriendsViewSet(viewsets.ModelViewSet):
     queryset = models.Friendship.objects.filter(
         Q(friend__player__isnull=False)
     ).select_related("user", "friend")
+
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
 
     # URLから取得するID名
