@@ -95,13 +95,13 @@ def create_participation(
 
 @database_sync_to_async
 def create_tournament_with_participation(
-    player_id: int, participation_name: str
+    user_id: int, participation_name: str
 ) -> CreateTournamentResult:
     """
     トーナメントと参加情報を一つのトランザクションで作成する関数。
 
     Args:
-        player_id (int): 参加プレイヤーの ID
+        user_id (int): 参加プレイヤーの UserID
         participation_name (str): トーナメント内での表示名
 
     Returns:
@@ -118,21 +118,16 @@ def create_tournament_with_participation(
             tournament_serializer.is_valid(raise_exception=True)
             tournament: dict = tournament_serializer.save()
 
-            # 2. 参加情報を作成
-            participation_data = {
-                constants.ParticipationFields.TOURNAMENT_ID: tournament[
-                    constants.TournamentFields.ID
-                ],
-                constants.ParticipationFields.PLAYER_ID: player_id,
-                constants.ParticipationFields.PARTICIPATION_NAME: participation_name,
-            }
-            participation_serializer = (
-                participation_serializers.ParticipationCommandSerializer(
-                    data=participation_data
-                )
+            # 2. 参加情報を作成（create_participation関数を呼び出す）
+            participation_result = create_participation(
+                tournament_id=tournament[constants.TournamentFields.ID],
+                user_id=user_id,
+                participation_name=participation_name,
             )
-            participation_serializer.is_valid(raise_exception=True)
-            participation_serializer.save()
+            if participation_result.is_error():
+                return CreateTournamentResult.error(
+                    participation_result.error()
+                )
 
     except drf_serializers.ValidationError as e:
         logger.error(f"VaridationError: {e}")
