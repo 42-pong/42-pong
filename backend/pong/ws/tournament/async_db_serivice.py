@@ -14,6 +14,7 @@ from tournaments.tournament import serializers as tournament_serializers
 
 logger = logging.getLogger(__name__)
 CreateTournamentResult = utils.result.Result[dict, dict]
+DeleteParticipationResult = utils.result.Result[dict, dict]
 UpdateTournamentResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]
 
@@ -197,3 +198,48 @@ def update_participation_ranking(
         )
 
     return UpdateParticipationResult.ok(serializer.data)
+
+
+@database_sync_to_async
+def delete_participation(
+    tournament_id: int, user_id: int
+) -> DeleteParticipationResult:
+    """
+    トーナメントとプレイヤーに基づいて参加情報を削除する関数。
+
+    Args:
+        tournament_id (int): トーナメントの ID
+        user_id (int): Userの ID
+
+    Returns:
+        UpdateParticipationResult: 参加情報削除の結果
+          - ok: 参加情報の削除に成功した場合
+          - error: 指定されたトーナメントとプレイヤーの組み合わせが存在しない場合や、削除処理中のエラー
+    """
+    try:
+        with transaction.atomic():
+            # 参加情報を取得して削除
+            participation = participation_models.Participation.objects.get(
+                tournament_id=tournament_id, player__user_id=user_id
+            )
+            participation.delete()
+
+    except participation_models.Participation.DoesNotExist as e:
+        logger.error(f"Participation.DoesNotExist: {e}")
+        return UpdateParticipationResult.error(
+            {
+                "DoesNotExist": f"Participation for user {user_id} in tournament {tournament_id} does not exist."
+            }
+        )
+
+    except DatabaseError as e:
+        logger.error(f"DatabaseError: {e}")
+        return UpdateParticipationResult.error(
+            {
+                "DatabaseError": f"Failed to delete participation. Details: {str(e)}."
+            }
+        )
+
+    return UpdateParticipationResult.ok(
+        {"message": "Participation deleted successfully."}
+    )
