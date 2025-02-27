@@ -11,6 +11,10 @@ const Tournament = {
     ASSIGNED: "ASSIGNED",
     RELOAD: "RELOAD",
   },
+  ReloadEvent: {
+    PLAYER_CHANGE: "PLAYER_CHANGE",
+    TOURNAMENT_STATE_CHANGE: "TOURNAMENT_STATE_CHANGE",
+  },
 };
 
 const Chat = {

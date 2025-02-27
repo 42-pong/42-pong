@@ -22,12 +22,6 @@ const UPDATE_TOURNAMENT_STAGE = {
     }),
 };
 
-const UPDATE_TOURNAMENT_PROGRESS = {
-  type: "update-tournament-progress",
-  create: (progress) =>
-    createPongEvent(UPDATE_TOURNAMENT_PROGRESS.type, { progress }),
-};
-
 const UPDATE_USER_ID = {
   type: "update-user-id",
   create: (userId) =>
@@ -47,7 +41,6 @@ const TOGGLE_CHAT_USER_SELECTION = {
 export const PongEvents = {
   UPDATE_ROUTER,
   UPDATE_TOURNAMENT_STAGE,
-  UPDATE_TOURNAMENT_PROGRESS,
   UPDATE_USER_ID,
   TOGGLE_CHAT_GLOBAL,
   TOGGLE_CHAT_USER_SELECTION,

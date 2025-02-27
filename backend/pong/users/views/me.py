@@ -1,5 +1,6 @@
 import logging
 
+import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from drf_spectacular import utils
 from rest_framework import (
@@ -26,6 +27,10 @@ class UsersMeView(views.APIView):
     自分のユーザープロフィールを取得・更新する
     """
 
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     # プロフィールを全て返すのでIsAuthenticatedをセットする必要がある
     permission_classes = [permissions.IsAuthenticated]
     # アバター画像用にMultiPartParserを追加

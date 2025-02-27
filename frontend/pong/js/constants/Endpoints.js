@@ -11,7 +11,8 @@ export const Endpoints = Object.freeze({
   WEBSOCKET: new URL("/ws/", WEBSOCKET_BASE_URL),
   USERS: {
     default: new URL("/api/users/", BASE_URL),
-    withId: (userId) => new URL(`${userId}`, Endpoints.USERS.default),
+    withId: (userId) =>
+      new URL(`${userId}/`, Endpoints.USERS.default),
     me: () => new URL("me/", Endpoints.USERS.default),
     defaultAvatar: new URL(DEFAULT_AVATAR_IMAGE_PATH, BASE_URL),
   },
@@ -22,4 +23,9 @@ export const Endpoints = Object.freeze({
     "/api/tournaments/participations/",
     BASE_URL,
   ),
+  TOURNAMENTS: {
+    default: new URL("/api/tournaments/", BASE_URL),
+    withId: (tournamentId) =>
+      new URL(`${tournamentId}/`, Endpoints.TOURNAMENTS.default),
+  },
 });

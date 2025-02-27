@@ -7,15 +7,40 @@ import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { TournamentConstants } from "../../constants/TournamentConstants";
 import { Component } from "../../core/Component";
+import { WebSocketEnums } from "../../enums/WebSocketEnums";
+import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
 import { sliceWithDefaults } from "../../utils/sliceWithDefaults";
-import { PlayerProfile } from "./PlayerProfile";
+import { isPlayerReload } from "../../utils/tournament/isPlayerReload";
+import { ParticipationProfile } from "./ParticipationProfile";
 
-export class TournamentPlayers extends Component {
+export class TournamentParticipations extends Component {
+  #reloadPlayers;
+
   static #COLS_PER_ROW = 2;
 
   constructor(state = {}) {
     super({ tournamentId: null, participations: [], ...state });
+
+    this.#reloadPlayers = (payload) => {
+      const {
+        type,
+        data: { event },
+      } = payload;
+      if (!isPlayerReload(type, event)) return;
+
+      this.#reload();
+    };
+  }
+
+  #reload() {
+    const { tournamentId } = this._getState();
+    getParticipations(tournamentId).then(
+      ({ participations, error }) => {
+        if (error) return;
+        this._updateState({ participations });
+      },
+    );
   }
 
   _setStyle() {
@@ -29,24 +54,30 @@ export class TournamentPlayers extends Component {
   }
 
   _onConnect() {
-    const { tournamentId } = this._getState();
-    getParticipations(tournamentId).then(
-      ({ participations, error }) => {
-        if (error) return;
-        this._updateState({ participations });
-      },
+    this.#reload();
+
+    UserSessionManager.getInstance().webSocket.attachHandler(
+      WebSocketEnums.Category.TOURNAMENT,
+      this.#reloadPlayers,
+    );
+  }
+
+  _onDisconnect() {
+    UserSessionManager.getInstance().webSocket.detachHandler(
+      WebSocketEnums.Category.TOURNAMENT,
+      this.#reloadPlayers,
     );
   }
 
   _render() {
     const { participations } = this._getState();
     const createComponent = (item) =>
-      new PlayerProfile({ participation: item });
+      new ParticipationProfile({ participation: item });
     this.append(
       createGridLayout(
         participations,
         TournamentConstants.PLAYER_NUM,
-        TournamentPlayers.#COLS_PER_ROW,
+        TournamentParticipations.#COLS_PER_ROW,
         createComponent,
       ),
     );
