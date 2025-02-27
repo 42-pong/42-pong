@@ -1,5 +1,5 @@
 import { Component } from "../../core/Component";
-import { createDefaultListItem } from "../../utils/elements/li/createDefaultListItem";
+import { createDefaultListItem } from "../../utils/elements/li/createListItem";
 import { createDefaultUnorderedList } from "../../utils/elements/ul/createDefaultUnorderedList";
 
 export class ListContainer extends Component {
@@ -8,7 +8,14 @@ export class ListContainer extends Component {
   #appendNewItem;
 
   constructor(state = {}) {
-    super({ ListItem: null, items: [], subject: null, ...state });
+    super({
+      ListItem: null,
+      items: [],
+      subject: null,
+      createListItem: createDefaultListItem,
+      isInitiallyScrolled: false,
+      ...state,
+    });
     const { ListItem, subject } = this._getState();
 
     this.#list = null;
@@ -29,15 +36,17 @@ export class ListContainer extends Component {
   }
 
   _render() {
-    const { ListItem, items } = this._getState();
+    const { ListItem, items, createListItem, isInitiallyScrolled } =
+      this._getState();
     if (!ListItem) return;
 
     const listItemElements = items.map((item) =>
-      createDefaultListItem([new ListItem({ item })]),
+      createListItem([new ListItem({ item })]),
     );
 
     this.#list = createDefaultUnorderedList(listItemElements);
     this.append(this.#list);
+    if (isInitiallyScrolled) scrollAll(this.#list);
   }
 }
 
