@@ -25,7 +25,7 @@ export class BlockListItem extends Component {
           reload: this.#reload.bind(this),
         }),
         8,
-        4,
+        2,
       ),
     );
   }
