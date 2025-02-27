@@ -35,7 +35,8 @@ def get_player_id_by_user_id(user_id: int) -> Optional[int]:
     try:
         player = player_models.Player.objects.get(user_id=user_id)
         return player.id
-    except player_models.Player.DoesNotExist:
+    except player_models.Player.DoesNotExist as e:
+        logger.error(f"DoesNotExist: {e}")
         return None
 
 
