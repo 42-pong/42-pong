@@ -38,6 +38,15 @@ const getSampleFriends = () =>
       }),
     );
 
+const getSampleBlocks = () =>
+  sampleUsers
+    .filter((user) => user.is_blocked)
+    .map((userData) =>
+      Object.freeze({
+        blocked_user: userData,
+      }),
+    );
+
 const sampleParticipations = [
   {
     id: 1,
@@ -556,6 +565,7 @@ export {
   sampleUsers,
   sampleMyInfo,
   getSampleFriends,
+  getSampleBlocks,
   sampleParticipations,
   sampleTournaments,
 };
