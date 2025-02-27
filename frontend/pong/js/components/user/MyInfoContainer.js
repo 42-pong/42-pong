@@ -1,7 +1,6 @@
-import { getMyInfo } from "../../api/users/getMyInfo";
-import { getUser } from "../../api/users/getUser";
-import { BootstrapBadge } from "../../bootstrap/components/badge";
+import { patchMyInfo } from "../../api/users/patchMyInfo";
 import { BootstrapButtons } from "../../bootstrap/components/buttons";
+import { BootstrapBorders } from "../../bootstrap/utilities/borders";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
@@ -9,53 +8,54 @@ import { Component } from "../../core/Component";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { createButton } from "../../utils/elements/button/createButton";
 import { createElement } from "../../utils/elements/createElement";
-import { createStartFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createThreeColumnLayout } from "../../utils/elements/div/createThreeColumnLayout";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { createDefaultUnorderedList } from "../../utils/elements/ul/createDefaultUnorderedList";
 
 export class MyInfoContainer extends Component {
-  #input;
-  #button;
-  #form;
+  #displayInput;
+
+  _onConnect() {
+    this.#displayInput = createElement("input", {}, { type: "text" });
+
+    this._attachEventListener("click", async (event) => {
+      event.preventDefault();
+      const {
+        target: { name },
+      } = event;
+      if (name !== "displayName") return;
+      const { error } = await patchMyInfo({
+        displayName: this.#displayInput.value,
+      });
+      if (error) {
+        BootstrapBorders.setDanger(this.#displayInput);
+        return;
+      }
+      BootstrapBorders.unsetDanger(this.#displayInput);
+      await UserSessionManager.getInstance().verifyAuth();
+      this._updateState();
+    });
+  }
 
   _render() {
-    UserSessionManager.getInstance()
-      .verifyAuth()
-      .then((isVerified) => {
-        if (!isVerified) {
-          this.append("...");
-          return;
-        }
-      });
-
-    const reload = () => this._updateState();
-
     const { displayName, email, avatar, username } =
       UserSessionManager.getInstance().myInfo.observe(
         (myInfo) => myInfo,
       );
-    const displayNameInput = createInputField(
-      "表示名",
-      displayName,
-      reload,
-      true,
-      BootstrapButtons.setPrimary,
+    this.#displayInput.value = displayName;
+    const displayNameInput = createDisplayInputField(
+      this.#displayInput,
     );
 
     const usernameInput = createInputField(
-      "username",
+      "ユーザー名",
       username,
-      reload,
-      false,
       BootstrapButtons.setOutlinePrimary,
     );
 
     const emailInput = createInputField(
-      "email",
+      "メール",
       email,
-      reload,
-      false,
       BootstrapButtons.setOutlinePrimary,
     );
 
@@ -73,13 +73,7 @@ export class MyInfoContainer extends Component {
   }
 }
 
-const createInputField = (
-  labelName,
-  placeholder,
-  onSubmit,
-  isEditable,
-  setButtonStyle,
-) => {
+const createInputField = (labelName, placeholder, setButtonStyle) => {
   const label = createTextElement(labelName, 6);
   const input = createElement(
     "input",
@@ -88,15 +82,29 @@ const createInputField = (
   );
   const button = createButton(
     { textContent: "保存" },
-    { type: "submit", disabled: "" },
+    { disabled: "" },
   );
   setButtonStyle(button);
   BootstrapButtons.setSmall(button);
 
-  if (isEditable) {
-    input.removeAttribute("disabled");
-    button.removeAttribute("disabled");
-  }
-
   return createThreeColumnLayout(label, input, button, 4, 4, 1);
+};
+
+const createDisplayInputField = (displayInput) => {
+  const label = createTextElement("表示名", 6);
+  const button = createButton(
+    { textContent: "保存" },
+    { type: "submit", name: "displayName" },
+  );
+  BootstrapButtons.setPrimary(button);
+  BootstrapButtons.setSmall(button);
+
+  return createThreeColumnLayout(
+    label,
+    displayInput,
+    button,
+    4,
+    4,
+    1,
+  );
 };

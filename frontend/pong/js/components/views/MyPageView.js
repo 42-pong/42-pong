@@ -14,12 +14,6 @@ export class MyPageView extends AuthView {
   }
 
   _render() {
-    const { isError } = this._getState();
-    if (isError) {
-      this.append(new ErrorContainer({ message: "一覧情報の取得" }));
-      return;
-    }
-
     const splitLayout = createVerticalSplitLayout(
       this.#myInfo,
       this.#blockListContainer,
