@@ -4,8 +4,7 @@ from django.urls import path
 
 from .views import refresh, token
 
-app_name: Final[str] = "tmp_jwt"
-# todo: tmp_jwt完成後、simple-jwtを削除
+app_name: Final[str] = "jwt"
 urlpatterns = [
     # 'api/token/'
     path("", token.TokenObtainView.as_view(), name="token_obtain_pair"),

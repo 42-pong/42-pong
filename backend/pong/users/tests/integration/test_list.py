@@ -78,18 +78,18 @@ class UsersListViewTests(test.APITestCase):
         )
 
         # user1がtokenを取得してログイン
-        # todo: 自作jwtができたらnamespaceを変更
-        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_url: str = reverse("jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {
-                USERNAME: self.user_data1[USERNAME],
+                EMAIL: self.user_data1[EMAIL],
                 PASSWORD: self.user_data1[PASSWORD],
             },
             format="json",
         )
         self.client.credentials(
-            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+            HTTP_AUTHORIZATION="Bearer "
+            + token_response.data["data"]["access"]
         )
 
     def test_create_user(self) -> None:
@@ -164,4 +164,4 @@ class UsersListViewTests(test.APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
         # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
-        self.assertEqual(response.data["detail"].code, "authentication_failed")
+        self.assertEqual(response.data["detail"].code, "not_exists")

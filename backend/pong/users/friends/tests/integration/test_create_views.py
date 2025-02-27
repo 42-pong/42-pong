@@ -75,18 +75,18 @@ class FriendsCreateViewTests(test.APITestCase):
         )
 
         # user1がtokenを取得してログイン
-        # todo: 自作jwtができたらnamespaceを変更
-        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_url: str = reverse("jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {
-                USERNAME: self.user_data1[USERNAME],
+                EMAIL: self.user_data1[EMAIL],
                 PASSWORD: self.user_data1[PASSWORD],
             },
             format="json",
         )
         self.client.credentials(
-            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+            HTTP_AUTHORIZATION="Bearer "
+            + token_response.data["data"]["access"]
         )
 
     def test_201_valid_friendship_create(self) -> None:

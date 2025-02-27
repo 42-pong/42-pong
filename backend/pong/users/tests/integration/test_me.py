@@ -56,18 +56,19 @@ class UsersMeViewTests(test.APITestCase):
         )
 
         # tokenを取得
-        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_url: str = reverse("jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {
-                USERNAME: self.user_data[USERNAME],
+                EMAIL: self.user_data[EMAIL],
                 PASSWORD: self.user_data[PASSWORD],
             },
             format="json",
         )
         # access_tokenを使用して認証
         self.client.credentials(
-            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+            HTTP_AUTHORIZATION="Bearer "
+            + token_response.data["data"]["access"]
         )
 
         self.url: str = reverse("users:me")

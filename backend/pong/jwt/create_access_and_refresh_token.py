@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from tmp_jwt import jwt
+from jwt import jwt
 
 logger = logging.getLogger(__name__)
 
