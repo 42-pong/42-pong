@@ -97,14 +97,55 @@ class PongLogic:
         """
         ボールの移動関数
         """
-        pass
+        x, y = self.ball_pos.x, self.ball_pos.y
+        x += self.ball_speed.x
+        y += self.ball_speed.y
+
+        if y <= 0 or y >= self.HEIGHT - self.BALL_SIZE:
+            self.ball_speed.y = -self.ball_speed.y
+
+        self.ball_pos = PosStruct(x, y)
 
     async def check_collisions(self) -> None:
         """
         ボールとパドルの接触判定
         接触していれば、ボールの進行方向を返る。
         """
-        pass
+        # ボールの四隅の座標
+        ball_left = self.ball_pos.x
+        ball_right = self.ball_pos.x + self.BALL_SIZE
+        ball_top = self.ball_pos.y
+        ball_bottom = self.ball_pos.y + self.BALL_SIZE
+
+        # パドル1（左側プレイヤー）との衝突判定
+        paddle1_posleft = self.paddle1_pos.x
+        paddle1_posright = self.paddle1_pos.x + self.PADDLE_WIDTH
+        paddle1_postop = self.paddle1_pos.y
+        paddle1_posbottom = self.paddle1_pos.y + self.PADDLE_HEIGHT
+
+        if (
+            paddle1_posleft
+            <= ball_right
+            <= paddle1_posright  # ボールの右側がパドルの左端に接触
+            and paddle1_postop <= ball_bottom
+            and ball_top <= paddle1_posbottom
+        ):  # ボールの上下がパドルの範囲内
+            self.ball_speed.x = -self.ball_speed.x
+
+        # パドル2（右側プレイヤー）との衝突判定
+        paddle2_posleft = self.paddle2_pos.x
+        paddle2_posright = self.paddle2_pos.x + self.PADDLE_WIDTH
+        paddle2_postop = self.paddle2_pos.y
+        paddle2_posbottom = self.paddle2_pos.y + self.PADDLE_HEIGHT
+
+        if (
+            paddle2_posleft
+            <= ball_left
+            <= paddle2_posright  # ボールの左側がパドルの右端に接触
+            and paddle2_postop <= ball_bottom
+            and ball_top <= paddle2_posbottom
+        ):  # ボールの上下がパドルの範囲内
+            self.ball_speed.x = -self.ball_speed.x
 
     async def check_score(self) -> Optional[str]:
         """
@@ -114,7 +155,16 @@ class PongLogic:
         Return:
             Optional[str]: "1" | "2" | None 得点したチーム名
         """
-        pass
+        x, _ = self.ball_pos.x, self.ball_pos.y
+        if x + self.BALL_SIZE <= 0:
+            self.score2 += 1
+            await self.reset_ball()
+            return constants.Team.TWO.value
+        elif x >= self.WIDTH:
+            self.score1 += 1
+            await self.reset_ball()
+            return constants.Team.ONE.value
+        return None
 
     async def move_paddle_up(self, team: str) -> None:
         """
@@ -132,7 +182,10 @@ class PongLogic:
         """
         ボールを開始位置に動かす関数
         """
-        pass
+        self.ball_pos = PosStruct(self.WIDTH // 2, self.HEIGHT // 2)
+        # TODO: ボールの動き出す方向変えてもいいかも
+        self.ball_speed.x = self.BALL_SPEED
+        self.ball_speed.y = self.BALL_SPEED
 
     async def game_end(self) -> bool:
         """
