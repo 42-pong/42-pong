@@ -1,6 +1,7 @@
 import { LoginContainer } from "./auth/LoginContainer";
 import { SignInButton } from "./auth/SignInButton";
 import { SignOutButton } from "./auth/SignOutButton";
+import { BlockUserButton } from "./block/BlockUserButton";
 import { ChatBuddyListContainer } from "./chat/ChatBuddyListContainer";
 import { ChatContainer } from "./chat/ChatContainer";
 import { ChatDmContainer } from "./chat/ChatDmContainer";
@@ -30,7 +31,6 @@ import { TournamentProgress } from "./tournament/TournamentProgress";
 import { TournamentScoreboard } from "./tournament/TournamentScoreboard";
 import { TournamentStateContainer } from "./tournament/TournamentStateContainer";
 import { TournamentWaiting } from "./tournament/TournamentWaiting";
-import { BlockUserButton } from "./user/BlockUserButton";
 import { UserListContainer } from "./user/UserListContainer";
 import { UserListItem } from "./user/UserListItem";
 import { UserProfile } from "./user/UserProfile";
@@ -55,6 +55,7 @@ import { UsersView } from "./views/UsersView";
 customElements.define("login-container", LoginContainer, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
+customElements.define("block-user-button", BlockUserButton, {});
 customElements.define(
   "chat-buddy-list-container",
   ChatBuddyListContainer,
@@ -120,7 +121,6 @@ customElements.define(
   {},
 );
 customElements.define("tournament-waiting", TournamentWaiting, {});
-customElements.define("block-user-button", BlockUserButton, {});
 customElements.define("user-list-container", UserListContainer, {});
 customElements.define("user-list-item", UserListItem, {});
 customElements.define("user-profile", UserProfile, {});

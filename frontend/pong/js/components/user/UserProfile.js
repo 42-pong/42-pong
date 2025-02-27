@@ -10,9 +10,9 @@ import { createElement } from "../../utils/elements/createElement";
 import { createDefaultCard } from "../../utils/elements/div/createDefaultCard";
 import { createNameplate } from "../../utils/elements/div/createNameplate";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { BlockUserButton } from "../block/BlockUserButton";
 import { AddFriendButton } from "../friend/AddFriendButton";
 import { RemoveFriendButton } from "../friend/RemoveFriendButton";
-import { BlockUserButton } from "./BlockUserButton";
 
 export class UserProfile extends Component {
   #reload;
@@ -69,8 +69,7 @@ const createProfileMenu = (user, reload) => {
   const friendButton = new FriendButton({ user, reload });
   styleProfileButton(friendButton);
 
-  const blockUserButton = new BlockUserButton();
-  blockUserButton.setDanger();
+  const blockUserButton = new BlockUserButton({ user, reload });
   styleProfileButton(blockUserButton);
 
   const buttonPanel = createElement("div");
