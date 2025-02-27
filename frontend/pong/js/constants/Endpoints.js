@@ -23,6 +23,11 @@ export const Endpoints = Object.freeze({
     withId: (friendId) =>
       new URL(`${friendId}/`, Endpoints.FRIENDS.default),
   },
+  BLOCKS: {
+    default: new URL("/api/users/me/blocks/", BASE_URL),
+    withId: (blockedUserId) =>
+      new URL(`${blockedUserId}/`, Endpoints.BLOCKS.default),
+  },
   PARTICIPATIONS: new URL(
     "/api/tournaments/participations/",
     BASE_URL,
