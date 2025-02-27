@@ -9,12 +9,14 @@ from accounts.player import models as player_models
 from matches import constants
 from matches.match import models as match_models
 from matches.participation import models as participation_models
+from matches.score import models as score_models
 
 logger = logging.getLogger(__name__)
 CreateMatchResult = utils.result.Result[dict, dict]
 UpdateMatchResult = utils.result.Result[dict, dict]
 CreateParticipationResult = utils.result.Result[dict, dict]
 CreateScoreResult = utils.result.Result[dict, dict]
+UpdateParticipationResult = utils.result.Result[dict, dict]
 
 
 @database_sync_to_async
@@ -106,5 +108,28 @@ def update_participation_is_win(
         {
             "id": participation.id,
             "is_win": participation.is_win,
+        }
+    )
+
+
+@database_sync_to_async
+def create_score(
+    participation_id: int, pos_x: int, pos_y: int
+) -> CreateScoreResult:
+    """
+    スコアを作成する。
+    """
+    try:
+        score = score_models.Score.objects.create(
+            match_participation_id=participation_id, pos_x=pos_x, pos_y=pos_y
+        )
+    except DatabaseError as e:
+        logger.error(f"DatabaseError: {e}")
+        return CreateScoreResult.error({"DatabaseError": str(e)})
+    return CreateScoreResult.ok(
+        {
+            constants.ScoreFields.ID: score.id,
+            constants.ScoreFields.POS_X: score.pos_x,
+            constants.ScoreFields.POS_Y: score.pos_y,
         }
     )
