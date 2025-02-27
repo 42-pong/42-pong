@@ -13,8 +13,7 @@ export class StyledButton extends Component {
   }
 
   _render() {
-    Object.assign(this._button, this._getState());
-    this.appendChild(this._button);
+    this.append(this._button);
   }
 
   setTextContent(textContent) {
