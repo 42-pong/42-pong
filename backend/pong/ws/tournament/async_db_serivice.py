@@ -60,9 +60,9 @@ def create_participation(
 
         # 参加情報を作成
         data = {
-            "tournament": tournament_id,
-            "player": player_id,
-            "participation_name": participation_name,
+            constants.ParticipationFields.TOURNAMENT_ID: tournament_id,
+            constants.ParticipationFields.PLAYER_ID: player_id,
+            constants.ParticipationFields.PARTICIPATION_NAME: participation_name,
         }
 
         # シリアライザに渡すデータをバリデーション
