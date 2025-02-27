@@ -1,7 +1,10 @@
 import logging
 from typing import Optional
 
-from channels.db import database_sync_to_async  # type: ignore
+from channels.db import (  # type: ignore
+    database_async_to_sync,
+    database_sync_to_async,
+)
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import DatabaseError, transaction
 from rest_framework import serializers as drf_serializers
@@ -41,7 +44,6 @@ def handle_does_not_exist_error(
     return {"DoesNotExistError": custom_message}
 
 
-@database_sync_to_async
 def get_player_id_by_user_id(user_id: int) -> Optional[int]:
     """
     user_idからplayer_idを取得する関数
@@ -138,7 +140,9 @@ def create_tournament_with_participation(
             tournament: dict = tournament_serializer.save()
 
             # 2. 参加情報を作成（create_participation関数を呼び出す）
-            participation_result = create_participation(
+            participation_result = database_async_to_sync(
+                create_participation
+            )(
                 tournament_id=tournament[constants.TournamentFields.ID],
                 user_id=user_id,
                 participation_name=participation_name,
@@ -276,7 +280,7 @@ def update_participation_ranking(
     except participation_models.Participation.DoesNotExist as e:
         return UpdateParticipationResult.error(
             handle_does_not_exist_error(
-                e, "Participatin object does not exists."
+                e, "Participation object does not exists."
             )
         )
 
@@ -310,7 +314,7 @@ def delete_participation(
     except participation_models.Participation.DoesNotExist as e:
         return DeleteParticipationResult.error(
             handle_does_not_exist_error(
-                e, "Participatin object does not exists."
+                e, "Participation object does not exists."
             )
         )
 
