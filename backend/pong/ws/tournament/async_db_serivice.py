@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 
 from channels.db import database_sync_to_async  # type: ignore
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import DatabaseError, transaction
 from rest_framework import serializers as drf_serializers
 
@@ -19,6 +20,25 @@ CreateTournamentResult = utils.result.Result[dict, dict]
 DeleteParticipationResult = utils.result.Result[dict, dict]
 UpdateTournamentResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]
+
+
+def handle_validation_error(e: drf_serializers.ValidationError) -> dict:
+    logger.error(f"ValidationError: {e}")
+    if isinstance(e.detail, list):
+        return {"ValidationError": e.detail}
+    return e.detail
+
+
+def handle_database_error(e: DatabaseError, custom_message: str) -> dict:
+    logger.error(f"DatabaseError: {e}")
+    return {"DatabaseError": custom_message}
+
+
+def handle_does_not_exist_error(
+    e: ObjectDoesNotExist, custom_message: str
+) -> dict:
+    logger.error(f"DoesNotExistError: {e}")
+    return {"DoesNotExistError": custom_message}
 
 
 @database_sync_to_async
@@ -76,19 +96,11 @@ def create_participation(
         participation_serializer.save()
 
     except drf_serializers.ValidationError as e:
-        logger.error(f"ValidationError: {e}")
-        if isinstance(e.detail, list):
-            return CreateParticipationResult.error(
-                {"ValidationError": e.detail}
-            )
-        return CreateParticipationResult.error(e.detail)
+        return CreateParticipationResult.error(handle_validation_error(e))
 
     except DatabaseError as e:
-        logger.error(f"DatabaseError: {e}")
         return CreateParticipationResult.error(
-            {
-                "DatabaseError": f"Failed to create participation. Details: {str(e)}."
-            }
+            handle_database_error(e, "Failed to create participation.")
         )
 
     return CreateParticipationResult.ok(participation_serializer.data)
@@ -131,15 +143,11 @@ def create_tournament_with_participation(
                 )
 
     except drf_serializers.ValidationError as e:
-        logger.error(f"VaridationError: {e}")
-        if isinstance(e.detail, list):
-            return CreateTournamentResult.error({"ValidationError": e.detail})
-        return CreateTournamentResult.error(e.detail)
+        return CreateTournamentResult.error(handle_validation_error(e))
 
     except DatabaseError as e:
-        logger.error(f"DatabaseError: {e}")
         return CreateTournamentResult.error(
-            {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
+            handle_database_error(e, "Failed to create participation.")
         )
 
     # 使う想定なのはidだけだが、一応dictごとと返す
@@ -193,23 +201,18 @@ def update_tournament_status(
             serializer.save()
 
     except drf_serializers.ValidationError as e:
-        logger.error(f"VaridationError: {e}")
-        if isinstance(e.detail, list):
-            return UpdateTournamentResult.error({"ValidationError": e.detail})
-        return UpdateTournamentResult.error(e.detail)
+        return UpdateTournamentResult.error(handle_validation_error(e))
 
     except tournament_models.Tournament.DoesNotExist as e:
-        logger.error(f"DoesNotExist: {e}")
         return UpdateTournamentResult.error(
-            {
-                "DoesNotExist": f"Tournament object does not exists. Details: {str(e)}."
-            }
+            handle_does_not_exist_error(
+                e, "Tournament object does not exists."
+            )
         )
 
     except DatabaseError as e:
-        logger.error(f"DatabaseError: {e}")
         return UpdateTournamentResult.error(
-            {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
+            handle_database_error(e, "Failed to update tournament.")
         )
 
     return UpdateTournamentResult.ok(serializer.data)
@@ -248,23 +251,18 @@ def update_participation_ranking(
             serializer.save()
 
     except drf_serializers.ValidationError as e:
-        logger.error(f"VaridationError: {e}")
-        if isinstance(e.detail, list):
-            return UpdateParticipationResult.error(
-                {"ValidationError": e.detail}
-            )
-        return UpdateParticipationResult.error(e.detail)
+        return UpdateParticipationResult.error(handle_validation_error(e))
 
     except DatabaseError as e:
-        logger.error(f"DatabaseError: {e}")
         return UpdateParticipationResult.error(
-            {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
+            handle_database_error(e, "Failed to update participation.")
         )
 
     except participation_models.Participation.DoesNotExist as e:
-        logger.error(f"DatabaseError: {e}")
         return UpdateParticipationResult.error(
-            {"DatabaseError": f"Failed to create account. Details: {str(e)}."}
+            handle_does_not_exist_error(
+                e, "Participatin object does not exists."
+            )
         )
 
     return UpdateParticipationResult.ok(serializer.data)
@@ -295,21 +293,17 @@ def delete_participation(
             participation.delete()
 
     except participation_models.Participation.DoesNotExist as e:
-        logger.error(f"Participation.DoesNotExist: {e}")
-        return UpdateParticipationResult.error(
-            {
-                "DoesNotExist": f"Participation for user {user_id} in tournament {tournament_id} does not exist."
-            }
+        return DeleteParticipationResult.error(
+            handle_does_not_exist_error(
+                e, "Participatin object does not exists."
+            )
         )
 
     except DatabaseError as e:
-        logger.error(f"DatabaseError: {e}")
-        return UpdateParticipationResult.error(
-            {
-                "DatabaseError": f"Failed to delete participation. Details: {str(e)}."
-            }
+        return DeleteParticipationResult.error(
+            handle_database_error(e, "Failed to delete participation.")
         )
 
-    return UpdateParticipationResult.ok(
+    return DeleteParticipationResult.ok(
         {"message": "Participation deleted successfully."}
     )
