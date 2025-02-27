@@ -37,7 +37,7 @@ export class BlockUserButton extends StyledButton {
         reload,
       } = this._getState();
       if (isBlocked) return;
-      postBlocks(id).then(({ user, error }) => {
+      postBlocks(id).then(({ error }) => {
         if (error) return;
         reload();
       });

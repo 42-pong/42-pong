@@ -37,7 +37,7 @@ export class AddFriendButton extends StyledButton {
         reload,
       } = this._getState();
       if (isBlocked) return;
-      postFriends(id).then(({ user, error }) => {
+      postFriends(id).then(({ error }) => {
         if (error) return;
         reload();
       });

@@ -19,7 +19,7 @@ export class UserProfile extends Component {
 
   constructor(state) {
     super({ user: null, ...state });
-    this.#reload = (newState = {}) => {
+    this.#reload = () => {
       const { user } = this._getState();
       if (!user) return;
 
@@ -61,7 +61,7 @@ export class UserProfile extends Component {
 }
 
 const createProfileMenu = (user, reload) => {
-  const { isFriend, isBlocked } = user;
+  const { isFriend } = user;
 
   const FriendButton = isFriend
     ? RemoveFriendButton
