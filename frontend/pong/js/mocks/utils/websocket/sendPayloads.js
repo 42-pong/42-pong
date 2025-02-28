@@ -18,4 +18,7 @@ const sendTournament = (client, type, data) =>
 const sendChat = (client, type, data) =>
   send(client, WebSocketEnums.Category.CHAT, { type, data });
 
-export { sendMatch, sendTournament, sendChat };
+const sendLogin = (client, payload) =>
+  send(client, WebSocketEnums.Category.LOGIN, payload);
+
+export { sendMatch, sendTournament, sendChat, sendLogin };
