@@ -225,6 +225,12 @@ class MatchManager:
         """
         試合の終了処理を行う関数
         """
+        # 参加プレーヤーが退出したら、send_taskが終了していないかのうせいがあるので、終了させる。
+        if self.send_task:
+            self.send_task.cancel()
+
+        # TODO: MatchのステータスをCOMPLETEDに更新
+
         # ゲーム終了後、Consumerに終了通知
         win_team = self.pong_logic.get_winner()
         message = self._build_message(
@@ -243,6 +249,14 @@ class MatchManager:
         残っているプレーヤーを勝者にし、メッセージを送信。
         レコードの更新を行う。
         """
+        # 参加プレーヤーが退出したら、バックグラウンドタスクが終了していない可能性があるので、終了させる。
+        if self.wait_message:
+            self.wait_message.cancel()
+        if self.send_task:
+            self.send_task.cancel()
+
+        # TODO: 勝ったプレーヤーのレコードを更新。
+        # TODO: MatchのステータスをCANCELEDに更新
         message = self._build_message(
             match_constants.Stage.END.value,
             {
