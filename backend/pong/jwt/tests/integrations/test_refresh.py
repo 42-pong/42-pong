@@ -47,3 +47,13 @@ class RefreshTokenViewTestCase(APITestCase):
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["code"][0], "invalid")
+
+    def test_api_refresh_token_access_token_type(self) -> None:
+        """
+        アクセストークンを渡した場合、401のステータスコードと'invalid' のエラーコードが返されることを確認
+        """
+        access_token: str = create_token(self.user.id, "access")
+        data = {"refresh": access_token}
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["code"][0], "invalid")

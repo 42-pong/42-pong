@@ -124,6 +124,14 @@ class TokenRefreshView(views.APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+        token_type = refresh_payload.get("typ")
+        if token_type != "refresh":
+            logger.error(f"Invalid token type: {token_type}")
+            return custom_response.CustomResponse(
+                code=["invalid"],
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
         access_token: str = create_token_functions.create_token(
             user_id, "access"
         )
