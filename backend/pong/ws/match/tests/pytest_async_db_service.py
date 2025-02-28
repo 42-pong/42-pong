@@ -7,7 +7,6 @@ from accounts.player.models import Player
 from matches.constants import MatchFields, ParticipationFields, ScoreFields
 from matches.match.models import Match
 from matches.participation.models import Participation
-from matches.score.models import Score
 from tournaments.constants import RoundFields, TournamentFields
 from tournaments.round.models import Round
 from tournaments.tournament.models import Tournament
@@ -202,14 +201,12 @@ async def test_create_score(
     # create_scoreを呼び出し、スコアを作成
     pos_x = 0
     pos_y = 120
-    result = await create_score(participation.id, pos_x, pos_y)
+    result = await create_score(match.id, user.id, pos_x, pos_y)
 
     # 結果の検証
     assert result.is_ok
     result_value = result.unwrap()
     assert result_value[ScoreFields.ID] is not None
-    score = await database_sync_to_async(Score.objects.get)(
-        id=result_value[ScoreFields.ID]
-    )
-    assert score.pos_x == pos_x
-    assert score.pos_y == pos_y
+    assert result_value[ScoreFields.MATCH_PARTICIPATION_ID] == participation.id
+    assert result_value[ScoreFields.POS_X] == 0
+    assert result_value[ScoreFields.POS_Y] == 120
