@@ -12,15 +12,17 @@ from accounts.player import models as player_models
 from tournaments import constants
 from tournaments.participation import models as participation_models
 from tournaments.participation import serializers as participation_serializers
+from tournaments.round import models as round_models
 from tournaments.tournament import models as tournament_models
 from tournaments.tournament import serializers as tournament_serializers
 
 logger = logging.getLogger(__name__)
 CreateParticipationResult = utils.result.Result[dict, dict]
+CreateRoundResult = utils.result.Result[dict, dict]
 CreateTournamentResult = utils.result.Result[dict, dict]
 DeleteParticipationResult = utils.result.Result[dict, dict]
-UpdateTournamentResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]
+UpdateTournamentResult = utils.result.Result[dict, dict]
 
 
 def _handle_validation_error(e: drf_serializers.ValidationError) -> dict:
@@ -322,3 +324,39 @@ def delete_participation(
     return DeleteParticipationResult.ok(
         {"message": "Participation deleted successfully."}
     )
+
+
+@database_sync_to_async
+def create_round(tournament_id: int, round_number: int) -> CreateRoundResult:
+    """
+    新しいRoundインスタンスを作成する非同期関数。
+
+    Args:
+        tournament_id: トーナメントのID
+        round_number: トーナメント内でのラウンド番号
+
+    Returns:
+        UpdateRoundResult: Round作成結果。成功時は作成したRoundのデータ、失敗時はエラーメッセージ。
+    """
+    try:
+        # ラウンドを作成
+        round_instance = round_models.Round.objects.create(
+            tournament_id=tournament_id,
+            round_number=round_number,
+        )
+
+        # 成功時は作成したラウンドのデータを返す
+        round_data = {
+            constants.RoundFields.ID: round_instance.id,
+            constants.RoundFields.TOURNAMENT_ID: round_instance.tournament.id,
+            constants.RoundFields.ROUND_NUMBER: round_instance.round_number,
+            constants.RoundFields.STATUS: round_instance.status,
+        }
+        return CreateRoundResult.ok(round_data)
+
+    except tournament_models.Tournament.DoesNotExist:
+        return CreateRoundResult.error({"error": "Tournament not found."})
+    except DatabaseError as e:
+        return CreateRoundResult.error(
+            {"error": f"Failed to create round: {str(e)}"}
+        )
