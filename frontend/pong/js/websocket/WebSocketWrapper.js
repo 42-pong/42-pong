@@ -5,8 +5,20 @@ import { customDelay } from "../utils/customDelay";
 export class WebSocketWrapper {
   #socket;
   #handlers;
+  #onOpen;
+  #onClose;
+  #onError;
+  #onMessage;
 
-  constructor() {
+  constructor({ onClose, onError }) {
+    this.#onOpen = () => {};
+    this.#onClose = onClose;
+    this.#onError = onError;
+    this.#onMessage = (event) => {
+      const { category, payload } = JSON.parse(event.data);
+      for (const handler of this.#handlers[category])
+        handler(payload);
+    };
     this.init(null);
   }
 
@@ -28,36 +40,26 @@ export class WebSocketWrapper {
 
   async connect() {
     const socket = new WebSocket(Endpoints.WEBSOCKET);
-    socket.addEventListener("open", this.onOpen.bind(this));
-    socket.addEventListener("close", this.onClose.bind(this));
-    socket.addEventListener("error", this.onError.bind(this));
-    socket.addEventListener("message", this.onMessage.bind(this));
+    socket.addEventListener("open", this.#onOpen);
+    socket.addEventListener("close", this.#onClose);
+    socket.addEventListener("error", this.#onError);
+    socket.addEventListener("message", this.#onMessage);
 
     const isConnected = await isOpenWebSocket(socket);
     if (isConnected) this.init(socket);
     return isConnected;
   }
 
-  // TODO: クローズコードと理由を指定できる形にする
   close() {
     if (this.#socket === null) return;
+
+    this.#socket.removeEventListener("open", this.#onOpen);
+    this.#socket.removeEventListener("close", this.#onClose);
+    this.#socket.removeEventListener("error", this.#onError);
+    this.#socket.removeEventListener("message", this.#onMessage);
+
     this.#socket.close();
     this.init(null);
-  }
-
-  onOpen(event) {}
-
-  onClose(event) {
-    this.init(null);
-  }
-
-  onError(event) {
-    this.close();
-  }
-
-  onMessage(event) {
-    const { category, payload } = JSON.parse(event.data);
-    for (const handler of this.#handlers[category]) handler(payload);
   }
 
   attachHandler(category, handler) {

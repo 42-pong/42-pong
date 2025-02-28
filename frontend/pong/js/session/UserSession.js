@@ -17,7 +17,11 @@ export class UserSession {
   constructor() {
     this.#apps = {};
     this.#myInfo = new DataSubject();
-    this.#webSocket = new WebSocketWrapper();
+    const signOut = this.signOut.bind(this);
+    this.#webSocket = new WebSocketWrapper({
+      onClose: signOut,
+      onError: signOut,
+    });
   }
 
   redirect(path = Paths.HOME) {
