@@ -133,6 +133,7 @@ class MatchManager:
             match_constants.Stage.READY.value,
             {},
         )
+        # TODO: もしかしたら2人目が送ってきたタイミングで同時にREADY送らないとかも？
         await self.channel_handler.send_to_consumer(
             message, player.channel_name
         )
@@ -187,9 +188,7 @@ class MatchManager:
                         "score2": self.pong_logic.score2,
                     },
                 )
-                await self.channel_handler.send_to_group(
-                    self.group_name, game_state
-                )
+                await self._send_message(game_state)
 
                 # スコアの変動を確認
                 if (
@@ -241,7 +240,7 @@ class MatchManager:
                 "score2": self.pong_logic.score2,
             },
         )
-        await self.channel_handler.send_to_group(self.group_name, message)
+        await self._send_message(message)
 
     async def player_exited(self, exited_team: str) -> None:
         """
@@ -267,7 +266,7 @@ class MatchManager:
                 "score2": self.pong_logic.score2,
             },
         )
-        await self.channel_handler.send_to_group(self.group_name, message)
+        await self._send_message(message)
 
     def _build_message(self, stage: str, data: dict) -> dict:
         """
@@ -283,3 +282,15 @@ class MatchManager:
                 ws_constants.DATA_KEY: data,
             },
         }
+
+    async def _send_message(self, message: dict) -> None:
+        """
+        ローカル対戦であれば、Consumerへ送信
+        リモート対戦であれば、グループへ送信
+        """
+        if self.mode == match_constants.Mode.LOCAL.value:
+            await self.channel_handler.send_to_consumer(
+                message, self.player1.channel_name
+            )
+        else:
+            await self.channel_handler.send_to_group(self.group_name, message)
