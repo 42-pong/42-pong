@@ -141,7 +141,16 @@ class MatchManager:
         """
         PongLogicの実行を開始し、ゲーム情報を送り続ける関数をバックグラウンドで実行する。
         """
-        pass
+        # TODO: MatchのステータスをON_GOINGに更新
+
+        # PongLogicの実行を開始
+        self.send_task = asyncio.create_task(self._send_match_state())
+
+        # send_taskが終わるまで待機
+        await self.send_task
+
+        # ゲームが終了したら、Consumerに終了通知を送る
+        await self._end_game()
 
     async def _send_match_state(self) -> None:
         """
