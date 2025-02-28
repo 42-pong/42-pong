@@ -130,7 +130,19 @@ class OAuth2CallbackView(OAuth2BaseView):
                     ),
                 ],
             ),
-            # todo:
+            500: OpenApiResponse(
+                description="予期せぬエラーが発生した場合（例えば、テーブル作成に失敗したなど）",
+                examples=[
+                    OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            "status": "error",
+                            "code": "internal_error",
+                            "errors": {"detail": "Internal server error"},
+                        },
+                    ),
+                ],
+            ),
         }
     )
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
@@ -190,17 +202,20 @@ class OAuth2CallbackView(OAuth2BaseView):
             )
         # =============================================================
 
-        # todo: OAuth2の登録（リファクタリング）
+        # ====== todo: OAuth2の登録（リファクタリング）======
+        # 成功: oauth2_userを返す
+        # 失敗: 例外, InternalServerError
         oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
             create_oauth2_account.create_oauth2_user(
-                user_info.get("email"), user_info.get("login")
+                user_info["email"], user_info["login"]
             )
         )
         # todo: internal_errorのエラーハンドリングを追加する
         if not oauth2_user_result.is_ok:
-            return Response(
-                {"error": oauth2_user_result.unwrap_error()},
-                status=status.HTTP_400_BAD_REQUEST,
+            return custom_response.CustomResponse(
+                code=["internal_error"],
+                errors={"detail": oauth2_user_result.unwrap_error()},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         oauth2_user: dict = oauth2_user_result.unwrap()
         forty_two_token_data = {
@@ -220,10 +235,13 @@ class OAuth2CallbackView(OAuth2BaseView):
         # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
         if not oauth2_result.is_ok:
             models.User.objects.get(id=oauth2_user["id"]).delete()
-            return Response(
-                {"error": oauth2_result.unwrap_error()},
-                status=status.HTTP_400_BAD_REQUEST,
+            return custom_response.CustomResponse(
+                code=["internal_error"],
+                errors={"detail": oauth2_user_result.unwrap_error()},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+        # ==================================================================
+
         factory = APIRequestFactory()
         request = factory.post(
             reverse("jwt:token_obtain_pair"),
