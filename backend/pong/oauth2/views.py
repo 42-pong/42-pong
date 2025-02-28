@@ -1,4 +1,5 @@
 # views.py
+import logging
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
@@ -13,12 +14,17 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 
+from jwt.views import token
 from pong import settings
+from pong.custom_response import custom_response
 
 from . import create_oauth2_account, models
 from .providers import forty_two_authorization
+
+logger = logging.getLogger(__name__)
 
 
 class OAuth2BaseView(APIView):
@@ -88,17 +94,13 @@ class OAuth2CallbackView(OAuth2BaseView):
             200: OpenApiResponse(
                 examples=[
                     OpenApiExample(
-                        "Example 200 Response",
+                        "Example 200 response",
                         value={
-                            "token": {
-                                "access_token": "abc123",
-                                "token_type": "bearer",
-                                "expires_in": 3600,
-                                "refresh_token": "abc123",
-                                "scope": "public",
-                                "created_at": 1734675524,
-                                "secret_valid_until": 1736304711,
-                            }
+                            "status": "ok",
+                            "data": {
+                                "access": "eyJhbGciOiJIUzI1...",
+                                "refresh": "eyJhbGciOiJIUzI1...",
+                            },
                         },
                     )
                 ]
@@ -147,6 +149,8 @@ class OAuth2CallbackView(OAuth2BaseView):
         # - oauth2のresultによる処理をoauth2/view.py以外にかく
         # - TOKEN_ENDPOINTとmeのエンドポイントの失敗時の処理追加する
         # - 42APIのリクエスト、レスポンス例外処理
+
+        # todo: 認証拒否した場合、failを含めたカスタムレスポンスを返す
         code = request.GET.get("code")
         if not code:
             return Response(
@@ -156,6 +160,7 @@ class OAuth2CallbackView(OAuth2BaseView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # todo: tokenの取得の関数作成（リファクタリング）
         request_data: dict[str, str] = {
             "code": code,
             "grant_type": "authorization_code",
@@ -168,17 +173,20 @@ class OAuth2CallbackView(OAuth2BaseView):
             data=request_data,
         )
         tokens = token_response.json()
+
         user_response = requests.get(
             "https://api.intra.42.fr/v2/me",
             headers={"Authorization": f"Bearer {tokens.get('access_token')}"},
         )
         user_info = user_response.json()
 
+        # todo: OAuth2の登録（リファクタリング）
         oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
             create_oauth2_account.create_oauth2_user(
                 user_info.get("email"), user_info.get("login")
             )
         )
+        # todo: internal_errorのエラーハンドリングを追加する
         if not oauth2_user_result.is_ok:
             return Response(
                 {"error": oauth2_user_result.unwrap_error()},
@@ -206,27 +214,28 @@ class OAuth2CallbackView(OAuth2BaseView):
                 {"error": oauth2_result.unwrap_error()},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        oauth2: dict = oauth2_result.unwrap()
-        # todo: oauth2_userをJWTに変換して返す
-        return Response(
+        factory = APIRequestFactory()
+        request = factory.post(
+            reverse("jwt:token_obtain_pair"),
             {
-                "user": {
-                    "id": oauth2_user["id"],
-                    "username": oauth2_user["username"],
-                    "email": oauth2_user["email"],
-                },
-                "oauth2": {
-                    "id": oauth2["id"],
-                    "user_id": oauth2["user_id"],
-                    "provider": oauth2["provider"],
-                    "provider_id": oauth2["provider_id"],
-                },
+                "email": oauth2_user["email"],
+                # todo: ランダムでパスワードを取得する
+                "password": "p1a2s3s4w5o6rd",
             },
-            status=status.HTTP_200_OK,
+            format="json",
         )
-
-
-# todo: 以下のエンドポイントは後で実装する
-# - oauth2/refresh
-# - oauth2/revoke
-# - oauth2/account
+        response = token.TokenObtainView.as_view()(request)
+        if response.status_code != status.HTTP_200_OK:
+            models.User.objects.get(id=oauth2_user["id"]).delete()
+            logger.error(
+                f"{response.status_code} TokenObtainFailedError: {response.data}"
+            )
+            return custom_response.CustomResponse(
+                code=response.data["code"],
+                errors=response.data["errors"],
+                status=response.status_code,
+            )
+        return custom_response.CustomResponse(
+            data=response.data,
+            status=response.status_code,
+        )
