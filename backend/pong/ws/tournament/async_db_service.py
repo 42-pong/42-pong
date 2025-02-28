@@ -23,6 +23,7 @@ CreateTournamentResult = utils.result.Result[dict, dict]
 DeleteParticipationResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]
 UpdateTournamentResult = utils.result.Result[dict, dict]
+UpdateRoundResult = utils.result.Result[dict, dict]
 
 
 def _handle_validation_error(e: drf_serializers.ValidationError) -> dict:
@@ -359,4 +360,44 @@ def create_round(tournament_id: int, round_number: int) -> CreateRoundResult:
     except DatabaseError as e:
         return CreateRoundResult.error(
             {"error": f"Failed to create round: {str(e)}"}
+        )
+
+
+@database_sync_to_async
+def update_round_status(round_id: int, status: str) -> UpdateRoundResult:
+    """
+    Roundのステータスを更新する非同期関数。
+
+    Args:
+        round_id: 更新するラウンドのID
+        status: 更新するラウンドのステータス（省略可能）
+
+    Returns:
+        UpdateRoundResult: 更新結果。成功時は更新したRoundのデータ、失敗時はエラーメッセージ。
+    """
+    try:
+        with transaction.atomic():
+            # ラウンドIDでラウンドを取得
+            round_instance = round_models.Round.objects.get(id=round_id)
+
+            # ラウンドのステータスを更新
+            round_instance.status = status
+
+            # 保存
+            round_instance.save()
+
+            # 成功時は更新したラウンドのデータを返す
+            round_data = {
+                constants.RoundFields.ID: round_instance.id,
+                constants.RoundFields.TOURNAMENT_ID: round_instance.tournament.id,
+                constants.RoundFields.ROUND_NUMBER: round_instance.round_number,
+                constants.RoundFields.STATUS: round_instance.status,
+            }
+            return UpdateRoundResult.ok(round_data)
+
+    except round_models.Round.DoesNotExist:
+        return UpdateRoundResult.error({"error": "Round not found."})
+    except DatabaseError as e:
+        return UpdateRoundResult.error(
+            {"error": f"Failed to update round: {str(e)}"}
         )
