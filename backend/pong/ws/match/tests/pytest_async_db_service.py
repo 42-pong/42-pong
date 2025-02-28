@@ -176,6 +176,7 @@ async def test_update_participation_is_win(
     assert result_value[ParticipationFields.IS_WIN] is True
     await database_sync_to_async(participation.refresh_from_db)()
     assert participation.is_win is True
+    assert participation.team is team
 
 
 @pytest.mark.django_db(transaction=True)
