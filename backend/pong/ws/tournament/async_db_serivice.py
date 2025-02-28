@@ -25,26 +25,26 @@ UpdateTournamentResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]
 
 
-def handle_validation_error(e: drf_serializers.ValidationError) -> dict:
+def _handle_validation_error(e: drf_serializers.ValidationError) -> dict:
     logger.error(f"ValidationError: {e}")
     if isinstance(e.detail, list):
         return {"ValidationError": e.detail}
     return e.detail
 
 
-def handle_database_error(e: DatabaseError, custom_message: str) -> dict:
+def _handle_database_error(e: DatabaseError, custom_message: str) -> dict:
     logger.error(f"DatabaseError: {e}")
     return {"DatabaseError": custom_message}
 
 
-def handle_does_not_exist_error(
+def _handle_does_not_exist_error(
     e: ObjectDoesNotExist, custom_message: str
 ) -> dict:
     logger.error(f"DoesNotExistError: {e}")
     return {"DoesNotExistError": custom_message}
 
 
-def get_player_id_by_user_id(user_id: int) -> Optional[int]:
+def _get_player_id_by_user_id(user_id: int) -> Optional[int]:
     """
     user_idからplayer_idを取得する関数
 
@@ -81,7 +81,7 @@ def create_participation(
     """
     try:
         # user_idからplayer_idを取得
-        player_id = get_player_id_by_user_id(user_id)
+        player_id = _get_player_id_by_user_id(user_id)
         if player_id is None:
             return CreateParticipationResult.error(
                 {"error": "Player not found for the given user_id"}
@@ -104,11 +104,11 @@ def create_participation(
         participation_serializer.save()
 
     except drf_serializers.ValidationError as e:
-        return CreateParticipationResult.error(handle_validation_error(e))
+        return CreateParticipationResult.error(_handle_validation_error(e))
 
     except DatabaseError as e:
         return CreateParticipationResult.error(
-            handle_database_error(e, "Failed to create participation.")
+            _handle_database_error(e, "Failed to create participation.")
         )
 
     return CreateParticipationResult.ok(participation_serializer.data)
@@ -153,11 +153,11 @@ def create_tournament_with_participation(
                 )
 
     except drf_serializers.ValidationError as e:
-        return CreateTournamentResult.error(handle_validation_error(e))
+        return CreateTournamentResult.error(_handle_validation_error(e))
 
     except DatabaseError as e:
         return CreateTournamentResult.error(
-            handle_database_error(e, "Failed to create participation.")
+            _handle_database_error(e, "Failed to create participation.")
         )
 
     # 使う想定なのはidだけだが、一応dictごとと返す
@@ -215,18 +215,18 @@ def update_tournament_status(
             serializer.save()
 
     except drf_serializers.ValidationError as e:
-        return UpdateTournamentResult.error(handle_validation_error(e))
+        return UpdateTournamentResult.error(_handle_validation_error(e))
 
     except tournament_models.Tournament.DoesNotExist as e:
         return UpdateTournamentResult.error(
-            handle_does_not_exist_error(
+            _handle_does_not_exist_error(
                 e, "Tournament object does not exists."
             )
         )
 
     except DatabaseError as e:
         return UpdateTournamentResult.error(
-            handle_database_error(e, "Failed to update tournament.")
+            _handle_database_error(e, "Failed to update tournament.")
         )
 
     return UpdateTournamentResult.ok(serializer.data)
@@ -270,16 +270,16 @@ def update_participation_ranking(
             serializer.save()
 
     except drf_serializers.ValidationError as e:
-        return UpdateParticipationResult.error(handle_validation_error(e))
+        return UpdateParticipationResult.error(_handle_validation_error(e))
 
     except DatabaseError as e:
         return UpdateParticipationResult.error(
-            handle_database_error(e, "Failed to update participation.")
+            _handle_database_error(e, "Failed to update participation.")
         )
 
     except participation_models.Participation.DoesNotExist as e:
         return UpdateParticipationResult.error(
-            handle_does_not_exist_error(
+            _handle_does_not_exist_error(
                 e, "Participation object does not exists."
             )
         )
@@ -313,14 +313,14 @@ def delete_participation(
 
     except participation_models.Participation.DoesNotExist as e:
         return DeleteParticipationResult.error(
-            handle_does_not_exist_error(
+            _handle_does_not_exist_error(
                 e, "Participation object does not exists."
             )
         )
 
     except DatabaseError as e:
         return DeleteParticipationResult.error(
-            handle_database_error(e, "Failed to delete participation.")
+            _handle_database_error(e, "Failed to delete participation.")
         )
 
     return DeleteParticipationResult.ok(
