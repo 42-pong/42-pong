@@ -156,7 +156,52 @@ class MatchManager:
         """
         60FPSでPongLogicの状態を更新・取得し、Consumerに送信
         """
-        pass
+        last_update = asyncio.get_event_loop().time()
+        while not self.pong_logic.game_end():
+            await asyncio.sleep(self.FPS)
+            current_time = asyncio.get_event_loop().time()
+            delta = current_time - last_update
+            if delta >= self.FPS:
+                # Pongを更新
+                score_team: Optional[
+                    str
+                ] = await self.pong_logic.update_game_state()
+
+                # consumerに送るメッセージを送信
+                game_state = self._build_message(
+                    match_constants.Stage.PLAY.value,
+                    {
+                        "paddle1_pos": {
+                            "x": self.pong_logic.paddle1_pos.x,
+                            "y": self.pong_logic.paddle1_pos.y,
+                        },
+                        "paddle2_pos": {
+                            "x": self.pong_logic.paddle2_pos.x,
+                            "y": self.pong_logic.paddle2_pos.y,
+                        },
+                        "ball": {
+                            "x": self.pong_logic.ball_pos.x,
+                            "y": self.pong_logic.ball_pos.y,
+                        },
+                        "score1": self.pong_logic.score1,
+                        "score2": self.pong_logic.score2,
+                    },
+                )
+                await self.channel_handler.send_to_group(
+                    self.group_name, game_state
+                )
+
+                # スコアの変動を確認
+                if (
+                    score_team is not None
+                    and self.mode == match_constants.Mode.REMOTE.value
+                ):
+                    # TODO: スコアテーブルをバックグラウンドで作成。
+                    pass
+
+                last_update = current_time
+            else:
+                await asyncio.sleep(self.FPS - delta)
 
     async def _paddle_up(self, team: str) -> None:
         """
