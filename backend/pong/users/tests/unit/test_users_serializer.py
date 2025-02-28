@@ -1,4 +1,5 @@
 from typing import Final
+from unittest import mock
 
 import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
@@ -27,6 +28,8 @@ MATCH_LOSSES: Final[str] = constants.UsersFields.MATCH_LOSSES
 
 USER_ID: Final[str] = friends_constants.FriendshipFields.USER_ID
 
+MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+
 
 class UsersSerializerTests(TestCase):
     def setUp(self) -> None:
@@ -35,8 +38,12 @@ class UsersSerializerTests(TestCase):
         2つのUserと、そのUserに紐づく2つのPlayerをDBに保存
         """
 
+        @mock.patch(
+            "accounts.player.identicon.generate_identicon",
+            return_value=MOCK_AVATAR_NAME,
+        )
         def _create_user_and_related_player(
-            user_data: dict, player_data: dict
+            user_data: dict, player_data: dict, mock_identicon: mock.MagicMock
         ) -> tuple[User, player_models.Player]:
             user: User = User.objects.create_user(**user_data)
             player_data[USER] = user

@@ -1,4 +1,5 @@
 from typing import Final
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -27,6 +28,8 @@ DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
 
+MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+
 
 class UsersRetrieveViewTests(test.APITestCase):
     def setUp(self) -> None:
@@ -34,8 +37,12 @@ class UsersRetrieveViewTests(test.APITestCase):
         APITestCaseのsetUpメソッドのオーバーライド
         """
 
+        @mock.patch(
+            "accounts.player.identicon.generate_identicon",
+            return_value=MOCK_AVATAR_NAME,
+        )
         def _create_user_and_related_player(
-            user_data: dict, player_data: dict
+            user_data: dict, player_data: dict, mock_identicon: mock.MagicMock
         ) -> tuple[User, player_models.Player]:
             user: User = User.objects.create_user(**user_data)
             player_data[USER] = user
@@ -72,18 +79,18 @@ class UsersRetrieveViewTests(test.APITestCase):
         )
 
         # user1がtokenを取得してログイン
-        # todo: 自作jwtができたらnamespaceを変更
-        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_url: str = reverse("jwt:token_obtain_pair")
         token_response: drf_response.Response = self.client.post(
             token_url,
             {
-                USERNAME: self.user_data1[USERNAME],
+                EMAIL: self.user_data1[EMAIL],
                 PASSWORD: self.user_data1[PASSWORD],
             },
             format="json",
         )
         self.client.credentials(
-            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+            HTTP_AUTHORIZATION="Bearer "
+            + token_response.data["data"]["access"]
         )
 
     def _create_url(self, user_id: int) -> str:

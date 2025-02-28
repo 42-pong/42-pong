@@ -1,7 +1,7 @@
 import parameterized  # type: ignore[import-untyped]
 from django.test import TestCase
 
-from tmp_jwt import jws
+from jwt import jws
 
 
 class JsonWebSignatureFunctionTestCase(TestCase):

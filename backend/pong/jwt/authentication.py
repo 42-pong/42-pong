@@ -16,7 +16,7 @@ class CustomJWTAuthentication(BaseAuthentication):
 
     def authenticate(self, request: Request) -> Optional[tuple]:
         auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
+        if auth_header is None or not auth_header.startswith("Bearer "):
             # ゲストがログインする場合もあるので、AuthenticationFailedを投げずにNoneを返す
             logger.warning(
                 "Authorization header is not included or not in Bearer format"
@@ -25,9 +25,8 @@ class CustomJWTAuthentication(BaseAuthentication):
 
         token: str = auth_header.split(" ")[1]
         jwt_handler: jwt.JWT = jwt.JWT()
-        payload: dict = {}
         try:
-            payload = jwt_handler.decode(token)
+            payload: dict = jwt_handler.decode(token)
         # todo: 例外処理の詳細を記述
         # - jwt.TokenExpiredError: トークンが有効期限切れの場合
         # - jwt.InvalidTokenError: 不正なトークンの場合
@@ -46,7 +45,7 @@ class CustomJWTAuthentication(BaseAuthentication):
             raise AuthenticationFailed(str(e), code="invalid_token")
 
         user_id = payload.get("sub")
-        if not user_id:
+        if user_id is None:
             error_message = "user_id is not included in the payload"
             logger.error(error_message)
             raise AuthenticationFailed(error_message, code="invalid_token")
@@ -61,7 +60,4 @@ class CustomJWTAuthentication(BaseAuthentication):
 
     # todo: viewsetに自作JWTクラスを設定後、401のステータスコードを確認するテストケース作成する
     def authenticate_header(self, request: Request) -> str:
-        return '{} realm="{}"'.format(
-            "Bearer",
-            self.www_authenticate_realm,
-        )
+        return f"Bearer realm={self.www_authenticate_realm}"

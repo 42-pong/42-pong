@@ -1,7 +1,7 @@
 import parameterized  # type: ignore[import-untyped]
 from django.test import TestCase
 
-from tmp_jwt import base64_url
+from jwt import base64_url
 
 
 class Base64UrlTestCase(TestCase):

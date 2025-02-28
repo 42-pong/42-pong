@@ -182,10 +182,8 @@ class UsersSerializer(serializers.Serializer):
     def _update_avatar(
         self, player: player_models.Player, new_avatar: InMemoryUploadedFile
     ) -> InMemoryUploadedFile:
-        # 更新前の画像がデフォルト画像ではない場合は削除してから新しい画像を保存する
-        # todo: デフォルト画像がなくなったら、古いアバターを必ず削除するように変更
-        if player.avatar.name != "avatars/sample.png":
-            player.avatar.delete(save=False)
+        # 更新前の画像を削除してから新しい画像を保存する
+        player.avatar.delete(save=False)
 
         # ファイル名を変更
         # mypyにnew_avatar.nameがNoneの可能性を指摘されるが、ImageFieldのvalidatorでextensionがあることは確認済みのため無視

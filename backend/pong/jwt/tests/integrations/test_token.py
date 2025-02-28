@@ -9,7 +9,7 @@ class TokenViewTestCase(APITestCase):
         self.user = User.objects.create_user(
             username="testuser", email="user@example.com", password="password"
         )
-        self.url = reverse("tmp_jwt:token_obtain_pair")
+        self.url = reverse("jwt:token_obtain_pair")
 
     def test_api_token_success(self) -> None:
         """

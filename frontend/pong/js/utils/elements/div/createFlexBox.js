@@ -16,9 +16,21 @@ const createDefaultFlexBox = (...args) => {
   return container;
 };
 
+const createAroundFlexBox = (...args) => {
+  const container = createFlexBox(...args);
+  BootstrapFlex.setJustifyContentAround(container);
+  return container;
+};
+
 const createStartFlexBox = (...args) => {
   const container = createFlexBox(...args);
   BootstrapFlex.setJustifyContentStart(container);
+  return container;
+};
+
+const createCenterFlexBox = (...args) => {
+  const container = createFlexBox(...args);
+  BootstrapFlex.setJustifyContentCenter(container);
   return container;
 };
 
@@ -27,4 +39,10 @@ const createEndFlexBox = (...args) => {
   BootstrapFlex.setJustifyContentEnd(container);
   return container;
 };
-export { createDefaultFlexBox, createStartFlexBox, createEndFlexBox };
+export {
+  createDefaultFlexBox,
+  createAroundFlexBox,
+  createStartFlexBox,
+  createCenterFlexBox,
+  createEndFlexBox,
+};

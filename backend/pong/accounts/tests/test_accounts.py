@@ -1,4 +1,5 @@
 from typing import Final
+from unittest import mock
 
 import parameterized  # type: ignore[import-untyped]
 from django.urls import reverse
@@ -22,6 +23,8 @@ CODE_ALREADY_EXISTS: Final[str] = constants.Code.ALREADY_EXISTS
 CODE_INVALID_EMAIL: Final[str] = constants.Code.INVALID_EMAIL
 CODE_INVALID_PASSWORD: Final[str] = constants.Code.INVALID_PASSWORD
 
+MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+
 
 class AccountsTests(test.APITestCase):
     def setUp(self) -> None:
@@ -34,7 +37,13 @@ class AccountsTests(test.APITestCase):
     # -------------------------------------------------------------------------
     # 正常ケース
     # -------------------------------------------------------------------------
-    def test_200_create_account_with_valid_data(self) -> None:
+    @mock.patch(
+        "accounts.player.identicon.generate_identicon",
+        return_value=MOCK_AVATAR_NAME,
+    )
+    def test_200_create_account_with_valid_data(
+        self, mock_identicon: mock.MagicMock
+    ) -> None:
         """
         有効なデータでアカウントを作成するテスト
         status 201, username, email が返されることを確認
@@ -196,7 +205,13 @@ class AccountsTests(test.APITestCase):
         self.assertIn(CODE_INVALID_EMAIL, code)
         self.assertIn(CODE_INVALID_PASSWORD, code)
 
-    def test_400_already_exists_email(self) -> None:
+    @mock.patch(
+        "accounts.player.identicon.generate_identicon",
+        return_value=MOCK_AVATAR_NAME,
+    )
+    def test_400_already_exists_email(
+        self, mock_identicon: mock.MagicMock
+    ) -> None:
         """
         既に存在するemailで再度アカウントを作成しようとするテスト
         status 400 が返されることを確認

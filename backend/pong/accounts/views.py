@@ -1,6 +1,5 @@
 import logging
 
-import rest_framework_simplejwt
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
@@ -23,10 +22,7 @@ class AccountCreateView(views.APIView):
     serializer_class: type[player_serializers.PlayerSerializer] = (
         player_serializers.PlayerSerializer
     )
-    # todo: 自作JWTの認証クラスを設定する
-    authentication_classes = [
-        rest_framework_simplejwt.authentication.JWTAuthentication
-    ]
+    authentication_classes = []
     permission_classes = (permissions.AllowAny,)
 
     def handle_exception(self, exc: Exception) -> response.Response:
