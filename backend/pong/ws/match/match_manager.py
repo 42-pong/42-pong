@@ -70,7 +70,9 @@ class MatchManager:
         - local mode: 1人
         - remote mode: 2人
         """
-        pass
+        wait_player_num = 1 if self.mode == match_constants.Mode.LOCAL else 2
+        while self.ready_players < wait_player_num:
+            await asyncio.sleep(0.1)
 
     async def handle_init_action(self, player: player_data.PlayerData) -> None:
         """
@@ -80,7 +82,41 @@ class MatchManager:
         Args:
             player_channel: プレーヤーのchannel_name
         """
-        pass
+        is_remote = (
+            True if self.mode == match_constants.Mode.REMOTE.value else False
+        )
+
+        message = self._build_message(
+            match_constants.Stage.INIT.value,
+            {
+                match_constants.Team.key(): match_constants.Team.ONE.value
+                if player.channel_name == self.player1.channel_name
+                else match_constants.Team.ONE.value
+                if is_remote
+                else None,
+                "display_name1": self.player1.participation_name
+                if is_remote
+                else None,
+                "display_name2": self.player2.participation_name
+                if is_remote
+                else None,
+                "paddle1": {
+                    "x": self.pong_logic.paddle1_pos.x,
+                    "y": self.pong_logic.paddle1_pos.y,
+                },
+                "paddle2": {
+                    "x": self.pong_logic.paddle2_pos.x,
+                    "y": self.pong_logic.paddle2_pos.y,
+                },
+                "ball": {
+                    "x": self.pong_logic.ball_pos.x,
+                    "y": self.pong_logic.ball_pos.y,
+                },
+            },
+        )
+        await self.channel_handler.send_to_consumer(
+            message, player.channel_name
+        )
 
     async def handle_ready_action(
         self, player: player_data.PlayerData
@@ -89,7 +125,17 @@ class MatchManager:
         consumerから呼び出されるready actions
         consumerから渡されたready メッセージの処理、返信を行う関数。
         """
-        pass
+        # readyメッセージを送ってきたプレーヤーのカウント
+        self.ready_players += 1
+
+        # メッセージ作成
+        message = self._build_message(
+            match_constants.Stage.READY.value,
+            {},
+        )
+        await self.channel_handler.send_to_consumer(
+            message, player.channel_name
+        )
 
     async def _start_game(self) -> None:
         """
@@ -119,13 +165,22 @@ class MatchManager:
         Args:
             team (str): "1" | "2" チーム名
         """
-        pass
 
     async def _end_game(self) -> None:
         """
         試合の終了処理を行う関数
         """
-        pass
+        # ゲーム終了後、Consumerに終了通知
+        win_team = self.pong_logic.get_winner()
+        message = self._build_message(
+            match_constants.Stage.END.value,
+            {
+                "win": win_team,
+                "score1": self.pong_logic.score1,
+                "score2": self.pong_logic.score2,
+            },
+        )
+        await self.channel_handler.send_to_group(self.group_name, message)
 
     async def player_exited(self, exited_team: str) -> None:
         """
@@ -133,7 +188,17 @@ class MatchManager:
         残っているプレーヤーを勝者にし、メッセージを送信。
         レコードの更新を行う。
         """
-        pass
+        message = self._build_message(
+            match_constants.Stage.END.value,
+            {
+                "win": match_constants.Team.ONE.value
+                if exited_team != match_constants.Team.ONE.value
+                else match_constants.Team.TWO.value,
+                "score1": self.pong_logic.score1,
+                "score2": self.pong_logic.score2,
+            },
+        )
+        await self.channel_handler.send_to_group(self.group_name, message)
 
     def _build_message(self, stage: str, data: dict) -> dict:
         """
