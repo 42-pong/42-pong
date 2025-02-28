@@ -1,105 +1,142 @@
-import { Component } from "../../core/Component";
+import { AuthConstants } from "../../constants/AuthConstants";
 import { Endpoints } from "../../constants/Endpoints";
+import { ApiMessage } from "../../constants/message/ApiMessage";
+import { Component } from "../../core/Component";
+import { MessageEnums } from "../../enums/MessageEnums";
 
 export class SignUpContainer extends Component {
-	#container;
-	#title;
-	#form;
-	#loginError;
+  #container;
+  #title;
+  #form;
+  #loginError;
+  #mailError;
+  #passwordError;
 
-	_onConnect() {
-	  //コンテナ要素を作成
-	  const container = document.createElement("div");
-	  container.className = "form-container";
+  _onConnect() {
+    //コンテナ要素を作成
+    const container = document.createElement("div");
+    container.className = "form-container";
 
-	  //タイトル要素を作成
-	  const title = document.createElement("h1");
-	  title.textContent = "Sign Up";
+    //タイトル要素を作成
+    const title = document.createElement("h1");
+    title.textContent = "Sign Up";
 
-	  //フォーム要素を作成
-	  const form = document.createElement("form");
-	  form.id = "login-form";
+    //フォーム要素を作成
+    const form = document.createElement("form");
+    form.id = "login-form";
 
-	  //エラーメッセージ要素を作成
-	  this.#loginError = document.createElement("div");
-	  this.#loginError.className = "error-message";
-	  this.#loginError.style.color = "red";
-	  this.#loginError.style.display = "none"; //初期状態では非表示
+    //エラーメッセージ要素を作成
+    this.#loginError = document.createElement("div");
+    this.#loginError.className = "error-message";
+    this.#loginError.style.color = "red";
+    this.#loginError.style.display = "none"; //初期状態では非表示
 
-	  //メール入力フィールドを作成
-	  const emailInput = document.createElement("input");
-	  emailInput.type = "text";
-	  emailInput.name = "email";
-	  emailInput.placeholder = "E-mail";
-	  emailInput.required = true;
+    //メール入力フィールドを作成
+    const emailInput = document.createElement("input");
+    emailInput.type = "text";
+    emailInput.name = "email";
+    emailInput.placeholder = "E-mail";
+    emailInput.required = true;
+    emailInput.pattern = `${AuthConstants.EMAIL_PATTERN}`;
 
-	  // パスワード入力フィールドを作成
-	  const passwordInput = document.createElement("input");
-	  passwordInput.type = "password";
-	  passwordInput.name = "password";
-	  passwordInput.placeholder = "Password";
-	  passwordInput.required = true;
+    //メールのエラー文字
+    this.#mailError = document.createElement("div");
+    this.#mailError.className = "error-message";
+    this.#mailError.style.color = "red";
+    this.#mailError.style.display = "none"; //初期状態では非表示
 
-	  // サインインアップボタンを作成
-	  const submitButton = document.createElement("button");
-	  submitButton.type = "submit";
-	  submitButton.textContent = "サインアップ";
+    // パスワード入力フィールドを作成
+    const passwordInput = document.createElement("input");
+    passwordInput.type = "password";
+    passwordInput.name = "password";
+    passwordInput.placeholder = "Password";
+    passwordInput.required = true;
 
-	  form.append(
-		this.#loginError,
-		emailInput,
-		passwordInput,
-		submitButton,
-	  );
+    //パスワードのエラー文字
+    this.#passwordError = document.createElement("div");
+    this.#passwordError.className = "error-message";
+    this.#passwordError.style.color = "red";
+    this.#passwordError.style.display = "none"; //初期状態では非表示
 
-	  this.#container = container;
-	  this.#title = title;
-	  this.#form = form;
+    // サインインアップボタンを作成
+    const submitButton = document.createElement("button");
+    submitButton.type = "submit";
+    submitButton.textContent = "サインアップ";
 
-	  // サインインアップボタン
-	  // "api/accounts/"へfetchする
-	  this.#form.addEventListener("submit", async (event) => {
-		event.preventDefault();
-		const email = this.#form.elements.email.value;
-		const password = this.#form.elements.password.value;
-		try {
-		  const response = await fetch(Endpoints.ACCOUNTS.href, {
-			method: "POST",
-			headers: {
-			  "Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-			  email: email,
-			  password: password,
-			}),
-		  });
-		  const { status, data: data} = await response.json();
+    form.append(
+      this.#loginError,
+      emailInput,
+      this.#mailError,
+      passwordInput,
+      this.#passwordError,
+      submitButton,
+    );
 
-		  if (status !== "ok") {
-			this.#form.reset();
-			this.#loginError.textContent =
-			  FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
-			this.#loginError.style.display = "block"; //エラーメッセージを表示する
-			throw new Error(response.code);
-		  }
-		  this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
+    this.#container = container;
+    this.#title = title;
+    this.#form = form;
 
+    // サインインアップボタン
+    // "api/accounts/"へfetchする
+    this.#form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const email = this.#form.elements.email.value;
+      const password = this.#form.elements.password.value;
 
-		} catch (error) {
-		  console.error("ログインエラー:", error);
-		}
-	  });
-	}
+      try {
+        const response = await fetch(Endpoints.ACCOUNTS.href, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
+        });
+        const { status, code, errors } = await response.json();
+        if (errors.email) {
+          const emailErrors = errors.email.join(";");
+          this.#mailError.textContent = `Email errors:${emailErrors}`;
+          this.#mailError.style.display = "block"; //エラーメッセージを表示する
+        }
+        if (errors.password) {
+          const passwordErrors = errors.password.join(";");
+          this.#passwordError.textContent = `Password errors:${passwordErrors}`;
+          this.#passwordError.style.display = "block"; //エラーメッセージを表示する
+        }
+        if (status !== "ok") {
+          this.#form.reset();
+          const errorMessages = code
+            .map(
+              (errorCode) =>
+                ApiMessage.Accounts[
+                  MessageEnums.AccountsCode[errorCode]
+                ],
+            )
+            .join(";");
+          this.#loginError.textContent = errorMessages;
+          this.#loginError.style.display = "block"; //エラーメッセージを表示する
+          throw new Error(errors);
+        }
+        this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
+        this.#mailError.style.display = "none";
+        this.#passwordError.style.display = "none";
+      } catch (error) {
+        console.error("ログインエラー:", error);
+      }
+    });
+  }
 
-	_render() {
-	  // コンテナにタイトルとフォームを追加
-	  this.#container.append(this.#title, this.#form);
-	  // コンテナをカスタム要素に追加
-	  this.appendChild(this.#container);
+  _render() {
+    // コンテナにタイトルとフォームを追加
+    this.#container.append(this.#title, this.#form);
+    // コンテナをカスタム要素に追加
+    this.appendChild(this.#container);
 
-	  //todo
-	  //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
-	  //cookieからJWTを取得する
-	  //this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
-	}
+    //todo
+    //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
+    //cookieからJWTを取得する
+    //this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
+  }
 }

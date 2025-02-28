@@ -59,7 +59,6 @@ customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
 customElements.define("sign-up-button", SignUpButton, {});
 customElements.define("sign-up-container", SignUpContainer, {});
-customElements.define("chat-container", ChatContainer, {});
 customElements.define(
   "chat-buddy-list-container",
   ChatBuddyListContainer,
