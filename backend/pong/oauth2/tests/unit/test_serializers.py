@@ -2,6 +2,7 @@ from typing import Final
 
 from django.test import TestCase
 
+from accounts.user import serializers as user_serializers
 from oauth2 import models, serializers
 
 REQUIRED: Final[str] = "required"
@@ -26,7 +27,7 @@ class UserSerializerTestCase(TestCase):
         初期設定
         - self.SerializerにUserSerializerのクラスを代入
         """
-        self.Serializer = serializers.UserSerializer
+        self.Serializer = user_serializers.UserSerializer
 
     # todo: パスワードに文字列を入力した場合のテストを書く?（現状だとパスワードの値は入る）
     #       その場合は関数名を変更する。
@@ -35,20 +36,23 @@ class UserSerializerTestCase(TestCase):
         正しいデータの場合、正しく機能するかを確認するテスト
         """
 
-        # passwordが空文字を想定
         user_data: dict = {
             "id": 1,
             "username": "pong",
             "email": "pong@gmail.com",
-            "password": "",
+            "password": "random_password",
         }
-        serializer: serializers.UserSerializer = self.Serializer(
+        serializer: user_serializers.UserSerializer = self.Serializer(
             data=user_data
         )
         self.assertTrue(serializer.is_valid())
         self.assertEqual(
             serializer.validated_data,
-            {"username": "pong", "email": "pong@gmail.com", "password": ""},
+            {
+                "username": "pong",
+                "email": "pong@gmail.com",
+                "password": "random_password",
+            },
         )
         self.assertEqual(
             serializer.data, {"username": "pong", "email": "pong@gmail.com"}
@@ -66,7 +70,7 @@ class UserSerializerTestCase(TestCase):
             "email",
             "password",
         ]
-        serializer: serializers.UserSerializer = self.Serializer(
+        serializer: user_serializers.UserSerializer = self.Serializer(
             data=missing_required_fields_data
         )
         self.assertFalse(serializer.is_valid())
@@ -86,7 +90,7 @@ class UserSerializerTestCase(TestCase):
             "email",
             "password",
         ]
-        serializer: serializers.UserSerializer = self.Serializer(
+        serializer: user_serializers.UserSerializer = self.Serializer(
             data=empty_data
         )
         self.assertFalse(serializer.is_valid())
@@ -97,7 +101,9 @@ class UserSerializerTestCase(TestCase):
         """
         Noneの場合、期待通りにエラーを返すかを確認するテスト
         """
-        serializer: serializers.UserSerializer = self.Serializer(data=None)
+        serializer: user_serializers.UserSerializer = self.Serializer(
+            data=None
+        )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(serializer.errors["non_field_errors"][0].code, NULL)
 
