@@ -156,7 +156,7 @@ class MatchManager:
         Args:
             team (str): "1" | "2" チーム名
         """
-        pass
+        await self.pong_logic.move_paddle_up(team)
 
     async def _paddle_down(self, team: str) -> None:
         """
@@ -165,6 +165,7 @@ class MatchManager:
         Args:
             team (str): "1" | "2" チーム名
         """
+        await self.pong_logic.move_paddle_down(team)
 
     async def _end_game(self) -> None:
         """
