@@ -18,7 +18,7 @@ class RefreshTokenViewTestCase(APITestCase):
 
     def test_api_refresh_token_success(self) -> None:
         """
-        リフレッシュトークンで同じユーザーIDのアクセストークンを取得できることを確認
+        /api/token/refreshを成功する場合、リフレッシュトークンと同じユーザーIDのアクセストークンを取得できることを確認
         """
         data = {"refresh": self.refresh_token}
         response = self.client.post(self.url, data, format="json")

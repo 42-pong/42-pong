@@ -89,7 +89,6 @@ class TokenRefreshView(views.APIView):
         """
         リフレッシュトークンを使用して新しいアクセストークンを取得するPOSTメソッド
         """
-        # todo: リフレッシュトークンを検証するシリアライズ作成
         required_keys: set = {"refresh"}
         request_keys: set = set(request.data.keys())
         if request_keys != required_keys:

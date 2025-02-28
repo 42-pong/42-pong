@@ -118,7 +118,6 @@ class TokenObtainView(views.APIView):
                     - JWTトークンの生成に失敗した場合
                     - 予期せぬエラーが発生した場合
         """
-        # todo: email, passwordをシリアライズ作成する
         required_keys: set = {"email", "password"}
         request_keys: set = set(request.data.keys())
         if request_keys != required_keys:
