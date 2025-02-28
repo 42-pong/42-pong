@@ -38,3 +38,12 @@ class RefreshTokenViewTestCase(APITestCase):
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data["code"][0], "not_exists")
+
+    def test_api_refresh_token_invalid_refresh_token(self) -> None:
+        """
+        不正なリフレッシュトークンを渡した場合、401のステータスコードと'invalid' のエラーコードが返されることを確認
+        """
+        data = {"refresh": "invalid_token"}
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["code"][0], "invalid")
