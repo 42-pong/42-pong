@@ -62,7 +62,7 @@ def create_participation(
     match_id: int, user_id: int, team: str, is_win: bool
 ) -> CreateParticipationResult:
     """
-    参加者の勝利ステータスを更新する。
+    試合の参加レコードを作成する。
     """
     try:
         user = User.objects.get(id=user_id)
