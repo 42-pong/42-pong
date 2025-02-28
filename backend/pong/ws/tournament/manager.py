@@ -1,6 +1,6 @@
 from channels.layers import get_channel_layer  # type: ignore
 
-from ..share import player_data
+from ..share import channel_handler, player_data
 
 
 class TournamentManager:
@@ -19,7 +19,9 @@ class TournamentManager:
         self.participants: list[
             player_data.PlayerData
         ] = []  # 参加者の情報のリスト
-        self.channel_layer = get_channel_layer()
+        self.channel_handler = channel_handler.ChannelHandler(
+            get_channel_layer(), None
+        )
 
     async def add_participant(
         self, participant: player_data.PlayerData
@@ -63,11 +65,5 @@ class TournamentManager:
     async def cancel_tournament(self) -> None:
         """
         トーナメント中止処理。
-        """
-        pass
-
-    async def _notify_participants(self, message: str) -> None:
-        """
-        トーナメント参加者へ通知する関数。
         """
         pass
