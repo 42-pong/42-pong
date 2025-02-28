@@ -88,7 +88,6 @@ class OAuth2AuthorizeView(OAuth2BaseView):
 
 
 class OAuth2CallbackView(OAuth2BaseView):
-    # todo callbackのエンドポイントのレスポンスが決まったら、request,responseを追加する
     @extend_schema(
         responses={
             200: OpenApiResponse(
@@ -117,20 +116,21 @@ class OAuth2CallbackView(OAuth2BaseView):
                 ],
             ),
             401: OpenApiResponse(
-                description="Error when the provided authorization grant is invalid",
+                description="ユーザーが認証を拒否した場合、また失敗した場合",
                 examples=[
                     OpenApiExample(
-                        "Example 401 Response",
+                        "Example 401 response",
                         value={
-                            "token": {
-                                "error": "invalid_grant",
-                                "error_description": "The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.",
-                            }
+                            "status": "error",
+                            "code": "fail",
+                            "errors": {
+                                "detail": "The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client."
+                            },
                         },
-                    )
+                    ),
                 ],
             ),
-            # todo: 他にもあるかも
+            # todo:
         }
     )
     def get(self, request: Request, *args: tuple, **kwargs: dict) -> Response:
@@ -139,28 +139,19 @@ class OAuth2CallbackView(OAuth2BaseView):
         この関数は認可エンドポイント(`/api/oauth2/authorize`)のレスポンスを受け取り、認可コードを取得するために使用する。
         そのため、このエンドポイントはFEから呼ばれることはありません。
         """
-        # todo リファクタリング
-        # - get関数の指定方法
-        # - response の形式を定義する
-        # - dataの渡し方（dictで渡すか、パラメータごとで渡すか）
-        # - 分けれるところは関数で定義
 
-        # todo: 実装
-        # - oauth2のresultによる処理をoauth2/view.py以外にかく
-        # - TOKEN_ENDPOINTとmeのエンドポイントの失敗時の処理追加する
-        # - 42APIのリクエスト、レスポンス例外処理
-
-        # todo: 認証拒否した場合、failを含めたカスタムレスポンスを返す
         code = request.GET.get("code")
-        if not code:
-            return Response(
-                {
-                    "error": "Authorization code is None. Please check your authentication process."
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+        if code is None:
+            error_message = "Authorization code is None. Please check your authentication process."
+            logger.error(f"401 AuthenticationFailedError: {error_message}")
+            return custom_response.CustomResponse(
+                code=["fail"],
+                errors={"detail": error_message},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
-
-        # todo: tokenの取得の関数作成（リファクタリング）
+        # ===== todo: def authenticate_user(code: str) -> dict:作成 ======
+        # 成功: user_infoを返す
+        # 失敗: 例外 AuthenticationFailedError, InternalServerError
         request_data: dict[str, str] = {
             "code": code,
             "grant_type": "authorization_code",
@@ -168,17 +159,36 @@ class OAuth2CallbackView(OAuth2BaseView):
             "client_id": settings.OAUTH2_CLIENT_ID,
             "client_secret": settings.OAUTH2_CLIENT_SECRET_KEY,
         }
+
         token_response: requests.models.Response = requests.post(
             settings.OAUTH2_TOKEN_ENDPOINT,
             data=request_data,
         )
         tokens = token_response.json()
-
+        if token_response.status_code != status.HTTP_200_OK:
+            logger.error(
+                f"401 AuthenticationFailedError: {tokens["error_description"]}"
+            )
+            return custom_response.CustomResponse(
+                code=["fail"],
+                errors={"detail": tokens["error_description"]},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         user_response = requests.get(
             "https://api.intra.42.fr/v2/me",
-            headers={"Authorization": f"Bearer {tokens.get('access_token')}"},
+            headers={"Authorization": f"Bearer {tokens["access_token"]}"},
         )
         user_info = user_response.json()
+        if token_response.status_code != status.HTTP_200_OK:
+            logger.error(
+                f"401 AuthenticationFailedError: {user_info["error_description"]}"
+            )
+            return custom_response.CustomResponse(
+                code=["fail"],
+                errors={"detail": user_info["error_description"]},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        # =============================================================
 
         # todo: OAuth2の登録（リファクタリング）
         oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
