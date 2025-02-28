@@ -265,6 +265,6 @@ class OAuth2CallbackView(OAuth2BaseView):
                 status=response.status_code,
             )
         return custom_response.CustomResponse(
-            data=response.data,
+            data=response.data["data"],
             status=response.status_code,
         )
