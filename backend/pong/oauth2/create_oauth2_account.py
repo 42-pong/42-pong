@@ -8,14 +8,15 @@ CreateOAuth2UserResult = utils.result.Result[dict, dict]
 CreateOAuth2Result = utils.result.Result[dict, dict]
 
 
-# todo: パスワードを引数に渡せるようにし、callbackないでランダムなパスワードで設定する
 def create_oauth2_user(
-    email: str, display_name: str
+    email: str,
+    password: str,
+    display_name: str,
 ) -> CreateOAuth2UserResult:
     oauth2_user_data: dict[str, str] = {
         "username": create_account.get_unique_random_username(),
         "email": email,
-        "password": "p1a2s3s4w5o6rd",
+        "password": password,
     }
     oauth2_user_serializer: user_serializers.UserSerializer = (
         user_serializers.UserSerializer(data=oauth2_user_data)

@@ -5,6 +5,7 @@ from urllib.parse import urlencode
 
 import requests
 from django.urls import reverse
+from django.utils.crypto import get_random_string
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
@@ -202,12 +203,13 @@ class OAuth2CallbackView(OAuth2BaseView):
             )
         # =============================================================
 
+        random_password: str = get_random_string(length=12)
         # ====== todo: OAuth2の登録（リファクタリング）======
         # 成功: oauth2_userを返す
         # 失敗: 例外, InternalServerError
         oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
             create_oauth2_account.create_oauth2_user(
-                user_info["email"], user_info["login"]
+                user_info["email"], random_password, user_info["login"]
             )
         )
         # todo: internal_errorのエラーハンドリングを追加する
@@ -247,8 +249,7 @@ class OAuth2CallbackView(OAuth2BaseView):
             reverse("jwt:token_obtain_pair"),
             {
                 "email": oauth2_user["email"],
-                # todo: ランダムでパスワードを取得する
-                "password": "p1a2s3s4w5o6rd",
+                "password": random_password,
             },
             format="json",
         )
