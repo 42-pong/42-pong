@@ -1,21 +1,42 @@
+import { BootstrapBorders } from "../../bootstrap/utilities/borders";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
+import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
+import { DataSubject } from "../../core/DataSubject";
 import { TournamentEnums } from "../../enums/TournamentEnums";
+import { WebSocketEnums } from "../../enums/WebSocketEnums";
+import { UserSessionManager } from "../../session/UserSessionManager";
+import { ChatMessage } from "../../utils/chat/ChatMessage";
+import { isGroupChat } from "../../utils/chat/isGroupChat";
 import { createElement } from "../../utils/elements/createElement";
+import { createHorizontalSplitLayout } from "../../utils/elements/div/createHorizontalSplitLayout";
+import { createVerticalSplitLayout } from "../../utils/elements/div/createVerticalSplitLayout";
+import { setHeight } from "../../utils/elements/style/setHeight";
+import { ChatPayload } from "../../websocket/payload/ChatPayload";
+import { TournamentPayload } from "../../websocket/payload/TournamentPayload";
+import { ChatContainer } from "../chat/ChatContainer";
 import { TournamentFinished } from "./TournamentFinished";
 import { TournamentOngoing } from "./TournamentOngoing";
+import { TournamentPlayers } from "./TournamentPlayers";
 import { TournamentWaiting } from "./TournamentWaiting";
 
 export class TournamentProgress extends Component {
+  #players;
+  #chatSubject;
+  #groupChat;
+  #listenGroupChat;
+
   constructor(state) {
     super({
       players: [],
       progress: TournamentEnums.Progress.WAITING,
       ...state,
     });
+    this.#chatSubject = new DataSubject({ messages: [] });
+    this.#listenGroupChat = null;
   }
 
   _setStyle() {
@@ -23,14 +44,36 @@ export class TournamentProgress extends Component {
     BootstrapFlex.setFlexColumn(this);
     BootstrapFlex.setJustifyContentCenter(this);
     BootstrapFlex.setAlignItemsCenter(this);
-    BootstrapSizing.setWidth75(this);
-    BootstrapSizing.setHeight75(this);
+    BootstrapSizing.setWidth100(this);
+    BootstrapSizing.setHeight100(this);
+
+    setHeight(this.#groupChat, "90%");
+    BootstrapSpacing.setPadding(this.#groupChat, 3);
+    BootstrapBorders.setBorder(this.#groupChat);
+    BootstrapBorders.setRounded(this.#groupChat);
   }
 
   _onConnect() {
-    // TODO: fetch players
+    const { tournamentId } = this._getState();
 
-    // TODO: attach websocket PROGRESS handling
+    const myId = UserSessionManager.getInstance().myInfo.observe(
+      ({ id }) => id,
+    );
+    this.#players = new TournamentPlayers({ tournamentId });
+    const onMessageSubmit = (value) =>
+      UserSessionManager.getInstance().webSocket.send(
+        WebSocketEnums.Category.CHAT,
+        ChatPayload.createGroupChat({
+          fromId: myId,
+          tournamentId,
+          content: value,
+        }),
+      );
+
+    this.#groupChat = new ChatContainer({
+      chatSubject: this.#chatSubject,
+      onMessageSubmit,
+    });
 
     this._attachEventListener(
       PongEvents.UPDATE_TOURNAMENT_PROGRESS.type,
@@ -40,40 +83,82 @@ export class TournamentProgress extends Component {
         this._updateState({ progress });
       },
     );
+
+    this.#listenGroupChat = (payload) => {
+      const { type, data } = payload;
+      const { to } = data;
+      if (!(tournamentId === to && isGroupChat(type))) return;
+      this.#chatSubject.updateData({
+        newItem: new ChatMessage(type, data),
+      });
+    };
+
+    UserSessionManager.getInstance().webSocket.attachHandler(
+      WebSocketEnums.Category.CHAT,
+      this.#listenGroupChat,
+    );
   }
 
   _onDisconnect() {
-    // TODO: detach websocket PROGRESS handling
+    UserSessionManager.getInstance().webSocket.detachHandler(
+      WebSocketEnums.Category.CHAT,
+      this.#listenGroupChat,
+    );
+    this.#listenGroupChat = null;
+
+    const { tournamentId } = this._getState();
+
+    UserSessionManager.getInstance().webSocket.send(
+      WebSocketEnums.Category.TOURNAMENT,
+      TournamentPayload.createLeave({
+        tournamentId,
+      }),
+    );
   }
 
   _render() {
-    const { tournamentId } = this._getState();
+    const { progress, tournamentId } = this._getState();
+
     // TODO: タイトル要素を作成する関数でまとめる
     const title = createElement("h1");
-    title.textContent = `🏓 #${tournamentId}`;
-    this.appendChild(title);
+    title.textContent = `🏓 トーナメント #${tournamentId}`;
+    BootstrapSpacing.setMargin(title, 5);
 
-    const currentProgressComponent =
-      createCurrentProgressComponent(this);
-    this.appendChild(currentProgressComponent);
+    const currentProgressComponent = createCurrentProgressComponent(
+      progress,
+      tournamentId,
+    );
+
+    const left = createHorizontalSplitLayout(
+      this.#players,
+      currentProgressComponent,
+    );
+    setHeight(this.#players, "20%");
+    setHeight(currentProgressComponent, "60%");
+
+    const right = this.#groupChat;
+
+    const verticalSplit = createVerticalSplitLayout(
+      left,
+      right,
+      6,
+      4,
+    );
+    BootstrapSizing.setHeight75(verticalSplit);
+
+    this.append(title, verticalSplit);
   }
 }
 
-const createCurrentProgressComponent = (tournamentProgress) => {
-  const { progress, tournamentId, players } =
-    tournamentProgress._getState();
-  const progressState = {
-    tournamentId,
-    players,
-  };
+const createCurrentProgressComponent = (progress, tournamentId) => {
   switch (progress) {
     case TournamentEnums.Progress.WAITING:
-      return new TournamentWaiting(progressState);
+      return new TournamentWaiting({ tournamentId });
     case TournamentEnums.Progress.ONGOING:
-      return new TournamentOngoing(progressState);
+      return new TournamentOngoing({ tournamentId });
     case TournamentEnums.Progress.FINISHED:
-      return new TournamentFinished(progressState);
+      return new TournamentFinished({ tournamentId });
     default:
-      return new TournamentWaiting(progressState);
+      return new TournamentWaiting({ tournamentId });
   }
 };

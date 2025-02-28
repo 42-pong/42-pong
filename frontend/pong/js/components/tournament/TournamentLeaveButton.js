@@ -2,35 +2,21 @@ import { PongEvents } from "../../constants/PongEvents";
 import { StyledButton } from "../../core/StyledButton";
 import { TournamentEnums } from "../../enums/TournamentEnums";
 
-export class TournamentStageTransitionButton extends StyledButton {
-  #tournamentStage;
-  #tournamentId;
-
-  constructor(
-    state = {},
-    attributes = {},
-    tournamentStage = TournamentEnums.Stage.ENTRANCE,
-  ) {
-    super(state, attributes);
-    this.#tournamentStage = tournamentStage;
-    this.#tournamentId = "";
-  }
-
+export class TournamentLeaveButton extends StyledButton {
   _onConnect() {
     this._attachEventListener("click", (event) => {
       event.preventDefault();
       const { target } = event;
       if (!(target instanceof HTMLButtonElement)) return;
+
+      const { tournamentId } = this._getState();
+
       this.dispatchEvent(
         PongEvents.UPDATE_TOURNAMENT_STAGE.create(
-          this.#tournamentStage,
-          this.#tournamentId,
+          TournamentEnums.Stage.ENTRANCE,
+          tournamentId,
         ),
       );
     });
-  }
-
-  setTournamentId(tournamentId) {
-    this.#tournamentId = tournamentId;
   }
 }

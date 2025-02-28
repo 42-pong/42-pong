@@ -54,3 +54,13 @@ class ChannelHandler:
         await self.channel_layer.group_send(
             group_name, {"type": "group.message", "message": message}
         )
+
+    async def send_to_consumer(self, message: dict, channel_name: str) -> None:
+        """
+        接続されている個々のConsumer（クライアント）にメッセージを送信。
+
+        :param message: 送信するメッセージ
+        """
+        await self.channel_layer.send(
+            channel_name, {"type": "websocket.send", "text": message}
+        )

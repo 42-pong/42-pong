@@ -1,17 +1,21 @@
 import logging
 
+import rest_framework_simplejwt
 from django.contrib.auth.models import AnonymousUser, User
 from drf_spectacular import utils
 from rest_framework import (
+    exceptions,
     permissions,
     request,
     response,
     status,
     views,
 )
+from rest_framework.parsers import JSONParser, MultiPartParser
 
 from accounts import constants as accounts_constants
 from pong.custom_response import custom_response
+from users.friends import constants as friends_constants
 
 from .. import constants, serializers
 
@@ -23,8 +27,52 @@ class UsersMeView(views.APIView):
     自分のユーザープロフィールを取得・更新する
     """
 
+    # todo: 自作JWTの認証クラスを設定する
+    authentication_classes = [
+        rest_framework_simplejwt.authentication.JWTAuthentication
+    ]
     # プロフィールを全て返すのでIsAuthenticatedをセットする必要がある
     permission_classes = [permissions.IsAuthenticated]
+    # アバター画像用にMultiPartParserを追加
+    parser_classes = (JSONParser, MultiPartParser)
+
+    def handle_exception(self, exc: Exception) -> response.Response:
+        """
+        APIViewのhandle_exception()をオーバーライド
+        viewでtry-exceptしていない例外をカスタムレスポンスに変換して返す
+        """
+        if isinstance(
+            exc, (exceptions.NotAuthenticated, exceptions.AuthenticationFailed)
+        ):
+            logger.error(f"[401] Authentication error: {str(exc)}")
+            # 401はCustomResponseにせずそのまま返す
+            return super().handle_exception(exc)
+
+        logger.error(f"[500] Internal server error: {str(exc)}")
+        response: custom_response.CustomResponse = (
+            custom_response.CustomResponse(
+                code=[constants.Code.INTERNAL_ERROR],
+                errors={"detail": str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        )
+        return response
+
+    def _get_authenticated_user(self, user: User | AnonymousUser) -> User:
+        """
+        ログインユーザーを取得する
+        AnonymousUserの場合は各メソッド関数関数に入る前にpermission_classesで弾かれるはずだが、
+        AnonymousUserだとuser.id=Noneになったりuser.playerが使えずmypyでエラーになったりするため、
+        先にエラーとして例外を発生させる
+
+        Raises:
+            exceptions.NotAuthenticated: AnonymousUserの場合
+        """
+        if isinstance(user, AnonymousUser):
+            raise exceptions.NotAuthenticated(
+                "AnonymousUser is not authenticated."
+            )
+        return user
 
     @utils.extend_schema(
         request=None,
@@ -42,7 +90,11 @@ class UsersMeView(views.APIView):
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.UserFields.EMAIL: "username1@example.com",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
+                                accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                constants.UsersFields.IS_FRIEND: False,
+                                constants.UsersFields.IS_BLOCKED: False,
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
@@ -64,49 +116,71 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     )
-    # todo: try-exceptで全体を囲って500を返す？
     def get(self, request: request.Request) -> response.Response:
         """
         自分のユーザープロフィールを取得するGETメソッド
         """
-        # リクエストのtokenからuserを取得
-        user: User | AnonymousUser = request.user
-
-        # AnonymousUserの場合はget()に入る前にpermission_classesで弾かれるが、
-        # AnonymousUserだとuser.playerが使えずmypyでエラーになるため、事前にチェックが必要
-        if not hasattr(user, "player"):
-            # todo: この処理が必要ならlogger書く
-            return custom_response.CustomResponse(
-                code=[constants.Code.INTERNAL_ERROR],
-                errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
-            )
-
+        # ログインユーザーの取得
+        user: User = self._get_authenticated_user(request.user)
+        # serializer作成
         users_serializer: serializers.UsersSerializer = (
-            serializers.UsersSerializer(user.player)
+            serializers.UsersSerializer(
+                user.player,
+                # 全て取得するのでfieldsは指定しない
+                context={friends_constants.FriendshipFields.USER_ID: user.id},
+            )
         )
+        # todo: logger.info()追加
         return custom_response.CustomResponse(
             data=users_serializer.data,
             status=status.HTTP_200_OK,
         )
 
     @utils.extend_schema(
-        request=utils.OpenApiRequest(
-            serializers.UsersSerializer,
-            examples=[
-                utils.OpenApiExample(
-                    "Example request",
-                    value={
-                        accounts_constants.PlayerFields.DISPLAY_NAME: "new_name",
-                        # todo: avatarも追加？
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    accounts_constants.PlayerFields.DISPLAY_NAME: {
+                        "type": "string",
+                        "example": "new_name",
                     },
-                ),
-            ],
-        ),
+                },
+            },
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    accounts_constants.PlayerFields.AVATAR: {
+                        "type": "string",
+                        "format": "binary",
+                        "example": "example.png",
+                    },
+                },
+            },
+        },
         responses={
             200: utils.OpenApiResponse(
                 description="My user profile",
@@ -121,7 +195,11 @@ class UsersMeView(views.APIView):
                                 accounts_constants.UserFields.USERNAME: "username1",
                                 accounts_constants.UserFields.EMAIL: "username1@example.com",
                                 accounts_constants.PlayerFields.DISPLAY_NAME: "display_name1",
-                                accounts_constants.PlayerFields.AVATAR: "avatars/sample.png",
+                                accounts_constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                constants.UsersFields.IS_FRIEND: False,
+                                constants.UsersFields.IS_BLOCKED: False,
+                                constants.UsersFields.MATCH_WINS: 1,
+                                constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
@@ -133,7 +211,7 @@ class UsersMeView(views.APIView):
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.ERRORS: {"type": "dict"},
+                        custom_response.CODE: {"type": "list"},
                     },
                 },
                 examples=[
@@ -162,30 +240,43 @@ class UsersMeView(views.APIView):
                     ),
                 ],
             ),
-            # todo: 詳細のschemaが必要であれば追加する
-            500: utils.OpenApiResponse(description="Internal server error"),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
         },
     )
-    # todo: try-exceptで全体を囲って500を返す
     def patch(self, request: request.Request) -> response.Response:
         """
         自分のユーザープロフィールを更新するPATCHメソッド
         """
-        # リクエストのtokenからuserを取得
-        user: User | AnonymousUser = request.user
-        if not hasattr(user, "player"):
-            # todo: この処理が必要ならlogger書く
-            return custom_response.CustomResponse(
-                code=[constants.Code.INTERNAL_ERROR],
-                errors={"user": "The user does not exist."},
-                status=status.HTTP_404_NOT_FOUND,  # todo: 404ではないかも。schemaに書いてない
-            )
+        # ログインユーザーの取得
+        user: User = self._get_authenticated_user(request.user)
         # serializer作成
         users_serializer: serializers.UsersSerializer = (
             serializers.UsersSerializer(
                 user.player,
                 data=request.data,
                 partial=True,  # 部分的な更新を許可
+                # 全て取得するのでfieldsは指定しない
+                context={friends_constants.FriendshipFields.USER_ID: user.id},
             )
         )
         # 更新対象データ(request.data)のバリデーションを確認
@@ -200,6 +291,7 @@ class UsersMeView(views.APIView):
             )
         # 更新
         users_serializer.save()
+        # todo: logger.info()追加
         return custom_response.CustomResponse(
             data=users_serializer.data,
             status=status.HTTP_200_OK,

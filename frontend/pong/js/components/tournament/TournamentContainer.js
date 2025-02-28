@@ -29,6 +29,7 @@ export class TournamentContainer extends Component {
     this._attachEventListener(
       PongEvents.UPDATE_TOURNAMENT_STAGE.type,
       (event) => {
+        event.preventDefault();
         const { stage, tournamentId } = event.detail;
         if (!(stage in TournamentEnums.Stage)) return;
         this._updateState({ stage, tournamentId });
@@ -37,13 +38,16 @@ export class TournamentContainer extends Component {
   }
 
   _render() {
-    const currentStageComponent = createCurrentStageComponent(this);
-    this.appendChild(currentStageComponent);
+    const { stage, tournamentId } = this._getState();
+    const currentStageComponent = createCurrentStageComponent(
+      stage,
+      tournamentId,
+    );
+    this.append(currentStageComponent);
   }
 }
 
-const createCurrentStageComponent = (tournamentContainer) => {
-  const { stage, tournamentId } = tournamentContainer._getState();
+const createCurrentStageComponent = (stage, tournamentId) => {
   switch (stage) {
     case TournamentEnums.Stage.ENTRANCE:
       return new TournamentEntrance();

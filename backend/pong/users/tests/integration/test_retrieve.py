@@ -6,7 +6,7 @@ from rest_framework import response as drf_response
 from rest_framework import status, test
 
 from accounts import constants as accounts_constants
-from accounts.player import models
+from accounts.player import models as player_models
 from pong.custom_response import custom_response
 
 from ... import constants
@@ -18,6 +18,10 @@ PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
+IS_BLOCKED: Final[str] = constants.UsersFields.IS_BLOCKED
+MATCH_WINS: Final[str] = constants.UsersFields.MATCH_WINS
+MATCH_LOSSES: Final[str] = constants.UsersFields.MATCH_LOSSES
 
 DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
@@ -32,10 +36,12 @@ class UsersRetrieveViewTests(test.APITestCase):
 
         def _create_user_and_related_player(
             user_data: dict, player_data: dict
-        ) -> tuple[User, models.Player]:
+        ) -> tuple[User, player_models.Player]:
             user: User = User.objects.create_user(**user_data)
             player_data[USER] = user
-            player: models.Player = models.Player.objects.create(**player_data)
+            player: player_models.Player = player_models.Player.objects.create(
+                **player_data
+            )
             return user, player
 
         # 1人目のユーザーデータ
@@ -65,6 +71,21 @@ class UsersRetrieveViewTests(test.APITestCase):
             self.user_data2, self.player_data2
         )
 
+        # user1がtokenを取得してログイン
+        # todo: 自作jwtができたらnamespaceを変更
+        token_url: str = reverse("simple_jwt:token_obtain_pair")
+        token_response: drf_response.Response = self.client.post(
+            token_url,
+            {
+                USERNAME: self.user_data1[USERNAME],
+                PASSWORD: self.user_data1[PASSWORD],
+            },
+            format="json",
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION="Bearer " + token_response.data["access"]
+        )
+
     def _create_url(self, user_id: int) -> str:
         return reverse("users:retrieve", kwargs={"user_id": user_id})
 
@@ -89,21 +110,35 @@ class UsersRetrieveViewTests(test.APITestCase):
             )
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            response_data: dict = response.data[DATA]
-            self.assertEqual(response_data[ID], user.id)
-            self.assertEqual(response_data[USERNAME], user_data[USERNAME])
             self.assertEqual(
-                response_data[DISPLAY_NAME], player_data[DISPLAY_NAME]
-            )
-            self.assertNotIn(EMAIL, response_data)
-            self.assertEqual(
-                response_data[AVATAR],
-                user.player.avatar.url,
+                response.data[DATA],
+                {
+                    ID: user.id,
+                    USERNAME: user_data[USERNAME],
+                    DISPLAY_NAME: player_data[DISPLAY_NAME],
+                    AVATAR: user.player.avatar.url,
+                    IS_FRIEND: False,
+                    IS_BLOCKED: False,
+                    MATCH_WINS: 0,
+                    MATCH_LOSSES: 0,
+                },
             )
 
-    # todo: IsAuthenticatedにしたら、test_401_unauthenticated_user()を追加
+    def test_get_401_unauthenticated_user(self) -> None:
+        """
+        認証されていないユーザーが自分のプロフィールを取得しようとするとエラーになることを確認
+        """
+        # 認証情報をクリア
+        self.client.credentials()
+        url: str = self._create_url(self.user1.id)
+        response: drf_response.Response = self.client.get(url, format="json")
 
-    def test_get_user_returns_404_with_nonexistent_user_id(self) -> None:
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        # DRFのpermission_classesによりエラーが返るため、自作のResponse formatではない
+        # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
+        self.assertEqual(response.data["detail"].code, "not_authenticated")
+
+    def test_get_404_nonexistent_user_id(self) -> None:
         """
         存在しないuser_idを指定した場合に、エラーが返されることを確認
         """

@@ -9,6 +9,7 @@ class BaseEnum(Enum):
 
 
 class Category(BaseEnum):
+    LOGIN = "LOGIN"
     MATCH = "MATCH"
     # TODO: 他のカテゴリーは順次追加する
 

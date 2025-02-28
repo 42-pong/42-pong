@@ -12,7 +12,7 @@ import { BlockUserButton } from "./BlockUserButton";
 
 export class UserProfile extends Component {
   constructor(state) {
-    super({ userId: "", user: null, ...state });
+    super({ user: null, ...state });
   }
 
   _setStyle() {
@@ -31,7 +31,7 @@ export class UserProfile extends Component {
       return;
     }
 
-    const nameplate = createNameplate(user);
+    const nameplate = createNameplate(user, "8vh");
     const profileButtonPanel = createProfileMenu();
     this.append(
       createDefaultCard({

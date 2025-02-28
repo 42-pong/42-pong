@@ -1,5 +1,9 @@
 import { setClassNames } from "../../utils/elements/setClassNames";
 
+const setWidth25 = (element) => {
+  return setClassNames(element, "w-25");
+};
+
 const setWidth50 = (element) => {
   return setClassNames(element, "w-50");
 };
@@ -10,6 +14,10 @@ const setWidth75 = (element) => {
 
 const setWidth100 = (element) => {
   return setClassNames(element, "w-100");
+};
+
+const setHeight25 = (element) => {
+  return setClassNames(element, "h-25");
 };
 
 const setHeight50 = (element) => {
@@ -33,9 +41,11 @@ const setMaxHeight100 = (element) => {
 };
 
 export const BootstrapSizing = {
+  setWidth25,
   setWidth50,
   setWidth75,
   setWidth100,
+  setHeight25,
   setHeight50,
   setHeight75,
   setHeight100,

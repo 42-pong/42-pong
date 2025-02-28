@@ -33,7 +33,7 @@ class PlayerSerializer(serializers.ModelSerializer):
     avatar: serializers.ImageField = serializers.ImageField(
         required=False,
         allow_null=True,
-        # todo: 画像の最大サイズを指定
+        # todo: 画像の最大サイズを指定・拡張子を制限・リサイズする
         # max_length=constants.MAX_AVATAR_SIZE,
     )
 
@@ -43,10 +43,4 @@ class PlayerSerializer(serializers.ModelSerializer):
             constants.PlayerFields.USER,
             constants.PlayerFields.DISPLAY_NAME,
             constants.PlayerFields.AVATAR,
-            constants.PlayerFields.CREATED_AT,
-            constants.PlayerFields.UPDATED_AT,
         )
-        extra_kwargs = {
-            constants.PlayerFields.CREATED_AT: {"read_only": True},
-            constants.PlayerFields.UPDATED_AT: {"read_only": True},
-        }

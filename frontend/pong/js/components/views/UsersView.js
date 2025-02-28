@@ -1,10 +1,11 @@
+import { getUsers } from "../../api/users/getUsers";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
-import { View } from "../../core/View";
+import { AuthView } from "../../core/AuthView";
 import { UserListContainer } from "../user/UserListContainer";
 
-export class UsersView extends View {
+export class UsersView extends AuthView {
   #userListContainer;
 
   _setStyle() {
@@ -17,7 +18,9 @@ export class UsersView extends View {
   }
 
   _onConnect() {
-    this.#userListContainer = new UserListContainer();
+    this.#userListContainer = new UserListContainer({
+      fetchUsers: getUsers,
+    });
   }
 
   _render() {

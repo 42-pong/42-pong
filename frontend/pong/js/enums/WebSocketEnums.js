@@ -1,5 +1,28 @@
 const Category = {
   MATCH: "MATCH",
+  TOURNAMENT: "TOURNAMENT",
+  CHAT: "CHAT",
 };
 
-export const WebSocketEnums = Object.freeze({ Category });
+const Tournament = {
+  Type: {
+    JOIN: "JOIN",
+    LEAVE: "LEAVE",
+    ASSIGNED: "ASSIGNED",
+    RELOAD: "RELOAD",
+  },
+};
+
+const Chat = {
+  Type: {
+    DM: "DM",
+    GROUP_CHAT: "GROUP_CHAT",
+    GROUP_ANNOUNCEMENT: "GROUP_ANNOUNCEMENT",
+  },
+};
+
+export const WebSocketEnums = Object.freeze({
+  Category,
+  Tournament,
+  Chat,
+});

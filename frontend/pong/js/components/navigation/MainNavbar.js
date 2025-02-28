@@ -8,7 +8,6 @@ export class MainNavbar extends Component {
 
   static links = Object.freeze([
     { name: "ホーム", path: Paths.HOME },
-    { name: "チャット", path: Paths.CHAT },
     { name: "ユーザー一覧", path: Paths.USERS },
     { name: "フレンド一覧", path: Paths.FRIENDS },
     { name: "マイページ", path: Paths.MYPAGE },

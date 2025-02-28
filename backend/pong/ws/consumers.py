@@ -9,15 +9,17 @@ from .match import handler as match_handler
 from .share import constants as ws_constants
 from .share import serializers as ws_serializers
 
-logger = logging.getLogger("django")
+logger = logging.getLogger(__name__)
 
 
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self) -> None:
-        # match用のハンドラを作成
+        # TODO:login用のハンドラを作成したら追加
+        # それぞれのイベントのハンドラを作成
         self.match_handler = match_handler.MatchHandler(
             self.channel_layer, self.channel_name
         )
+        # TODO: トーナメントハンドラにself.scopeからグローバルなtournament_registryを取り出して、渡す。
 
         await self.accept()
 
@@ -34,6 +36,7 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
             ]
             payload: dict = serializer.validated_data[ws_constants.PAYLOAD_KEY]
 
+            # TODO: LOGINメッセージルール確定したら追加
             match category:
                 case ws_constants.Category.MATCH.value:
                     await self.match_handler.handle(payload)

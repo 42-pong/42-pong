@@ -22,6 +22,12 @@ export class Router {
     return isUpdated;
   }
 
+  display(route) {
+    if (!(route instanceof Route)) return;
+    const isUpdated = this.#render(route);
+    return isUpdated;
+  }
+
   #findRoute(path) {
     if (path && this.#routes[path]) return this.#routes[path];
     return this.#defaultRoute;

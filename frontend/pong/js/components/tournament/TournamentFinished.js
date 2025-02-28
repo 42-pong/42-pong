@@ -3,10 +3,8 @@ import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { Paths } from "../../constants/Paths";
 import { Component } from "../../core/Component";
-import { TournamentEnums } from "../../enums/TournamentEnums";
 import { createElement } from "../../utils/elements/createElement";
 import { LinkButton } from "../utils/LinkButton";
-import { TournamentStageTransitionButton } from "./TournamentStageTransitionButton";
 
 export class TournamentFinished extends Component {
   #toTournamentEntrance;
@@ -32,12 +30,6 @@ export class TournamentFinished extends Component {
       textContent: "[ホーム] に戻る",
       pathname: Paths.HOME,
     });
-
-    this.#toTournamentEntrance = new TournamentStageTransitionButton(
-      { textContent: "[トーナメント開始] に戻る" },
-      {},
-      TournamentEnums.Stage.ENTRANCE,
-    );
   }
 
   _render() {
@@ -47,7 +39,6 @@ export class TournamentFinished extends Component {
     });
     this.appendChild(title);
 
-    this.appendChild(this.#toTournamentEntrance);
     this.appendChild(this.#toHome);
   }
 }

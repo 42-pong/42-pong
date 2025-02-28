@@ -1,8 +1,11 @@
+import io
+import os
 from typing import Final
 
 import parameterized  # type: ignore[import-untyped]
 from django.contrib.auth.models import User
 from django.urls import reverse
+from PIL import Image
 from rest_framework import response as drf_response
 from rest_framework import status, test
 
@@ -12,16 +15,23 @@ from pong.custom_response import custom_response
 
 from ... import constants
 
+ID: Final[str] = accounts_constants.UserFields.ID
 USERNAME: Final[str] = accounts_constants.UserFields.USERNAME
 EMAIL: Final[str] = accounts_constants.UserFields.EMAIL
 PASSWORD: Final[str] = accounts_constants.UserFields.PASSWORD
 USER: Final[str] = accounts_constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = accounts_constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = accounts_constants.PlayerFields.AVATAR
+IS_FRIEND: Final[str] = constants.UsersFields.IS_FRIEND
+IS_BLOCKED: Final[str] = constants.UsersFields.IS_BLOCKED
+MATCH_WINS: Final[str] = constants.UsersFields.MATCH_WINS
+MATCH_LOSSES: Final[str] = constants.UsersFields.MATCH_LOSSES
 
 DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
+
+AVATAR_DIR: Final[str] = "media/avatars/"
 
 
 class UsersMeViewTests(test.APITestCase):
@@ -80,13 +90,20 @@ class UsersMeViewTests(test.APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data: dict = response.data[DATA]
-        self.assertEqual(response_data[USERNAME], self.user_data[USERNAME])
-        self.assertEqual(response_data[EMAIL], self.user_data[EMAIL])
         self.assertEqual(
-            response_data[DISPLAY_NAME], self.player_data[DISPLAY_NAME]
+            response.data[DATA],
+            {
+                ID: self.user.id,
+                USERNAME: self.user_data[USERNAME],
+                EMAIL: self.user_data[EMAIL],
+                DISPLAY_NAME: self.player_data[DISPLAY_NAME],
+                AVATAR: self.player.avatar.url,
+                IS_FRIEND: False,
+                IS_BLOCKED: False,
+                MATCH_WINS: 0,
+                MATCH_LOSSES: 0,
+            },
         )
-        self.assertEqual(response_data[AVATAR], self.player.avatar.url)
 
     def test_get_401_unauthenticated_user(self) -> None:
         """
@@ -168,4 +185,61 @@ class UsersMeViewTests(test.APITestCase):
         # todo: permissions_classesを変更して自作Responseを返せる場合、併せてresponse.data[CODE]を見るように変更する
         self.assertEqual(response.data["detail"].code, "not_authenticated")
 
-    # todo: avatarの更新に関するテストを追加
+    def _create_image(self, file_name: str) -> io.BytesIO:
+        image = Image.new("RGB", (30, 30))
+        # メモリ上に画像を生成する
+        image_io = io.BytesIO()
+        image.save(image_io, format="PNG")
+        image_io.seek(0)  # ファイルの読み取り位置を先頭に戻す
+        image_io.name = file_name
+        return image_io
+
+    def test_patch_200_update_valid_avatar(self) -> None:
+        """
+        正常なファイル名でavatarを更新できることを確認
+        """
+        file_name: str = "testuser.png"
+        image_io: io.BytesIO = self._create_image(file_name)
+        # multipart/form-dataで送信
+        response: drf_response.Response = self.client.patch(
+            self.url,
+            {AVATAR: image_io},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(os.path.exists(AVATAR_DIR + file_name))
+        self.player.refresh_from_db()
+        self.assertEqual(self.player.avatar.name, "avatars/" + file_name)
+        # todo: デフォルト画像がなくなったらtearDown()で必ず削除するように変更
+        self.player.avatar.delete()  # 画像を削除
+
+    @parameterized.parameterized.expand(
+        [
+            ("空文字列の場合", ""),
+            ("拡張子がない場合", "not_exist_extension"),
+            ("拡張子が不正な場合", "testuser.invalid_extension"),
+        ]
+    )
+    def test_patch_400_update_invalid_avatar(
+        self, testcase_name: str, new_file_name: str
+    ) -> None:
+        """
+        不正なファイル名でavatarを更新しようとするとエラーになることを確認
+        """
+        image_io: io.BytesIO = self._create_image(new_file_name)
+        response: drf_response.Response = self.client.patch(
+            self.url,
+            {AVATAR: image_io},
+            format="multipart",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data[CODE], [constants.Code.INVALID])
+        self.assertIn(AVATAR, response.data[ERRORS])
+        # 画像がmediaディレクトリに保存されていないことを確認
+        if new_file_name:
+            self.assertFalse(os.path.exists(AVATAR_DIR + new_file_name))
+        # 最新のDBの情報に更新し、DBの値が変更されていないことを確認
+        self.player.refresh_from_db()
+        self.assertEqual(self.player.avatar.name, "avatars/sample.png")
