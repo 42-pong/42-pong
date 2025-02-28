@@ -46,6 +46,7 @@ class MatchManager:
         self.pong_logic = PongLogic()
         self.group_name = f"pong_{match_id}"  # 一意
         self.ready_players = 0
+        self.waiting_player_ready = asyncio.Event()
         self.channel_handler = channel_handler.ChannelHandler(
             get_channel_layer(), None
         )
@@ -56,23 +57,9 @@ class MatchManager:
         このクラスの作成側の関数はこの関数をバックグラウンドタスクとして実行し、終了を待つ。
         """
         # プレーヤーが準備完了のメッセージを送信するのを待つ
-        self.wait_message = asyncio.create_task(
-            self._wait_for_ready_messages()
-        )
-
-        await self.wait_message
+        await self.waiting_player_ready.wait()
         # PongLogic開始
         await self._start_game()
-
-    async def _wait_for_ready_messages(self) -> None:
-        """
-        以下の人数からreadyメッセージを受け取るのを待つ
-        - local mode: 1人
-        - remote mode: 2人
-        """
-        wait_player_num = 1 if self.mode == match_constants.Mode.LOCAL else 2
-        while self.ready_players < wait_player_num:
-            await asyncio.sleep(0.1)
 
     async def handle_init_action(self, player: player_data.PlayerData) -> None:
         """
@@ -137,6 +124,13 @@ class MatchManager:
         await self.channel_handler.send_to_consumer(
             message, player.channel_name
         )
+
+        # 全員からREADYメッセージが届いたらイベントをセットしてゲームを開始する。
+        waiting_player_num = (
+            1 if self.mode == match_constants.Mode.LOCAL else 2
+        )
+        if self.ready_players == waiting_player_num:
+            self.waiting_player_ready.set()
 
     async def _start_game(self) -> None:
         """
@@ -249,8 +243,6 @@ class MatchManager:
         レコードの更新を行う。
         """
         # 参加プレーヤーが退出したら、バックグラウンドタスクが終了していない可能性があるので、終了させる。
-        if self.wait_message:
-            self.wait_message.cancel()
         if self.send_task:
             self.send_task.cancel()
 
