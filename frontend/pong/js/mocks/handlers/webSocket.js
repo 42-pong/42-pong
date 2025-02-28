@@ -2,6 +2,7 @@ import { ws } from "msw";
 import { Endpoints } from "../../constants/Endpoints";
 import { WebSocketEnums } from "../../enums/WebSocketEnums";
 import { chatPayloadHandler } from "../utils/websocket/chatPayloadHandler";
+import { loginPayloadHandler } from "../utils/websocket/loginPayloadHandler";
 import { matchPayloadHandler } from "../utils/websocket/matchPayloadHandler";
 import { tournamentPayloadHandler } from "../utils/websocket/tournamentPayloadHandler";
 
@@ -21,6 +22,9 @@ export const handlers = [
           break;
         case WebSocketEnums.Category.CHAT:
           chatPayloadHandler(client, payload);
+          break;
+        case WebSocketEnums.Category.LOGIN:
+          loginPayloadHandler(client, payload);
           break;
         default:
           return;
