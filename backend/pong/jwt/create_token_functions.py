@@ -29,7 +29,6 @@ def create_token(user_id: int, token_type: str) -> str:
         return ""
 
 
-# todo: user_idを検証する
 def create_access_and_refresh_token(user_id: int) -> dict:
     tokens: dict = {}
     tokens["access"] = create_token(user_id, "access")

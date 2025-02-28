@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.auth.models import User
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
@@ -104,16 +105,23 @@ class TokenRefreshView(views.APIView):
         except Exception as e:
             logger.error(e)
             return custom_response.CustomResponse(
-                code=["internal_error"],
+                code=["invalid"],
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
         user_id = refresh_payload.get("sub")
-        logger.debug(f"user_id: {user_id}")
         if user_id is None:
             logger.error("User ID missing in refresh token payload")
             return custom_response.CustomResponse(
                 code=["internal_error"],
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        user = User.objects.filter(id=user_id).first()
+        if user is None:
+            logger.error(f"User does not exist: {user_id}")
+            return custom_response.CustomResponse(
+                code=["not_exists"],
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 

@@ -28,3 +28,13 @@ class RefreshTokenViewTestCase(APITestCase):
         response_access_token: str = response_data["access"]
         payload: dict = self.jwt_handler.decode(response_access_token)
         self.assertEqual(payload["sub"], self.user.id)
+
+    def test_api_refresh_token_user_not_exists(self) -> None:
+        """
+        存在しないユーザのリフレッシュトークンを渡した場合、401のステータスコードと'not_exists' のエラーコードが返されることを確認
+        """
+        not_exists_refresh_token: str = create_token(99999, "refresh")
+        data = {"refresh": not_exists_refresh_token}
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data["code"][0], "not_exists")
