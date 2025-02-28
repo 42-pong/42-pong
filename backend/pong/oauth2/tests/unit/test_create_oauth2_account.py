@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unittest import mock
 
 from django.test import TestCase
 
@@ -28,7 +29,11 @@ class CreateOAuth2AccountTestCase(TestCase):
             "token_type": "bearer",
         }
 
-    def test_create_oauth2_user(self) -> None:
+    @mock.patch(
+        "accounts.player.identicon.generate_identicon",
+        return_value="avatars/sample.png",
+    )
+    def test_create_oauth2_user(self, mock_identicon: mock.MagicMock) -> None:
         """
         OAuth2ユーザーの作成が成功することを確認するテスト
         """

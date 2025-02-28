@@ -1,4 +1,5 @@
 from typing import ClassVar
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -25,12 +26,22 @@ class ScoreModelTest(TestCase):
         """
         classで一度だけ初期化される
         """
+
+        @mock.patch(
+            "accounts.player.identicon.generate_identicon",
+            return_value="avatars/sample.png",
+        )
+        def _create_player(
+            user: User, mock_identicon: mock.MagicMock
+        ) -> Player:
+            return Player.objects.create(user=user)
+
         cls.user = User.objects.create_user(
             username="testuser",
             email="testuser@example.com",
             password="testpassword",
         )
-        cls.player = Player.objects.create(user=cls.user)
+        cls.player = _create_player(cls.user)
         cls.tournament = Tournament.objects.create()
         cls.round = Round.objects.create(
             tournament=cls.tournament, round_number=1
