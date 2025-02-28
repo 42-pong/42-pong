@@ -1,5 +1,7 @@
 from channels.layers import get_channel_layer  # type: ignore
 
+from ..share import player_data
+
 
 class TournamentManager:
     """
@@ -14,17 +16,23 @@ class TournamentManager:
     def __init__(self, tournament_id: int) -> None:
         self.tournament_id: int = tournament_id
         self.group_name: str = f"tournament_{self.tournament_id}"
-        self.participants: list[str] = []  # 参加者のchannelのリスト
+        self.participants: list[
+            player_data.PlayerData
+        ] = []  # 参加者の情報のリスト
         self.channel_layer = get_channel_layer()
 
-    async def add_participant(self, participant: str) -> None:
+    async def add_participant(
+        self, participant: player_data.PlayerData
+    ) -> None:
         """
         参加者を追加。DBにも参加テーブルを作成する。
         参加者が4人になったらトーナメントを開始する。
         """
         pass
 
-    async def remove_participant(self, participant: str) -> None:
+    async def remove_participant(
+        self, participant: player_data.PlayerData
+    ) -> None:
         """
         参加者を削除。DBから参加テーブルを削除する。
         """

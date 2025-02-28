@@ -1,3 +1,4 @@
+from ..share import player_data
 from . import manager
 
 
@@ -14,7 +15,8 @@ class TournamentManagerRegistry:
 
     async def create_tournament(self, tournament_id: int) -> None:
         """
-        tournament_id引数にTournamentManager を作成
+        tournament_id に TournamentManager を作成し、トーナメントを開始。
+        終了後に回収する。
         """
         pass
 
@@ -25,7 +27,7 @@ class TournamentManagerRegistry:
         pass
 
     async def add_participant(
-        self, tournament_id: int, participant: str
+        self, tournament_id: int, participant: player_data.PlayerData
     ) -> None:
         """
         指定した TournamentManager に参加者を追加
@@ -33,7 +35,7 @@ class TournamentManagerRegistry:
         pass
 
     async def remove_participant(
-        self, tournament_id: int, participant: str
+        self, tournament_id: int, participant: player_data.PlayerData
     ) -> None:
         """
         指定した TournamentManager から参加者を削除
