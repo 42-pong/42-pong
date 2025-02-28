@@ -28,14 +28,14 @@ class MatchManager:
         self,
         match_id: Optional[int],
         player1: player_data.PlayerData,
-        player2: player_data.PlayerData,
+        player2: Optional[player_data.PlayerData],
         mode: str,
     ) -> None:
         """
         Args:
             match_id (int): matchのid
-            player1 (player_data.PlayerData): player1の情報
-            player2 (player_data.PlayerData): player2の情報
+            player1 (PlayerData): player1の情報
+            player2 (Optional[PlayerData]): player2の情報、ローカルならNone
             mode (str): "local" | "remote"のどちらか
         """
         self.match_id = match_id
@@ -47,24 +47,37 @@ class MatchManager:
         self.group_name = f"pong_{match_id}"  # 一意
         self.ready_players = 0
         self.waiting_player_ready = asyncio.Event()
+        self.canceled = False
+        self.exited_player: Optional[player_data.PlayerData] = None
         self.channel_handler = channel_handler.ChannelHandler(
             get_channel_layer(), None
         )
 
-    async def run(self) -> player_data.PlayerData:
+    async def run(self) -> Optional[player_data.PlayerData]:
         """
         この関数を実行することでマッチを実行する。
         このクラスの作成側の関数はこの関数をバックグラウンドタスクとして実行し、終了を待つ。
 
         Returns:
+            None:
+                - 試合前にキャンセルした場合
             PlayerData:
-                - 勝利プレーヤ―のデータを返す。
+                - 試合中にキャンセルした場合： 残ったプレーヤ―のデータを勝利者として返す。
+                - 正常に終了した場合： 勝利プレーヤ―のデータを返す。
         """
         # プレーヤーが準備完了のメッセージを送信するのを待つ
         await self.waiting_player_ready.wait()
 
+        if self.canceled:
+            # 残っている方のPlayerDataを勝者として返す。
+            return self.exited_player
+
         # PongLogic開始
         await self._start_game()
+
+        if self.canceled:
+            # 残っている方のPlayerDataを勝者として返す。
+            return self.exited_player
 
         # ゲームが終了したら、Consumerに終了通知を送る
         await self._end_game()
@@ -97,10 +110,10 @@ class MatchManager:
                 if is_remote
                 else None,
                 "display_name1": self.player1.participation_name
-                if is_remote
+                if is_remote and self.player1 is not None
                 else None,
                 "display_name2": self.player2.participation_name
-                if is_remote
+                if is_remote and self.player2 is not None
                 else None,
                 "paddle1": {
                     "x": self.pong_logic.paddle1_pos.x,
@@ -155,8 +168,12 @@ class MatchManager:
 
         # PongLogicの実行を開始
         self.send_task = asyncio.create_task(self._send_match_state())
-        # send_taskが終わるまで待機
-        await self.send_task
+        try:
+            # send_taskが終わるまで待機
+            await self.send_task
+        except asyncio.CancelledError:
+            # self.player_exited()でタスクがキャンセルされる例外をキャッチ
+            return
 
     async def _send_match_state(self) -> None:
         """
@@ -250,13 +267,32 @@ class MatchManager:
     async def player_exited(self, exited_team: str) -> None:
         """
         プレーヤーが途中退出した場合にConsumerから実行される関数。
-        残っているプレーヤーを勝者にし、メッセージを送信。
-        レコードの更新を行う。
+        呼び出されるタイミングは2つある。
+        1. 試合開始前に退出した場合
+        2. 試合中に退出した場合
+            - どちらの場合も残っているプレーヤーを勝者にし、メッセージを送信。
+            - レコードの更新を行う。
         """
-        # 参加プレーヤーが退出したら、バックグラウンドタスクが終了していない可能性があるので、終了させる。
-        if self.send_task:
-            self.send_task.cancel()
+        # run()関数内で認識できるようにキャンセルフラグを立てる
+        self.canceled = True
+        # 退出したほうのプレーヤーをNoneに変更
+        if exited_team == match_constants.Team.ONE.value:
+            self.exited_player = self.player1
+        else:
+            self.exited_player = self.player2
 
+        if not self.waiting_player_ready.is_set():
+            # 試合開始前に終了
+            # もう必要ないのでREADYメッセージ待ちイベントをセット
+            self.waiting_player_ready.set()
+        else:
+            # 試合中に退出した場合は、バックグラウンドタスクが終了していない可能性があるので、終了させる。
+            if self.send_task:
+                self.send_task.cancel()
+                # キャンセルされるのを待つ
+                await self.send_task
+
+        # 残ったプレーヤーを勝者とする。
         # TODO: 勝ったプレーヤーのレコードを更新。
         # TODO: MatchのステータスをCANCELEDに更新
         message = self._build_message(
