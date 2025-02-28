@@ -22,7 +22,7 @@ class MatchManager:
     ChannelLayerのグループ名はf"pong_{match_id}"とする。
     """
 
-    FPS: Final[int] = 60
+    FPS: Final[float] = 1 / 60
 
     def __init__(
         self,
