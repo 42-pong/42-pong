@@ -51,15 +51,30 @@ class MatchManager:
             get_channel_layer(), None
         )
 
-    async def run(self) -> None:
+    async def run(self) -> player_data.PlayerData:
         """
         この関数を実行することでマッチを実行する。
         このクラスの作成側の関数はこの関数をバックグラウンドタスクとして実行し、終了を待つ。
+
+        Returns:
+            PlayerData:
+                - 勝利プレーヤ―のデータを返す。
         """
         # プレーヤーが準備完了のメッセージを送信するのを待つ
         await self.waiting_player_ready.wait()
+
         # PongLogic開始
         await self._start_game()
+
+        # ゲームが終了したら、Consumerに終了通知を送る
+        await self._end_game()
+
+        # 勝者チームのデータを返り値として返す。
+        return (
+            self.player1
+            if self.pong_logic.get_winner == match_constants.Team.ONE.value
+            else self.player2
+        )
 
     async def handle_init_action(self, player: player_data.PlayerData) -> None:
         """
@@ -140,12 +155,8 @@ class MatchManager:
 
         # PongLogicの実行を開始
         self.send_task = asyncio.create_task(self._send_match_state())
-
         # send_taskが終わるまで待機
         await self.send_task
-
-        # ゲームが終了したら、Consumerに終了通知を送る
-        await self._end_game()
 
     async def _send_match_state(self) -> None:
         """
