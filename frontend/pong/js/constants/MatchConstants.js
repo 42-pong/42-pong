@@ -15,6 +15,11 @@ const BALL_INIT_DIR = { x: 2, y: 2 };
 const SCORE_1_INIT = 0;
 const SCORE_2_INIT = 0;
 
+const SCORE_X_FROM_CENTER = BOARD_WIDTH / 4;
+const SCORE_Y = BOARD_HEIGHT / 12;
+
+const AFTER_END_LOCAL_MATCH_REDIRECT_MS = 3000;
+
 export const MatchConstants = Object.freeze({
   BOARD_WIDTH,
   BOARD_HEIGHT,
@@ -28,4 +33,7 @@ export const MatchConstants = Object.freeze({
   BALL_INIT_DIR,
   SCORE_1_INIT,
   SCORE_2_INIT,
+  SCORE_X_FROM_CENTER,
+  SCORE_Y,
+  AFTER_END_LOCAL_MATCH_REDIRECT_MS,
 });
