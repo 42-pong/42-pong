@@ -3,11 +3,13 @@ import { ChatGlobal } from "../components/chat/ChatGlobal";
 import { Paths } from "../constants/Paths";
 import { PongEvents } from "../constants/PongEvents";
 import { DataSubject } from "../core/DataSubject";
+import { WebSocketEnums } from "../enums/WebSocketEnums";
 import { WebSocketWrapper } from "../websocket/WebSocketWrapper";
 
 export class UserSession {
   #apps;
   #myInfo;
+  #status;
   #webSocket;
 
   // TODO: manage tokens
@@ -17,8 +19,10 @@ export class UserSession {
   constructor() {
     this.#apps = {};
     this.#myInfo = new DataSubject();
+    this.#status = new DataSubject();
     const signOut = this.signOut.bind(this);
     this.#webSocket = new WebSocketWrapper({
+      status: this.#status,
       onClose: signOut,
       onError: signOut,
     });
@@ -60,6 +64,7 @@ export class UserSession {
     clearGlobalFeatures(appGlobal);
     this.#initTokens();
     this.#myInfo.init({ isSignedIn: false });
+    this.#status.init();
     this.#webSocket.close();
 
     const isConnected = await this.#webSocket.connect();
@@ -73,8 +78,13 @@ export class UserSession {
       this.setRefreshToken(refresh);
     }
     const isVerified = await this.verifyAuth();
-    // TODO: WebSocket LOGIN
-    // initGlobalFeatures(appGlobal);
+    if (isVerified) {
+      const id = this.myInfo.observe(({ id }) => id);
+      this.webSocket.send(WebSocketEnums.Category.LOGIN, {
+        user_id: id,
+      });
+      // initGlobalFeatures(appGlobal);
+    }
     return isVerified;
   }
 
@@ -106,6 +116,10 @@ export class UserSession {
 
   get myInfo() {
     return this.#myInfo;
+  }
+
+  get status() {
+    return this.#status;
   }
 
   get webSocket() {

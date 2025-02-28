@@ -9,9 +9,10 @@ export class WebSocketWrapper {
   #onClose;
   #onError;
   #onMessage;
+  #status;
 
-  constructor({ onClose, onError }) {
-    this.#onOpen = () => {};
+  constructor({ status, onClose, onError }) {
+    this.#status = status;
     this.#onClose = onClose;
     this.#onError = onError;
     this.#onMessage = (event) => {
@@ -27,6 +28,16 @@ export class WebSocketWrapper {
     this.#handlers = {};
     for (const category of Object.values(WebSocketEnums.Category))
       this.#handlers[category] = new Set();
+
+    this.attachHandler(WebSocketEnums.Category.LOGIN, (payload) => {
+      const { status, online_status_ids } = payload;
+      if (status !== "OK") return;
+      const newData = {};
+      for (const online_status_id of online_status_ids) {
+        newData[online_status_id] = { isOnline: true };
+      }
+      this.#status.updateData(newData);
+    });
   }
 
   get readyState() {
