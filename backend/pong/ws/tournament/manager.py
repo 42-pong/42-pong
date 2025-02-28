@@ -7,11 +7,13 @@ class TournamentManager:
 
     4人と専用のチャネルレイヤーを持つためにユニークなグループ名を持つ。
     基本的にConsumerからは関数を通してアクションを受け取って、チャネルレイヤーを通してConsumerに通知する。
+
+    group_name: 'tournament_{tournament_id}'
     """
 
-    def __init__(self, tournament_id: int, group_name: str) -> None:
+    def __init__(self, tournament_id: int) -> None:
         self.tournament_id: int = tournament_id
-        self.group_name: str = group_name
+        self.group_name: str = f"tournament_{self.tournament_id}"
         self.participants: list[str] = []  # 参加者のchannelのリスト
         self.channel_layer = get_channel_layer()
 

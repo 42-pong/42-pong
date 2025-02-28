@@ -12,11 +12,9 @@ class TournamentManagerRegistry:
             int, manager.TournamentManager
         ] = {}  # { tournament_id: TournamentManager }
 
-    async def create_tournament(
-        self, tournament_id: int, unique_group_name: str
-    ) -> None:
+    async def create_tournament(self, tournament_id: int) -> None:
         """
-        tournament_id に対応する一意のgroup_nameを持ったTournamentManager を作成
+        tournament_id引数にTournamentManager を作成
         """
         pass
 
