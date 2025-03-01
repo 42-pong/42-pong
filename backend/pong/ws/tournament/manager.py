@@ -153,3 +153,21 @@ class TournamentManager:
                 ws_constants.DATA_KEY: data,
             },
         }
+
+    def _build_announce_message(self, type: str, data: dict) -> dict:
+        """
+        プレーヤーに送るアナウンスメッセージを作成。
+
+        :param data: ステージに関連するデータ
+        :return: 作成したメッセージ
+        """
+        # TODO: チャットを実装したら実装
+        return {}
+
+    def send_group_chat(self, user_id: int, content: str) -> None:
+        """
+        プレーヤーがグループチャットに送信したメッセージを全員に再送信する関数。
+        ChatHandlerから呼ばれる。
+        """
+        # TODO: チャットを実装したら実装
+        pass
