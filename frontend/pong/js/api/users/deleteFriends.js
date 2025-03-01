@@ -1,5 +1,6 @@
 import { Endpoints } from "../../constants/Endpoints";
 import { isValidId } from "../../utils/isValidId";
+import { deleteStatus } from "../../utils/user/deleteStatus";
 import { deleteAuthenticated } from "../utils/deleteAuthenticated";
 
 export async function deleteFriends(userId) {
@@ -8,7 +9,9 @@ export async function deleteFriends(userId) {
       error: new Error("userId: not a valid Id"),
     };
   }
-  return await deleteAuthenticated(
+  const { error } = await deleteAuthenticated(
     Endpoints.FRIENDS.withId(userId).href,
   );
+  if (!error) deleteStatus(userId);
+  return { error };
 }
