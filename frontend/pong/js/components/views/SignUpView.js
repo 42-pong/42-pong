@@ -1,5 +1,5 @@
 import { View } from "../../core/View";
-import { SignUpContainer } from "../auth/SingUpContainer";
+import { SignUpContainer } from "../auth/SignUpContainer";
 export class SignUpView extends View {
   #main;
 

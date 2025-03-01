@@ -95,33 +95,17 @@ export class SignUpContainer extends Component {
           }),
         });
         const { status, code, errors } = await response.json();
-        if (errors.email) {
-          const emailErrors = errors.email.join(";");
-          this.#mailError.textContent = `Email errors:${emailErrors}`;
-          this.#mailError.style.display = "block"; //エラーメッセージを表示する
-        }
-        if (errors.password) {
-          const passwordErrors = errors.password.join(";");
-          this.#passwordError.textContent = `Password errors:${passwordErrors}`;
-          this.#passwordError.style.display = "block"; //エラーメッセージを表示する
-        }
+
+        this.#handleErrors(errors);
+
         if (status !== "ok") {
           this.#form.reset();
-          const errorMessages = code
-            .map(
-              (errorCode) =>
-                ApiMessage.Accounts[
-                  MessageEnums.AccountsCode[errorCode]
-                ],
-            )
-            .join(";");
-          this.#loginError.textContent = errorMessages;
-          this.#loginError.style.display = "block"; //エラーメッセージを表示する
-          throw new Error(errors);
+          this.#handleStatusError(code);
+        } else {
+          this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
+          this.#mailError.style.display = "none";
+          this.#passwordError.style.display = "none";
         }
-        this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
-        this.#mailError.style.display = "none";
-        this.#passwordError.style.display = "none";
       } catch (error) {
         console.error("ログインエラー:", error);
       }
@@ -133,10 +117,41 @@ export class SignUpContainer extends Component {
     this.#container.append(this.#title, this.#form);
     // コンテナをカスタム要素に追加
     this.appendChild(this.#container);
+  }
 
-    //todo
-    //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
-    //cookieからJWTを取得する
-    //this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
+  #handleErrors(errors) {
+    if (errors?.email) {
+      const emailErrors = errors.email.join("<br>");
+      this.#mailError.innerHTML = `Email errors:<br>${emailErrors}`;
+      this.#mailError.style.display = "block"; //エラーメッセージを表示する
+    } else {
+      this.#mailError.style.display = "none";
+    }
+
+    if (errors?.password) {
+      const passwordErrors = errors.password.join("<br>");
+      this.#passwordError.innerHTML = `Password errors:<br>${passwordErrors}`;
+      this.#passwordError.style.display = "block"; //エラーメッセージを表示する
+    } else {
+      this.#passwordError.style.display = "none";
+    }
+  }
+
+  #handleStatusError(code) {
+    if (code && Array.isArray(code)) {
+      const errorMessages = code
+        .map((errorCode) => {
+          const messageKey = MessageEnums.AccountsCode[errorCode];
+          return messageKey ? ApiMessage.Accounts[messageKey] : `Unknown error: ${errorCode}`;
+        })
+        .join("<br>");
+      this.#loginError.innerHTML = errorMessages;
+      this.#loginError.style.display = "block";
+      throw new Error(errorMessages);
+    } else {
+      this.#loginError.textContent = "An unknown error occurred";
+      this.#loginError.style.display = "block";
+      throw new Error("An unknown error occurred");
+    }
   }
 }
