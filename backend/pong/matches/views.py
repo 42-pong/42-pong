@@ -43,6 +43,13 @@ from .match import serializers
                 ],
                 location=OpenApiParameter.QUERY,
             ),
+            OpenApiParameter(
+                name="page",
+                description="paginationのページ数",
+                required=False,
+                type=int,
+                location=OpenApiParameter.QUERY,
+            ),
         ],
         request=None,
         responses={
@@ -54,60 +61,65 @@ from .match import serializers
                         "Example 200 response",
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
-                            custom_response.DATA: [
-                                {
-                                    constants.MatchFields.ID: 1,
-                                    constants.MatchFields.ROUND_ID: 1,
-                                    constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.COMPLETED.value,
-                                    constants.MatchFields.CREATED_AT: "2025-01-01T00:01:00.000000+09:00",
-                                    constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
-                                    "participations": [
-                                        {
-                                            "user_id": 1,
-                                            constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.ONE.value,
-                                            constants.ParticipationFields.IS_WIN: True,
-                                            "scores": [
-                                                {
-                                                    constants.ScoreFields.CREATED_AT: "2025-01-01T00:00:00.000000+09:00",
-                                                    constants.ScoreFields.POS_X: 600,
-                                                    constants.ScoreFields.POS_Y: 10,
-                                                },
-                                                {"..."},
-                                            ],
-                                        },
-                                        {
-                                            "user_id": 2,
-                                            constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.TWO.value,
-                                            constants.ParticipationFields.IS_WIN: False,
-                                            "scores": [
-                                                {
-                                                    constants.ScoreFields.CREATED_AT: "2025-01-01T00:00:30.000000+09:00",
-                                                    constants.ScoreFields.POS_X: 0,
-                                                    constants.ScoreFields.POS_Y: 380,
-                                                },
-                                                {"..."},
-                                            ],
-                                        },
-                                    ],
-                                },
-                                {
-                                    constants.MatchFields.ID: 2,
-                                    constants.MatchFields.ROUND_ID: 1,
-                                    constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.ON_GOING.value,
-                                    constants.MatchFields.CREATED_AT: "2025-01-01T00:03:00.000000+09:00",
-                                    constants.MatchFields.UPDATED_AT: "2025-01-01T00:06:00.000000+09:00",
-                                    "participations": [{"..."}],
-                                },
-                                {
-                                    constants.MatchFields.ID: 3,
-                                    constants.MatchFields.ROUND_ID: 2,
-                                    constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.NOT_STARTED.value,
-                                    constants.MatchFields.CREATED_AT: "2025-01-01T00:03:00.000000+09:00",
-                                    constants.MatchFields.UPDATED_AT: "2025-01-01T00:06:00.000000+09:00",
-                                    "participations": [{"..."}],
-                                },
-                                {"..."},
-                            ],
+                            custom_response.DATA: {
+                                custom_pagination.PaginationFields.COUNT: 10,
+                                custom_pagination.PaginationFields.NEXT: "http://localhost:8000/api/matches/?page=2",
+                                custom_pagination.PaginationFields.PREVIOUS: None,
+                                custom_pagination.PaginationFields.RESULTS: [
+                                    {
+                                        constants.MatchFields.ID: 1,
+                                        constants.MatchFields.ROUND_ID: 1,
+                                        constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.COMPLETED.value,
+                                        constants.MatchFields.CREATED_AT: "2025-01-01T00:01:00.000000+09:00",
+                                        constants.MatchFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
+                                        "participations": [
+                                            {
+                                                "user_id": 1,
+                                                constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.ONE.value,
+                                                constants.ParticipationFields.IS_WIN: True,
+                                                "scores": [
+                                                    {
+                                                        constants.ScoreFields.CREATED_AT: "2025-01-01T00:00:00.000000+09:00",
+                                                        constants.ScoreFields.POS_X: 600,
+                                                        constants.ScoreFields.POS_Y: 10,
+                                                    },
+                                                    {"..."},
+                                                ],
+                                            },
+                                            {
+                                                "user_id": 2,
+                                                constants.ParticipationFields.TEAM: constants.ParticipationFields.TeamEnum.TWO.value,
+                                                constants.ParticipationFields.IS_WIN: False,
+                                                "scores": [
+                                                    {
+                                                        constants.ScoreFields.CREATED_AT: "2025-01-01T00:00:30.000000+09:00",
+                                                        constants.ScoreFields.POS_X: 0,
+                                                        constants.ScoreFields.POS_Y: 380,
+                                                    },
+                                                    {"..."},
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                    {
+                                        constants.MatchFields.ID: 2,
+                                        constants.MatchFields.ROUND_ID: 1,
+                                        constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.ON_GOING.value,
+                                        constants.MatchFields.CREATED_AT: "2025-01-01T00:03:00.000000+09:00",
+                                        constants.MatchFields.UPDATED_AT: "2025-01-01T00:06:00.000000+09:00",
+                                        "participations": [{"..."}],
+                                    },
+                                    {
+                                        constants.MatchFields.ID: 3,
+                                        constants.MatchFields.ROUND_ID: 2,
+                                        constants.MatchFields.STATUS: constants.MatchFields.StatusEnum.NOT_STARTED.value,
+                                        constants.MatchFields.CREATED_AT: "2025-01-01T00:03:00.000000+09:00",
+                                        constants.MatchFields.UPDATED_AT: "2025-01-01T00:06:00.000000+09:00",
+                                        "participations": [{"..."}],
+                                    },
+                                    {"..."},
+                                ],
+                            },
                         },
                     ),
                 ],
