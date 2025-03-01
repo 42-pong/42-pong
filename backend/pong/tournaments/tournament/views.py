@@ -13,6 +13,7 @@ from rest_framework import permissions, viewsets
 from jwt.authentication import CustomJWTAuthentication
 from matches import constants as matches_constants
 from pong import readonly_custom_renderer
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 
 from .. import constants as tournaments_constants
@@ -439,7 +440,7 @@ class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.TournamentQuerySerializer
-    renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]
+    pagination_class = custom_pagination.CustomPagination
 
     def get_queryset(self) -> QuerySet:
         queryset = models.Tournament.objects.all().prefetch_related(
@@ -457,3 +458,13 @@ class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             filters &= Q(tournament_participations__player__user_id=user_id)
 
         return queryset.filter(filters)
+
+    def get_renderers(self) -> list:
+        """
+        アクションに応じてレンダラークラスを指定する
+        - list    : pagination classの方でカスタムレスポンスを返すため、renderersではカスタムしない
+        - retrieve: カスタムrendererを使用
+        """
+        if self.action == "retrieve":
+            return [readonly_custom_renderer.ReadOnlyCustomJSONRenderer()]
+        return super().get_renderers()
