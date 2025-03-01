@@ -1,3 +1,5 @@
+import asyncio
+
 from channels.layers import get_channel_layer  # type: ignore
 
 from ws.share import constants as ws_constants
@@ -25,6 +27,9 @@ class TournamentManager:
         self.channel_handler = channel_handler.ChannelHandler(
             get_channel_layer(), None
         )
+        self.waiting_for_participants = (
+            asyncio.Event()
+        )  # 参加者を待機するイベント
 
     async def add_participant(
         self, participant: player_data.PlayerData
@@ -33,7 +38,13 @@ class TournamentManager:
         参加者を追加。DBにも参加テーブルを作成する。
         参加者が4人になったらトーナメントを開始する。
         """
-        pass
+        self.participants.append(participant)
+        # TODO: 参加レコードを作成
+        await self._send_player_reload_message()
+
+        if len(self.participants) == 4:
+            # 4人集まったらイベントをセットしてトーナメントを開始
+            self.waiting_for_participants.set()
 
     async def remove_participant(
         self, participant: player_data.PlayerData
@@ -42,6 +53,23 @@ class TournamentManager:
         参加者を削除。DBから参加テーブルを削除する。
         """
         pass
+
+    async def run(self) -> None:
+        """
+        トーナメントのすべての進行を管理する関数
+        """
+        # 4人参加するまで待機。
+        await self.waiting_for_participants.wait()
+
+        # トーナメントの開始処理を行う。
+        await self._start_tournament()
+
+        # ラウンドを1つずつ進める。
+        # もし次のラウンドが残っていれば再び実行される。
+        await self._progress_rounds()
+
+        # トーナメントの終了処理を行う。
+        await self._end_tournament()
 
     async def _start_tournament(self) -> None:
         """
