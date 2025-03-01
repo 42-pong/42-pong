@@ -71,7 +71,9 @@ class TournamentManagerRegistry:
                 return  # トーナメントが存在しない場合は何もしない
 
             tournament_manager = self.tournaments[tournament_id]
-            tournament_manager.add_participant(participant)  # 参加者を追加
+            await tournament_manager.add_participant(
+                participant
+            )  # 参加者を追加
 
     async def remove_participant(
         self, tournament_id: int, participant: player_data.PlayerData
@@ -85,4 +87,13 @@ class TournamentManagerRegistry:
                 return  # トーナメントが存在しない場合は何もしない
 
             tournament_manager = self.tournaments[tournament_id]
-            tournament_manager.remove_participant(participant)  # 参加者を削除
+            remaining_participants = (
+                await tournament_manager.remove_participant(participant)
+            )  # 参加者を削除
+
+            # もし参加者が残っていなければ、トーナメントをキャンセルし実行中のトーナメントタスクを止める
+            if remaining_participants == 0:
+                task = self.tasks.get(tournament_id)
+                if task is not None:
+                    task.cancel()  # タスクをキャンセル
+                    await task  # キャンセルしたタスクの完了を待機

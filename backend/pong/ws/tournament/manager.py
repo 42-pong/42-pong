@@ -48,11 +48,22 @@ class TournamentManager:
 
     async def remove_participant(
         self, participant: player_data.PlayerData
-    ) -> None:
+    ) -> int:
         """
         参加者を削除。DBから参加テーブルを削除する。
+
+        Returns:
+            int: 削除後の参加者数を返す。
         """
-        pass
+        if participant in self.participants:
+            self.participants.remove(participant)
+        # TODO: 参加レコードを削除
+        if len(self.participants) == 0:
+            await self.cancel_tournament()
+            return 0
+
+        await self._send_player_reload_message()
+        return len(self.participants)
 
     async def run(self) -> None:
         """
