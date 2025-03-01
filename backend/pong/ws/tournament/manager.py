@@ -102,13 +102,16 @@ class TournamentManager:
         """
         トーナメント終了処理。
         """
-        pass
+        # TODO: 参加者が全員いなくなるのを待ってから、manager_registryから削除?
+        # TODO: 優勝者のランクを更新
+        await self._send_tournament_reload_message()
 
     async def cancel_tournament(self) -> None:
         """
         トーナメント中止処理。
         """
-        pass
+        # トーナメント開始後のキャンセル処理
+        # TODO: すべてのNOT_STARTEDのリソースをCANCELEDに変更
 
     async def _send_player_reload_message(self) -> None:
         """
