@@ -274,7 +274,7 @@ CORS_ALLOW_METHODS = [
     "DELETE",
     "OPTIONS",
 ]
-# todo: CSRFについての設定は必要になり次第追加
+CSRF_TRUSTED_ORIGINS = ["https://localhost"]
 
 
 # Django logging
