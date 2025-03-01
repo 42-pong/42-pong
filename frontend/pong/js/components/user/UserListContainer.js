@@ -86,4 +86,8 @@ export class UserListContainer extends Component {
     Object.assign(this.#userList._getState(), { items: users });
     this.append(this.#userList, this.#userProfileContainer);
   }
+
+  reloadList() {
+    if (this.#userList) this.#userList._updateState();
+  }
 }
