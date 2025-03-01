@@ -1,10 +1,8 @@
 import logging
 from typing import Optional
 
-from channels.db import (  # type: ignore
-    database_async_to_sync,
-    database_sync_to_async,
-)
+from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async  # type: ignore
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import DatabaseError, transaction
 from rest_framework import serializers as drf_serializers
@@ -14,15 +12,18 @@ from accounts.player import models as player_models
 from tournaments import constants
 from tournaments.participation import models as participation_models
 from tournaments.participation import serializers as participation_serializers
+from tournaments.round import models as round_models
 from tournaments.tournament import models as tournament_models
 from tournaments.tournament import serializers as tournament_serializers
 
 logger = logging.getLogger(__name__)
 CreateParticipationResult = utils.result.Result[dict, dict]
+CreateRoundResult = utils.result.Result[dict, dict]
 CreateTournamentResult = utils.result.Result[dict, dict]
 DeleteParticipationResult = utils.result.Result[dict, dict]
-UpdateTournamentResult = utils.result.Result[dict, dict]
 UpdateParticipationResult = utils.result.Result[dict, dict]
+UpdateTournamentResult = utils.result.Result[dict, dict]
+UpdateRoundResult = utils.result.Result[dict, dict]
 
 
 def _handle_validation_error(e: drf_serializers.ValidationError) -> dict:
@@ -140,9 +141,7 @@ def create_tournament_with_participation(
             tournament: dict = tournament_serializer.save()
 
             # 2. 参加情報を作成（create_participation関数を呼び出す）
-            participation_result = database_async_to_sync(
-                create_participation
-            )(
+            participation_result = async_to_sync(create_participation)(
                 tournament_id=tournament[constants.TournamentFields.ID],
                 user_id=user_id,
                 participation_name=participation_name,
@@ -326,3 +325,79 @@ def delete_participation(
     return DeleteParticipationResult.ok(
         {"message": "Participation deleted successfully."}
     )
+
+
+@database_sync_to_async
+def create_round(tournament_id: int, round_number: int) -> CreateRoundResult:
+    """
+    新しいRoundインスタンスを作成する非同期関数。
+
+    Args:
+        tournament_id: トーナメントのID
+        round_number: トーナメント内でのラウンド番号
+
+    Returns:
+        UpdateRoundResult: Round作成結果。成功時は作成したRoundのデータ、失敗時はエラーメッセージ。
+    """
+    try:
+        # ラウンドを作成
+        round_instance = round_models.Round.objects.create(
+            tournament_id=tournament_id,
+            round_number=round_number,
+        )
+
+        # 成功時は作成したラウンドのデータを返す
+        round_data = {
+            constants.RoundFields.ID: round_instance.id,
+            constants.RoundFields.TOURNAMENT_ID: round_instance.tournament.id,
+            constants.RoundFields.ROUND_NUMBER: round_instance.round_number,
+            constants.RoundFields.STATUS: round_instance.status,
+        }
+        return CreateRoundResult.ok(round_data)
+
+    except tournament_models.Tournament.DoesNotExist:
+        return CreateRoundResult.error({"error": "Tournament not found."})
+    except DatabaseError as e:
+        return CreateRoundResult.error(
+            {"error": f"Failed to create round: {str(e)}"}
+        )
+
+
+@database_sync_to_async
+def update_round_status(round_id: int, status: str) -> UpdateRoundResult:
+    """
+    Roundのステータスを更新する非同期関数。
+
+    Args:
+        round_id: 更新するラウンドのID
+        status: 更新するラウンドのステータス（省略可能）
+
+    Returns:
+        UpdateRoundResult: 更新結果。成功時は更新したRoundのデータ、失敗時はエラーメッセージ。
+    """
+    try:
+        with transaction.atomic():
+            # ラウンドIDでラウンドを取得
+            round_instance = round_models.Round.objects.get(id=round_id)
+
+            # ラウンドのステータスを更新
+            round_instance.status = status
+
+            # 保存
+            round_instance.save()
+
+            # 成功時は更新したラウンドのデータを返す
+            round_data = {
+                constants.RoundFields.ID: round_instance.id,
+                constants.RoundFields.TOURNAMENT_ID: round_instance.tournament.id,
+                constants.RoundFields.ROUND_NUMBER: round_instance.round_number,
+                constants.RoundFields.STATUS: round_instance.status,
+            }
+            return UpdateRoundResult.ok(round_data)
+
+    except round_models.Round.DoesNotExist:
+        return UpdateRoundResult.error({"error": "Round not found."})
+    except DatabaseError as e:
+        return UpdateRoundResult.error(
+            {"error": f"Failed to update round: {str(e)}"}
+        )
