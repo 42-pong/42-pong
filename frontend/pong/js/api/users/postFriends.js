@@ -1,5 +1,6 @@
 import { Endpoints } from "../../constants/Endpoints";
 import { isValidId } from "../../utils/isValidId";
+import { requestStatus } from "../../utils/user/requestStatus";
 import { createPostMethodOption } from "../utils/createPostMethodOption";
 import { fetchAuthenticatedData } from "../utils/fetchAuthenticatedData";
 import { convertFriendData } from "./convertFriendData";
@@ -18,5 +19,6 @@ export async function postFriends(userId) {
   );
 
   const user = error ? null : convertFriendData(data);
+  if (user) requestStatus(user.id);
   return { user, error };
 }
