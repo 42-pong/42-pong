@@ -4,26 +4,41 @@ const setFixed = (element) => {
   return setClassNames(element, "position-fixed");
 };
 
-const setTop = (element) => {
-  return setClassNames(element, "top-0");
+const setRelative = (element) => {
+  return setClassNames(element, "position-relative");
 };
 
-const setBottom = (element) => {
-  return setClassNames(element, "bottom-0");
+const setAbsolute = (element) => {
+  return setClassNames(element, "position-absolute");
 };
 
-const setStart = (element) => {
-  return setClassNames(element, "start-0");
+const setTop = (element, position = 0) => {
+  return setClassNames(element, `top-${position}`);
 };
 
-const setEnd = (element) => {
-  return setClassNames(element, "end-0");
+const setBottom = (element, position = 0) => {
+  return setClassNames(element, `bottom-${position}`);
+};
+
+const setStart = (element, position = 0) => {
+  return setClassNames(element, `start-${position}`);
+};
+
+const setEnd = (element, position = 0) => {
+  return setClassNames(element, `end-${position}`);
+};
+
+const setTranslateMiddle = (element) => {
+  return setClassNames(element, "translate-middle");
 };
 
 export const BootstrapPosition = {
   setFixed,
+  setRelative,
+  setAbsolute,
   setTop,
   setBottom,
   setStart,
   setEnd,
+  setTranslateMiddle,
 };
