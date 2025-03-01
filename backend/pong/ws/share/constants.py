@@ -11,6 +11,7 @@ class BaseEnum(Enum):
 class Category(BaseEnum):
     LOGIN = "LOGIN"
     MATCH = "MATCH"
+    TOURNAMENT = "TOURNAMENT"
     # TODO: 他のカテゴリーは順次追加する
 
 

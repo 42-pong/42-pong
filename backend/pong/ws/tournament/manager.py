@@ -1,6 +1,9 @@
 from channels.layers import get_channel_layer  # type: ignore
 
+from ws.share import constants as ws_constants
+
 from ..share import channel_handler, player_data
+from . import constants as tournament_constants
 
 
 class TournamentManager:
@@ -67,3 +70,44 @@ class TournamentManager:
         トーナメント中止処理。
         """
         pass
+
+    async def _send_player_reload_message(self) -> None:
+        """
+        参加者が変わったことをConsumerに伝える関数
+        これを受け取ったプレーヤーはRESTAPIで情報を取得し、画面を更新する。
+        """
+        message = self._build_tournament_message(
+            tournament_constants.Type.RELOAD.value,
+            {
+                tournament_constants.Event.key(): tournament_constants.Event.PLAYER_CHANGE.value
+            },
+        )
+        await self.channel_handler.send_to_group(self.group_name, message)
+
+    async def _send_tournament_reload_message(self) -> None:
+        """
+        トーナメントの状態が変わったことをConsumerに伝える関数
+        これを受け取ったプレーヤーはRESTAPIで情報を取得し、画面を更新する。
+        """
+        message = self._build_tournament_message(
+            tournament_constants.Type.RELOAD.value,
+            {
+                tournament_constants.Event.key(): tournament_constants.Event.TOURNAMENT_STATE_CHANGE.value
+            },
+        )
+        await self.channel_handler.send_to_group(self.group_name, message)
+
+    def _build_tournament_message(self, type: str, data: dict) -> dict:
+        """
+        プレーヤーに送るトーナメントメッセージを作成。
+
+        :param data: ステージに関連するデータ
+        :return: 作成したメッセージ
+        """
+        return {
+            ws_constants.Category.key(): ws_constants.Category.TOURNAMENT.value,
+            ws_constants.PAYLOAD_KEY: {
+                tournament_constants.Type.key(): type,
+                ws_constants.DATA_KEY: data,
+            },
+        }
