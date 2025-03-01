@@ -142,16 +142,17 @@ export class SignUpContainer extends Component {
       const errorMessages = code
         .map((errorCode) => {
           const messageKey = MessageEnums.AccountsCode[errorCode];
-          return messageKey ? ApiMessage.Accounts[messageKey] : `Unknown error: ${errorCode}`;
+          return messageKey
+            ? ApiMessage.Accounts[messageKey]
+            : `Unknown error: ${errorCode}`;
         })
         .join("<br>");
       this.#loginError.innerHTML = errorMessages;
       this.#loginError.style.display = "block";
       throw new Error(errorMessages);
-    } else {
-      this.#loginError.textContent = "An unknown error occurred";
-      this.#loginError.style.display = "block";
-      throw new Error("An unknown error occurred");
     }
+    this.#loginError.textContent = "An unknown error occurred";
+    this.#loginError.style.display = "block";
+    throw new Error("An unknown error occurred");
   }
 }
