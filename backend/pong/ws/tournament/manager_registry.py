@@ -54,7 +54,11 @@ class TournamentManagerRegistry:
         """
         tournament_id に対応する TournamentManager を削除
         """
-        pass
+        async with self.lock:
+            if tournament_id in self.tournaments:
+                del self.tournaments[tournament_id]  # トーナメントを削除
+                if tournament_id in self.tasks:
+                    del self.tasks[tournament_id]  # タスクを削除
 
     async def add_participant(
         self, tournament_id: int, participant: player_data.PlayerData
@@ -62,7 +66,12 @@ class TournamentManagerRegistry:
         """
         指定した TournamentManager に参加者を追加
         """
-        pass
+        async with self.lock:
+            if tournament_id not in self.tournaments:
+                return  # トーナメントが存在しない場合は何もしない
+
+            tournament_manager = self.tournaments[tournament_id]
+            tournament_manager.add_participant(participant)  # 参加者を追加
 
     async def remove_participant(
         self, tournament_id: int, participant: player_data.PlayerData
@@ -70,4 +79,10 @@ class TournamentManagerRegistry:
         """
         指定した TournamentManager から参加者を削除
         """
-        pass
+
+        async with self.lock:
+            if tournament_id not in self.tournaments:
+                return  # トーナメントが存在しない場合は何もしない
+
+            tournament_manager = self.tournaments[tournament_id]
+            tournament_manager.remove_participant(participant)  # 参加者を削除
