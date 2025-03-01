@@ -38,6 +38,10 @@ export class WebSocketWrapper {
       }
       this.#status.updateData(newData);
     });
+    this.attachHandler(WebSocketEnums.Category.STATUS, (payload) => {
+      const { user_id, online } = payload;
+      this.#status.updateData({ [user_id]: online });
+    });
   }
 
   get readyState() {
