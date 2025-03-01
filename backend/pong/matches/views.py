@@ -237,8 +237,10 @@ class MatchReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = custom_pagination.CustomPagination
 
     def get_queryset(self) -> QuerySet:
-        queryset = match_models.Match.objects.all().prefetch_related(
-            "match_participations__scores"
+        queryset = (
+            match_models.Match.objects.all()
+            .prefetch_related("match_participations__scores")
+            .order_by(constants.MatchFields.ID)
         )
 
         filters = Q()

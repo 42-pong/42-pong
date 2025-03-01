@@ -443,8 +443,10 @@ class TournamentReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = custom_pagination.CustomPagination
 
     def get_queryset(self) -> QuerySet:
-        queryset = models.Tournament.objects.all().prefetch_related(
-            "round__matches__match_participations__scores"
+        queryset = (
+            models.Tournament.objects.all()
+            .prefetch_related("round__matches__match_participations__scores")
+            .order_by(tournaments_constants.TournamentFields.ID)
         )
 
         filters = Q()

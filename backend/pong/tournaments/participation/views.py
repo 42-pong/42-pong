@@ -170,7 +170,9 @@ class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = custom_pagination.CustomPagination
 
     def get_queryset(self) -> QuerySet:
-        queryset = models.Participation.objects.all()
+        queryset = models.Participation.objects.all().order_by(
+            constants.ParticipationFields.ID
+        )
         filters = Q()
 
         user_id: Optional[str] = self.request.query_params.get("user-id")
