@@ -3,6 +3,7 @@ const Category = {
   TOURNAMENT: "TOURNAMENT",
   CHAT: "CHAT",
   LOGIN: "LOGIN",
+  STATUS: "STATUS",
 };
 
 const Tournament = {
