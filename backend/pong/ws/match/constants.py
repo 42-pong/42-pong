@@ -1,4 +1,8 @@
+from typing import Final
+
 from ..share import constants as ws_constants
+
+MATCH_ID: Final[str] = "match_id"
 
 
 class Stage(ws_constants.BaseEnum):
