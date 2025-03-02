@@ -58,6 +58,10 @@ class LoginHandler:
         # 存在しないユーザーであれば例外を投げる
         await self._validate_user_id(input_user_id)
 
+        # もし自分のオンライン状態を確認しようとしていたら無視
+        if input_user_id == self.user_id:
+            return
+
         exist = await AsyncRedisClient.exists(
             login_constants.USER_NAMESPACE,
             input_user_id,
