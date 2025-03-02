@@ -53,18 +53,14 @@ export class MyInfoContainer extends Component {
     const displayNameInput = createDisplayInputField(
       this.#displayInput,
     );
+    BootstrapSpacing.setMargin(displayNameInput, 5);
 
-    const usernameInput = createInputField(
+    const usernameInput = createReadOnlyInputField(
       "ユーザー名",
       username,
-      BootstrapButtons.setOutlinePrimary,
     );
 
-    const emailInput = createInputField(
-      "メール",
-      email,
-      BootstrapButtons.setOutlinePrimary,
-    );
+    const emailInput = createReadOnlyInputField("メール", email);
 
     const inputList = createAroundFlexBox(
       avatarImage,
@@ -80,7 +76,7 @@ export class MyInfoContainer extends Component {
   }
 }
 
-const createInputField = (labelName, placeholder, setButtonStyle) => {
+const createReadOnlyInputField = (labelName, placeholder) => {
   const label = createTextElement(labelName, 6);
   BootstrapSizing.setWidth25(label);
   const input = createElement(
@@ -88,14 +84,8 @@ const createInputField = (labelName, placeholder, setButtonStyle) => {
     { type: "text", value: placeholder },
     { disabled: "" },
   );
-  const button = createButton(
-    { textContent: "保存" },
-    { disabled: "" },
-  );
-  setButtonStyle(button);
-  BootstrapButtons.setSmall(button);
 
-  const layout = createAroundFlexBox(label, input, button);
+  const layout = createAroundFlexBox(label, input);
   BootstrapSizing.setWidth75(layout);
   return layout;
 };
