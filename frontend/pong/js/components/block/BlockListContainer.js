@@ -70,7 +70,7 @@ export class BlockListContainer extends Component {
 
 const noBlockedUser = () => {
   const content = createTextElement(
-    "ユーザーが見つかりませでした",
+    "ユーザーが見つかりませんでした",
     5,
     BootstrapBadge.setSecondary,
   );
