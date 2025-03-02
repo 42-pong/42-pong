@@ -27,6 +27,8 @@ export class MyInfoAvatar extends Component {
     BootstrapBorders.setRounded(this.#updateAvatarPanel);
     BootstrapSpacing.setMargin(this.#updateAvatarPanel);
     BootstrapSpacing.setPadding(this.#updateAvatarPanel);
+    this.#button.setPrimary();
+    this.#button.setSmall();
   }
 
   _onConnect() {

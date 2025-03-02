@@ -83,6 +83,7 @@ export class MyInfoContainer extends Component {
 
 const createInputField = (labelName, placeholder, setButtonStyle) => {
   const label = createTextElement(labelName, 6);
+  BootstrapSizing.setWidth25(label);
   const input = createElement(
     "input",
     { type: "text", value: placeholder },
@@ -102,6 +103,7 @@ const createInputField = (labelName, placeholder, setButtonStyle) => {
 
 const createDisplayInputField = (displayInput) => {
   const label = createTextElement("表示名", 6);
+  BootstrapSizing.setWidth25(label);
   const patchDisplayName = new EventDispatchingButton(
     { textContent: "保存" },
     {},
