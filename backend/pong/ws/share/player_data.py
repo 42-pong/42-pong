@@ -7,4 +7,4 @@ class PlayerData:
     channel_name: str
     # ローカルマッチでは登録しない
     user_id: Optional[int]
-    participation_name: Optional[int]
+    participation_name: Optional[str]
