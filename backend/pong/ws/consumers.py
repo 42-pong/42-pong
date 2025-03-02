@@ -20,9 +20,7 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         self.login_handler = login_handler.LoginHandler(
             self.channel_layer, self.channel_name
         )
-        self.match_handler = match_handler.MatchHandler(
-            self.channel_layer, self.channel_name
-        )
+        self.match_handler = match_handler.MatchHandler(self.channel_name)
         self.tournament_handler = tournament_handler.TournamentHandler(
             self.channel_layer,
             self.channel_name,
@@ -54,7 +52,9 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
                 ):
                     await self.login_handler.handle(payload)
                 case ws_constants.Category.MATCH.value:
-                    await self.match_handler.handle(payload)
+                    await self.match_handler.handle(
+                        payload, self.login_handler.user_id
+                    )
                 case ws_constants.Category.TOURNAMENT.value:
                     await self.tournament_handler.handle(
                         payload, self.login_handler.user_id
