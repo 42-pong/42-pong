@@ -5,6 +5,7 @@ from channels.generic.websocket import (  # type: ignore
 )
 from rest_framework import serializers
 
+from .login import handler as login_handler
 from .match import handler as match_handler
 from .share import constants as ws_constants
 from .share import serializers as ws_serializers
@@ -14,8 +15,10 @@ logger = logging.getLogger(__name__)
 
 class MultiEventConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self) -> None:
-        # TODO:login用のハンドラを作成したら追加
         # それぞれのイベントのハンドラを作成
+        self.login_handler = login_handler.LoginHandler(
+            self.channel_layer, self.channel_name
+        )
         self.match_handler = match_handler.MatchHandler(
             self.channel_layer, self.channel_name
         )
@@ -38,6 +41,11 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
 
             # TODO: LOGINメッセージルール確定したら追加
             match category:
+                case (
+                    ws_constants.Category.LOGIN.value
+                    | ws_constants.Category.STATUS.value
+                ):
+                    await self.login_handler.handle(payload)
                 case ws_constants.Category.MATCH.value:
                     await self.match_handler.handle(payload)
                 case _:
