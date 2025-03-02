@@ -1,8 +1,8 @@
 import { sendLogin } from "./sendPayloads";
 
-export const loginPayloadHandler = async (client, payload) => {
+export const loginPayloadHandler = (client) => {
   sendLogin(client, {
     status: "OK",
-    online_status_ids: [3, 4, 8, 7],
+    online_status_ids: [],
   });
 };
