@@ -48,7 +48,7 @@ class MatchManager:
         self.ready_players = 0
         self.waiting_player_ready = asyncio.Event()
         self.canceled = False
-        self.exited_player: Optional[player_data.PlayerData] = None
+        self.remained_player: Optional[player_data.PlayerData] = None
         self.channel_handler = channel_handler.ChannelHandler(
             get_channel_layer(), None
         )
@@ -59,10 +59,8 @@ class MatchManager:
         このクラスの作成側の関数はこの関数をバックグラウンドタスクとして実行し、終了を待つ。
 
         Returns:
-            None:
-                - 試合前にキャンセルした場合
             PlayerData:
-                - 試合中にキャンセルした場合： 残ったプレーヤ―のデータを勝利者として返す。
+                - 試合がキャンセルされた場合： 残ったプレーヤ―のデータを勝利者として返す。
                 - 正常に終了した場合： 勝利プレーヤ―のデータを返す。
         """
         # プレーヤーが準備完了のメッセージを送信するのを待つ
@@ -70,14 +68,14 @@ class MatchManager:
 
         if self.canceled:
             # 残っている方のPlayerDataを勝者として返す。
-            return self.exited_player
+            return self.remained_player
 
         # PongLogic開始
         await self._start_game()
 
         if self.canceled:
             # 残っている方のPlayerDataを勝者として返す。
-            return self.exited_player
+            return self.remained_player
 
         # ゲームが終了したら、Consumerに終了通知を送る
         await self._end_game()
@@ -277,9 +275,9 @@ class MatchManager:
         self.canceled = True
         # 退出したほうのプレーヤーをNoneに変更
         if exited_team == match_constants.Team.ONE.value:
-            self.exited_player = self.player1
+            self.remained_player = self.player1
         else:
-            self.exited_player = self.player2
+            self.remained_player = self.player2
 
         if not self.waiting_player_ready.is_set():
             # 試合開始前に終了
