@@ -17,7 +17,14 @@ def create_token(user_id: int, token_type: str) -> str:
     jwt_handler: jwt.JWT = jwt.JWT()
     now: int = int(datetime.utcnow().timestamp())
 
-    exp_time: dict = {"access": now + 500, "refresh": now + 3600}
+    minutes: int = 60
+    access_expire_minutes: int = 10
+    refresh_expire_minutes: int = 60
+
+    exp_time: dict = {
+        "access": now + access_expire_minutes * minutes,
+        "refresh": now + refresh_expire_minutes * minutes,
+    }
     exp = exp_time.get(token_type)
     if exp is None:
         logger.error(f"Invalid token type: {token_type}")
