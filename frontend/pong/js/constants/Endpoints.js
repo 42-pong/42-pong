@@ -1,6 +1,6 @@
 // TODO: バックエンドのエントポイントベースを環境変数からのものになるように改善
-const HOST = "localhost:8000";
-const BASE_URL = new URL(`http://${HOST}`);
+const HOST = "localhost:8080";
+const BASE_URL = new URL(`https://${HOST}`);
 const WEBSOCKET_BASE_URL = new URL(`ws://${HOST}`);
 
 const DEFAULT_AVATAR_IMAGE_PATH = "/media/avatars/sample.png";

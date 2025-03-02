@@ -6,7 +6,7 @@ from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from jwt import create_access_and_refresh_token
+from jwt import create_token_functions
 from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
@@ -100,6 +100,22 @@ class TokenObtainView(views.APIView):
                     ),
                 ],
             ),
+            500: utils.OpenApiResponse(
+                description="",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response (予期せぬエラーの場合)",
+                        value={
+                            "status": "error",
+                            "code": "internal_error",
+                        },
+                    ),
+                ],
+            ),
         },
     )
     def post(self, request: request.Request) -> response.Response:
@@ -118,7 +134,6 @@ class TokenObtainView(views.APIView):
                     - JWTトークンの生成に失敗した場合
                     - 予期せぬエラーが発生した場合
         """
-        # todo: email, passwordをシリアライズ作成する
         required_keys: set = {"email", "password"}
         request_keys: set = set(request.data.keys())
         if request_keys != required_keys:
@@ -143,12 +158,10 @@ class TokenObtainView(views.APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        tokens: dict = (
-            create_access_and_refresh_token.create_access_and_refresh_token(
-                user.id
-            )
+        tokens: dict = create_token_functions.create_access_and_refresh_token(
+            user.id
         )
-        if not tokens:
+        if not tokens["access"] or not tokens["refresh"]:
             return custom_response.CustomResponse(
                 code=["internal_error"],
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

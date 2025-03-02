@@ -50,7 +50,7 @@ class AsyncRedisClient:
     @classmethod
     async def sadd_value(
         cls, namespace: str, identifier: str, resource: str, value: str
-    ) -> None:
+    ) -> int:
         """
         指定したキーの Set に値を追加する。
         - `namespace="user", identifier="123", resource="channels"` → `"user:123:channels"` に `value` を追加
@@ -63,10 +63,12 @@ class AsyncRedisClient:
         key = cls._generate_key(namespace, identifier, resource)
         await client.sadd(key, value)
 
+        return await client.scard(key)
+
     @classmethod
     async def srem_value(
         cls, namespace: str, identifier: str, resource: str, value: str
-    ) -> None:
+    ) -> int:
         """
         指定したキーの Set から値を削除し、空ならキーごと削除する。
 
@@ -78,8 +80,11 @@ class AsyncRedisClient:
         key = cls._generate_key(namespace, identifier, resource)
         await client.srem(key, value)
 
-        if not await client.scard(key):  # セットが空ならキーを削除
+        count = await client.scard(key)
+        if count == 0:  # セットが空ならキーを削除
             await client.delete(key)
+
+        return count
 
     @classmethod
     async def smembers_value(

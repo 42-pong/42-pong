@@ -385,7 +385,7 @@ class BlocksViewSet(viewsets.ViewSet):
         # 自分のブロック一覧を取得
         block_users: QuerySet[models.BlockRelationship] = self.queryset.filter(
             user=user
-        )
+        ).order_by(constants.BlockRelationshipFields.CREATED_AT)
         paginator: custom_pagination.CustomPagination = (
             custom_pagination.CustomPagination()
         )
