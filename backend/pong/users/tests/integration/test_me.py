@@ -263,3 +263,24 @@ class UsersMeViewTests(test.APITestCase):
         # 最新のDBの情報に更新し、DBの値が変更されていないことを確認
         self.player.refresh_from_db()
         self.assertEqual(self.player.avatar.name, MOCK_AVATAR_NAME)
+
+    def test_patch_400_update_with_non_field(self) -> None:
+        """
+        display_nameとavatarのどちらも送らずに更新しようとするとエラーになることを確認
+        """
+        response: drf_response.Response = self.client.patch(
+            self.url,
+            {},  # 空のbody
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data[CODE], [constants.Code.INVALID])
+        errors: dict = response.data[ERRORS]
+        self.assertIn("non_field_errors", errors)
+        # 最新のDBの情報に更新し、DBの値が変更されていないことを確認
+        self.player.refresh_from_db()
+        self.assertEqual(
+            self.player.display_name, self.player_data[DISPLAY_NAME]
+        )
+        self.assertEqual(self.player.avatar.name, MOCK_AVATAR_NAME)
