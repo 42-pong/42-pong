@@ -54,7 +54,7 @@ export class MyInfoAvatar extends Component {
     );
     this.#button = new EventDispatchingButton(
       {
-        textContent: "アップロード",
+        textContent: "✏ アップロード",
       },
       {},
       PongEvents.PATCH_AVATAR,
