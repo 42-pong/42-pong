@@ -29,5 +29,5 @@ const deleteCookie = (name) => {
 export const Cookie = {
   setCookie,
   getCookie,
-  deleteCookie
+  deleteCookie,
 };
