@@ -83,3 +83,7 @@ class MatchManagerRegistry:
         async with self.lock:
             if match_id in self.managers:
                 await self.managers[match_id].player_exited(exited_team)
+
+
+# === グローバルな MatchManagerRegistry インスタンス ===
+global_registry = MatchManagerRegistry()
