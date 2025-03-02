@@ -98,7 +98,6 @@ export class LoginContainer extends Component {
         const { status, data, code} = await response.json();
 
         if (status !== "ok") {
-          console.log("test", code);
           this.#form.reset();
           this.#loginError.textContent =
             FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
@@ -115,16 +114,20 @@ export class LoginContainer extends Component {
         const refreshToken = data.refresh;
 
         //setCookie
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + expiration);
+        document.cookie = `refreshToken=${refreshToken}; expires=${expirationDate.toUTCString()}; `;
+
         setCookie("refreshToken", refreshToken, 7, "httpOnly: true,secure: true,sameSite: 'strict'");
 
 
         //getCookie
 
 
-        // const isVerified =
-        //   await UserSessionManager.getInstance().signIn(tokens);
-        // if (isVerified)
-        //   UserSessionManager.getInstance().redirect(Paths.HOME);
+        const isVerified =
+          await UserSessionManager.getInstance().signIn(tokens);
+        if (isVerified)
+          UserSessionManager.getInstance().redirect(Paths.HOME);
       } catch (error) {
         console.error("ログインエラー:", error);
       }
