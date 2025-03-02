@@ -8,7 +8,7 @@ from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from rest_framework import permissions, viewsets
+from rest_framework import exceptions, permissions, viewsets
 
 from jwt.authentication import CustomJWTAuthentication
 from pong import readonly_custom_renderer
@@ -271,6 +271,12 @@ class MatchReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         - list    : pagination classの方でカスタムレスポンスを返すため、renderersではカスタムしない
         - retrieve: カスタムrendererを使用
         """
-        if self.action == "retrieve":
+        if self.action == "list":
+            try:
+                super().list(self.request)
+            except exceptions.NotFound:
+                # ページネーションエラーで404の場合にカスタムレンダーを使用する
+                return [readonly_custom_renderer.ReadOnlyCustomJSONRenderer()]
+        elif self.action == "retrieve":
             return [readonly_custom_renderer.ReadOnlyCustomJSONRenderer()]
         return super().get_renderers()
