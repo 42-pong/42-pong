@@ -77,7 +77,6 @@ export class MyInfoAvatar extends Component {
     const myInfo = UserSessionManager.getInstance().myInfo.observe(
       (myInfo) => myInfo,
     );
-    // ✏️
 
     const { avatarPathname, avatarAlt } = formatUserInfo(myInfo);
 
@@ -86,9 +85,6 @@ export class MyInfoAvatar extends Component {
       alt: avatarAlt,
       height,
     });
-    // const submit = createButton({textContent: "Upload"}, {type: "submit"})
-    // const form = createElement("form", {}, {id:"formId"});
-    // form.append(this.#input, submit);
     this.append(avatar, this.#updateAvatarPanel);
   }
 }
