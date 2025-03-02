@@ -1,13 +1,7 @@
-export const convertFriendData = (friendData) => {
-  const {
-    friend_user_id,
-    friend: { username, display_name, avatar },
-  } = friendData;
+import { convertUserData } from "./convertUserData";
 
-  return {
-    id: friend_user_id,
-    username,
-    displayName: display_name,
-    avatar,
-  };
+export const convertFriendData = (friendData) => {
+  const { friend: userData } = friendData;
+
+  return convertUserData(userData);
 };

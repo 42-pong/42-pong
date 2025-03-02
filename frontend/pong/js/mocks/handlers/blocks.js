@@ -1,9 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { Endpoints } from "../../constants/Endpoints";
-import {
-  getSampleFriends,
-  sampleUsers,
-} from "../utils/createSamples";
+import { getSampleBlocks, sampleUsers } from "../utils/createSamples";
 import {
   notAuthenticatedHttpResponse,
   verifyToken,
@@ -13,34 +10,34 @@ import { simpleErrorResponse } from "../utils/simpleErrorResponse";
 
 export const handlers = [
   http.get(
-    Endpoints.FRIENDS.default.href,
+    Endpoints.BLOCKS.default.href,
     async ({ request: { headers } }) => {
       if (!verifyToken(headers))
         return notAuthenticatedHttpResponse();
 
       return HttpResponse.json({
         status: "ok",
-        data: getSampleFriends(),
+        data: getSampleBlocks(),
       });
     },
   ),
-  http.post(Endpoints.FRIENDS.default.href, async ({ request }) => {
+  http.post(Endpoints.BLOCKS.default.href, async ({ request }) => {
     if (!verifyToken(request.headers))
       return notAuthenticatedHttpResponse();
 
-    const { friend_user_id } = await request.json();
-    const user = sampleUsers.find(({ id }) => id === friend_user_id);
-    if (!(user && !user.is_friend)) return simpleErrorResponse();
+    const { blocked_user_id } = await request.json();
+    const user = sampleUsers.find(({ id }) => id === blocked_user_id);
+    if (!(user && !user.is_blocked)) return simpleErrorResponse();
 
-    user.is_friend = true;
+    user.is_blocked = true;
 
     return HttpResponse.json({
       status: "ok",
-      data: { friend: user },
+      data: { blocked_user: user },
     });
   }),
   http.delete(
-    Endpoints.FRIENDS.withId(":userId").href,
+    Endpoints.BLOCKS.withId(":userId").href,
     async ({ request: { headers }, params: { userId } }) => {
       if (!verifyToken(headers))
         return notAuthenticatedHttpResponse();
@@ -48,9 +45,9 @@ export const handlers = [
       const user = sampleUsers.find(
         ({ id }) => id.toString() === userId,
       );
-      if (!user?.is_friend) return simpleErrorResponse();
+      if (!user?.is_blocked) return simpleErrorResponse();
 
-      user.is_friend = false;
+      user.is_blocked = false;
 
       return simpleDeleteResponse();
     },

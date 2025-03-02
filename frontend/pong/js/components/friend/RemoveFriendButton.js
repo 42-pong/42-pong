@@ -1,11 +1,11 @@
-import { postFriends } from "../../api/users/postFriends";
+import { deleteFriends } from "../../api/users/deleteFriends";
 import { StyledButton } from "../../core/StyledButton";
 
-export class AddFriendButton extends StyledButton {
+export class RemoveFriendButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
     super(
       {
-        textContent: "フレンド追加",
+        textContent: "フレンド解除",
         user: null,
         reload: null,
         ...state,
@@ -15,7 +15,7 @@ export class AddFriendButton extends StyledButton {
   }
 
   _setStyle() {
-    this.setPrimary();
+    this.setOutlinePrimary();
     const {
       user: { isBlocked },
     } = this._getState();
@@ -39,7 +39,7 @@ export class AddFriendButton extends StyledButton {
       if (isBlocked) return;
 
       this.setTextContent("...");
-      postFriends(id).then(({ error }) => {
+      deleteFriends(id).then(({ error }) => {
         if (error) return;
         reload();
       });

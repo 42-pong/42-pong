@@ -18,7 +18,16 @@ export const Endpoints = Object.freeze({
   },
   TOKEN: new URL("/api/token/", BASE_URL),
   REFRESH_TOKEN: new URL("/api/token/refresh/", BASE_URL),
-  FRIENDS: new URL("/api/users/me/friends/", BASE_URL),
+  FRIENDS: {
+    default: new URL("/api/users/me/friends/", BASE_URL),
+    withId: (friendId) =>
+      new URL(`${friendId}/`, Endpoints.FRIENDS.default),
+  },
+  BLOCKS: {
+    default: new URL("/api/users/me/blocks/", BASE_URL),
+    withId: (blockedUserId) =>
+      new URL(`${blockedUserId}/`, Endpoints.BLOCKS.default),
+  },
   PARTICIPATIONS: new URL(
     "/api/tournaments/participations/",
     BASE_URL,
