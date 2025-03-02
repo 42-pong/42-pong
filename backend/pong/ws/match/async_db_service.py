@@ -120,15 +120,19 @@ def create_score(
     指定された match_id と user_id に対応する試合参加情報に紐づくスコアを作成する。
     """
     try:
-        participation = participation_models.Participation.objects.get(
-            match_id=match_id, player__user_id=user_id
-        )
+        with transaction.atomic():
+            participation = participation_models.Participation.objects.get(
+                match_id=match_id, player__user_id=user_id
+            )
 
-        score = score_models.Score.objects.create(
-            match_participation=participation,
-            pos_x=pos_x,
-            pos_y=pos_y,
-        )
+            score = score_models.Score.objects.create(
+                match_participation=participation,
+                pos_x=pos_x,
+                pos_y=pos_y,
+            )
+    except participation_models.Participation.DoesNotExist as e:
+        logger.error(f"DoesNotExist: {e}")
+        return CreateScoreResult.error({"DoesNotExist": str(e)})
     except DatabaseError as e:
         logger.error(f"DatabaseError: {e}")
         return CreateScoreResult.error({"DatabaseError": str(e)})
