@@ -4,7 +4,7 @@ from typing import Optional
 from ..share import constants as ws_constants
 from ..share import player_data
 from . import constants as match_constants
-from . import match_manager
+from . import manager_registry, match_manager
 from . import serializers as match_serializers
 
 
@@ -28,6 +28,7 @@ class MatchHandler:
             match_constants.Stage.END.value: self._handle_end,
         }
         self.is_local_play: bool = True
+        self.match_id: int = 0
         self.match_manager: Optional[match_manager.MatchManager] = None
         self.player_data: player_data.PlayerData = player_data.PlayerData(
             channel_name=channel_name,
@@ -111,6 +112,10 @@ class MatchHandler:
             await self.match_manager.handle_init_action(self.player_data)
         elif mode == match_constants.Mode.REMOTE.value:
             self.is_local_play = False
+            self.match_id = match_id
+            await manager_registry.global_registry.init_action(
+                self.match_id, self.player_data
+            )
 
         # TODO: remoteの場合のグループ作成方法は別で考える
 
@@ -127,7 +132,9 @@ class MatchHandler:
         if self.is_local_play and self.match_manager is not None:
             await self.match_manager.handle_ready_action(self.player_data)
         else:
-            pass
+            await manager_registry.global_registry.ready_action(
+                self.match_id, self.player_data
+            )
 
         # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
         self.stage = match_constants.Stage.PLAY
@@ -148,24 +155,32 @@ class MatchHandler:
             elif move == match_constants.Move.DOWN.value:
                 await self.match_manager.paddle_down(team)
         else:
-            pass
+            if move == match_constants.Move.UP.value:
+                await manager_registry.global_registry.paddle_up(
+                    self.match_id, team
+                )
+            elif move == match_constants.Move.DOWN.value:
+                await manager_registry.global_registry.paddle_down(
+                    self.match_id, team
+                )
 
     async def _handle_end(self, data: dict) -> None:
         """
         ENDステージのメッセージが送られてきたときの処理
         プレーヤーがmatchを退出したときの処理を行う。
         """
-        if (
-            self.is_local_play
-            and self.local_match_task
-            and not self.local_match_task.done()
-        ):
-            self.local_match_task.cancel()  # タスクをキャンセル
-            try:
-                # キャンセル後、タスクが終了するのを待つ
-                await self.local_match_task
-            except asyncio.CancelledError:
-                pass
+        if self.is_local_play:
+            if self.local_match_task and not self.local_match_task.done():
+                self.local_match_task.cancel()  # タスクをキャンセル
+                try:
+                    # キャンセル後、タスクが終了するのを待つ
+                    await self.local_match_task
+                except asyncio.CancelledError:
+                    pass
+        else:
+            await manager_registry.global_registry.exit_match(
+                self.match_id, self.player_data
+            )
 
         await self.cleanup()
 
@@ -177,3 +192,4 @@ class MatchHandler:
         self.stage = None
         self.is_local_play = True
         self.match_manager = None
+        self.match_id = 0
