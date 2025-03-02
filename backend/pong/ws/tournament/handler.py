@@ -35,6 +35,7 @@ class TournamentHandler:
             channel_handler.ChannelHandler(channel_layer, channel_name)
         )
         self.manager_registry = manager_registry
+        self.user_id: Optional[int] = None
 
     def __str__(self) -> str:
         """
@@ -48,10 +49,17 @@ class TournamentHandler:
         """
         return f"TournamentHandler(channel_handler={self.channel_handler!r})"
 
-    async def handle(self, payload: dict) -> None:
+    async def handle(self, payload: dict, user_id: Optional[int]) -> None:
         """
         consumerから呼ばれる、payloadごとに処理を振り分ける関数
         """
+        # まだログインしていないユーザーからのメッセージは無視
+        if user_id is None:
+            return
+        # まだログインしてから初回のメッセージでuser_idを登録
+        if self.user_id is None:
+            self.user_id = user_id
+
         type: str = payload[tournament_constants.Type.key()]
         data: dict = payload[ws_constants.DATA_KEY]
         handler = self.type_handlers[type]
