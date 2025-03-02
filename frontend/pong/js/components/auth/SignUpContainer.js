@@ -1,4 +1,5 @@
 import { AuthConstants } from "../../constants/AuthConstants";
+import { Paths } from "../../constants/Paths";
 import { Endpoints } from "../../constants/Endpoints";
 import { ApiMessage } from "../../constants/message/ApiMessage";
 import { Component } from "../../core/Component";
@@ -94,9 +95,8 @@ export class SignUpContainer extends Component {
             password: password,
           }),
         });
-        const { status, code, errors } = await response.json();
 
-        this.#handleErrors(errors);
+        const { status, code } = await response.json();
 
         if (status !== "ok") {
           this.#form.reset();
@@ -105,6 +105,18 @@ export class SignUpContainer extends Component {
           this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
           this.#mailError.style.display = "none";
           this.#passwordError.style.display = "none";
+
+          // 成功メッセージを表示
+          const successMessage = document.createElement("div");
+          successMessage.className = "success-message";
+          successMessage.textContent =
+            "アカウントが正常に作成されました。ログインページにリダイレクトします...";
+          successMessage.style.color = "green";
+          this.#form.appendChild(successMessage);
+          // 数秒後にログインページにリダイレクト
+          setTimeout(() => {
+            this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.LOGIN));
+          }, 2000);
         }
       } catch (error) {
         console.error("ログインエラー:", error);
@@ -117,24 +129,6 @@ export class SignUpContainer extends Component {
     this.#container.append(this.#title, this.#form);
     // コンテナをカスタム要素に追加
     this.appendChild(this.#container);
-  }
-
-  #handleErrors(errors) {
-    if (errors?.email) {
-      const emailErrors = errors.email.join("<br>");
-      this.#mailError.innerHTML = `Email errors:<br>${emailErrors}`;
-      this.#mailError.style.display = "block"; //エラーメッセージを表示する
-    } else {
-      this.#mailError.style.display = "none";
-    }
-
-    if (errors?.password) {
-      const passwordErrors = errors.password.join("<br>");
-      this.#passwordError.innerHTML = `Password errors:<br>${passwordErrors}`;
-      this.#passwordError.style.display = "block"; //エラーメッセージを表示する
-    } else {
-      this.#passwordError.style.display = "none";
-    }
   }
 
   #handleStatusError(code) {
