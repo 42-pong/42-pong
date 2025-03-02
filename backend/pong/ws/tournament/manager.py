@@ -97,7 +97,14 @@ class TournamentManager:
         リソースを作成した後に、ラウンドを作成する。
         """
         # TODO: トーナメント開始アナウンスを送信。
-        # TODO: トーナメントの状態をON_GOINGに更新
+        update_result = await tournament_service.update_tournament_status(
+            self.tournament_id,
+            tournament_db_constants.TournamentFields.StatusEnum.ON_GOING.value,
+        )
+
+        # TODO: Error処理
+        if update_result.is_error():
+            return update_result  #
 
         # トーナメント情報を更新するように通知
         await self._send_tournament_reload_message()
@@ -123,7 +130,9 @@ class TournamentManager:
 
         # ラウンド作成
         round_result = await tournament_service.create_round(
-            self.tournament_id, round_number
+            self.tournament_id,
+            round_number,
+            tournament_db_constants.RoundFields.StatusEnum.ON_GOING.value,
         )
         # TODO: Error処理
         if round_result.is_error():
@@ -141,7 +150,14 @@ class TournamentManager:
             round_number, match_results
         )
 
-        # TODO: ラウンドの状態を更新
+        round_result = await tournament_service.update_round_status(
+            round_id,
+            tournament_db_constants.RoundFields.StatusEnum.COMPLETED.value,
+        )
+        # TODO: Error処理
+        if round_result.is_error():
+            return round_result  # エラー発生時は処理を中断
+
         # TODO: ラウンド終了をアナウンス
 
         await self._progress_rounds(next_round_participants, round_number + 1)
@@ -286,7 +302,14 @@ class TournamentManager:
         トーナメント終了処理。
         """
         # TODO: 参加者が全員いなくなるのを待ってから、manager_registryから削除?
-        # TODO: 優勝者のランクを更新
+        update_result = await tournament_service.update_tournament_status(
+            self.tournament_id,
+            tournament_db_constants.TournamentFields.StatusEnum.COMPLETED.value,
+        )
+        # TODO: Error処理
+        if update_result.is_error():
+            return update_result  # エラー発生時は処理を中断
+
         await self._send_tournament_reload_message()
 
     async def cancel_tournament(self) -> None:
@@ -294,7 +317,8 @@ class TournamentManager:
         トーナメント中止処理。
         """
         # トーナメント開始後のキャンセル処理
-        # TODO: すべてのNOT_STARTEDのリソースをCANCELEDに変更
+        # TODO: すべてのCOMPLETEDではないのリソースをCANCELEDに変更
+        pass
 
     async def _send_player_reload_message(self) -> None:
         """
