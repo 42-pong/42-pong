@@ -62,7 +62,7 @@ class MatchManagerRegistry:
             if match_id in self.managers:
                 await self.managers[match_id].handle_init_action(player)
 
-    async def init_ready(
+    async def ready_action(
         self, match_id: int, player: player_data.PlayerData
     ) -> None:
         async with self.lock:
