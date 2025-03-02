@@ -294,7 +294,7 @@ LOGGING = {
     # todo: アプリごとにログレベルを設定する場合は追加する
     # 詳細: https://docs.python.org/ja/3/library/logging.config.html#dictionary-schema-details
     "root": {
-        "handlers": ["debug", "warning"],
-        "level": "DEBUG" if DEBUG else "WARNING",
+        "handlers": ["warning"],
+        "level": "WARNING",
     },
 }
