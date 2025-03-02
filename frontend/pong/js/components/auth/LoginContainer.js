@@ -4,6 +4,7 @@ import { FrontendMessage } from "../../constants/message/FrontendMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
+import { SignUpButton } from "./SignUpButton";
 
 export class LoginContainer extends Component {
   #container;
@@ -60,9 +61,7 @@ export class LoginContainer extends Component {
     oauth2Button.textContent = "42 OAuth 2.0";
 
     // サインアップボタン作成
-    const signupButton = document.createElement("button");
-    signupButton.type = "button";
-    signupButton.textContent = "サインアップ";
+    const signupButton = new SignUpButton();
 
     form.append(
       this.#loginError,
