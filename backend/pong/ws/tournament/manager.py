@@ -215,6 +215,10 @@ class TournamentManager:
                 asyncio.create_task(match_manager.run())
             )
 
+            # 試合開始を 各consumer に通知
+            await self._send_assign_match_message(match_id, player1)
+            await self._send_assign_match_message(match_id, player2)
+
             self.valid_matches.append((match_id, match_manager))
 
         # 参加レコードを並列作成
@@ -317,6 +321,21 @@ class TournamentManager:
             },
         )
         await self.channel_handler.send_to_group(self.group_name, message)
+
+    async def _send_assign_match_message(
+        self, match_id: int, player: player_data.PlayerData
+    ) -> None:
+        """
+        トーナメントの状態が変わったことをConsumerに伝える関数
+        これを受け取ったプレーヤーはRESTAPIで情報を取得し、画面を更新する。
+        """
+        message = self._build_tournament_message(
+            tournament_ws_constants.Type.ASSIGNED.value,
+            {tournament_ws_constants.MATCH_ID: match_id},
+        )
+        await self.channel_handler.send_to_consumer(
+            message, player.channel_name
+        )
 
     def _build_tournament_message(self, type: str, data: dict) -> dict:
         """
