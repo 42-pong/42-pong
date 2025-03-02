@@ -131,21 +131,17 @@ class TournamentHandler:
         """
         playerからtournamentから退出する際の処理を行う関数
         """
-        # TODO: Redisに退出PUBLISH
-        # TODO: 参加レコード削除のDBアクセス
-        await self._reload_player_change()  # 全員にPLAYER情報のRELOAD通知
+        tournament_id = data[tournament_constants.TOURNAMENT_ID]
+        if tournament_id is None:  # IDが数値でない場合はエラー
+            return
 
-    async def _reload_player_change(self) -> None:
-        """
-        参加者情報をフェッチするようグループに通知
-        """
-        pass
+        player_data = self._create_player_data(None)
+        if player_data is None:
+            return
 
-    async def _reload_tournament_state_change(self) -> None:
-        """
-        トーナメント状態をフェッチするようグループに通知
-        """
-        pass
+        await self.manager_registry.remove_participant(
+            tournament_id, player_data
+        )
 
     def _create_player_data(
         self, participation_name: Optional[str]
