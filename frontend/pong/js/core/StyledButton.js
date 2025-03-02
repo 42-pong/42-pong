@@ -13,12 +13,19 @@ export class StyledButton extends Component {
   }
 
   _render() {
-    Object.assign(this._button, this._getState());
-    this.appendChild(this._button);
+    this.append(this._button);
   }
 
   setTextContent(textContent) {
     this._button.textContent = textContent;
+  }
+
+  setDisabled() {
+    this._button.setAttribute("disabled", "");
+  }
+
+  unsetDisabled() {
+    this._button.removeAttribute("disabled");
   }
 
   setPrimary() {
@@ -43,6 +50,10 @@ export class StyledButton extends Component {
 
   setOutlineSecondary() {
     BootstrapButtons.setOutlineSecondary(this._button);
+  }
+
+  setOutlineDanger() {
+    BootstrapButtons.setOutlineDanger(this._button);
   }
 
   setSmall() {

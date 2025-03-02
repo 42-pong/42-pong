@@ -1,9 +1,13 @@
 import dataclasses
+from typing import Final
 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import pagination, response, status
 
 from ..custom_response import custom_response
+
+# 1ページあたりのアイテム数のデフォルト値
+DEFAULT_PAGE_SIZE: Final[int] = 20
 
 
 @dataclasses.dataclass(frozen=True)
@@ -23,7 +27,7 @@ class CustomPagination(pagination.PageNumberPagination):
         page_size: 1ページあたりのアイテム数
     """
 
-    def __init__(self, page_size: int = 20) -> None:
+    def __init__(self, page_size: int = DEFAULT_PAGE_SIZE) -> None:
         self.page_size = page_size
 
     def get_paginated_response(

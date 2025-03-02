@@ -1,7 +1,7 @@
-// TODO: バックエンドのエントポイントベースを環境変数からのものになるように改善
-const HOST = "localhost:8000";
-const BASE_URL = new URL(`http://${HOST}`);
-const WEBSOCKET_BASE_URL = new URL(`ws://${HOST}`);
+const PORT = import.meta.env.VITE_PORT || 8080;
+const HOST = `localhost:${PORT}`;
+const BASE_URL = new URL(`https://${HOST}`);
+const WEBSOCKET_BASE_URL = new URL(`wss://${HOST}`);
 
 const DEFAULT_AVATAR_IMAGE_PATH = "/media/avatars/sample.png";
 
@@ -18,7 +18,16 @@ export const Endpoints = Object.freeze({
   },
   TOKEN: new URL("/api/token/", BASE_URL),
   REFRESH_TOKEN: new URL("/api/token/refresh/", BASE_URL),
-  FRIENDS: new URL("/api/users/me/friends/", BASE_URL),
+  FRIENDS: {
+    default: new URL("/api/users/me/friends/", BASE_URL),
+    withId: (friendId) =>
+      new URL(`${friendId}/`, Endpoints.FRIENDS.default),
+  },
+  BLOCKS: {
+    default: new URL("/api/users/me/blocks/", BASE_URL),
+    withId: (blockedUserId) =>
+      new URL(`${blockedUserId}/`, Endpoints.BLOCKS.default),
+  },
   PARTICIPATIONS: new URL(
     "/api/tournaments/participations/",
     BASE_URL,

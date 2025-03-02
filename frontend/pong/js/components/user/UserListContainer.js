@@ -1,10 +1,12 @@
 import { getUsers } from "../../api/users/getUsers";
+import { BootstrapBadge } from "../../bootstrap/components/badge";
 import { BootstrapGrid } from "../../bootstrap/layout/grid";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
+import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { setHeight } from "../../utils/elements/style/setHeight";
 import { ErrorContainer } from "../utils/ErrorContainer";
 import { ListContainer } from "../utils/ListContainer";
@@ -16,7 +18,12 @@ export class UserListContainer extends Component {
   #userProfileContainer;
 
   constructor(state) {
-    super({ isError: false, fetchUsers: getUsers, ...state });
+    super({
+      isError: false,
+      fetchUsers: getUsers,
+      users: [],
+      ...state,
+    });
   }
 
   _setStyle() {
@@ -44,7 +51,7 @@ export class UserListContainer extends Component {
         this._updateState({ isError: true });
         return;
       }
-      this.#userList._updateState({ items: users });
+      this._updateState({ users });
     });
 
     this._attachEventListener(
@@ -65,6 +72,18 @@ export class UserListContainer extends Component {
       return;
     }
 
+    const { users } = this._getState();
+    if (users.length === 0) {
+      const placeholderText = createTextElement(
+        "ユーザーが見つかりませんでした",
+        5,
+        BootstrapBadge.setSecondary,
+      );
+      this.append(placeholderText);
+      return;
+    }
+
+    Object.assign(this.#userList._getState(), { items: users });
     this.append(this.#userList, this.#userProfileContainer);
   }
 }

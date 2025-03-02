@@ -1,6 +1,10 @@
 import { LoginContainer } from "./auth/LoginContainer";
 import { SignInButton } from "./auth/SignInButton";
 import { SignOutButton } from "./auth/SignOutButton";
+import { BlockListContainer } from "./block/BlockListContainer";
+import { BlockListItem } from "./block/BlockListItem";
+import { BlockUserButton } from "./block/BlockUserButton";
+import { UnblockUserButton } from "./block/UnblockUserButton";
 import { SignUpButton } from "./auth/SignUpButton";
 import { SignUpContainer } from "./auth/SignUpContainer";
 import { ChatBuddyListContainer } from "./chat/ChatBuddyListContainer";
@@ -11,6 +15,7 @@ import { ChatInputForm } from "./chat/ChatInputForm";
 import { ChatMessageListItem } from "./chat/ChatMessageListItem";
 import { ChatPanel } from "./chat/ChatPanel";
 import { AddFriendButton } from "./friend/AddFriendButton";
+import { RemoveFriendButton } from "./friend/RemoveFriendButton";
 import { GameStartPanel } from "./game/GameStartPanel";
 import { MatchContainer } from "./match/MatchContainer";
 import { MatchRenderer } from "./match/MatchRenderer";
@@ -31,7 +36,8 @@ import { TournamentProgress } from "./tournament/TournamentProgress";
 import { TournamentScoreboard } from "./tournament/TournamentScoreboard";
 import { TournamentStateContainer } from "./tournament/TournamentStateContainer";
 import { TournamentWaiting } from "./tournament/TournamentWaiting";
-import { BlockUserButton } from "./user/BlockUserButton";
+import { MyInfoAvatar } from "./user/MyInfoAvatar";
+import { MyInfoContainer } from "./user/MyInfoContainer";
 import { UserListContainer } from "./user/UserListContainer";
 import { UserListItem } from "./user/UserListItem";
 import { UserProfile } from "./user/UserProfile";
@@ -57,6 +63,10 @@ import { UsersView } from "./views/UsersView";
 customElements.define("login-container", LoginContainer, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
+customElements.define("block-list-container", BlockListContainer, {});
+customElements.define("block-list-item", BlockListItem, {});
+customElements.define("block-user-button", BlockUserButton, {});
+customElements.define("unblock-user-button", UnblockUserButton, {});
 customElements.define("sign-up-button", SignUpButton, {});
 customElements.define("sign-up-container", SignUpContainer, {});
 customElements.define(
@@ -75,6 +85,7 @@ customElements.define(
 );
 customElements.define("chat-panel", ChatPanel, {});
 customElements.define("add-friend-button", AddFriendButton, {});
+customElements.define("remove-friend-button", RemoveFriendButton, {});
 customElements.define("game-start-panel", GameStartPanel, {});
 customElements.define("match-container", MatchContainer, {});
 customElements.define("match-renderer", MatchRenderer, {});
@@ -123,7 +134,8 @@ customElements.define(
   {},
 );
 customElements.define("tournament-waiting", TournamentWaiting, {});
-customElements.define("block-user-button", BlockUserButton, {});
+customElements.define("my-info-avatar", MyInfoAvatar, {});
+customElements.define("my-info-container", MyInfoContainer, {});
 customElements.define("user-list-container", UserListContainer, {});
 customElements.define("user-list-item", UserListItem, {});
 customElements.define("user-profile", UserProfile, {});
