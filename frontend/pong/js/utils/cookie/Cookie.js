@@ -21,7 +21,13 @@ const getCookie = (name) => {
   return "";
 };
 
+const deleteCookie = (name) => {
+  // クッキーの有効期限を過去に設定して削除
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; "httpOnly: true,secure: true,sameSite: 'strict'"`;
+};
+
 export const Cookie = {
   setCookie,
   getCookie,
+  deleteCookie
 };

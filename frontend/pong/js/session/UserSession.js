@@ -91,7 +91,11 @@ export class UserSession {
 
   async signOut() {
     const isValid = await this.#reset();
-    if (isValid) this.updateWindowPath();
+    if (isValid) {
+      this.updateWindowPath();
+      Cookie.deleteCookie("refreshToken");
+      sessionStorage.removeItem("accessToken");
+    }
     return isValid;
   }
 
