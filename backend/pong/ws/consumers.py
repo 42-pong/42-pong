@@ -25,10 +25,12 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         # TODO: トーナメントハンドラにself.scopeからグローバルなtournament_registryを取り出して、渡す。
 
         await self.accept()
+        logger.debug(f"accept: {self.channel_name}")
 
     async def disconnect(self, close_code: int) -> None:
         await self.login_handler.logout()
         await self.match_handler.cleanup()
+        logger.debug(f"disconnect: {self.channel_name}")
 
     async def receive_json(self, message: dict) -> None:
         try:
@@ -62,4 +64,8 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
 
     async def group_message(self, event: dict) -> None:
         message = event["message"]
+        await self.send_json(message)
+
+    async def websocket_send(self, event: dict) -> None:
+        message = event.get("text", "")
         await self.send_json(message)
