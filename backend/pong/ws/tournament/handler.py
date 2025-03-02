@@ -1,7 +1,12 @@
+from typing import Optional
+
 from channels.layers import BaseChannelLayer  # type: ignore
 
-from ..share import channel_handler
+from tournaments import constants as tournament_db_constants
+
+from ..share import channel_handler, player_data
 from ..share import constants as ws_constants
+from . import async_db_service as db_service
 from . import constants as tournament_constants
 from . import manager_registry
 
@@ -72,26 +77,55 @@ class TournamentHandler:
         playerがtournamentに参加する際の処理を行う関数
         """
         join_type: str = data[tournament_constants.Type.key()]
+        participation_name: str = data[tournament_constants.PARTICIPATION_NAME]
+        player_data = self._create_player_data(participation_name)
+        if player_data is None:
+            await self._send_join_result(False, None)
+            return
+        tournament_id: int
+
         match join_type:
             case tournament_constants.JoinType.CREATE.value:
-                # TODO: TournamentManager作成
-                # TODO: Redisに参加登録
-                pass
+                result = await db_service.create_tournament_with_participation(
+                    self.user_id, participation_name
+                )
+                if result.is_error():
+                    await self._send_join_result(False, None)
+                    return
+
+                tournament_id = result.value[
+                    tournament_db_constants.TournamentFields.ID
+                ]
+
+                await self.manager_registry.create_tournament(tournament_id)
+                await self.manager_registry.add_participant(
+                    tournament_id, player_data
+                )
 
             case tournament_constants.JoinType.RANDOM.value:
-                # TODO: ランダムな募集中のトーナメントをフェッチ
-                # TODO: Redisに参加登録
-                pass
+                tournament_id = await db_service.get_waiting_tournament()
+                if tournament_id is None:
+                    await self._send_join_result(False, tournament_id)
+                    return
+
+                await self.manager_registry.add_participant(
+                    tournament_id, player_data
+                )
 
             case tournament_constants.JoinType.SELECTED.value:
-                # TODO: Redisに参加PUBLISH
-                # TODO: DBに参加レコード作成
-                pass
+                tournament_id = data[tournament_constants.TOURNAMENT_ID]
+                if tournament_id is None:  # IDが数値でない場合はエラー
+                    await self._send_join_result(False, tournament_id)
+                    return
+
+                await self.manager_registry.add_participant(
+                    tournament_id, player_data
+                )
 
             case _:
                 pass
 
-        await self._reload_player_change()  # 全員にPLAYER情報のRELOAD通知
+        await self._send_join_result(True, tournament_id)
 
     async def _handle_leave(self, data: dict) -> None:
         """
