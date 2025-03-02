@@ -7,6 +7,7 @@ class Type(ws_constants.BaseEnum):
     JOIN = "JOIN"
     LEAVE = "LEAVE"
     RELOAD = "RELOAD"
+    ASSIGNED = "ASSIGNED"
 
 
 class JoinType(ws_constants.BaseEnum):
@@ -27,3 +28,4 @@ class Event(ws_constants.BaseEnum):
 
 TOURNAMENT_ID: Final[str] = "tournament_id"
 PARTICIPATION_NAME: Final[str] = "participation_name"
+MATCH_ID: Final[str] = "match_id"
