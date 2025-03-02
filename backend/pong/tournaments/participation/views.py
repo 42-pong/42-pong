@@ -8,10 +8,11 @@ from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from rest_framework import permissions, viewsets
+from rest_framework import exceptions, permissions, viewsets
 
 from jwt.authentication import CustomJWTAuthentication
 from pong import readonly_custom_renderer
+from pong.custom_pagination import custom_pagination
 from pong.custom_response import custom_response
 
 from .. import constants
@@ -39,6 +40,13 @@ from . import models, serializers
                 type=int,
                 location=OpenApiParameter.QUERY,
             ),
+            OpenApiParameter(
+                name="page",
+                description="paginationのページ数",
+                required=False,
+                type=int,
+                location=OpenApiParameter.QUERY,
+            ),
         ],
         request=None,
         responses={
@@ -49,27 +57,32 @@ from . import models, serializers
                         "Example 200 response",
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
-                            custom_response.DATA: [
-                                {
-                                    constants.ParticipationFields.ID: 1,
-                                    constants.ParticipationFields.TOURNAMENT_ID: 4,
-                                    "user_id": 7,
-                                    constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
-                                    constants.ParticipationFields.RANKING: 4,
-                                    constants.ParticipationFields.CREATED_AT: "2025-01-01T00:00:00.000000+09:00",
-                                    constants.ParticipationFields.UPDATED_AT: "2025-01-01T00:30:00.000000+09:00",
-                                },
-                                {
-                                    constants.ParticipationFields.ID: 2,
-                                    constants.ParticipationFields.TOURNAMENT_ID: 5,
-                                    "user_id": 7,
-                                    constants.ParticipationFields.PARTICIPATION_NAME: "player_y",
-                                    constants.ParticipationFields.RANKING: None,
-                                    constants.ParticipationFields.CREATED_AT: "2025-01-01T00:01:00.000000+09:00",
-                                    constants.ParticipationFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
-                                },
-                                {"...", "..."},
-                            ],
+                            custom_response.DATA: {
+                                custom_pagination.PaginationFields.COUNT: 10,
+                                custom_pagination.PaginationFields.NEXT: "http://localhost:8000/api/tournaments/participations/?page=2",
+                                custom_pagination.PaginationFields.PREVIOUS: None,
+                                custom_pagination.PaginationFields.RESULTS: [
+                                    {
+                                        constants.ParticipationFields.ID: 1,
+                                        constants.ParticipationFields.TOURNAMENT_ID: 4,
+                                        "user_id": 7,
+                                        constants.ParticipationFields.PARTICIPATION_NAME: "player_x",
+                                        constants.ParticipationFields.RANKING: 4,
+                                        constants.ParticipationFields.CREATED_AT: "2025-01-01T00:00:00.000000+09:00",
+                                        constants.ParticipationFields.UPDATED_AT: "2025-01-01T00:30:00.000000+09:00",
+                                    },
+                                    {
+                                        constants.ParticipationFields.ID: 2,
+                                        constants.ParticipationFields.TOURNAMENT_ID: 5,
+                                        "user_id": 7,
+                                        constants.ParticipationFields.PARTICIPATION_NAME: "player_y",
+                                        constants.ParticipationFields.RANKING: None,
+                                        constants.ParticipationFields.CREATED_AT: "2025-01-01T00:01:00.000000+09:00",
+                                        constants.ParticipationFields.UPDATED_AT: "2025-01-01T00:01:00.000000+09:00",
+                                    },
+                                    {"...", "..."},
+                                ],
+                            },
                         },
                     ),
                 ],
@@ -166,10 +179,12 @@ class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [CustomJWTAuthentication]
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = serializers.ParticipationQuerySerializer
-    renderer_classes = [readonly_custom_renderer.ReadOnlyCustomJSONRenderer]
+    pagination_class = custom_pagination.CustomPagination
 
     def get_queryset(self) -> QuerySet:
-        queryset = models.Participation.objects.all()
+        queryset = models.Participation.objects.all().order_by(
+            constants.ParticipationFields.ID
+        )
         filters = Q()
 
         user_id: Optional[str] = self.request.query_params.get("user-id")
@@ -185,3 +200,19 @@ class ParticipationReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
             filters &= Q(tournament_id=tournament_id)
 
         return queryset.filter(filters)
+
+    def get_renderers(self) -> list:
+        """
+        アクションに応じてレンダラークラスを指定する
+        - list    : pagination classの方でカスタムレスポンスを返すため、renderersではカスタムしない
+        - retrieve: カスタムrendererを使用
+        """
+        if self.action == "list":
+            try:
+                super().list(self.request)
+            except exceptions.NotFound:
+                # ページネーションエラーで404の場合にカスタムレンダーを使用する
+                return [readonly_custom_renderer.ReadOnlyCustomJSONRenderer()]
+        elif self.action == "retrieve":
+            return [readonly_custom_renderer.ReadOnlyCustomJSONRenderer()]
+        return super().get_renderers()
