@@ -97,9 +97,10 @@ class LoginHandler:
             ws_constants.Category.key(): ws_constants.Category.LOGIN,
             ws_constants.PAYLOAD_KEY: {login_constants.Status: login_status},
         }
-        await self.channel_handler.send_to_consumer(
-            message, self.channel_handler.channel_name
-        )
+        if self.channel_handler.channel_name is not None:
+            await self.channel_handler.send_to_consumer(
+                message, self.channel_handler.channel_name
+            )
 
     # TODO: ログインかログアウトかを引数で受け取る
     async def _notify_followers(self) -> None:
