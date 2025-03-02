@@ -9,6 +9,7 @@ from .login import handler as login_handler
 from .match import handler as match_handler
 from .share import constants as ws_constants
 from .share import serializers as ws_serializers
+from .tournament import handler as tournament_handler
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +23,19 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         self.match_handler = match_handler.MatchHandler(
             self.channel_layer, self.channel_name
         )
-        # TODO: トーナメントハンドラにself.scopeからグローバルなtournament_registryを取り出して、渡す。
+        self.tournament_handler = tournament_handler.TournamentHandler(
+            self.channel_layer,
+            self.channel_name,
+            self.scope.get("tournament_manager_registry"),
+        )
 
         await self.accept()
+        logger.debug(f"accept: {self.channel_name}")
 
     async def disconnect(self, close_code: int) -> None:
         await self.login_handler.logout()
         await self.match_handler.cleanup()
+        logger.debug(f"disconnect: {self.channel_name}")
 
     async def receive_json(self, message: dict) -> None:
         try:
@@ -48,6 +55,10 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
                     await self.login_handler.handle(payload)
                 case ws_constants.Category.MATCH.value:
                     await self.match_handler.handle(payload)
+                case ws_constants.Category.TOURNAMENT.value:
+                    await self.tournament_handler.handle(
+                        payload, self.login_handler.user_id
+                    )
                 case _:
                     logger.warning(f"Unknown category received: {category}")
 
@@ -62,4 +73,8 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
 
     async def group_message(self, event: dict) -> None:
         message = event["message"]
+        await self.send_json(message)
+
+    async def websocket_send(self, event: dict) -> None:
+        message = event.get("text", "")
         await self.send_json(message)
