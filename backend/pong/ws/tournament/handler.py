@@ -112,3 +112,52 @@ class TournamentHandler:
         トーナメント状態をフェッチするようグループに通知
         """
         pass
+
+    def _create_player_data(
+        self, participation_name: Optional[str]
+    ) -> Optional[player_data.PlayerData]:
+        """
+        プレーヤーデータを作成する関数
+        """
+        channel_name = self.channel_handler.channel_name
+        if self.user_id is None or channel_name is None:
+            return None
+
+        return player_data.PlayerData(
+            channel_name=channel_name,
+            user_id=self.user_id,
+            participation_name=participation_name,
+        )
+
+    async def _send_join_result(
+        self, is_ok: bool, tournament_id: Optional[int]
+    ) -> None:
+        """
+        JOINメッセージの結果を通知する関数
+        """
+        message = self._build_tournament_message(
+            tournament_constants.Type.JOIN.value,
+            {
+                tournament_constants.Status.key(): is_ok,
+                tournament_constants.TOURNAMENT_ID: tournament_id,
+            },
+        )
+        if self.channel_handler.channel_name is not None:
+            await self.channel_handler.send_to_consumer(
+                message, self.channel_handler.channel_name
+            )
+
+    def _build_tournament_message(self, type: str, data: dict) -> dict:
+        """
+        プレーヤーに送るメッセージを作成。
+
+        :param data: ステージに関連するデータ
+        :return: 作成したメッセージ
+        """
+        return {
+            ws_constants.Category.key(): ws_constants.Category.TOURNAMENT.value,
+            ws_constants.PAYLOAD_KEY: {
+                tournament_constants.Type.key(): type,
+                ws_constants.DATA_KEY: data,
+            },
+        }
