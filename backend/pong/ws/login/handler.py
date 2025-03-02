@@ -159,3 +159,15 @@ class LoginHandler:
                 online_friends.append(friend_id)
 
         return online_friends
+
+    def _build_a_user_online_status_message(
+        self, user_id: int, is_online: bool
+    ) -> dict:
+        message = {
+            ws_constants.Category.key(): ws_constants.Category.STATUS.value,
+            ws_constants.PAYLOAD_KEY: {
+                login_constants.USER_ID: user_id,
+                login_constants.ONLINE: is_online,
+            },
+        }
+        return message
