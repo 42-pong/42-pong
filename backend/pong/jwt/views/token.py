@@ -100,6 +100,22 @@ class TokenObtainView(views.APIView):
                     ),
                 ],
             ),
+            500: utils.OpenApiResponse(
+                description="",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response (予期せぬエラーの場合)",
+                        value={
+                            "status": "error",
+                            "code": "internal_error",
+                        },
+                    ),
+                ],
+            ),
         },
     )
     def post(self, request: request.Request) -> response.Response:

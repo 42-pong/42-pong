@@ -81,6 +81,29 @@ class TokenRefreshView(views.APIView):
                             "code": "invalid",
                         },
                     ),
+                    utils.OpenApiExample(
+                        "Example 401 response (アカウントが存在しない場合)",
+                        value={
+                            "status": "error",
+                            "code": "not_exists",
+                        },
+                    ),
+                ],
+            ),
+            500: utils.OpenApiResponse(
+                description="",
+                response={
+                    "type": "object",
+                    "properties": {"detail": {"type": "string"}},
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response (予期せぬエラーの場合)",
+                        value={
+                            "status": "error",
+                            "code": "internal_error",
+                        },
+                    ),
                 ],
             ),
         },
