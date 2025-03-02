@@ -114,21 +114,32 @@ def update_participation_is_win(
 
 @database_sync_to_async
 def create_score(
-    participation_id: int, pos_x: int, pos_y: int
+    match_id: int, user_id: int, pos_x: int, pos_y: int
 ) -> CreateScoreResult:
     """
-    スコアを作成する。
+    指定された match_id と user_id に対応する試合参加情報に紐づくスコアを作成する。
     """
     try:
-        score = score_models.Score.objects.create(
-            match_participation_id=participation_id, pos_x=pos_x, pos_y=pos_y
-        )
+        with transaction.atomic():
+            participation = participation_models.Participation.objects.get(
+                match_id=match_id, player__user_id=user_id
+            )
+
+            score = score_models.Score.objects.create(
+                match_participation=participation,
+                pos_x=pos_x,
+                pos_y=pos_y,
+            )
+    except participation_models.Participation.DoesNotExist as e:
+        logger.error(f"DoesNotExist: {e}")
+        return CreateScoreResult.error({"DoesNotExist": str(e)})
     except DatabaseError as e:
         logger.error(f"DatabaseError: {e}")
         return CreateScoreResult.error({"DatabaseError": str(e)})
     return CreateScoreResult.ok(
         {
             constants.ScoreFields.ID: score.id,
+            constants.ScoreFields.MATCH_PARTICIPATION_ID: score.match_participation_id,
             constants.ScoreFields.POS_X: score.pos_x,
             constants.ScoreFields.POS_Y: score.pos_y,
         }
