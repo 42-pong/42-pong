@@ -5,6 +5,7 @@ import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { SignUpButton } from "./SignUpButton";
+import { Cookie } from "../../utils/cookie/Cookie";
 
 export class LoginContainer extends Component {
   #container;
@@ -94,21 +95,36 @@ export class LoginContainer extends Component {
             password: password,
           }),
         });
-        const { status, data: tokens } = await response.json();
+        const { status, data, code} = await response.json();
 
         if (status !== "ok") {
+          console.log("test", code);
           this.#form.reset();
           this.#loginError.textContent =
             FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
           this.#loginError.style.display = "block"; //エラーメッセージを表示する
-          throw new Error(response.code);
+          throw new Error(code);
         }
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
 
-        const isVerified =
-          await UserSessionManager.getInstance().signIn(tokens);
-        if (isVerified)
-          UserSessionManager.getInstance().redirect(Paths.HOME);
+        console.log("status", status);
+        console.log("data", data);
+        console.log("code", code);
+
+        const accessToken = data.access;
+        const refreshToken = data.refresh;
+
+        //setCookie
+        setCookie("refreshToken", refreshToken, 7, "httpOnly: true,secure: true,sameSite: 'strict'");
+
+
+        //getCookie
+
+
+        // const isVerified =
+        //   await UserSessionManager.getInstance().signIn(tokens);
+        // if (isVerified)
+        //   UserSessionManager.getInstance().redirect(Paths.HOME);
       } catch (error) {
         console.error("ログインエラー:", error);
       }

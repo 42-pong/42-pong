@@ -114,7 +114,8 @@ export class UserSession {
   }
 
   getRefreshToken() {
-    return this.#refreshToken;
+    console.log("get refresh token");
+    // return this.#refreshToken;
   }
 
   setAccessToken(access) {
@@ -122,7 +123,8 @@ export class UserSession {
   }
 
   setRefreshToken(refresh) {
-    this.#refreshToken = refresh;
+    console.log("set refresh token");
+    // this.#refreshToken = refresh;
   }
 
   #initTokens() {
