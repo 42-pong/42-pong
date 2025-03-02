@@ -1,12 +1,12 @@
 import { LoginContainer } from "./auth/LoginContainer";
 import { SignInButton } from "./auth/SignInButton";
 import { SignOutButton } from "./auth/SignOutButton";
+import { SignUpButton } from "./auth/SignUpButton";
+import { SignUpContainer } from "./auth/SignUpContainer";
 import { BlockListContainer } from "./block/BlockListContainer";
 import { BlockListItem } from "./block/BlockListItem";
 import { BlockUserButton } from "./block/BlockUserButton";
 import { UnblockUserButton } from "./block/UnblockUserButton";
-import { SignUpButton } from "./auth/SignUpButton";
-import { SignUpContainer } from "./auth/SignUpContainer";
 import { ChatBuddyListContainer } from "./chat/ChatBuddyListContainer";
 import { ChatContainer } from "./chat/ChatContainer";
 import { ChatDmContainer } from "./chat/ChatDmContainer";

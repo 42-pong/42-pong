@@ -3,6 +3,7 @@ import { ChatGlobal } from "../components/chat/ChatGlobal";
 import { Paths } from "../constants/Paths";
 import { PongEvents } from "../constants/PongEvents";
 import { DataSubject } from "../core/DataSubject";
+import { Cookie } from "../utils/cookie/Cookie";
 import { WebSocketWrapper } from "../websocket/WebSocketWrapper";
 
 export class UserSession {
@@ -110,26 +111,24 @@ export class UserSession {
 
   // TODO: manage tokens
   getAccessToken() {
-    return this.#accessToken;
+    return sessionStorage.getItem("accessToken");
   }
 
   getRefreshToken() {
-    console.log("get refresh token");
-    // return this.#refreshToken;
+    return Cookie.getCookie("refreshToken");
   }
 
   setAccessToken(access) {
-    this.#accessToken = access;
+    sessionStorage.setItem("accessToken", access);
   }
 
   setRefreshToken(refresh) {
-    console.log("set refresh token");
-    // this.#refreshToken = refresh;
+    Cookie.setCookie("refreshToken", refresh, 7);
   }
 
   #initTokens() {
-    this.#accessToken = "";
-    this.#refreshToken = "";
+    this.#accessToken = this.getAccessToken();
+    this.#refreshToken = this.getRefreshToken();
   }
 }
 
