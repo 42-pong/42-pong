@@ -1,6 +1,6 @@
 import { Endpoints } from "../../constants/Endpoints";
-import { fetchAuthenticatedAllData } from "../utils/fetchAuthenticatedAllData";
 import { requestStatus } from "../../utils/user/requestStatus";
+import { fetchAuthenticatedAllData } from "../utils/fetchAuthenticatedAllData";
 import { convertFriendData } from "./convertFriendData";
 
 export async function getFriends() {
