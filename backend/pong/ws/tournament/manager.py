@@ -45,8 +45,27 @@ class TournamentManager:
         参加者を追加。DBにも参加テーブルを作成する。
         参加者が4人になったらトーナメントを開始する。
         """
+        # 型チェック用
+        if (
+            participant.user_id is None
+            or participant.participation_name is None
+        ):
+            return
+
+        # 参加レコードを作成
+        create_result = await tournament_service.create_participation(
+            self.tournament_id,
+            participant.user_id,
+            participant.participation_name,
+        )
+        if create_result.is_error():
+            return
+
+        # TODO: 参加者をグループに追加
+
         self.participants.append(participant)
-        # TODO: 参加レコードを作成
+
+        # トーナメント参加者全員にリロードメッセージを送信
         await self._send_player_reload_message()
 
         if len(self.participants) == 4:
@@ -62,14 +81,26 @@ class TournamentManager:
         Returns:
             int: 削除後の参加者数を返す。
         """
+        # 参加レコードを削除
+        delete_result = await tournament_service.delete_participation(
+            self.tournament_id, participant.user_id
+        )
+        if delete_result.is_error():
+            # 残りが一人なわけではないが、0以外の値を返したい
+            return 1
+
         if participant in self.participants:
             self.participants.remove(participant)
-        # TODO: 参加レコードを削除
+
+        # TODO: 退出者をグループから削除
+
+        # 参加者がいなくなったらキャンセル処理をして、
         if len(self.participants) == 0:
             # キャンセル処理
             await self.cancel_tournament()
             return 0
 
+        # トーナメント参加者全員にリロードメッセージを送信
         await self._send_player_reload_message()
         return len(self.participants)
 
