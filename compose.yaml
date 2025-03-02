@@ -5,6 +5,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        SERVER_PORT: ${FRONT_SERVER_PORT}
     depends_on:
       backend:
         condition: service_healthy

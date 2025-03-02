@@ -4,6 +4,7 @@ import { MatchEnums } from "../../../enums/MatchEnums";
 import { incrementWithBounds } from "../../../utils/incrementWithBounds";
 import { incrementWithWrap } from "../../../utils/incrementWithWrap";
 import { isPreservingDirectionWithBounds } from "../../../utils/isPreservingDirectionWithBounds";
+import { getRandomInt } from "../getRandomInt";
 import { sendMatch } from "./sendPayloads";
 
 const MILLISECONDS_PER_FRAME = 20;
@@ -172,7 +173,4 @@ const handleUserInput = (data, matchState) => {
   );
 };
 
-const getRandomTeam = () => {
-  const randomOneOrTwo = Math.floor(Math.random() * 2) + 1;
-  return randomOneOrTwo.toString();
-};
+const getRandomTeam = () => getRandomInt(1, 2).toString();

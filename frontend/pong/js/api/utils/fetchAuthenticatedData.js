@@ -1,5 +1,6 @@
 import { Endpoints } from "../../constants/Endpoints";
 import { UserSessionManager } from "../../session/UserSessionManager";
+import { createPostMethodOption } from "./createPostMethodOption";
 import { fetchData } from "./fetchData";
 
 export const fetchAuthenticatedData = async (
@@ -40,13 +41,7 @@ const retryWithRefreshToken = async (url, options = {}) => {
   try {
     const { data, error } = await fetchData(
       Endpoints.REFRESH_TOKEN.href,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ refresh: refreshToken }),
-      },
+      createPostMethodOption({ refresh: refreshToken }),
     );
     if (error) throw new Error("Refresh: NOT OK");
 

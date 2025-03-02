@@ -1,15 +1,24 @@
+import { getRandomInt } from "./getRandomInt";
+
 const SAMPLE_COUNT = 30; // userId: 1 ~ SAMPLE_COUNT
 
 const MY_USER_ID = 1;
 const MY_EMAIL = "mock@example.com";
+const MAX_MATCH_NUM = 999;
 
-const createSampleUser = (number) =>
-  Object.freeze({
-    id: number,
-    username: `pong${number}`,
-    display_name: `DISPLAY${number}`,
-    avatar: "/media/avatars/sample.png",
-  });
+const isFriend = (number) => false;
+const isBlocked = (number) => number % 3 === 0;
+
+const createSampleUser = (number) => ({
+  id: number,
+  username: `pong${number}`,
+  display_name: `DISPLAY${number}`,
+  avatar: "/media/avatars/sample.png",
+  is_friend: isFriend(number),
+  is_blocked: isBlocked(number),
+  match_wins: getRandomInt(0, MAX_MATCH_NUM),
+  match_losses: getRandomInt(0, MAX_MATCH_NUM),
+});
 
 const sampleUsers = Array.from({ length: SAMPLE_COUNT }).map(
   (_, idx) => createSampleUser(idx + 1),
@@ -20,20 +29,23 @@ const sampleMyInfo = {
   email: MY_EMAIL,
 };
 
-const createSampleFriend = (idx) =>
-  Object.freeze({
-    user_id: MY_USER_ID,
-    friend_user_id: sampleUsers[idx].id,
-    friend: {
-      username: sampleUsers[idx].username,
-      display_name: sampleUsers[idx].display_name,
-      avatar: sampleUsers[idx].avatar,
-    },
-  });
+const getSampleFriends = () =>
+  sampleUsers
+    .filter((user) => user.is_friend)
+    .map((userData) =>
+      Object.freeze({
+        friend: userData,
+      }),
+    );
 
-const sampleFriends = Array.from({ length: SAMPLE_COUNT / 2 })
-  .map((_, idx) => createSampleFriend(2 * idx))
-  .filter((friend) => friend.user_id !== friend.friend_user_id);
+const getSampleBlocks = () =>
+  sampleUsers
+    .filter((user) => user.is_blocked)
+    .map((userData) =>
+      Object.freeze({
+        blocked_user: userData,
+      }),
+    );
 
 const sampleParticipations = [
   {
@@ -552,7 +564,8 @@ const sampleTournaments = [
 export {
   sampleUsers,
   sampleMyInfo,
-  sampleFriends,
+  getSampleFriends,
+  getSampleBlocks,
   sampleParticipations,
   sampleTournaments,
 };

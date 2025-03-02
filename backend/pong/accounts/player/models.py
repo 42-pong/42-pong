@@ -29,7 +29,6 @@ class Player(Model):
     updated_at = DateTimeField(auto_now=True)
 
     # ユーザーが認証に使用するfield
-    # todo: ログイン/認証機能実装時に確認して変更
     USERNAME_FIELD = "email"
 
     class Meta:

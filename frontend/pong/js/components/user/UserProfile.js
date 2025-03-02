@@ -1,3 +1,5 @@
+import { getUser } from "../../api/users/getUser";
+import { BootstrapBadge } from "../../bootstrap/components/badge";
 import { BootstrapGrid } from "../../bootstrap/layout/grid";
 import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
@@ -7,12 +9,26 @@ import { Component } from "../../core/Component";
 import { createElement } from "../../utils/elements/createElement";
 import { createDefaultCard } from "../../utils/elements/div/createDefaultCard";
 import { createNameplate } from "../../utils/elements/div/createNameplate";
+import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { BlockUserButton } from "../block/BlockUserButton";
 import { AddFriendButton } from "../friend/AddFriendButton";
-import { BlockUserButton } from "./BlockUserButton";
+import { RemoveFriendButton } from "../friend/RemoveFriendButton";
 
 export class UserProfile extends Component {
+  #reload;
+
   constructor(state) {
     super({ user: null, ...state });
+    this.#reload = () => {
+      const { user } = this._getState();
+      if (!user) return;
+
+      const { id } = user;
+      getUser(id).then(({ user, error }) => {
+        if (error) return;
+        this._updateState({ user });
+      });
+    };
   }
 
   _setStyle() {
@@ -24,15 +40,17 @@ export class UserProfile extends Component {
     const { user } = this._getState();
 
     if (!user) {
-      const placeholderText = createElement("span", {
-        textContent: "ユーザーを選択してください",
-      });
+      const placeholderText = createTextElement(
+        "ユーザーを選択してください",
+        5,
+        BootstrapBadge.setPrimary,
+      );
       this.append(placeholderText);
       return;
     }
 
     const nameplate = createNameplate(user, "8vh");
-    const profileButtonPanel = createProfileMenu();
+    const profileButtonPanel = createProfileMenu(user, this.#reload);
     this.append(
       createDefaultCard({
         title: nameplate,
@@ -42,19 +60,22 @@ export class UserProfile extends Component {
   }
 }
 
-const createProfileMenu = () => {
-  const addFriendButton = new AddFriendButton();
-  addFriendButton.setPrimary();
-  styleProfileButton(addFriendButton);
+const createProfileMenu = (user, reload) => {
+  const { isFriend } = user;
 
-  const blockUserButton = new BlockUserButton();
-  blockUserButton.setDanger();
+  const FriendButton = isFriend
+    ? RemoveFriendButton
+    : AddFriendButton;
+  const friendButton = new FriendButton({ user, reload });
+  styleProfileButton(friendButton);
+
+  const blockUserButton = new BlockUserButton({ user, reload });
   styleProfileButton(blockUserButton);
 
   const buttonPanel = createElement("div");
   BootstrapGrid.setRow(buttonPanel);
   BootstrapFlex.setJustifyContentCenter(buttonPanel);
-  buttonPanel.append(addFriendButton, blockUserButton);
+  buttonPanel.append(friendButton, blockUserButton);
 
   return buttonPanel;
 };

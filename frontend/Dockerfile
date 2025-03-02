@@ -7,6 +7,9 @@ FROM node:${NODE_TAG} AS builder
 
 # src directory
 ARG SRC_DIR=./pong
+ARG SERVER_PORT
+
+ENV VITE_PORT=${SERVER_PORT}
 
 WORKDIR /app
 

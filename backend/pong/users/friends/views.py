@@ -379,7 +379,9 @@ class FriendsViewSet(viewsets.ModelViewSet):
         user: User = self._get_authenticated_user(request.user)
 
         # 自分のフレンド一覧を取得
-        friends: QuerySet[models.Friendship] = self.queryset.filter(user=user)
+        friends: QuerySet[models.Friendship] = self.queryset.filter(
+            user=user
+        ).order_by(constants.FriendshipFields.CREATED_AT)
         paginator: custom_pagination.CustomPagination = (
             custom_pagination.CustomPagination()
         )
