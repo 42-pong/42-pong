@@ -61,7 +61,10 @@ class TournamentManager:
         if create_result.is_error():
             return
 
-        # TODO: 参加者をグループに追加
+        # 参加者をグループに追加
+        await self.channel_handler.add_to_group(
+            self.group_name, participant.channel_name
+        )
 
         self.participants.append(participant)
 
@@ -92,7 +95,10 @@ class TournamentManager:
         if participant in self.participants:
             self.participants.remove(participant)
 
-        # TODO: 退出者をグループから削除
+        # 退出者をグループから削除
+        await self.channel_handler.remove_from_group(
+            self.group_name, participant.channel_name
+        )
 
         # 参加者がいなくなったらキャンセル処理をして、
         if len(self.participants) == 0:

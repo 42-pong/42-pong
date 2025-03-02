@@ -26,7 +26,9 @@ class ChannelHandler:
         """
         return f"ChannelHandler(channel_layer={self.channel_layer!r}, channel_name={self.channel_name!r})"
 
-    async def add_to_group(self, group_name: str) -> None:
+    async def add_to_group(
+        self, group_name: str, channel_name: Optional[str] = None
+    ) -> None:
         """
         Consumerをグループに追加。
 
@@ -34,10 +36,14 @@ class ChannelHandler:
 
         :param group_name: 追加するグループ名
         """
-        if self.channel_name is not None:
-            await self.channel_layer.group_add(group_name, self.channel_name)
+        if channel_name is None:
+            channel_name = self.channel_name
+        if channel_name is not None:
+            await self.channel_layer.group_add(group_name, channel_name)
 
-    async def remove_from_group(self, group_name: str) -> None:
+    async def remove_from_group(
+        self, group_name: str, channel_name: Optional[str] = None
+    ) -> None:
         """
         Consumerをグループから削除。
 
@@ -45,10 +51,10 @@ class ChannelHandler:
 
         :param group_name: 削除するグループ名
         """
-        if self.channel_name is not None:
-            await self.channel_layer.group_discard(
-                group_name, self.channel_name
-            )
+        if channel_name is None:
+            channel_name = self.channel_name
+        if channel_name is not None:
+            await self.channel_layer.group_discard(group_name, channel_name)
 
     async def send_to_group(self, group_name: str, message: dict) -> None:
         """
