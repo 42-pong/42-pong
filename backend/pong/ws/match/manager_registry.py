@@ -50,3 +50,36 @@ class MatchManagerRegistry:
         なければNoneを返す
         """
         return self.managers.get(match_id, None)
+
+    ###########################################################
+    # MatchManagerの関数を呼び出す関数
+    ###########################################################
+
+    async def init_action(
+        self, match_id: int, player: player_data.PlayerData
+    ) -> None:
+        async with self.lock:
+            if match_id in self.managers:
+                await self.managers[match_id].handle_init_action(player)
+
+    async def init_ready(
+        self, match_id: int, player: player_data.PlayerData
+    ) -> None:
+        async with self.lock:
+            if match_id in self.managers:
+                await self.managers[match_id].handle_ready_action(player)
+
+    async def paddle_up(self, match_id: int, team: str) -> None:
+        async with self.lock:
+            if match_id in self.managers:
+                await self.managers[match_id]._paddle_up(team)
+
+    async def paddle_down(self, match_id: int, team: str) -> None:
+        async with self.lock:
+            if match_id in self.managers:
+                await self.managers[match_id]._paddle_down(team)
+
+    async def exit_match(self, match_id: int, exited_team: str) -> None:
+        async with self.lock:
+            if match_id in self.managers:
+                await self.managers[match_id].player_exited(exited_team)
