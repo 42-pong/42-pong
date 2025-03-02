@@ -328,13 +328,18 @@ def delete_participation(
 
 
 @database_sync_to_async
-def create_round(tournament_id: int, round_number: int) -> CreateRoundResult:
+def create_round(
+    tournament_id: int,
+    round_number: int,
+    status: str = constants.RoundFields.StatusEnum.NOT_STARTED.value,
+) -> CreateRoundResult:
     """
     新しいRoundインスタンスを作成する非同期関数。
 
     Args:
         tournament_id: トーナメントのID
         round_number: トーナメント内でのラウンド番号
+        status: ラウンドのステータス
 
     Returns:
         UpdateRoundResult: Round作成結果。成功時は作成したRoundのデータ、失敗時はエラーメッセージ。
@@ -344,6 +349,7 @@ def create_round(tournament_id: int, round_number: int) -> CreateRoundResult:
         round_instance = round_models.Round.objects.create(
             tournament_id=tournament_id,
             round_number=round_number,
+            status=status,
         )
 
         # 成功時は作成したラウンドのデータを返す
@@ -370,7 +376,7 @@ def update_round_status(round_id: int, status: str) -> UpdateRoundResult:
 
     Args:
         round_id: 更新するラウンドのID
-        status: 更新するラウンドのステータス（省略可能）
+        status: 更新するラウンドのステータス
 
     Returns:
         UpdateRoundResult: 更新結果。成功時は更新したRoundのデータ、失敗時はエラーメッセージ。
