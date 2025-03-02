@@ -2,15 +2,18 @@ import { patchMyInfo } from "../../api/users/patchMyInfo";
 import { BootstrapButtons } from "../../bootstrap/components/buttons";
 import { BootstrapBorders } from "../../bootstrap/utilities/borders";
 import { BootstrapDisplay } from "../../bootstrap/utilities/display";
+import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
+import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { createButton } from "../../utils/elements/button/createButton";
 import { createElement } from "../../utils/elements/createElement";
-import { createThreeColumnLayout } from "../../utils/elements/div/createThreeColumnLayout";
+import { createAroundFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
-import { createDefaultUnorderedList } from "../../utils/elements/ul/createDefaultUnorderedList";
+import { EventDispatchingButton } from "../utils/EventDispatchingButton";
+import { MyInfoAvatar } from "./MyInfoAvatar";
 
 export class MyInfoContainer extends Component {
   #displayInput;
@@ -18,30 +21,34 @@ export class MyInfoContainer extends Component {
   _onConnect() {
     this.#displayInput = createElement("input", {}, { type: "text" });
 
-    this._attachEventListener("click", async (event) => {
-      event.preventDefault();
-      const {
-        target: { name },
-      } = event;
-      if (name !== "displayName") return;
-      const { error } = await patchMyInfo({
-        displayName: this.#displayInput.value,
-      });
-      if (error) {
-        BootstrapBorders.setDanger(this.#displayInput);
-        return;
-      }
-      BootstrapBorders.unsetDanger(this.#displayInput);
-      await UserSessionManager.getInstance().verifyAuth();
-      this._updateState();
-    });
+    this._attachEventListener(
+      PongEvents.PATCH_DISPLAY_NAME.type,
+      async (event) => {
+        event.preventDefault();
+        const { error } = await patchMyInfo({
+          displayName: this.#displayInput.value,
+        });
+        if (error) {
+          BootstrapBorders.setDanger(this.#displayInput);
+          return;
+        }
+        BootstrapBorders.unsetDanger(this.#displayInput);
+        await UserSessionManager.getInstance().verifyAuth();
+        this._updateState();
+      },
+    );
   }
 
   _render() {
-    const { displayName, email, avatar, username } =
-      UserSessionManager.getInstance().myInfo.observe(
-        (myInfo) => myInfo,
-      );
+    const myInfo = UserSessionManager.getInstance().myInfo.observe(
+      (myInfo) => myInfo,
+    );
+
+    const avatarImage = new MyInfoAvatar({
+      user: myInfo,
+      height: "max(100px,15vh)",
+    });
+    const { displayName, email, username } = myInfo;
     this.#displayInput.value = displayName;
     const displayNameInput = createDisplayInputField(
       this.#displayInput,
@@ -59,12 +66,13 @@ export class MyInfoContainer extends Component {
       BootstrapButtons.setOutlinePrimary,
     );
 
-    const inputList = createDefaultUnorderedList([
+    const inputList = createAroundFlexBox(
+      avatarImage,
       displayNameInput,
       usernameInput,
       emailInput,
-    ]);
-
+    );
+    BootstrapFlex.setFlexColumn(inputList);
     BootstrapDisplay.setGrid(inputList);
     BootstrapSizing.setWidth50(inputList);
     BootstrapSpacing.setGap(inputList);
@@ -87,24 +95,26 @@ const createInputField = (labelName, placeholder, setButtonStyle) => {
   setButtonStyle(button);
   BootstrapButtons.setSmall(button);
 
-  return createThreeColumnLayout(label, input, button, 4, 4, 1);
+  const layout = createAroundFlexBox(label, input, button);
+  BootstrapSizing.setWidth75(layout);
+  return layout;
 };
 
 const createDisplayInputField = (displayInput) => {
   const label = createTextElement("表示名", 6);
-  const button = createButton(
+  const patchDisplayName = new EventDispatchingButton(
     { textContent: "保存" },
-    { type: "submit", name: "displayName" },
+    {},
+    PongEvents.PATCH_DISPLAY_NAME,
   );
-  BootstrapButtons.setPrimary(button);
-  BootstrapButtons.setSmall(button);
+  patchDisplayName.setPrimary();
+  patchDisplayName.setSmall();
 
-  return createThreeColumnLayout(
+  const layout = createAroundFlexBox(
     label,
     displayInput,
-    button,
-    4,
-    4,
-    1,
+    patchDisplayName,
   );
+  BootstrapSizing.setWidth75(layout);
+  return layout;
 };

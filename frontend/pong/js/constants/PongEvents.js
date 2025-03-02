@@ -53,6 +53,16 @@ const TOGGLE_3D = {
   create: () => createPongEvent(TOGGLE_3D.type, {}),
 };
 
+const PATCH_DISPLAY_NAME = {
+  type: "upload-avatar",
+  create: () => createPongEvent(PATCH_DISPLAY_NAME.type, {}),
+};
+
+const PATCH_AVATAR = {
+  type: "patch-avatar",
+  create: () => createPongEvent(PATCH_AVATAR.type, {}),
+};
+
 export const PongEvents = {
   UPDATE_ROUTER,
   UPDATE_TOURNAMENT_STAGE,
@@ -62,4 +72,6 @@ export const PongEvents = {
   START_MATCH,
   END_MATCH,
   TOGGLE_3D,
+  PATCH_DISPLAY_NAME,
+  PATCH_AVATAR,
 };

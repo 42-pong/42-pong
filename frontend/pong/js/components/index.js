@@ -34,6 +34,7 @@ import { TournamentProgress } from "./tournament/TournamentProgress";
 import { TournamentScoreboard } from "./tournament/TournamentScoreboard";
 import { TournamentStateContainer } from "./tournament/TournamentStateContainer";
 import { TournamentWaiting } from "./tournament/TournamentWaiting";
+import { MyInfoAvatar } from "./user/MyInfoAvatar";
 import { MyInfoContainer } from "./user/MyInfoContainer";
 import { UserListContainer } from "./user/UserListContainer";
 import { UserListItem } from "./user/UserListItem";
@@ -128,6 +129,7 @@ customElements.define(
   {},
 );
 customElements.define("tournament-waiting", TournamentWaiting, {});
+customElements.define("my-info-avatar", MyInfoAvatar, {});
 customElements.define("my-info-container", MyInfoContainer, {});
 customElements.define("user-list-container", UserListContainer, {});
 customElements.define("user-list-item", UserListItem, {});
