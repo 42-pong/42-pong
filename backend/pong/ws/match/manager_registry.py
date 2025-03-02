@@ -72,12 +72,12 @@ class MatchManagerRegistry:
     async def paddle_up(self, match_id: int, team: str) -> None:
         async with self.lock:
             if match_id in self.managers:
-                await self.managers[match_id]._paddle_up(team)
+                await self.managers[match_id].paddle_up(team)
 
     async def paddle_down(self, match_id: int, team: str) -> None:
         async with self.lock:
             if match_id in self.managers:
-                await self.managers[match_id]._paddle_down(team)
+                await self.managers[match_id].paddle_down(team)
 
     async def exit_match(self, match_id: int, exited_team: str) -> None:
         async with self.lock:
