@@ -1,8 +1,6 @@
 name: Frontend Unit Test
 
 on:
-  push:
-    branches: [main, dev]
   pull_request:
     paths:
       - 'frontend/pong/**.js'
