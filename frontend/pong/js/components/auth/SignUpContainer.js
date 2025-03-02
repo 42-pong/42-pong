@@ -1,6 +1,7 @@
 import { AuthConstants } from "../../constants/AuthConstants";
-import { Paths } from "../../constants/Paths";
 import { Endpoints } from "../../constants/Endpoints";
+import { Paths } from "../../constants/Paths";
+import { PongEvents } from "../../constants/PongEvents";
 import { ApiMessage } from "../../constants/message/ApiMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
@@ -115,7 +116,9 @@ export class SignUpContainer extends Component {
           this.#form.appendChild(successMessage);
           // 数秒後にログインページにリダイレクト
           setTimeout(() => {
-            this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.LOGIN));
+            this.dispatchEvent(
+              PongEvents.UPDATE_ROUTER.create(Paths.LOGIN),
+            );
           }, 2000);
         }
       } catch (error) {
