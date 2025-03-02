@@ -62,7 +62,7 @@ class TournamentManager:
         Returns:
             int: 削除後の参加者数を返す。
         """
-        if participant in self.participants
+        if participant in self.participants:
             self.participants.remove(participant)
         # TODO: 参加レコードを削除
         if len(self.participants) == 0:
@@ -120,7 +120,6 @@ class TournamentManager:
             if update_result.is_error():
                 return update_result  # エラー発生時は処理を中断
             return
-    
 
         # ラウンド作成
         round_result = await tournament_service.create_round(
@@ -173,6 +172,80 @@ class TournamentManager:
         :param matchups: 1対1のマッチリスト
         :return: 各マッチの結果 (勝者, 敗者) のリスト
         """
+        # マッチ作成と参加レコード作成
+        match_tasks = [match_service.create_match(round_id) for _ in matchups]
+        match_results = await asyncio.gather(*match_tasks)
+
+        self.valid_matches = []
+        self.participation_tasks = []
+        self.match_manager_tasks = []  # バックグラウンドで実行する run() タスクを格納
+
+        for (player1, player2), match_result in zip(matchups, match_results):
+            # TODO: Error処理
+            if match_result.is_error():
+                return match_result  # エラーが発生した場合は即時リターン
+
+            match_id = match_result.value[match_db_constants.MatchFields.ID]
+
+            # 参加レコード作成
+            self.participation_tasks.append(
+                match_service.create_participation(
+                    match_id,
+                    player1.user_id,
+                    team=match_ws_constants.Team.ONE.value,
+                )
+            )
+            self.participation_tasks.append(
+                match_service.create_participation(
+                    match_id,
+                    player2.user_id,
+                    team=match_ws_constants.Team.TWO.value,
+                )
+            )
+
+            # MatchManager 作成と登録
+            match_manager = match_manager.MatchManager(
+                match_id=match_id,
+                player1=player1,
+                player2=player2,
+                mode=match_ws_constants.Mode.REMOTE.value,
+            )
+            # 試合をバックグラウンドで実行
+            self.match_manager_tasks.append(
+                asyncio.create_task(match_manager.run())
+            )
+
+            self.valid_matches.append((match_id, match_manager))
+
+        # 参加レコードを並列作成
+        participation_results = await asyncio.gather(*self.participation_tasks)
+        # TODO: Error処理
+        for result in participation_results:
+            if result.is_error():
+                return result  # エラーが発生した場合は即時リターン
+
+        # バックグラウンドタスクの結果を収集
+        match_results = await asyncio.gather(*self.match_manager_tasks)
+
+        final_results = []
+        for match_winner, (match_id, match_manager) in zip(
+            match_results, self.valid_matches
+        ):
+            # 型チェックの関係で必要
+            # 実際にはNoneが入ることはないはず
+            if match_winner is None:
+                continue
+
+            # 試合結果を保持
+            if match_result == player1:
+                winner = player1
+                loser = player2
+            else:
+                winner = player2
+                loser = player1
+            final_results.append((match_id, winner, loser))
+
+        return final_results
         pass
 
     async def _process_results(
