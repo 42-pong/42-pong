@@ -1,15 +1,9 @@
-const setCookie = (name, value, expiration, options = {}) => {
+const setCookie = (name, value, expiration) => {
   const expirationDate = new Date();
   //cookieの有効期間をexpiration日間にする
   expirationDate.setDate(expirationDate.getDate() + expiration);
-  //todo
-  const defaultOptions = {
-    secure: true,
-    httpOnly: false,
-    sameSite: 'Strict',
-  };
   //cookieのセキュリティ設定のベストプラティクスをする必要がある
-  document.cookie = `${name}=${value}; expires=${expirationDate.toUTCString()}; ${option}`;
+  document.cookie = `${name}=${value}; expires=${expirationDate.toUTCString()}; "httpOnly: true,secure: true,sameSite: 'strict'"`;
 };
 
 const getCookie = (name) => {

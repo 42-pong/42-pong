@@ -6,7 +6,6 @@ import { MessageEnums } from "../../enums/MessageEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { LinkButton } from "../utils/LinkButton";
 import { SignUpButton } from "./SignUpButton";
-import { Cookie } from "../../utils/cookie/Cookie";
 
 export class LoginContainer extends Component {
   #container;
@@ -97,7 +96,8 @@ export class LoginContainer extends Component {
             password: password,
           }),
         });
-        const { status, data, code} = await response.json();
+
+        const { status, data, code } = await response.json();
 
         if (status !== "ok") {
           this.#form.reset();
@@ -108,26 +108,8 @@ export class LoginContainer extends Component {
         }
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
 
-        console.log("status", status);
-        console.log("data", data);
-        console.log("code", code);
-
-        const accessToken = data.access;
-        const refreshToken = data.refresh;
-
-        //setCookie
-        const expirationDate = new Date();
-        expirationDate.setDate(expirationDate.getDate() + expiration);
-        document.cookie = `refreshToken=${refreshToken}; expires=${expirationDate.toUTCString()}; `;
-
-        setCookie("refreshToken", refreshToken, 7, "httpOnly: true,secure: true,sameSite: 'strict'");
-
-
-        //getCookie
-
-
         const isVerified =
-          await UserSessionManager.getInstance().signIn(tokens);
+          await UserSessionManager.getInstance().signIn(data);
         if (isVerified)
           UserSessionManager.getInstance().redirect(Paths.HOME);
       } catch (error) {
