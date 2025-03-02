@@ -262,7 +262,9 @@ class MatchManager:
         )
         await self._send_message(message)
 
-    async def player_exited(self, exited_team: str) -> None:
+    async def player_exited(
+        self, exited_player: player_data.PlayerData
+    ) -> None:
         """
         プレーヤーが途中退出した場合にConsumerから実行される関数。
         呼び出されるタイミングは2つある。
@@ -274,10 +276,9 @@ class MatchManager:
         # run()関数内で認識できるようにキャンセルフラグを立てる
         self.canceled = True
         # 退出したほうのプレーヤーをNoneに変更
-        if exited_team == match_constants.Team.ONE.value:
-            self.remained_player = self.player1
-        else:
-            self.remained_player = self.player2
+        self.remained_player = (
+            self.player2 if exited_player == self.player1 else self.player1
+        )
 
         if not self.waiting_player_ready.is_set():
             # 試合開始前に終了
@@ -297,7 +298,7 @@ class MatchManager:
             match_constants.Stage.END.value,
             {
                 "win": match_constants.Team.ONE.value
-                if exited_team != match_constants.Team.ONE.value
+                if exited_player == self.player2
                 else match_constants.Team.TWO.value,
                 "score1": self.pong_logic.score1,
                 "score2": self.pong_logic.score2,
