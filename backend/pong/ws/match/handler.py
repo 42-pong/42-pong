@@ -1,69 +1,31 @@
 import asyncio
-from dataclasses import dataclass
-from typing import Final, Optional
+from typing import Optional
 
-from channels.layers import BaseChannelLayer  # type: ignore
-
-from ..share import channel_handler
 from ..share import constants as ws_constants
 from . import constants as match_constants
 from . import serializers as match_serializers
 
 
-@dataclass
-class PosStruct:
-    x: int
-    y: int
-
-
 class MatchHandler:
     """
-    Pongゲームのマッチロジックおよび通信を処理するクラス。
-    座標の原点（0, 0）は左上
+    Pongゲーム時にクライアントとの通信を処理するクラス。
     """
 
-    # クラス定数
-    HEIGHT: Final[int] = 400
-    WIDTH: Final[int] = 600
-    PADDLE_POS_FROM_GOAL: Final[int] = WIDTH // 100
-    PADDLE_HEIGHT: Final[int] = 60
-    PADDLE_WIDTH: Final[int] = 10
-    PADDLE_SPEED: Final[int] = 5
-    BALL_SIZE: Final[int] = 10
-    BALL_SPEED: Final[int] = 2
-    FPS: Final[float] = 1 / 60
-    WINNING_SCORE: Final[int] = 5
-
-    # クラス属性
-    stage: Optional[match_constants.Stage]
-    paddle1: PosStruct
-    paddle2: PosStruct
-    ball: PosStruct
-    ball_speed: PosStruct
-    score1: int
-    score2: int
-    local_play: bool
-    group_name: str
-    channel_handler: channel_handler.ChannelHandler
-    channel_name: str
-
-    def __init__(self, channel_layer: BaseChannelLayer, channel_name: str):
+    def __init__(self, channel_name: str):
         """
         MatchHandlerの初期化。
 
         :param channel_layer: チャネルレイヤー
         :param channel_name: チャネル名
         """
+        self.stage: Optional[match_constants.Stage] = None
         self.stage_handlers = {
             match_constants.Stage.INIT.value: self._handle_init,
             match_constants.Stage.READY.value: self._handle_ready,
             match_constants.Stage.PLAY.value: self._handle_play,
             match_constants.Stage.END.value: self._handle_end,
         }
-        self.channel_handler = channel_handler.ChannelHandler(
-            channel_layer, channel_name
-        )
-        self._reset_state()
+        self.is_local: bool = True
 
     def __str__(self) -> str:
         """
@@ -71,11 +33,7 @@ class MatchHandler:
 
         :return: MatchHandlerオブジェクトの文字列表現
         """
-        return (
-            f"MatchHandler(stage={self.stage}, "
-            f"paddle1={self.paddle1}, paddle2={self.paddle2}, "
-            f"ball={self.ball}, score1={self.score1}, score2={self.score2})"
-        )
+        return f"MatchHandler(stage={self.stage})"
 
     def __repr__(self) -> str:
         """
@@ -85,10 +43,7 @@ class MatchHandler:
         """
         return (
             f"MatchHandler(stage={self.stage}, "
-            f"paddle1={self.paddle1}, paddle2={self.paddle2}, "
-            f"ball={self.ball}, ball_speed={self.ball_speed}, "
-            f"score1={self.score1}, score2={self.score2}, "
-            f"local_play={self.local_play}, group_name={self.group_name}, "
+            f"local_play={self.local_play}, "
             f"channel_handler={self.channel_handler!r})"
         )
 
@@ -127,29 +82,16 @@ class MatchHandler:
             data[match_constants.Mode.key()]
             == match_constants.Mode.LOCAL.value
         ):
-            self.group_name = "solo_match"
+            TODO: マッチマネジャーを作成して、ローカルゲームのセットアップを行う。
         elif (
             data[match_constants.Mode.key()]
             == match_constants.Mode.REMOTE.value
         ):
-            self.group_name = "remote_match"
+            self.is_local = False
 
-        await self.channel_handler.add_to_group(self.group_name)
         # TODO: remoteの場合のグループ作成方法は別で考える
 
         # LOCALモードの場合teamやdisplay_nameは必要ない
-        # TODO: ここら辺べた書きになっているから何か他にいい方法がないか
-        message = self._build_message(
-            {
-                match_constants.Team.key(): match_constants.Team.EMPTY.value,
-                "display_name1": "",
-                "display_name2": "",
-                "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
-                "paddle2": {"x": self.paddle2.x, "y": self.paddle2.y},
-                "ball": {"x": self.ball.x, "y": self.ball.y},
-            },
-        )
-        await self.channel_handler.send_to_group(self.group_name, message)
 
     async def _handle_ready(self, data: dict) -> None:
         """
@@ -159,12 +101,9 @@ class MatchHandler:
         :param data: 準備状態に必要なデータ
         """
         self.stage = match_constants.Stage.READY
-        message = self._build_message({})
-        await self.channel_handler.send_to_group(self.group_name, message)
 
         # ゲーム状況の更新をしてプレーヤーに非同期で送信し続ける処理を開始する
         self.stage = match_constants.Stage.PLAY
-        asyncio.create_task(self._send_match_state())
 
     async def _handle_play(self, data: dict) -> None:
         """
@@ -188,225 +127,12 @@ class MatchHandler:
 
         ENDステージのメッセージを送信し、クリーンナップ処理を行う。
         """
-        win_team: str = (
-            match_constants.Team.ONE.value
-            if self.score1 > self.score2
-            else match_constants.Team.TWO.value
-        )
-        message = self._build_message(
-            {"win": win_team, "score1": self.score1, "score2": self.score2},
-        )
-        await self.channel_handler.send_to_group(self.group_name, message)
         await self.cleanup()
-
-    # ==============================
-    # ゲームロジック関係のメソッド
-    # ==============================
-    def _move_paddle(self, paddle_move: dict) -> None:
-        """
-        プレイヤーの入力に合わせてパドルを移動させる。
-
-        :param paddle_move: パドルの移動情報
-        """
-        match paddle_move[match_constants.Move.key()]:
-            case match_constants.Move.UP.value:
-                if (
-                    paddle_move[match_constants.Team.key()]
-                    == match_constants.Team.ONE.value
-                    and self.paddle1.y > 0
-                ):
-                    self.paddle1.y -= self.PADDLE_SPEED
-                elif (
-                    paddle_move[match_constants.Team.key()]
-                    == match_constants.Team.TWO.value
-                    and self.paddle2.y > 0
-                ):
-                    self.paddle2.y -= self.PADDLE_SPEED
-
-            case match_constants.Move.DOWN.value:
-                if (
-                    paddle_move[match_constants.Team.key()]
-                    == match_constants.Team.ONE.value
-                    and self.paddle1.y + self.PADDLE_HEIGHT < self.HEIGHT
-                ):
-                    self.paddle1.y += self.PADDLE_SPEED
-                elif (
-                    paddle_move[match_constants.Team.key()]
-                    == match_constants.Team.TWO.value
-                    and self.paddle2.y + self.PADDLE_HEIGHT < self.HEIGHT
-                ):
-                    self.paddle2.y += self.PADDLE_SPEED
-
-    def _update_match_state(self) -> None:
-        """
-        ボールの移動や、ボールと壁・パドルとの衝突、得点の判定を行い、ゲーム状態を更新する。
-        """
-        # ボールの移動
-        self.ball.x += self.ball_speed.x
-        self.ball.y += self.ball_speed.y
-
-        # 上下の壁との衝突判定
-        if self.ball.y - self.BALL_SIZE <= 0:
-            self.ball_speed.y = abs(self.ball_speed.y)
-        elif self.ball.y + self.BALL_SIZE >= self.HEIGHT:
-            self.ball_speed.y = -abs(self.ball_speed.y)
-
-        # パドルとの衝突判定
-        self._process_ball_paddle_collision(self.paddle1, True)
-        self._process_ball_paddle_collision(self.paddle2, False)
-
-        # 得点判定
-        if self.ball.x + self.BALL_SIZE <= 0:
-            self.score2 += 1
-            self._reset_ball()
-        elif self.ball.x - self.BALL_SIZE >= self.WIDTH:
-            self.score1 += 1
-            self._reset_ball()
-
-        # 勝利判定
-        if (
-            self.score1 >= self.WINNING_SCORE
-            or self.score2 >= self.WINNING_SCORE
-        ):
-            self.stage = match_constants.Stage.END
-
-    def _process_ball_paddle_collision(
-        self, paddle_pos: PosStruct, is_paddle1: bool
-    ) -> None:
-        """
-        ボールとパドルの衝突判定と衝突時の処理
-
-        Args:
-            paddle_pos (PosStruct): パドルの位置
-            is_paddle1 (bool): パドルがteam1のものかどうか
-        """
-        # 衝突判定
-        if (
-            self.ball.x - self.BALL_SIZE <= paddle_pos.x + self.PADDLE_WIDTH
-            and self.ball.x + self.BALL_SIZE >= paddle_pos.x
-            and self.ball.y - self.BALL_SIZE
-            <= paddle_pos.y + self.PADDLE_HEIGHT
-            and self.ball.y + self.BALL_SIZE >= paddle_pos.y
-        ):
-            # ボールのx座標がパドルの側面に当たった場合
-            # ボールの中心がパドルの端よりも自陣側に過ぎていたらx軸方向に跳ね返さない
-            if (
-                self.ball.y >= paddle_pos.y
-                and self.ball.y <= paddle_pos.y + self.PADDLE_HEIGHT
-            ):
-                if (
-                    is_paddle1
-                    and self.ball.x > paddle_pos.x + self.PADDLE_WIDTH
-                ):
-                    self.ball_speed.x = abs(self.ball_speed.x)
-                elif self.ball.x < paddle_pos.x:
-                    self.ball_speed.x = -abs(self.ball_speed.x)
-
-            # ボールのy座標がパドルの上下面に当たった場合
-            if (
-                self.ball.x >= paddle_pos.x
-                and self.ball.x <= paddle_pos.x + self.PADDLE_WIDTH
-            ):
-                if self.ball.y <= paddle_pos.y:
-                    self.ball_speed.y = -abs(self.ball_speed.y)
-                elif self.ball.y >= paddle_pos.y + self.PADDLE_HEIGHT:
-                    self.ball_speed.y = abs(self.ball_speed.y)
-
-    async def _send_match_state(self) -> None:
-        """
-        ゲーム状態を指定したFPSで定期的に送信する。
-
-        ゲームが終了するまで繰り返し実行される。
-        """
-        last_update = asyncio.get_event_loop().time()
-        while self.stage != match_constants.Stage.END:
-            await asyncio.sleep(self.FPS)
-            current_time = asyncio.get_event_loop().time()
-            delta = current_time - last_update
-            if delta >= self.FPS:
-                self._update_match_state()
-                if self.stage == match_constants.Stage.END:
-                    break
-                game_state = self._build_message(
-                    {
-                        "paddle1": {"x": self.paddle1.x, "y": self.paddle1.y},
-                        "paddle2": {"x": self.paddle2.x, "y": self.paddle2.y},
-                        "ball": {"x": self.ball.x, "y": self.ball.y},
-                        "score1": self.score1,
-                        "score2": self.score2,
-                    },
-                )
-                await self.channel_handler.send_to_group(
-                    self.group_name, game_state
-                )
-                last_update = current_time
-            else:
-                await asyncio.sleep(self.FPS - delta)
-
-        # ENDステージの処理
-        await self._end_process()
-
-    # ==================
-    # ヘルパーメソッド
-    # ==================
-    def _reset_state(self) -> None:
-        """
-        ゲームの状態をリセット。
-        オブジェクトの座標が指す位置はすべて左上とする
-
-        ゲームのステージ、スコア、パドルの位置、ボールの位置を初期状態に戻す。
-        """
-        self.stage = None
-        self.paddle1 = PosStruct(
-            x=self.PADDLE_POS_FROM_GOAL,
-            y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2),
-        )
-        self.paddle2 = PosStruct(
-            x=self.WIDTH - self.PADDLE_WIDTH - self.PADDLE_POS_FROM_GOAL,
-            y=int(self.HEIGHT / 2 - self.PADDLE_HEIGHT / 2),
-        )
-        self._reset_ball()
-        self.score1 = 0
-        self.score2 = 0
-        self.local_play = False
-        self.group_name = ""
-
-    def _reset_ball(self) -> None:
-        """
-        ボールの位置と速度をリセット。
-
-        ボールを中央に配置し、速度を設定する。
-        """
-        self.ball: PosStruct = PosStruct(
-            x=int(self.WIDTH / 2 - self.BALL_SIZE / 2),
-            y=int(self.HEIGHT / 2 - self.BALL_SIZE / 2),
-        )
-        self.ball_speed: PosStruct = PosStruct(
-            x=self.BALL_SPEED, y=self.BALL_SPEED
-        )
 
     async def cleanup(self) -> None:
         """
         ゲーム終了後のクリーンナップ処理
         グループから削除し、状態を初期化する
         """
-        if self.group_name:
-            await self.channel_handler.remove_from_group(self.group_name)
-        self._reset_state()
-
-    def _build_message(self, data: dict) -> dict:
-        """
-        プレーヤーに送るメッセージを作成。
-
-        :param data: ステージに関連するデータ
-        :return: 作成したメッセージ
-        """
-        return {
-            ws_constants.Category.key(): ws_constants.Category.MATCH.value,
-            ws_constants.PAYLOAD_KEY: {
-                match_constants.Stage.key(): self.stage.value
-                if self.stage is not None
-                else "",
-                ws_constants.DATA_KEY: data,
-            },
-        }
+        self.stage = None
+        self.is_local = True
