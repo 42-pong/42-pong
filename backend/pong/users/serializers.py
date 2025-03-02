@@ -221,9 +221,19 @@ class UsersSerializer(serializers.Serializer):
         """
         # 更新時のバリデーション
         if self.instance is not None:
+            display_name: Optional[str] = data.get(
+                accounts_constants.PlayerFields.DISPLAY_NAME
+            )
             avatar: Optional[UploadedFile] = data.get(
                 accounts_constants.PlayerFields.AVATAR
             )
+            # display_nameとavatarのどちらかが必須
+            if display_name is None and avatar is None:
+                raise serializers.ValidationError(
+                    "Either display_name or avatar must be provided."
+                )
+
+            # display_nameが空文字列の場合は他でバリデーションされるためここではチェックしない
             # avatar更新時のバリデーション
             if avatar is not None:
                 self._validate_avatar(avatar)
