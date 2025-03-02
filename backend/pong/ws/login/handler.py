@@ -50,6 +50,7 @@ class LoginHandler:
     async def _login(self, input_user_id: int) -> None:
         """
         redisにlogin情報を登録
+        login結果とユーザーのフレンドのオンライン情報を送信
         """
         self.user_id = input_user_id
         await AsyncRedisClient.sadd_value(
@@ -58,7 +59,6 @@ class LoginHandler:
             login_constants.CHANNEL_RESOURCE,
             self.channel_handler.channel_name,
         )
-        # TODO: 現在フレンド登録している人のオンライン状況も送ってあげる
         await self._send_login_result(login_constants.Status.OK.value)
         # TODO: 接続数が0->1の時だけfollowerに通知する
 
@@ -93,9 +93,13 @@ class LoginHandler:
             )
 
     async def _send_login_result(self, login_status: str) -> None:
+        online_friend_list: list[int] = await self.get_friends_online_status()
         message = {
             ws_constants.Category.key(): ws_constants.Category.LOGIN,
-            ws_constants.PAYLOAD_KEY: {login_constants.Status: login_status},
+            ws_constants.PAYLOAD_KEY: {
+                login_constants.Status.key(): login_status,
+                login_constants.ONLINE_FRIEND_IDS: online_friend_list,
+            },
         }
         await self.channel_handler.send_to_consumer(
             message, self.channel_handler.channel_name
@@ -124,3 +128,34 @@ class LoginHandler:
             # onlineのフォロワーのchannelすべてに送信
             for channel in channel_set:
                 await self.channel_handler.send_to_consumer(message, channel)
+
+    async def get_friends_online_status(self) -> list[int]:
+        """
+        フレンドのオンライン情報を取得して、クライアントに送信する。
+        Redis からオンラインのフレンドの情報を非同期で取得する。
+        """
+        # 型チェック的に必要
+        if self.user_id is None:
+            return []
+
+        # オンラインのフレンドを格納するリスト
+        online_friends = []
+
+        # フレンドリストを取得 (非同期)
+        async for friend_id in (
+            friend_models.Friendship.objects.filter(user_id=self.user_id)
+            .values_list("friend_id", flat=True)
+            .aiterator()
+        ):
+            # 友達がオンラインかどうかをチェック (Redis から取得)
+            exist = await AsyncRedisClient.exists(
+                login_constants.USER_NAMESPACE,
+                friend_id,
+                login_constants.CHANNEL_RESOURCE,
+            )
+
+            # オンラインであればリストに追加
+            if exist:
+                online_friends.append(friend_id)
+
+        return online_friends
