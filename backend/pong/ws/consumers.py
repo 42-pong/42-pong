@@ -39,7 +39,6 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
             ]
             payload: dict = serializer.validated_data[ws_constants.PAYLOAD_KEY]
 
-            # TODO: LOGINメッセージルール確定したら追加
             match category:
                 case (
                     ws_constants.Category.LOGIN.value

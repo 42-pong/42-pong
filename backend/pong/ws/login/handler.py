@@ -141,7 +141,6 @@ class LoginHandler:
             message, self.channel_handler.channel_name
         )
 
-    # TODO: ログインかログアウトかを引数で受け取る
     async def _notify_followers(self, is_login: bool) -> None:
         # 型チェックで必要なチェック
         if self.user_id is None:
