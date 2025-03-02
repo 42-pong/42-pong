@@ -1,11 +1,18 @@
 import asyncio
+import random
 
 from channels.layers import get_channel_layer  # type: ignore
 
+from matches import constants as match_db_constants
+from tournaments import constants as tournament_db_constants
+from ws.match import match_manager
 from ws.share import constants as ws_constants
 
+from ..match import async_db_service as match_service
+from ..match import constants as match_ws_constants
 from ..share import channel_handler, player_data
-from . import constants as tournament_constants
+from . import async_db_service as tournament_service
+from . import constants as tournament_ws_constants
 
 
 class TournamentManager:
@@ -55,10 +62,11 @@ class TournamentManager:
         Returns:
             int: 削除後の参加者数を返す。
         """
-        if participant in self.participants:
+        if participant in self.participants
             self.participants.remove(participant)
         # TODO: 参加レコードを削除
         if len(self.participants) == 0:
+            # キャンセル処理
             await self.cancel_tournament()
             return 0
 
@@ -77,7 +85,7 @@ class TournamentManager:
 
         # ラウンドを1つずつ進める。
         # もし次のラウンドが残っていれば再び実行される。
-        await self._progress_rounds()
+        await self._progress_rounds(self.participants)
 
         # トーナメントの終了処理を行う。
         await self._end_tournament()
@@ -88,15 +96,113 @@ class TournamentManager:
         トーナメントの状態を変更し、Consumerへ通知する。
         リソースを作成した後に、ラウンドを作成する。
         """
+        # TODO: トーナメント開始アナウンスを送信。
+        # TODO: トーナメントの状態をON_GOINGに更新
+
+        # トーナメント情報を更新するように通知
+        await self._send_tournament_reload_message()
+
+    async def _progress_rounds(
+        self, participants: list[player_data.PlayerData], round_number: int = 1
+    ) -> None:
+        """
+        トーナメントのラウンドを進行し、参加者が1人になるまでラウンドを繰り返す。
+        """
+        # ラウンドに進んだ人数が1人になったらラウンド進行を終了
+        if len(participants) <= 1:
+            # 残った人が優勝
+            update_result = (
+                await tournament_service.update_participation_ranking(
+                    self.tournament_id, participants[0].user_id, 1
+                )
+            )
+            # TODO: Error処理
+            if update_result.is_error():
+                return update_result  # エラー発生時は処理を中断
+            return
+    
+
+        # ラウンド作成
+        round_result = await tournament_service.create_round(
+            self.tournament_id, round_number
+        )
+        # TODO: Error処理
+        if round_result.is_error():
+            return round_result  # エラー発生時は処理を中断
+        # TODO: ラウンド開始をアナウンス
+
+        round_id = round_result.value[tournament_db_constants.RoundFields.ID]
+
+        # ラウンドの1対1マッチに振り分ける
+        matchups = self._pair_participants(participants)
+        # MatchManagerを作成し、並列で実行する
+        match_results = await self._run_matches(round_id, matchups)
+        # 勝者・敗者処理
+        next_round_participants = await self._process_results(
+            round_number, match_results
+        )
+
+        # TODO: ラウンドの状態を更新
+        # TODO: ラウンド終了をアナウンス
+
+        await self._progress_rounds(next_round_participants, round_number + 1)
+
+    def _pair_participants(
+        self, participants: list[player_data.PlayerData]
+    ) -> list[tuple[player_data.PlayerData, player_data.PlayerData]]:
+        """
+        残りの参加者をランダムにペアリングして1対1のマッチを作成する。
+
+        :return: 1対1マッチのリスト
+        """
+        random.shuffle(participants)
+        matchups = [
+            (participants[i], participants[i + 1])
+            for i in range(0, len(participants) - 1, 2)
+        ]
+        return matchups
+
+    async def _run_matches(
+        self,
+        round_id: int,
+        matchups: list[tuple[player_data.PlayerData, player_data.PlayerData]],
+    ) -> list[tuple[int, player_data.PlayerData, player_data.PlayerData]]:
+        """
+        各マッチを並列で実行し、結果を返す。
+
+        :param matchups: 1対1のマッチリスト
+        :return: 各マッチの結果 (勝者, 敗者) のリスト
+        """
         pass
 
-    async def _progress_rounds(self) -> None:
+    async def _process_results(
+        self,
+        round_number: int,
+        match_results: list[
+            tuple[int, player_data.PlayerData, player_data.PlayerData]
+        ],
+    ) -> list[player_data.PlayerData]:
         """
-        ラウンド進行処理。
-        participantを2人組にして、それぞれにマッチを作成。
-        すべてのmatchが終わるのを待ち、まだ優勝者が決まらなければもう一度ラウンドを進行し、決まればトーナメントを終了する。
+        マッチの結果をアナウンスし、敗者を削除する。
+
+        :param match_results: 各マッチのIDと結果 (勝者, 敗者) のリスト
         """
-        pass
+        next_round_participants = []
+        for match_id, winner, loser in match_results:
+            # 敗者のランキングを更新
+            ranking = 4
+            if round_number == 2:
+                ranking = 2
+
+            update_result = (
+                await tournament_service.update_participation_ranking(
+                    self.tournament_id, loser.user_id, ranking
+                )
+            )
+            if update_result.is_error():
+                return update_result  # エラー発生時は処理を中断
+            next_round_participants.append(winner)
+        return next_round_participants
 
     async def _end_tournament(self) -> None:
         """
@@ -119,9 +225,9 @@ class TournamentManager:
         これを受け取ったプレーヤーはRESTAPIで情報を取得し、画面を更新する。
         """
         message = self._build_tournament_message(
-            tournament_constants.Type.RELOAD.value,
+            tournament_ws_constants.Type.RELOAD.value,
             {
-                tournament_constants.Event.key(): tournament_constants.Event.PLAYER_CHANGE.value
+                tournament_ws_constants.Event.key(): tournament_ws_constants.Event.PLAYER_CHANGE.value
             },
         )
         await self.channel_handler.send_to_group(self.group_name, message)
@@ -132,9 +238,9 @@ class TournamentManager:
         これを受け取ったプレーヤーはRESTAPIで情報を取得し、画面を更新する。
         """
         message = self._build_tournament_message(
-            tournament_constants.Type.RELOAD.value,
+            tournament_ws_constants.Type.RELOAD.value,
             {
-                tournament_constants.Event.key(): tournament_constants.Event.TOURNAMENT_STATE_CHANGE.value
+                tournament_ws_constants.Event.key(): tournament_ws_constants.Event.TOURNAMENT_STATE_CHANGE.value
             },
         )
         await self.channel_handler.send_to_group(self.group_name, message)
@@ -149,7 +255,7 @@ class TournamentManager:
         return {
             ws_constants.Category.key(): ws_constants.Category.TOURNAMENT.value,
             ws_constants.PAYLOAD_KEY: {
-                tournament_constants.Type.key(): type,
+                tournament_ws_constants.Type.key(): type,
                 ws_constants.DATA_KEY: data,
             },
         }
