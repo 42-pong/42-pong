@@ -137,9 +137,10 @@ class LoginHandler:
                 login_constants.ONLINE_FRIEND_IDS: online_friend_list,
             },
         }
-        await self.channel_handler.send_to_consumer(
-            message, self.channel_handler.channel_name
-        )
+        if self.channel_handler.channel_name is not None:
+            await self.channel_handler.send_to_consumer(
+                message, self.channel_handler.channel_name
+            )
 
     async def _notify_followers(self, is_login: bool) -> None:
         # 型チェックで必要なチェック
