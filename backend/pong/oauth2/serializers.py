@@ -4,29 +4,6 @@ from rest_framework import serializers
 from . import models
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            "id",
-            "username",
-            "email",
-            "password",
-        )
-        extra_kwargs = {
-            "email": {"required": True},
-            "password": {"write_only": True, "allow_blank": True},
-        }
-
-    def create(self, validated_data: dict) -> User:
-        user: User = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password="",
-        )
-        return user
-
-
 class OAuth2Serializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 

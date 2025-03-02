@@ -81,7 +81,11 @@ DEBUG = env.bool("DEBUG", False)
 
 SECRET_KEY = get_valid_str_env("SECRET_KEY")
 
-ALLOWED_HOSTS: list[str] = []
+# todo: 開発時だけFalseにしたい環境変数
+# SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+ALLOWED_HOSTS: list[str] = ["localhost", "frontend"]
 
 # Application definition
 
@@ -197,6 +201,10 @@ STATIC_URL = "static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -260,10 +268,18 @@ ASGI_APPLICATION = "pong.asgi.application"
 # https://github.com/adamchainz/django-cors-headers
 
 # リストに追加することでオリジンを許可する
-CORS_ALLOWED_ORIGINS = [
-    f"http://localhost:{FRONT_SERVER_PORT}",  # frontendコンテナ
+CORS_ALLOWED_ORIGINS = ["https://localhost"]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
 ]
-# todo: CORS_ALLOW_CREDENTIALS, CSRFについての設定は必要になり次第追加
+CSRF_TRUSTED_ORIGINS = ["https://localhost"]
+
 
 # Django logging
 # 詳細: https://docs.djangoproject.com/ja/5.1/topics/logging/
@@ -279,6 +295,11 @@ LOGGING = {
     },
     "handlers": {
         # todo: ログレベルの設定は必要に応じて追加する
+        "debug": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "custom",
+        },
         "warning": {
             "level": "WARNING",
             "class": "logging.StreamHandler",
@@ -290,7 +311,6 @@ LOGGING = {
     # 詳細: https://docs.python.org/ja/3/library/logging.config.html#dictionary-schema-details
     "root": {
         "handlers": ["warning"],
-        # todo: DEBUGがTrueの場合はDEBUGレベルのログを出力するようにする？
         "level": "WARNING",
     },
 }
