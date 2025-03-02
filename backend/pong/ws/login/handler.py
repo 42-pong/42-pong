@@ -95,7 +95,7 @@ class LoginHandler:
     async def _send_login_result(self, login_status: str) -> None:
         online_friend_list: list[int] = await self.get_friends_online_status()
         message = {
-            ws_constants.Category.key(): ws_constants.Category.LOGIN,
+            ws_constants.Category.key(): ws_constants.Category.LOGIN.value,
             ws_constants.PAYLOAD_KEY: {
                 login_constants.Status.key(): login_status,
                 login_constants.ONLINE_FRIEND_IDS: online_friend_list,
@@ -107,11 +107,12 @@ class LoginHandler:
 
     # TODO: ログインかログアウトかを引数で受け取る
     async def _notify_followers(self) -> None:
-        # TODO: 決定したmessageに変更
-        message = {
-            ws_constants.Category.key(): ws_constants.Category.LOGIN,
-            ws_constants.PAYLOAD_KEY: {login_constants.USER_ID: self.user_id},
-        }
+        # 型チェックで必要なチェック
+        if self.user_id is None:
+            return
+
+        message = self._build_a_user_online_status_message(self.user_id, True)
+
         # オンライン状態でフレンド登録している人をイテレーションで順に処理
         async for follower_id in (
             friend_models.Friendship.objects.filter(friend_id=self.user_id)
