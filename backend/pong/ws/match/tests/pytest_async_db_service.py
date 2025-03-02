@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 import pytest_asyncio
 from channels.db import database_sync_to_async  # type: ignore
@@ -36,8 +38,14 @@ def create_tournament_and_round() -> tuple[Tournament, Round]:
     return tournament, round_instance
 
 
+@mock.patch(
+    "accounts.player.identicon.generate_identicon",
+    return_value="avatars/sample.png",
+)
 @database_sync_to_async
-def create_user_and_player() -> tuple[User, Player]:
+def create_user_and_player(
+    mock_identicon: mock.MagicMock,
+) -> tuple[User, Player]:
     """
     テストの前処理として使用する関数
     ユーザーとプレーヤーを作成
