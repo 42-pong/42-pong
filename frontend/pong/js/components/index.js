@@ -1,7 +1,10 @@
 import { LoginContainer } from "./auth/LoginContainer";
 import { SignInButton } from "./auth/SignInButton";
 import { SignOutButton } from "./auth/SignOutButton";
+import { BlockListContainer } from "./block/BlockListContainer";
+import { BlockListItem } from "./block/BlockListItem";
 import { BlockUserButton } from "./block/BlockUserButton";
+import { UnblockUserButton } from "./block/UnblockUserButton";
 import { ChatBuddyListContainer } from "./chat/ChatBuddyListContainer";
 import { ChatContainer } from "./chat/ChatContainer";
 import { ChatDmContainer } from "./chat/ChatDmContainer";
@@ -31,6 +34,8 @@ import { TournamentProgress } from "./tournament/TournamentProgress";
 import { TournamentScoreboard } from "./tournament/TournamentScoreboard";
 import { TournamentStateContainer } from "./tournament/TournamentStateContainer";
 import { TournamentWaiting } from "./tournament/TournamentWaiting";
+import { MyInfoAvatar } from "./user/MyInfoAvatar";
+import { MyInfoContainer } from "./user/MyInfoContainer";
 import { UserListContainer } from "./user/UserListContainer";
 import { UserListItem } from "./user/UserListItem";
 import { UserProfile } from "./user/UserProfile";
@@ -55,7 +60,10 @@ import { UsersView } from "./views/UsersView";
 customElements.define("login-container", LoginContainer, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
+customElements.define("block-list-container", BlockListContainer, {});
+customElements.define("block-list-item", BlockListItem, {});
 customElements.define("block-user-button", BlockUserButton, {});
+customElements.define("unblock-user-button", UnblockUserButton, {});
 customElements.define(
   "chat-buddy-list-container",
   ChatBuddyListContainer,
@@ -121,6 +129,8 @@ customElements.define(
   {},
 );
 customElements.define("tournament-waiting", TournamentWaiting, {});
+customElements.define("my-info-avatar", MyInfoAvatar, {});
+customElements.define("my-info-container", MyInfoContainer, {});
 customElements.define("user-list-container", UserListContainer, {});
 customElements.define("user-list-item", UserListItem, {});
 customElements.define("user-profile", UserProfile, {});
