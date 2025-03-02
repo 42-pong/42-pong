@@ -219,22 +219,24 @@ class UsersSerializer(serializers.Serializer):
         """
         validate()のオーバーライド
         """
-        # avatar更新時(self.instanceが存在する場合のみ)
-        if (
-            accounts_constants.PlayerFields.AVATAR in data
-            and self.instance is not None
-        ):
-            avatar: Optional[UploadedFile] = data[
+        # 更新時のバリデーション
+        if self.instance is not None:
+            display_name: Optional[str] = data.get(
+                accounts_constants.PlayerFields.DISPLAY_NAME
+            )
+            avatar: Optional[UploadedFile] = data.get(
                 accounts_constants.PlayerFields.AVATAR
-            ]
-            # 更新時Noneの場合はエラー
-            if avatar is None:
+            )
+            # display_nameとavatarのどちらかが必須
+            if display_name is None and avatar is None:
                 raise serializers.ValidationError(
-                    {
-                        accounts_constants.PlayerFields.AVATAR: "This field may not be blank."
-                    }
+                    "Either display_name or avatar must be provided."
                 )
-            self._validate_avatar(avatar)
+
+            # display_nameが空文字列の場合は他でバリデーションされるためここではチェックしない
+            # avatar更新時のバリデーション
+            if avatar is not None:
+                self._validate_avatar(avatar)
         return data
 
     def _update_avatar(
