@@ -54,7 +54,7 @@ const TOGGLE_3D = {
 };
 
 const PATCH_DISPLAY_NAME = {
-  type: "upload-avatar",
+  type: "patch-display-name",
   create: () => createPongEvent(PATCH_DISPLAY_NAME.type, {}),
 };
 
