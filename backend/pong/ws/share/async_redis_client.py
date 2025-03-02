@@ -80,10 +80,11 @@ class AsyncRedisClient:
         key = cls._generate_key(namespace, identifier, resource)
         await client.srem(key, value)
 
-        if not await client.scard(key):  # セットが空ならキーを削除
+        count = await client.scard(key)
+        if count == 0:  # セットが空ならキーを削除
             await client.delete(key)
 
-        return await client.scard(key)
+        return count
 
     @classmethod
     async def smembers_value(
