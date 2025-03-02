@@ -181,7 +181,9 @@ class UsersListView(views.APIView):
         all_players_with_users: QuerySet[player_models.Player] = (
             player_models.Player.objects.select_related(
                 accounts_constants.PlayerFields.USER
-            ).all()
+            )
+            .all()
+            .order_by(accounts_constants.PlayerFields.ID)
         )
         paginator: custom_pagination.CustomPagination = (
             custom_pagination.CustomPagination()
