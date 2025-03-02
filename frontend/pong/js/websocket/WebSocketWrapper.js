@@ -5,7 +5,6 @@ import { customDelay } from "../utils/customDelay";
 export class WebSocketWrapper {
   #socket;
   #handlers;
-  #onOpen;
   #onClose;
   #onError;
   #onMessage;
@@ -55,7 +54,6 @@ export class WebSocketWrapper {
 
   async connect() {
     const socket = new WebSocket(Endpoints.WEBSOCKET);
-    socket.addEventListener("open", this.#onOpen);
     socket.addEventListener("close", this.#onClose);
     socket.addEventListener("error", this.#onError);
     socket.addEventListener("message", this.#onMessage);
@@ -68,7 +66,6 @@ export class WebSocketWrapper {
   close() {
     if (this.#socket === null) return;
 
-    this.#socket.removeEventListener("open", this.#onOpen);
     this.#socket.removeEventListener("close", this.#onClose);
     this.#socket.removeEventListener("error", this.#onError);
     this.#socket.removeEventListener("message", this.#onMessage);
