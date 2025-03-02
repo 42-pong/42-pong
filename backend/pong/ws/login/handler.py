@@ -53,28 +53,34 @@ class LoginHandler:
         login結果とユーザーのフレンドのオンライン情報を送信
         """
         self.user_id = input_user_id
-        await AsyncRedisClient.sadd_value(
+        connection_cnt = await AsyncRedisClient.sadd_value(
             login_constants.USER_NAMESPACE,
             self.user_id,
             login_constants.CHANNEL_RESOURCE,
             self.channel_handler.channel_name,
         )
         await self._send_login_result(login_constants.Status.OK.value)
-        # TODO: 接続数が0->1の時だけfollowerに通知する
+
+        # 接続数が0->1の時だけfollowerに通知する
+        if connection_cnt == 1:
+            await self._notify_followers(True)
 
     async def logout(self) -> None:
         """
         redisからlogin情報を削除
         websocket切断時に呼び出される
         """
-        await AsyncRedisClient.srem_value(
+        connection_cnt = await AsyncRedisClient.srem_value(
             login_constants.USER_NAMESPACE,
             self.user_id,
             login_constants.CHANNEL_RESOURCE,
             self.channel_handler.channel_name,
         )
         self.user_id = None
-        # TODO: 接続数が1->0の時だけfollowerに通知する
+
+        # 接続数が1->0の時だけfollowerに通知する
+        if connection_cnt == 0:
+            await self._notify_followers(False)
 
     async def _validate_user_id(self, input_user_id: int) -> None:
         """
@@ -106,12 +112,14 @@ class LoginHandler:
         )
 
     # TODO: ログインかログアウトかを引数で受け取る
-    async def _notify_followers(self) -> None:
+    async def _notify_followers(self, is_login: bool) -> None:
         # 型チェックで必要なチェック
         if self.user_id is None:
             return
 
-        message = self._build_a_user_online_status_message(self.user_id, True)
+        message = self._build_a_user_online_status_message(
+            self.user_id, is_login
+        )
 
         # オンライン状態でフレンド登録している人をイテレーションで順に処理
         async for follower_id in (
