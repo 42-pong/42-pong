@@ -1,9 +1,9 @@
 import { Endpoints } from "../../constants/Endpoints";
-import { fetchAuthenticatedData } from "../utils/fetchAuthenticatedData";
+import { fetchAuthenticatedAllData } from "../utils/fetchAuthenticatedAllData";
 import { convertFriendData } from "./convertFriendData";
 
 export async function getFriends() {
-  const { data, error } = await fetchAuthenticatedData(
+  const { data, error } = await fetchAuthenticatedAllData(
     Endpoints.FRIENDS.default.href,
   );
 

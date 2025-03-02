@@ -63,12 +63,12 @@ import { UsersView } from "./views/UsersView";
 customElements.define("login-container", LoginContainer, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
+customElements.define("sign-up-button", SignUpButton, {});
+customElements.define("sign-up-container", SignUpContainer, {});
 customElements.define("block-list-container", BlockListContainer, {});
 customElements.define("block-list-item", BlockListItem, {});
 customElements.define("block-user-button", BlockUserButton, {});
 customElements.define("unblock-user-button", UnblockUserButton, {});
-customElements.define("sign-up-button", SignUpButton, {});
-customElements.define("sign-up-container", SignUpContainer, {});
 customElements.define(
   "chat-buddy-list-container",
   ChatBuddyListContainer,
