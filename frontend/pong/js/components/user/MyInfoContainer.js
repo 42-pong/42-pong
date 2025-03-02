@@ -74,7 +74,6 @@ export class MyInfoContainer extends Component {
     );
     BootstrapFlex.setFlexColumn(inputList);
     BootstrapDisplay.setGrid(inputList);
-    BootstrapSizing.setWidth50(inputList);
     BootstrapSpacing.setGap(inputList);
     BootstrapSizing.setWidth100(inputList);
     this.append(inputList);
