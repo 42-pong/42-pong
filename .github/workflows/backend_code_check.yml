@@ -15,11 +15,11 @@ jobs:
     # pong/settings.pyで使用する環境変数は事前にここで設定する
     env:
       FRONT_SERVER_PORT: "${{ vars.FRONT_SERVER_PORT }}"
+      BACKEND_SERVER_PORT: "${{ vars.BACKEND_SERVER_PORT }}"
       DEBUG: "${{ vars.DEBUG }}"
       SECRET_KEY: "${{ secrets.SECRET_KEY }}"
       OAUTH2_CLIENT_ID: "${{ secrets.OAUTH2_CLIENT_ID }}"
       OAUTH2_CLIENT_SECRET_KEY: "${{ secrets.OAUTH2_CLIENT_SECRET_KEY }}"
-      PONG_ORIGIN: "${{ vars.PONG_ORIGIN }}"
       OAUTH2_AUTHORIZATION_ENDPOINT: "${{ vars.OAUTH2_AUTHORIZATION_ENDPOINT }}"
       OAUTH2_TOKEN_ENDPOINT: "${{ vars.OAUTH2_TOKEN_ENDPOINT }}"
       DB_NAME: "${{ secrets.DB_NAME }}"

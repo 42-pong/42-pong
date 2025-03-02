@@ -38,7 +38,7 @@ class OAuth2BaseView(APIView):
 
     @property
     def redirect_uri(self) -> str:
-        return settings.PONG_ORIGIN + reverse("oauth2:callback")
+        return settings.BACKEND_ORIGIN + reverse("oauth2:callback")
 
 
 class OAuth2AuthorizeView(OAuth2BaseView):
