@@ -38,7 +38,9 @@ class CreateOAuth2AccountTestCase(TestCase):
         OAuth2ユーザーの作成が成功することを確認するテスト
         """
         oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
-            create_oauth2_account.create_oauth2_user("pong@gmail.com", "pong")
+            create_oauth2_account.create_oauth2_user(
+                "pong@gmail.com", "random_password", "pong"
+            )
         )
         self.assertTrue(oauth2_user_result.is_ok)
 
@@ -49,7 +51,7 @@ class CreateOAuth2AccountTestCase(TestCase):
         # todo: django の email バリデーションを調べてからそれをそのまま使うか、自分達で定義するか決める
         oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
             create_oauth2_account.create_oauth2_user(
-                "invalid--@gmail-com", "pong"
+                "invalid--@gmail-com", "random_password", "pong"
             )
         )
         self.assertTrue(oauth2_user_result.is_error)
