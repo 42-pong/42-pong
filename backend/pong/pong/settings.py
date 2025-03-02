@@ -81,7 +81,11 @@ DEBUG = env.bool("DEBUG", False)
 
 SECRET_KEY = get_valid_str_env("SECRET_KEY")
 
-ALLOWED_HOSTS: list[str] = []
+# todo: 開発時だけFalseにしたい環境変数
+# SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+ALLOWED_HOSTS: list[str] = ["localhost", "frontend"]
 
 # Application definition
 
@@ -260,10 +264,18 @@ ASGI_APPLICATION = "pong.asgi.application"
 # https://github.com/adamchainz/django-cors-headers
 
 # リストに追加することでオリジンを許可する
-CORS_ALLOWED_ORIGINS = [
-    f"http://localhost:{FRONT_SERVER_PORT}",  # frontendコンテナ
+CORS_ALLOWED_ORIGINS = ["https://localhost"]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
 ]
-# todo: CORS_ALLOW_CREDENTIALS, CSRFについての設定は必要になり次第追加
+CSRF_TRUSTED_ORIGINS = ["https://localhost"]
+
 
 # Django logging
 # 詳細: https://docs.djangoproject.com/ja/5.1/topics/logging/
