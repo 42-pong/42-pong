@@ -1,8 +1,10 @@
+import logging
 import os
-from typing import Optional
+from typing import Final, Optional
 
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Count, Q
+from PIL import Image
 from rest_framework import serializers
 
 from accounts import constants as accounts_constants
@@ -15,6 +17,38 @@ from users.friends import constants as friends_constants
 from users.friends import models as friends_models
 
 from . import constants as users_constants
+
+logger = logging.getLogger(__name__)
+
+
+def resize_avatar(avatar: UploadedFile, max_dimension: int) -> UploadedFile:
+    """
+    max_dimension * max_dimension以内に画像をリサイズする
+    """
+    try:
+        tmp_file = avatar.file  # `_`始まりの型だったため型ヒントは書いていない
+        if tmp_file is None:
+            raise serializers.ValidationError(
+                {accounts_constants.PlayerFields.AVATAR: "Invalid file."}
+            )
+        with Image.open(avatar.file.name) as image:  # type: ignore[union-attr]
+            # 縦横比を維持したままmax_dimension以内にリサイズ
+            image.thumbnail((max_dimension, max_dimension))
+            # 古いファイルサイズをリセット
+            tmp_file.truncate()
+            image.save(tmp_file, format=image.format)
+            # ファイルポインタを先頭に戻す
+            tmp_file.seek(0)
+            # リサイズ後の画像でファイルオブジェクトを差し替え
+            avatar.file = tmp_file
+            avatar.size = os.path.getsize(tmp_file.name)
+            return avatar
+    except Exception as e:
+        raise serializers.ValidationError(
+            {
+                accounts_constants.PlayerFields.AVATAR: f"Failed to resize the image.: {str(e)}"
+            }
+        )
 
 
 class UsersSerializer(serializers.Serializer):
@@ -161,29 +195,60 @@ class UsersSerializer(serializers.Serializer):
         """
         return self._get_match_stats(player, "losses")
 
+    def _validate_avatar(self, avatar: UploadedFile) -> None:
+        # avatarが存在していてsizeがNoneである場合は考えにくいがmypyのエラーを回避するためチェック
+        if avatar.size is None:
+            raise serializers.ValidationError(
+                {accounts_constants.PlayerFields.AVATAR: "Invalid file size."}
+            )
+
+        # 画像サイズが最大サイズを超える場合はリサイズ
+        max_file_size: Final[int] = users_constants.MAX_AVATAR_SIZE
+        if avatar.size > max_file_size:
+            avatar = resize_avatar(avatar, users_constants.MAX_DIMENSION)
+            # リサイズ後のサイズがまだ最大サイズを超える場合はエラー
+            # mypyがsizeがNoneの可能性を指摘するが、数行上で確認済みなので無視
+            if avatar.size > max_file_size:  # type: ignore[operator]
+                raise serializers.ValidationError(
+                    {
+                        accounts_constants.PlayerFields.AVATAR: f"Image size must be less than {max_file_size} bytes."
+                    }
+                )
+
     def validate(self, data: dict) -> dict:
         """
         validate()のオーバーライド
         """
-        # avatar更新時
-        if accounts_constants.PlayerFields.AVATAR in data:
-            avatar: Optional[InMemoryUploadedFile] = data[
+        # avatar更新時(self.instanceが存在する場合のみ)
+        if (
+            accounts_constants.PlayerFields.AVATAR in data
+            and self.instance is not None
+        ):
+            avatar: Optional[UploadedFile] = data[
                 accounts_constants.PlayerFields.AVATAR
             ]
-            # 更新時(既にinstanceが存在している時)にNoneの場合はエラー
-            if self.instance and avatar is None:
+            # 更新時Noneの場合はエラー
+            if avatar is None:
                 raise serializers.ValidationError(
                     {
                         accounts_constants.PlayerFields.AVATAR: "This field may not be blank."
                     }
                 )
+            self._validate_avatar(avatar)
         return data
 
     def _update_avatar(
-        self, player: player_models.Player, new_avatar: InMemoryUploadedFile
-    ) -> InMemoryUploadedFile:
+        self, player: player_models.Player, new_avatar: UploadedFile
+    ) -> UploadedFile:
         # 更新前の画像を削除してから新しい画像を保存する
-        player.avatar.delete(save=False)
+        if player.avatar:
+            try:
+                player.avatar.delete(save=False)
+            except Exception as e:
+                logger.error(
+                    f"Failed to delete the previous avatar file: {str(e)}"
+                )
+                raise
 
         # ファイル名を変更
         # mypyにnew_avatar.nameがNoneの可能性を指摘されるが、ImageFieldのvalidatorでextensionがあることは確認済みのため無視
@@ -212,12 +277,16 @@ class UsersSerializer(serializers.Serializer):
 
         # avatarがあれば更新
         if accounts_constants.PlayerFields.AVATAR in validated_data:
-            new_avatar: InMemoryUploadedFile = validated_data[
+            new_avatar: UploadedFile = validated_data[
                 accounts_constants.PlayerFields.AVATAR
             ]
             player.avatar = self._update_avatar(player, new_avatar)
             update_fields.append(accounts_constants.PlayerFields.AVATAR)
 
-        # create()をオーバーライドしない場合、update()内でsave()は必須
-        player.save(update_fields=update_fields)
+        try:
+            # create()をオーバーライドしない場合、update()内でsave()は必須
+            player.save(update_fields=update_fields)
+        except Exception as e:
+            logger.error(f"Failed to update the player fields: {str(e)}")
+            raise
         return player
