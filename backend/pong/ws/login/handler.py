@@ -37,8 +37,9 @@ class LoginHandler:
             ValidationError: user_idが有効でなかった場合
             KeyError: payload内のkeyが'user_id'ではなかった場合
         """
-        # すでにログイン済みであれば無視
         if self.user_id is not None:
+            # ログイン後は新規フレンド追加時にそのフレンドのオンライン状態を返す
+            await self.handle_online_status(payload)
             return
 
         input_user_id: int = payload[login_constants.USER_ID]
@@ -46,6 +47,31 @@ class LoginHandler:
         # バリデーション失敗したら例外を投げる
         await self._validate_user_id(input_user_id)
         await self._login(input_user_id)
+
+    async def handle_online_status(self, payload: dict) -> None:
+        """
+        あるユーザーがオンラインかどうかを通知するハンドラー
+        メッセージに入っているuser_idのユーザーがオンラインかどうか判定し、メッセージを返す。
+        """
+        input_user_id: int = payload[login_constants.USER_ID]
+
+        # 存在しないユーザーであれば例外を投げる
+        await self._validate_user_id(input_user_id)
+
+        exist = await AsyncRedisClient.exists(
+            login_constants.USER_NAMESPACE,
+            input_user_id,
+            login_constants.CHANNEL_RESOURCE,
+        )
+        message = self._build_a_user_online_status_message(
+            input_user_id, exist
+        )
+
+        # 型ヒントで必要なチェック
+        if self.channel_handler.channel_name is not None:
+            await self.channel_handler.send_to_consumer(
+                message, self.channel_handler.channel_name
+            )
 
     async def _login(self, input_user_id: int) -> None:
         """
