@@ -224,7 +224,7 @@ class MatchManager:
             else:
                 await asyncio.sleep(self.FPS - delta)
 
-    async def _paddle_up(self, team: str) -> None:
+    async def paddle_up(self, team: str) -> None:
         """
         PongLogicのパドル上に動かす操作関数
 
@@ -233,7 +233,7 @@ class MatchManager:
         """
         await self.pong_logic.move_paddle_up(team)
 
-    async def _paddle_down(self, team: str) -> None:
+    async def paddle_down(self, team: str) -> None:
         """
         PongLogicのパドル下に動かす操作関数
 
