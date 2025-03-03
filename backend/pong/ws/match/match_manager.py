@@ -256,7 +256,7 @@ class MatchManager:
         # TODO: MatchのステータスをCOMPLETEDに更新
 
         # ゲーム終了後、Consumerに終了通知
-        win_team = self.pong_logic.get_winner()
+        win_team = await self.pong_logic.get_winner()
         message = self._build_message(
             match_constants.Stage.END.value,
             {
