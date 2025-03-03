@@ -24,7 +24,6 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         self.tournament_handler = tournament_handler.TournamentHandler(
             self.channel_layer,
             self.channel_name,
-            self.scope.get("tournament_manager_registry"),
         )
 
         await self.accept()
