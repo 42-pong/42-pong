@@ -1,6 +1,8 @@
 import asyncio
 import random
+import logging
 
+from channels.db import database_sync_to_async  # type: ignore
 from channels.layers import get_channel_layer  # type: ignore
 
 from matches import constants as match_db_constants
@@ -13,6 +15,8 @@ from ..match import constants as match_ws_constants
 from ..share import channel_handler, player_data
 from . import async_db_service as tournament_service
 from . import constants as tournament_ws_constants
+
+logger = logging.getLogger(__name__)
 
 
 class TournamentManager:
@@ -53,12 +57,12 @@ class TournamentManager:
             return
 
         # 参加レコードを作成
-        create_result = await tournament_service.create_participation(
+        create_result = await database_sync_to_async(tournament_service.create_participation)(
             self.tournament_id,
             participant.user_id,
             participant.participation_name,
         )
-        if create_result.is_error():
+        if create_result.is_error:
             return
 
         # 参加者をグループに追加
@@ -88,7 +92,7 @@ class TournamentManager:
         delete_result = await tournament_service.delete_participation(
             self.tournament_id, participant.user_id
         )
-        if delete_result.is_error():
+        if delete_result.is_error:
             # 残りが一人なわけではないが、0以外の値を返したい
             return 1
 
@@ -144,7 +148,7 @@ class TournamentManager:
             tournament_db_constants.TournamentFields.StatusEnum.ON_GOING.value,
         )
 
-        if update_result.is_error():
+        if update_result.is_error:
             raise Exception(update_result.unwrap_error())
 
         # トーナメント情報を更新するように通知
@@ -164,7 +168,7 @@ class TournamentManager:
                     self.tournament_id, participants[0].user_id, 1
                 )
             )
-            if update_result.is_error():
+            if update_result.is_error:
                 raise Exception(update_result.unwrap_error())
             return
 
@@ -174,7 +178,7 @@ class TournamentManager:
             round_number,
             tournament_db_constants.RoundFields.StatusEnum.ON_GOING.value,
         )
-        if create_result.is_error():
+        if create_result.is_error:
             raise Exception(create_result.unwrap_error())
         # TODO: ラウンド開始をアナウンス
 
@@ -193,7 +197,7 @@ class TournamentManager:
             round_id,
             tournament_db_constants.RoundFields.StatusEnum.COMPLETED.value,
         )
-        if update_result.is_error():
+        if update_result.is_error:
             raise Exception(update_result.unwrap_error())
 
         # TODO: ラウンド終了をアナウンス
@@ -235,7 +239,7 @@ class TournamentManager:
         self.match_manager_tasks = []  # バックグラウンドで実行する run() タスクを格納
 
         for (player1, player2), create_result in zip(matchups, create_results):
-            if create_result.is_error():
+            if create_result.is_error:
                 raise Exception(create_result.unwrap_error())
 
             match_id = create_result.value[match_db_constants.MatchFields.ID]
@@ -277,7 +281,7 @@ class TournamentManager:
         # 参加レコードを並列作成
         participation_results = await asyncio.gather(*self.participation_tasks)
         for result in participation_results:
-            if result.is_error():
+            if result.is_error:
                 raise Exception(result.unwrap_error())
 
         # バックグラウンドタスクの結果を収集
@@ -328,7 +332,7 @@ class TournamentManager:
                     self.tournament_id, loser.user_id, ranking
                 )
             )
-            if update_result.is_error():
+            if update_result.is_error:
                 return update_result  # エラー発生時は処理を中断
             next_round_participants.append(winner)
         return next_round_participants
@@ -343,7 +347,7 @@ class TournamentManager:
             tournament_db_constants.TournamentFields.StatusEnum.COMPLETED.value,
         )
         # TODO: Error処理
-        if update_result.is_error():
+        if update_result.is_error:
             raise Exception(update_result.unwrap_error())
 
         await self._send_tournament_reload_message()
