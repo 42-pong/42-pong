@@ -98,7 +98,8 @@ class MatchHandler:
         :param data: 初期化に必要なデータ
         """
         self.stage = match_constants.Stage.INIT
-        match_id: int = data[match_constants.MATCH_ID]
+        # localなら来ないので、例外でないようにgetで取得
+        match_id: int = data.get(match_constants.MATCH_ID, 0)
         mode: str = data[match_constants.Mode.key()]
         # プレイモードによって所属させるグループを変える
         if mode == match_constants.Mode.LOCAL.value:
