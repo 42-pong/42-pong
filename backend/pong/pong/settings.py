@@ -70,7 +70,7 @@ OAUTH2_TOKEN_ENDPOINT = get_valid_str_env("OAUTH2_TOKEN_ENDPOINT")
 JWS_SECRET_KEY = get_valid_str_env("JWS_SECRET_KEY")
 FRONT_SERVER_PORT = get_valid_str_env("FRONT_SERVER_PORT")
 REDIS_PASSWORD = get_valid_str_env("REDIS_PASSWORD")
-REDIS_PORT = get_valid_str_env("REDIS_PORT")
+# REDIS_PORT = get_valid_str_env("REDIS_PORT")
 REDIS_CHANNEL_LAYER_DB = get_valid_str_env("REDIS_CHANNEL_LAYER_DB")
 REDIS_STORE_DB = get_valid_str_env("REDIS_STORE_DB")
 
@@ -254,7 +254,7 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
-                f"redis://:{REDIS_PASSWORD}@redis:{REDIS_PORT}/{REDIS_CHANNEL_LAYER_DB}"
+                f"redis://:{REDIS_PASSWORD}@redis:6379/{REDIS_CHANNEL_LAYER_DB}"
             ],
             "capacity": 5000,
             "expiry": 2,
