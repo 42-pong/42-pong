@@ -1,16 +1,11 @@
 import logging
-import re
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 
 class JWTValidator:
-    # todo: validate_jwt作成
-    # - ヘッダー、ペイロード、シグネチャがデコードできるかどうかを検証する
-    # todo: _validate_header作成
-    # - {"typ": "JWT", "alg": "HS256"} であることを検証する
-    def _validate_payload(self, payload: dict) -> None:
+    def validate_payload(self, payload: dict) -> None:
         """
         ペイロードを検証する関数
 
@@ -34,15 +29,13 @@ class JWTValidator:
 
         Raises:
             ValueError:
-            - sub, exp, iat以外のクレームが含まれている場合
+            - sub, exp, iat, typ以外のクレームが含まれている場合
             - subがstr型でない場合
-            - subの長さが7文字未満の場合
-            - subの長さが8文字以上の場合
-            - subが英数字以外の文字を含む場合
             - expが整数でない場合
             - expが現在時刻より小さい場合
             - iatが整数でない場合
             - iatが現在時刻より未来の場合
+            - typが"access"または"refresh"以外の場合
         """
         allowed_claims: set[str] = {"sub", "exp", "iat", "typ"}
         payload_keys: set[str] = set(payload.keys())
@@ -66,10 +59,6 @@ class JWTValidator:
         sub = payload.get("sub")
         if not isinstance(sub, str):
             error_message = "'sub' must be a string."
-            logger.error(error_message)
-            raise ValueError(error_message)
-        if not re.fullmatch(r"[A-Za-z0-9]{7}", sub):
-            error_message = "'sub' must be exactly 7 alphanumeric characters."
             logger.error(error_message)
             raise ValueError(error_message)
 
