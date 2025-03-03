@@ -50,10 +50,18 @@ export class UserProfile extends Component {
     }
 
     const nameplate = createNameplate(user, "8vh");
+
+    const matchResult = createTextElement(
+      `勝: ${user.matchWins} | 敗 : ${user.matchLosses}`,
+      5,
+      BootstrapBadge.setWarning,
+    );
+    BootstrapSpacing.setMargin(matchResult, 2);
     const profileButtonPanel = createProfileMenu(user, this.#reload);
     this.append(
       createDefaultCard({
         title: nameplate,
+        text: matchResult,
         others: [profileButtonPanel],
       }),
     );
