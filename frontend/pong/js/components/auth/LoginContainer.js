@@ -4,6 +4,7 @@ import { FrontendMessage } from "../../constants/message/FrontendMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
+import { LinkButton } from "../utils/LinkButton";
 import { SignUpButton } from "./SignUpButton";
 
 export class LoginContainer extends Component {
@@ -51,9 +52,10 @@ export class LoginContainer extends Component {
     submitButton.textContent = "サインイン";
 
     // ゲストボタン作成
-    const guestButton = document.createElement("button");
-    guestButton.type = "button";
-    guestButton.textContent = "ゲストとして";
+    const guestButton = new LinkButton({
+      textContent: "ゲストとして",
+      pathname: Paths.HOME,
+    });
 
     // 42 OAuth2.0ボタン作成
     const oauth2Button = document.createElement("button");
