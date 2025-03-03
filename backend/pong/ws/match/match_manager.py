@@ -229,9 +229,24 @@ class MatchManager:
                 if (
                     score_team is not None
                     and self.mode == match_constants.Mode.REMOTE.value
+                    and self.player1 is not None
+                    and self.player2 is not None
                 ):
-                    # TODO: スコアテーブルをバックグラウンドで作成。
-                    pass
+                    # スコアテーブルをバックグラウンドで作成。
+                    scoring_player_id = (
+                        self.player1.user_id
+                        if score_team == match_constants.Team.ONE.value
+                        else self.player2.user_id
+                    )
+                    pos_x, pos_y = (
+                        self.pong_logic.ball_pos.x,
+                        self.pong_logic.ball_pos.y,
+                    )
+                    asyncio.create_task(
+                        match_service.create_score(
+                            self.match_id, scoring_player_id, pos_x, pos_y
+                        )
+                    )
 
                 last_update = current_time
             else:
