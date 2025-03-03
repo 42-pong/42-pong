@@ -56,14 +56,16 @@ def _get_player_id_by_user_id(user_id: int) -> Optional[int]:
         Optional[int]: player_id、見つからない場合はNone
     """
     try:
-        player = player_models.Player.objects.get(user_id=user_id)
+        player = player_models.Player.objects.filter(user_id=user_id).first()
         return player.id
+    except DatabaseError as e:
+        logger.error(f"DatabaseError: {e}")
+        return None
     except player_models.Player.DoesNotExist as e:
         logger.error(f"DoesNotExist: {e}")
         return None
 
 
-@database_sync_to_async
 def create_participation(
     tournament_id: int, user_id: int, participation_name: str
 ) -> CreateParticipationResult:
@@ -141,14 +143,14 @@ def create_tournament_with_participation(
             tournament: dict = tournament_serializer.save()
 
             # 2. 参加情報を作成（create_participation関数を呼び出す）
-            participation_result = async_to_sync(create_participation)(
-                tournament_id=tournament[constants.TournamentFields.ID],
+            participation_result = create_participation(
+                tournament_id=tournament.id,
                 user_id=user_id,
                 participation_name=participation_name,
             )
-            if participation_result.is_error():
+            if participation_result.is_error:
                 return CreateTournamentResult.error(
-                    participation_result.error()
+                    participation_result.unwrap_error()
                 )
 
     except drf_serializers.ValidationError as e:
