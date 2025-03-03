@@ -17,7 +17,7 @@ class AsyncRedisClient:
 
     _instance = None
     HOST: Final[str] = "redis"
-    PORT: Final[int] = int(settings.REDIS_PORT)
+    PORT: Final[int] = 6379
     DB: Final[int] = int(settings.REDIS_STORE_DB)  # デフォルトのデータベース
     PASSWORD: Final[str] = settings.REDIS_PASSWORD
 
