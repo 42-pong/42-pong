@@ -62,7 +62,7 @@ class MatchManagerRegistry:
             if match_id in self.managers:
                 await self.managers[match_id].handle_init_action(player)
 
-    async def init_ready(
+    async def ready_action(
         self, match_id: int, player: player_data.PlayerData
     ) -> None:
         async with self.lock:
@@ -79,7 +79,13 @@ class MatchManagerRegistry:
             if match_id in self.managers:
                 await self.managers[match_id].paddle_down(team)
 
-    async def exit_match(self, match_id: int, exited_team: str) -> None:
+    async def exit_match(
+        self, match_id: int, player: player_data.PlayerData
+    ) -> None:
         async with self.lock:
             if match_id in self.managers:
-                await self.managers[match_id].player_exited(exited_team)
+                await self.managers[match_id].player_exited(player)
+
+
+# === グローバルな MatchManagerRegistry インスタンス ===
+global_registry = MatchManagerRegistry()

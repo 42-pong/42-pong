@@ -52,6 +52,9 @@ class MatchManager:
         self.channel_handler = channel_handler.ChannelHandler(
             get_channel_layer(), None
         )
+        self.waiting_player_num = (
+            1 if self.mode == match_constants.Mode.LOCAL.value else 2
+        )
 
     async def run(self) -> Optional[player_data.PlayerData]:
         """
@@ -98,15 +101,18 @@ class MatchManager:
         is_remote = (
             True if self.mode == match_constants.Mode.REMOTE.value else False
         )
+        team = None
+        if is_remote:
+            team = (
+                match_constants.Team.ONE.value
+                if player == self.player1
+                else match_constants.Team.TWO.value
+            )
 
         message = self._build_message(
             match_constants.Stage.INIT.value,
             {
-                match_constants.Team.key(): match_constants.Team.ONE.value
-                if player.channel_name == self.player1.channel_name
-                else match_constants.Team.ONE.value
-                if is_remote
-                else None,
+                match_constants.Team.key(): team,
                 "display_name1": self.player1.participation_name
                 if is_remote and self.player1 is not None
                 else None,
@@ -146,16 +152,12 @@ class MatchManager:
             match_constants.Stage.READY.value,
             {},
         )
-        # TODO: もしかしたら2人目が送ってきたタイミングで同時にREADY送らないとかも？
-        await self.channel_handler.send_to_consumer(
-            message, player.channel_name
-        )
 
         # 全員からREADYメッセージが届いたらイベントをセットしてゲームを開始する。
-        waiting_player_num = (
-            1 if self.mode == match_constants.Mode.LOCAL else 2
-        )
-        if self.ready_players == waiting_player_num:
+        if self.ready_players == self.waiting_player_num:
+            await self.channel_handler.send_to_consumer(
+                message, player.channel_name
+            )
             self.waiting_player_ready.set()
 
     async def _start_game(self) -> None:
@@ -178,7 +180,7 @@ class MatchManager:
         60FPSでPongLogicの状態を更新・取得し、Consumerに送信
         """
         last_update = asyncio.get_event_loop().time()
-        while not self.pong_logic.game_end():
+        while not await self.pong_logic.game_end():
             await asyncio.sleep(self.FPS)
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
@@ -192,11 +194,11 @@ class MatchManager:
                 game_state = self._build_message(
                     match_constants.Stage.PLAY.value,
                     {
-                        "paddle1_pos": {
+                        "paddle1": {
                             "x": self.pong_logic.paddle1_pos.x,
                             "y": self.pong_logic.paddle1_pos.y,
                         },
-                        "paddle2_pos": {
+                        "paddle2": {
                             "x": self.pong_logic.paddle2_pos.x,
                             "y": self.pong_logic.paddle2_pos.y,
                         },
@@ -244,14 +246,17 @@ class MatchManager:
         """
         試合の終了処理を行う関数
         """
-        # 参加プレーヤーが退出したら、send_taskが終了していないかのうせいがあるので、終了させる。
-        if self.send_task:
-            self.send_task.cancel()
+
+        if self.send_task and not self.send_task.done():
+            try:
+                await self.send_task
+            except asyncio.CancelledError:
+                pass
 
         # TODO: MatchのステータスをCOMPLETEDに更新
 
         # ゲーム終了後、Consumerに終了通知
-        win_team = self.pong_logic.get_winner()
+        win_team = await self.pong_logic.get_winner()
         message = self._build_message(
             match_constants.Stage.END.value,
             {
@@ -262,7 +267,9 @@ class MatchManager:
         )
         await self._send_message(message)
 
-    async def player_exited(self, exited_team: str) -> None:
+    async def player_exited(
+        self, exited_player: player_data.PlayerData
+    ) -> None:
         """
         プレーヤーが途中退出した場合にConsumerから実行される関数。
         呼び出されるタイミングは2つある。
@@ -274,10 +281,9 @@ class MatchManager:
         # run()関数内で認識できるようにキャンセルフラグを立てる
         self.canceled = True
         # 退出したほうのプレーヤーをNoneに変更
-        if exited_team == match_constants.Team.ONE.value:
-            self.remained_player = self.player1
-        else:
-            self.remained_player = self.player2
+        self.remained_player = (
+            self.player2 if exited_player == self.player1 else self.player1
+        )
 
         if not self.waiting_player_ready.is_set():
             # 試合開始前に終了
@@ -297,7 +303,7 @@ class MatchManager:
             match_constants.Stage.END.value,
             {
                 "win": match_constants.Team.ONE.value
-                if exited_team != match_constants.Team.ONE.value
+                if exited_player == self.player2
                 else match_constants.Team.TWO.value,
                 "score1": self.pong_logic.score1,
                 "score2": self.pong_logic.score2,
