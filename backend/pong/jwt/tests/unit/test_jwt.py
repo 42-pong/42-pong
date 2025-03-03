@@ -8,7 +8,9 @@ from django.test import TestCase
 from ... import jws, jwt
 
 
-@unittest.skip("skip")
+@unittest.skip(
+    "payloadの検証による実装追加に伴い、統合テストでは問題ないため一時的にスキップ。今後、対応予定"
+)
 class JsonWebTokenFunctionTestCase(TestCase):
     def setUp(self) -> None:
         self.jwt_handler: jwt.JWT = jwt.JWT()
