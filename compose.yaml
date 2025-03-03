@@ -10,6 +10,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    volumes:
+      - ./backend/pong/media:/usr/share/nginx/html/media
     restart: always
     ports:
       - "${FRONT_SERVER_PORT}:443"
