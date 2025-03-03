@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import parameterized  # type: ignore[import-untyped]
 from django.test import TestCase
 
@@ -113,3 +115,18 @@ class JsonWebSignatureFunctionTestCase(TestCase):
     ) -> None:
         is_verify: bool = self.jws_handler.verify(header, payload, signature)
         self.assertFalse(is_verify)
+
+    def test_is_token_expired(self) -> None:
+        now: int = int(datetime.utcnow().timestamp())
+        payload: dict = {
+            "sub": "user123",
+            "exp": now + 3600,
+            "iat": now - 3600,
+            "typ": "access",
+        }
+        is_token_expired: bool = self.jws_handler.is_token_expired(payload)
+        self.assertFalse(is_token_expired)
+
+        payload["exp"] = now - 5000
+        is_token_expired = self.jws_handler.is_token_expired(payload)
+        self.assertTrue(is_token_expired)

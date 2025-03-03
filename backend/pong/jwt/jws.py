@@ -1,13 +1,7 @@
-# todo:
-# 調査、検討
-# - JWS(RFC7515)の概要を読む
-# - DRFを使ってどうユーザーの認証を行うのかについて
-# 実装
-# - JWSのペイロード内の`exp`クレームを検証して、有効期限を確認するを実装
-#   def validate_jws_expiration(self, payload: dict) -> bool:
 import hashlib
 import hmac
 import logging
+from datetime import datetime
 
 from pong import settings
 
@@ -79,3 +73,12 @@ class JWS:
             logger.warning("Signature verification failed.")
             return False
         return True
+
+    def is_token_expired(self, payload: dict) -> bool:
+        """JWTの有効期限が切れているかを判定する"""
+        exp = payload.get("exp")
+        if exp is None:
+            logger.warning("Token does not contain an 'exp' claim.")
+            return True
+        now = int(datetime.utcnow().timestamp())
+        return now > exp
