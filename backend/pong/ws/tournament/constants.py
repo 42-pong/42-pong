@@ -26,6 +26,7 @@ class Event(ws_constants.BaseEnum):
     TOURNAMENT_STATE_CHANGE = "TOURNAMENT_STATE_CHANGE"
 
 
+JOIN_TYPE: Final[str] = "join_type"
 TOURNAMENT_ID: Final[str] = "tournament_id"
 PARTICIPATION_NAME: Final[str] = "participation_name"
 MATCH_ID: Final[str] = "match_id"
