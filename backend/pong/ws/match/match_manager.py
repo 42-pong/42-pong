@@ -176,7 +176,7 @@ class MatchManager:
                 self.match_id,
                 match_db_constants.MatchFields.StatusEnum.ON_GOING.value,
             )
-            if update_result.is_error():
+            if update_result.is_error:
                 logger.error(f"Error: {update_result.unwrap_error()}")
 
         # PongLogicの実行を開始
@@ -297,7 +297,7 @@ class MatchManager:
                         self.match_id, win_player.user_id
                     )
                 )
-                if update_player_result.is_error():
+                if update_player_result.is_error:
                     logger.error(
                         f"Error: {update_player_result.unwrap_error()}"
                     )
@@ -306,7 +306,7 @@ class MatchManager:
                 self.match_id,
                 match_db_constants.MatchFields.StatusEnum.COMPLETED.value,
             )
-            if update_result.is_error():
+            if update_result.is_error:
                 logger.error(f"Error: {update_result.unwrap_error()}")
 
         # ゲーム終了後、Consumerに終了通知
@@ -361,7 +361,7 @@ class MatchManager:
                         self.match_id, self.remained_player.user_id
                     )
                 )
-                if update_player_result.is_error():
+                if update_player_result.is_error:
                     logger.error(
                         f"Error: {update_player_result.unwrap_error()}"
                     )
@@ -371,7 +371,7 @@ class MatchManager:
                 self.match_id,
                 match_db_constants.MatchFields.StatusEnum.CANCELED.value,
             )
-            if update_result.is_error():
+            if update_result.is_error:
                 logger.error(f"Error: {update_result.unwrap_error()}")
 
         # 試合結果を送信
