@@ -101,15 +101,18 @@ class MatchManager:
         is_remote = (
             True if self.mode == match_constants.Mode.REMOTE.value else False
         )
+        team = None
+        if is_remote:
+            team = (
+                match_constants.Team.ONE.value
+                if player == self.player1
+                else match_constants.Team.TWO.value
+            )
 
         message = self._build_message(
             match_constants.Stage.INIT.value,
             {
-                match_constants.Team.key(): match_constants.Team.ONE.value
-                if player.channel_name == self.player1.channel_name
-                else match_constants.Team.ONE.value
-                if is_remote
-                else None,
+                match_constants.Team.key(): team,
                 "display_name1": self.player1.participation_name
                 if is_remote and self.player1 is not None
                 else None,
@@ -191,11 +194,11 @@ class MatchManager:
                 game_state = self._build_message(
                     match_constants.Stage.PLAY.value,
                     {
-                        "paddle1_pos": {
+                        "paddle1": {
                             "x": self.pong_logic.paddle1_pos.x,
                             "y": self.pong_logic.paddle1_pos.y,
                         },
-                        "paddle2_pos": {
+                        "paddle2": {
                             "x": self.pong_logic.paddle2_pos.x,
                             "y": self.pong_logic.paddle2_pos.y,
                         },
