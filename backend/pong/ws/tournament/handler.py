@@ -27,7 +27,6 @@ class TournamentHandler:
         self,
         channel_layer: BaseChannelLayer,
         channel_name: str,
-        manager_registry: manager_registry.TournamentManagerRegistry,
     ):
         """
         TournamentHandlerの初期化。
@@ -42,7 +41,7 @@ class TournamentHandler:
         self.channel_handler: channel_handler.ChannelHandler = (
             channel_handler.ChannelHandler(channel_layer, channel_name)
         )
-        self.manager_registry = manager_registry
+        self.manager_registry = manager_registry.global_tournament_registry
         self.user_id: Optional[int] = None
 
     def __str__(self) -> str:
