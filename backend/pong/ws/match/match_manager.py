@@ -265,9 +265,28 @@ class MatchManager:
                 await self.send_task
             except asyncio.CancelledError:
                 pass
+        # 勝者チームを取得
+        win_team = await self.pong_logic.get_winner()
+        win_player = (
+            self.player1
+            if win_team == match_constants.Team.ONE.value
+            else self.player2
+        )
 
         # MatchのステータスをCOMPLETEDに更新
         if self.mode == match_constants.Mode.REMOTE.value:
+            # 勝ったプレーヤーのレコードを更新
+            if win_player is not None and win_player.user_id is not None:
+                update_player_result = (
+                    await match_service.update_participation_is_win(
+                        self.match_id, win_player.user_id
+                    )
+                )
+                if update_player_result.is_error():
+                    logger.error(
+                        f"Error: {update_player_result.unwrap_error()}"
+                    )
+
             update_result = await match_service.update_match_status(
                 self.match_id,
                 match_db_constants.MatchFields.StatusEnum.COMPLETED.value,
@@ -276,7 +295,6 @@ class MatchManager:
                 logger.error(f"Error: {update_result.unwrap_error()}")
 
         # ゲーム終了後、Consumerに終了通知
-        win_team = await self.pong_logic.get_winner()
         message = self._build_message(
             match_constants.Stage.END.value,
             {
@@ -316,10 +334,24 @@ class MatchManager:
                 # キャンセルされるのを待つ
                 await self.send_task
 
-        # TODO: 残ったプレーヤーを勝者とする。
-        # TODO: 勝ったプレーヤーのレコードを更新。
-        # MatchのステータスをCANCELEDに更新
+        # 残ったプレーヤーを勝者とする。
         if self.mode == match_constants.Mode.REMOTE.value:
+            # 残ったプレーヤーのレコードを更新
+            if (
+                self.remained_player is not None
+                and self.remained_player.user_id is not None
+            ):
+                update_player_result = (
+                    await match_service.update_participation_is_win(
+                        self.match_id, self.remained_player.user_id
+                    )
+                )
+                if update_player_result.is_error():
+                    logger.error(
+                        f"Error: {update_player_result.unwrap_error()}"
+                    )
+
+            # MatchのステータスをCANCELEDに更新
             update_result = await match_service.update_match_status(
                 self.match_id,
                 match_db_constants.MatchFields.StatusEnum.CANCELED.value,
@@ -327,6 +359,7 @@ class MatchManager:
             if update_result.is_error():
                 logger.error(f"Error: {update_result.unwrap_error()}")
 
+        # 試合結果を送信
         message = self._build_message(
             match_constants.Stage.END.value,
             {
