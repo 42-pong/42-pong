@@ -1,15 +1,6 @@
-# todo:
-# 調査、検討
-# - どう関数分けるのがいいのか（simple-jwtのソースコードを読み、参考にする）
-# - JWT(RFC7519)の概要を読む
-# - DRFを使ってどうユーザーの認証を行うのかについて
-# 実装
-# - JWTを生成する関数実装
-# - payloadを取得する関数実装
-
 import logging
 
-from . import base64_url, jws
+from . import base64_url, exceptions, jws, jwt_validator
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +29,9 @@ class JWT:
         self.header: dict = {"typ": "JWT", "alg": "HS256"}
         # todo:　エンコーディング方式をbase64urlに指定する
         self.jws_handler: jws.JWS = jws.JWS()
+        self.jwt_validator: jwt_validator.JWTValidator = (
+            jwt_validator.JWTValidator()
+        )
         self.base64_url_handler: base64_url.Base64Url = base64_url.Base64Url()
 
     def encode(self, payload: dict) -> str:
@@ -94,5 +88,15 @@ class JWT:
                 "JWT Signature verification failed: Invalid or tampered signature"
             )
         decoded_payload: dict = self.base64_url_handler.decode_dict(payload)
-        # todo: payloadの有効期限が切れていないかどうか
+
+        try:
+            self.jwt_validator.validate_payload(decoded_payload)
+        except ValueError as e:
+            logger.error(str(e))
+            raise exceptions.InvalidTokenError()
+
+        if self.jws_handler.is_token_expired(decoded_payload):
+            logger.error("The JWT Expired")
+            raise exceptions.TokenExpiredError()
+
         return decoded_payload

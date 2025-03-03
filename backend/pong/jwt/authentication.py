@@ -6,7 +6,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
 
-from . import jwt
+from . import exceptions, jwt
 
 logger = logging.getLogger(__name__)
 
@@ -27,19 +27,12 @@ class CustomJWTAuthentication(BaseAuthentication):
         jwt_handler: jwt.JWT = jwt.JWT()
         try:
             payload: dict = jwt_handler.decode(token)
-        # todo: 例外処理の詳細を記述
-        # - jwt.TokenExpiredError: トークンが有効期限切れの場合
-        # - jwt.InvalidTokenError: 不正なトークンの場合
-        # except TokenExpiredError:
-        #     raise AuthenticationFailed(
-        #         {"status": "error", "code": "token_expired"}
-        #     )
-        # except jwt.InvalidTokenError:
-        #     logger.error(e)
-        #     logger.error(f"Failed to decode token: {token}")
-        #     raise AuthenticationFailed(
-        #         {"status": "error", "code": "invalid_token"}
-        #     )
+        except exceptions.TokenExpiredError as e:
+            raise AuthenticationFailed(str(e), code=e.code)
+        except exceptions.InvalidTokenError as e:
+            logger.error(e)
+            logger.error(f"Failed to decode token: {token}")
+            raise AuthenticationFailed(str(e), code=e.code)
         except Exception as e:
             logger.error(e)
             raise AuthenticationFailed(str(e), code="invalid_token")
@@ -51,7 +44,7 @@ class CustomJWTAuthentication(BaseAuthentication):
             raise AuthenticationFailed(error_message, code="invalid_token")
 
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(username=user_id)
         except User.DoesNotExist:
             error_message = f"User does not exist: {user_id}"
             logger.error(error_message)

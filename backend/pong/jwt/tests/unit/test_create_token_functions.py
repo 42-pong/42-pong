@@ -5,7 +5,7 @@ from ...create_token_functions import create_token
 
 class CreateTokenFunctionTestCase(TestCase):
     def setUp(self) -> None:
-        self.user_id = 12345
+        self.user_id: str = "1234567"
 
     def test_create_access_token_success(self) -> None:
         token: str = create_token(self.user_id, "access")

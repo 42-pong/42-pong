@@ -1,12 +1,17 @@
 import logging
 from datetime import datetime
+from typing import Final
 
 from . import jwt
 
 logger = logging.getLogger(__name__)
 
 
-def create_token(user_id: int, token_type: str) -> str:
+def to_seconds(minutes: int) -> int:
+    return minutes * 60
+
+
+def create_token(user_id: str, token_type: str) -> str:
     """
     指定されたuser_idとtoken_typeの応じてトークンを作成する関数
 
@@ -17,14 +22,14 @@ def create_token(user_id: int, token_type: str) -> str:
     jwt_handler: jwt.JWT = jwt.JWT()
     now: int = int(datetime.utcnow().timestamp())
 
-    minutes: int = 60
-    access_expire_minutes: int = 10
-    refresh_expire_minutes: int = 60
+    access_expire_minutes: Final[int] = 10
+    refresh_expire_minutes: Final[int] = 60
 
     exp_time: dict = {
-        "access": now + access_expire_minutes * minutes,
-        "refresh": now + refresh_expire_minutes * minutes,
+        "access": now + to_seconds(access_expire_minutes),
+        "refresh": now + to_seconds(refresh_expire_minutes),
     }
+
     exp = exp_time.get(token_type)
     if exp is None:
         logger.error(f"Invalid token type: {token_type}")
@@ -43,7 +48,7 @@ def create_token(user_id: int, token_type: str) -> str:
         return ""
 
 
-def create_access_and_refresh_token(user_id: int) -> dict:
+def create_access_and_refresh_token(user_id: str) -> dict:
     """
     指定されたuser_idに対してアクセストークンとリフレッシュトークンを作成する関数
 

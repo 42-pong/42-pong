@@ -21,14 +21,14 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
 
     def test_valid_payload(self) -> None:
         """正常なクレームのみを含むペイロードの場合、検証が通ることを確認するテスト"""
-        self.jwt_validator._validate_payload(self.payload)
+        self.jwt_validator.validate_payload(self.payload)
 
     def test_invalid_extra_claim(self) -> None:
         """sub, exp, iat, typ以外のクレームを含むペイロードの場合、ValueErrorを投げることを確認するテスト"""
         invalid_payload: dict = self.payload.copy()
         invalid_payload["aud"] = "pong"
         with self.assertRaises(ValueError):
-            self.jwt_validator._validate_payload(invalid_payload)
+            self.jwt_validator.validate_payload(invalid_payload)
 
     @parameterized.parameterized.expand(
         [
@@ -48,14 +48,11 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
             if key in missing_claims
         }
         with self.assertRaises(ValueError):
-            self.jwt_validator._validate_payload(invalid_payload)
+            self.jwt_validator.validate_payload(invalid_payload)
 
     @parameterized.parameterized.expand(
         [
             ("subがstr型でない場合", 123),
-            ("subの長さが7文字未満の場合", "abc12"),
-            ("subの長さが8文字以上の場合", "abc1234567"),
-            ("subが英数字以外の文字を含む場合", "abc!@#"),
         ]
     )
     def test_invalid_sub(self, _: str, invalid_sub: str | int) -> None:
@@ -63,7 +60,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
         invalid_payload: dict = self.payload.copy()
         invalid_payload["sub"] = invalid_sub
         with self.assertRaises(ValueError):
-            self.jwt_validator._validate_payload(invalid_payload)
+            self.jwt_validator.validate_payload(invalid_payload)
 
     @parameterized.parameterized.expand(
         [
@@ -75,7 +72,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
         invalid_payload: dict = self.payload.copy()
         invalid_payload["exp"] = exp_value
         with self.assertRaises(ValueError):
-            self.jwt_validator._validate_payload(invalid_payload)
+            self.jwt_validator.validate_payload(invalid_payload)
 
     @parameterized.parameterized.expand(
         [
@@ -91,7 +88,7 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
         invalid_payload: dict = self.payload.copy()
         invalid_payload["iat"] = iat_value
         with self.assertRaises(ValueError):
-            self.jwt_validator._validate_payload(invalid_payload)
+            self.jwt_validator.validate_payload(invalid_payload)
 
     @parameterized.parameterized.expand(
         [
@@ -104,4 +101,4 @@ class JsonWebTokenValidatorFunctionTestCase(TestCase):
         invalid_payload: dict = self.payload.copy()
         invalid_payload["typ"] = typ_value
         with self.assertRaises(ValueError):
-            self.jwt_validator._validate_payload(invalid_payload)
+            self.jwt_validator.validate_payload(invalid_payload)

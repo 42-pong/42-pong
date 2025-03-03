@@ -18,11 +18,11 @@ class CustomJWTAuthenticationTestCase(APITestCase):
             authentication.CustomJWTAuthentication()
         )
         self.user = User.objects.create_user(
-            username="testuser", password="testpass"
+            username="123user", password="testpass"
         )
         self.now: int = int(datetime.utcnow().timestamp())
         self.payload: dict = {
-            "sub": self.user.id,
+            "sub": self.user.username,
             "exp": self.now + 3600,
             "iat": self.now - 3600,
             "typ": "access",
@@ -66,7 +66,7 @@ class CustomJWTAuthenticationTestCase(APITestCase):
 
     def test_authenticate_user_not_exist(self) -> None:
         """存在しないユーザーIDを含んだトークンの場合、AuthenticationFailed が発生し、ユーザーが存在しないことを確認"""
-        self.payload["sub"] = 99999
+        self.payload["sub"] = "1234567"
         invalid_payload_token: str = self.jwt_handler.encode(self.payload)
         request: Request = self.factory.get(
             self.url, HTTP_AUTHORIZATION=f"Bearer {invalid_payload_token}"
