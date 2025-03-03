@@ -18,7 +18,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 RUN chown -R pong:pong /pong
 # root権限が必要なinstall等を終えたら作成したuserに切り替え
-USER pong
+#USER pong
 
 EXPOSE 8000
 
