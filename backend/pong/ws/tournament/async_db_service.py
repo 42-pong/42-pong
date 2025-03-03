@@ -1,7 +1,6 @@
 import logging
 from typing import Optional
 
-from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async  # type: ignore
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import DatabaseError, transaction
@@ -57,7 +56,10 @@ def _get_player_id_by_user_id(user_id: int) -> Optional[int]:
     """
     try:
         player = player_models.Player.objects.filter(user_id=user_id).first()
-        return player.id
+        if player is not None:
+            return player.id
+        else:
+            return None
     except DatabaseError as e:
         logger.error(f"DatabaseError: {e}")
         return None
@@ -144,7 +146,7 @@ def create_tournament_with_participation(
 
             # 2. 参加情報を作成（create_participation関数を呼び出す）
             participation_result = create_participation(
-                tournament_id=tournament.id,
+                tournament_id=tournament[constants.TournamentFields.ID],
                 user_id=user_id,
                 participation_name=participation_name,
             )
