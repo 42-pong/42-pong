@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from channels.layers import BaseChannelLayer  # type: ignore
@@ -9,6 +10,8 @@ from ..share import constants as ws_constants
 from . import async_db_service as db_service
 from . import constants as tournament_constants
 from . import manager_registry
+
+logger = logging.getLogger(__name__)
 
 
 class TournamentHandler:
@@ -76,24 +79,27 @@ class TournamentHandler:
         """
         playerがtournamentに参加する際の処理を行う関数
         """
-        join_type: str = data[tournament_constants.Type.key()]
+        join_type: str = data[tournament_constants.JOIN_TYPE]
         participation_name: str = data[tournament_constants.PARTICIPATION_NAME]
         player_data = self._create_player_data(participation_name)
         if player_data is None:
-            await self._send_join_result(False, None)
+            await self._send_join_result(tournament_constants.Status.ERROR.value, None)
             return
         tournament_id: int
 
         match join_type:
             case tournament_constants.JoinType.CREATE.value:
+                logger.debug("JOIN TYPE: CREATE")
                 result = await db_service.create_tournament_with_participation(
                     self.user_id, participation_name
                 )
-                if result.is_error():
-                    await self._send_join_result(False, None)
+                if result.is_error:
+                    logger.error(f"Error: {result.unwrap_error()}")
+                    await self._send_join_result(tournament_constants.Status.ERROR.value, None)
                     return
 
-                tournament_id = result.value[
+                value = result.unwrap()
+                tournament_id = value[
                     tournament_db_constants.TournamentFields.ID
                 ]
 
@@ -101,31 +107,34 @@ class TournamentHandler:
                 await self.manager_registry.add_participant(
                     tournament_id, player_data
                 )
+                await self._send_join_result(tournament_constants.Status.OK.value, tournament_id)
 
             case tournament_constants.JoinType.RANDOM.value:
+                logger.debug("JOIN TYPE: RANDOM")
                 tournament_id = await db_service.get_waiting_tournament()
                 if tournament_id is None:
-                    await self._send_join_result(False, tournament_id)
+                    await self._send_join_result(tournament_constants.Status.ERROR.value, tournament_id)
                     return
 
                 await self.manager_registry.add_participant(
                     tournament_id, player_data
                 )
+                await self._send_join_result(tournament_constants.Status.OK.value, tournament_id)
 
             case tournament_constants.JoinType.SELECTED.value:
+                logger.debug("JOIN TYPE: SELECTED")
                 tournament_id = data[tournament_constants.TOURNAMENT_ID]
                 if tournament_id is None:  # IDが数値でない場合はエラー
-                    await self._send_join_result(False, tournament_id)
+                    await self._send_join_result(tournament_constnats.Status.ERROR.value, tournament_id)
                     return
 
                 await self.manager_registry.add_participant(
                     tournament_id, player_data
                 )
+                await self._send_join_result(tournament_constants.Status.OK.value, tournament_id)
 
             case _:
                 pass
-
-        await self._send_join_result(True, tournament_id)
 
     async def _handle_leave(self, data: dict) -> None:
         """
