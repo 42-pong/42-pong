@@ -139,8 +139,9 @@ class TokenRefreshView(views.APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        user = User.objects.filter(id=user_id).first()
-        if user is None:
+        try:
+            User.objects.get(username=user_id)
+        except User.DoesNotExist:
             logger.error(f"User does not exist: {user_id}")
             return custom_response.CustomResponse(
                 code=["not_exists"],
