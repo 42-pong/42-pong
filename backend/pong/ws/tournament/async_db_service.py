@@ -146,7 +146,7 @@ def create_tournament_with_participation(
 
             # 2. 参加情報を作成（create_participation関数を呼び出す）
             participation_result = create_participation(
-                tournament_id=tournament[constants.TournamentFields.ID],
+                tournament_id=tournament.id,  # type: ignore
                 user_id=user_id,
                 participation_name=participation_name,
             )
