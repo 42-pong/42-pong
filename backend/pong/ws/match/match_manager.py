@@ -1,12 +1,18 @@
 import asyncio
+import logging
 from typing import Final, Optional
 
 from channels.layers import get_channel_layer  # type: ignore
 
+from matches import constants as match_db_constants
+
 from ..share import channel_handler, player_data
 from ..share import constants as ws_constants
+from . import async_db_service as match_service
 from . import constants as match_constants
 from .pong_logic import PongLogic
+
+logger = logging.getLogger(__name__)
 
 
 class MatchManager:
@@ -164,7 +170,14 @@ class MatchManager:
         """
         PongLogicの実行を開始し、ゲーム情報を送り続ける関数をバックグラウンドで実行する。
         """
-        # TODO: MatchのステータスをON_GOINGに更新
+        # MatchのステータスをON_GOINGに更新
+        if self.mode == match_constants.Mode.REMOTE.value:
+            update_result = await match_service.update_match_status(
+                self.match_id,
+                match_db_constants.MatchFields.StatusEnum.ON_GOING.value,
+            )
+            if update_result.is_error():
+                logger.error(f"Error: {update_result.unwrap_error()}")
 
         # PongLogicの実行を開始
         self.send_task = asyncio.create_task(self._send_match_state())
@@ -253,7 +266,14 @@ class MatchManager:
             except asyncio.CancelledError:
                 pass
 
-        # TODO: MatchのステータスをCOMPLETEDに更新
+        # MatchのステータスをCOMPLETEDに更新
+        if self.mode == match_constants.Mode.REMOTE.value:
+            update_result = await match_service.update_match_status(
+                self.match_id,
+                match_db_constants.MatchFields.StatusEnum.COMPLETED.value,
+            )
+            if update_result.is_error():
+                logger.error(f"Error: {update_result.unwrap_error()}")
 
         # ゲーム終了後、Consumerに終了通知
         win_team = await self.pong_logic.get_winner()
@@ -296,9 +316,17 @@ class MatchManager:
                 # キャンセルされるのを待つ
                 await self.send_task
 
-        # 残ったプレーヤーを勝者とする。
+        # TODO: 残ったプレーヤーを勝者とする。
         # TODO: 勝ったプレーヤーのレコードを更新。
-        # TODO: MatchのステータスをCANCELEDに更新
+        # MatchのステータスをCANCELEDに更新
+        if self.mode == match_constants.Mode.REMOTE.value:
+            update_result = await match_service.update_match_status(
+                self.match_id,
+                match_db_constants.MatchFields.StatusEnum.CANCELED.value,
+            )
+            if update_result.is_error():
+                logger.error(f"Error: {update_result.unwrap_error()}")
+
         message = self._build_message(
             match_constants.Stage.END.value,
             {
