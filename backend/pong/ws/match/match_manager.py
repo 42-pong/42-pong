@@ -180,7 +180,7 @@ class MatchManager:
         60FPSでPongLogicの状態を更新・取得し、Consumerに送信
         """
         last_update = asyncio.get_event_loop().time()
-        while not self.pong_logic.game_end():
+        while not await self.pong_logic.game_end():
             await asyncio.sleep(self.FPS)
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
@@ -246,9 +246,12 @@ class MatchManager:
         """
         試合の終了処理を行う関数
         """
-        # 参加プレーヤーが退出したら、send_taskが終了していないかのうせいがあるので、終了させる。
-        if self.send_task:
-            self.send_task.cancel()
+
+        if self.send_task and not self.send_task.done():
+            try:
+                await self.send_task
+            except asyncio.CancelledError:
+                pass
 
         # TODO: MatchのステータスをCOMPLETEDに更新
 
