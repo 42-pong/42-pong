@@ -52,6 +52,9 @@ class MatchManager:
         self.channel_handler = channel_handler.ChannelHandler(
             get_channel_layer(), None
         )
+        self.waiting_player_num = (
+            1 if self.mode == match_constants.Mode.LOCAL.value else 2
+        )
 
     async def run(self) -> Optional[player_data.PlayerData]:
         """
@@ -146,16 +149,12 @@ class MatchManager:
             match_constants.Stage.READY.value,
             {},
         )
-        # TODO: もしかしたら2人目が送ってきたタイミングで同時にREADY送らないとかも？
-        await self.channel_handler.send_to_consumer(
-            message, player.channel_name
-        )
 
         # 全員からREADYメッセージが届いたらイベントをセットしてゲームを開始する。
-        waiting_player_num = (
-            1 if self.mode == match_constants.Mode.LOCAL else 2
-        )
-        if self.ready_players == waiting_player_num:
+        if self.ready_players == self.waiting_player_num:
+            await self.channel_handler.send_to_consumer(
+                message, player.channel_name
+            )
             self.waiting_player_ready.set()
 
     async def _start_game(self) -> None:
