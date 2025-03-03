@@ -1,7 +1,10 @@
 import asyncio
+import logging
 
 from ..share import player_data
 from . import manager
+
+logger = logging.getLogger(__name__)
 
 
 class TournamentManagerRegistry:
@@ -31,11 +34,11 @@ class TournamentManagerRegistry:
             tournament_manager = manager.TournamentManager(tournament_id)
             self.tournaments[tournament_id] = tournament_manager
 
-        # `run()` を非同期タスクとして実行し、並列処理を可能にする
-        task = asyncio.create_task(
-            self._run_tournament(tournament_id, tournament_manager)
-        )
-        self.tasks[tournament_id] = task  # タスクを保存
+            # `run()` を非同期タスクとして実行し、並列処理を可能にする
+            task = asyncio.create_task(
+                self._run_tournament(tournament_id, tournament_manager)
+            )
+            self.tasks[tournament_id] = task  # タスクを保存
 
     async def _run_tournament(
         self, tournament_id: int, tournament_manager: manager.TournamentManager
@@ -97,3 +100,8 @@ class TournamentManagerRegistry:
                 if task is not None:
                     task.cancel()  # タスクをキャンセル
                     await task  # キャンセルしたタスクの完了を待機
+
+
+
+# === グローバルな MatchManagerRegistry インスタンス ===
+global_tournament_registry = TournamentManagerRegistry()
