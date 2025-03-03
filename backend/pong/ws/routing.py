@@ -1,7 +1,6 @@
 from django.urls import path
 
-#from ws.tournament import manager_registry
-
+# from ws.tournament import manager_registry
 from . import consumers
 
 websocket_urlpatterns = [

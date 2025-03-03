@@ -102,6 +102,5 @@ class TournamentManagerRegistry:
                     await task  # キャンセルしたタスクの完了を待機
 
 
-
 # === グローバルな MatchManagerRegistry インスタンス ===
 global_tournament_registry = TournamentManagerRegistry()

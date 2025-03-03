@@ -82,7 +82,9 @@ class TournamentHandler:
         participation_name: str = data[tournament_constants.PARTICIPATION_NAME]
         player_data = self._create_player_data(participation_name)
         if player_data is None:
-            await self._send_join_result(tournament_constants.Status.ERROR.value, None)
+            await self._send_join_result(
+                tournament_constants.Status.ERROR.value, None
+            )
             return
         tournament_id: int
 
@@ -94,7 +96,9 @@ class TournamentHandler:
                 )
                 if result.is_error:
                     logger.error(f"Error: {result.unwrap_error()}")
-                    await self._send_join_result(tournament_constants.Status.ERROR.value, None)
+                    await self._send_join_result(
+                        tournament_constants.Status.ERROR.value, None
+                    )
                     return
 
                 value = result.unwrap()
@@ -106,31 +110,41 @@ class TournamentHandler:
                 await self.manager_registry.add_participant(
                     tournament_id, player_data
                 )
-                await self._send_join_result(tournament_constants.Status.OK.value, tournament_id)
+                await self._send_join_result(
+                    tournament_constants.Status.OK.value, tournament_id
+                )
 
             case tournament_constants.JoinType.RANDOM.value:
                 logger.debug("JOIN TYPE: RANDOM")
                 tournament_id = await db_service.get_waiting_tournament()
                 if tournament_id is None:
-                    await self._send_join_result(tournament_constants.Status.ERROR.value, tournament_id)
+                    await self._send_join_result(
+                        tournament_constants.Status.ERROR.value, tournament_id
+                    )
                     return
 
                 await self.manager_registry.add_participant(
                     tournament_id, player_data
                 )
-                await self._send_join_result(tournament_constants.Status.OK.value, tournament_id)
+                await self._send_join_result(
+                    tournament_constants.Status.OK.value, tournament_id
+                )
 
             case tournament_constants.JoinType.SELECTED.value:
                 logger.debug("JOIN TYPE: SELECTED")
                 tournament_id = data[tournament_constants.TOURNAMENT_ID]
                 if tournament_id is None:  # IDが数値でない場合はエラー
-                    await self._send_join_result(tournament_constnats.Status.ERROR.value, tournament_id)
+                    await self._send_join_result(
+                        tournament_constants.Status.ERROR.value, tournament_id
+                    )
                     return
 
                 await self.manager_registry.add_participant(
                     tournament_id, player_data
                 )
-                await self._send_join_result(tournament_constants.Status.OK.value, tournament_id)
+                await self._send_join_result(
+                    tournament_constants.Status.OK.value, tournament_id
+                )
 
             case _:
                 pass
@@ -168,7 +182,7 @@ class TournamentHandler:
         )
 
     async def _send_join_result(
-        self, is_ok: bool, tournament_id: Optional[int]
+        self, status: str, tournament_id: Optional[int]
     ) -> None:
         """
         JOINメッセージの結果を通知する関数
@@ -176,7 +190,7 @@ class TournamentHandler:
         message = self._build_tournament_message(
             tournament_constants.Type.JOIN.value,
             {
-                tournament_constants.Status.key(): is_ok,
+                tournament_constants.Status.key(): status,
                 tournament_constants.TOURNAMENT_ID: tournament_id,
             },
         )

@@ -1,6 +1,6 @@
 import asyncio
-import random
 import logging
+import random
 
 from channels.db import database_sync_to_async  # type: ignore
 from channels.layers import get_channel_layer  # type: ignore
@@ -57,7 +57,9 @@ class TournamentManager:
             return
 
         # 参加レコードを作成
-        create_result = await database_sync_to_async(tournament_service.create_participation)(
+        create_result = await database_sync_to_async(
+            tournament_service.create_participation
+        )(
             self.tournament_id,
             participant.user_id,
             participant.participation_name,
