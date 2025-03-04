@@ -67,15 +67,16 @@ class TournamentManager:
         if create_result.is_error:
             return
 
-        # 参加者をグループに追加
+        # 先にいるトーナメント参加者全員にリロードメッセージを送信
+        await self._send_player_reload_message()
+
+        # 新規参加者をグループに追加
         await self.channel_handler.add_to_group(
             self.group_name, participant.channel_name
         )
 
         self.participants.append(participant)
 
-        # トーナメント参加者全員にリロードメッセージを送信
-        await self._send_player_reload_message()
 
         if len(self.participants) == 4:
             # 4人集まったらイベントをセットしてトーナメントを開始
