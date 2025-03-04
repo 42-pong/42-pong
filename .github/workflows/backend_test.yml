@@ -38,7 +38,6 @@ jobs:
             DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
             JWS_SECRET_KEY="${{ secrets.JWS_SECRET_KEY }}"
             REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
-            REDIS_PORT="${{ secrets.REDIS_PORT }}"
             REDIS_CHANNEL_LAYER_DB="${{ secrets.REDIS_CHANNEL_LAYER_DB }}"
             REDIS_STORE_DB="${{ secrets.REDIS_STORE_DB }}"
           EOF
