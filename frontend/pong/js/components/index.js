@@ -48,6 +48,7 @@ import { EventDispatchingButton } from "./utils/EventDispatchingButton";
 import { LinkButton } from "./utils/LinkButton";
 import { ListContainer } from "./utils/ListContainer";
 import { ObservableInput } from "./utils/ObservableInput";
+import { DashboardView } from "./views/DashboardView";
 import { ErrorView } from "./views/ErrorView";
 import { FriendsView } from "./views/FriendsView";
 import { HomeView } from "./views/HomeView";
@@ -154,6 +155,7 @@ customElements.define(
 customElements.define("link-button", LinkButton, {});
 customElements.define("list-container", ListContainer, {});
 customElements.define("observable-input", ObservableInput, {});
+customElements.define("dashboard-view", DashboardView, {});
 customElements.define("error-view", ErrorView, {});
 customElements.define("friends-view", FriendsView, {});
 customElements.define("home-view", HomeView, {});

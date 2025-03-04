@@ -1,3 +1,4 @@
+import { DashboardView } from "../components/views/DashboardView";
 import { LoginView } from "../components/views/LoginView";
 import { MainView } from "../components/views/MainView";
 import { SignUpView } from "../components/views/SignUpView";
@@ -15,6 +16,10 @@ export const appRouter = (target) => {
     [Paths.FRIENDS]: Route.createRoute(
       MainView,
       MainView.Paths.FRIENDS,
+    ),
+    [Paths.DASHBOARD]: Route.createRoute(
+      MainView,
+      MainView.Paths.DASHBOARD,
     ),
     [Paths.MYPAGE]: Route.createRoute(
       MainView,
