@@ -84,3 +84,7 @@ migrate:
 .PHONY: create_mock_players
 create_mock_players:
 	@python manage.py create_mock_players $(NUM)
+
+.PHONY: create_mock_games
+create_mock_games:
+	@python manage.py create_mock_tournament
