@@ -70,7 +70,6 @@ OAUTH2_TOKEN_ENDPOINT = get_valid_str_env("OAUTH2_TOKEN_ENDPOINT")
 JWS_SECRET_KEY = get_valid_str_env("JWS_SECRET_KEY")
 FRONT_SERVER_PORT = get_valid_str_env("FRONT_SERVER_PORT")
 REDIS_PASSWORD = get_valid_str_env("REDIS_PASSWORD")
-# REDIS_PORT = get_valid_str_env("REDIS_PORT")
 REDIS_CHANNEL_LAYER_DB = get_valid_str_env("REDIS_CHANNEL_LAYER_DB")
 REDIS_STORE_DB = get_valid_str_env("REDIS_STORE_DB")
 
