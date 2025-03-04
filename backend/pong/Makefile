@@ -72,3 +72,19 @@ test:
 .PHONY: migrate
 migrate:
 	@python manage.py makemigrations && python manage.py migrate
+
+# -------------------------------------------------------
+# django management commands
+# -------------------------------------------------------
+# NUM:
+#	作成するユーザー数。デフォルトは25。
+#	email="mock{i}@example.com"で作成されるので、既に存在する場合はエラーになる
+# 使用例:
+#	make create_mock_players NUM=10
+.PHONY: create_mock_players
+create_mock_players:
+	@python manage.py create_mock_players $(NUM)
+
+.PHONY: create_mock_games
+create_mock_games:
+	@python manage.py create_mock_tournament

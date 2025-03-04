@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     "channels",
     "corsheaders",  # for CORS
     # apps
+    "pong",
     "jwt",
     "oauth2",
     "accounts",

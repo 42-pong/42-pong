@@ -33,6 +33,7 @@ class ParticipationAdmin(ModelAdmin):
         constants.ParticipationFields.MATCH_ID,
         constants.ParticipationFields.PLAYER_ID,
         constants.ParticipationFields.TEAM,
+        constants.ParticipationFields.IS_WIN,
     )
     search_fields: tuple = (
         constants.ParticipationFields.MATCH_ID,
