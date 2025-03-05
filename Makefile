@@ -95,6 +95,10 @@ rm_images:
         docker rmi -f $$(docker images -q --filter "reference=$$service") || true; \
     done
 
+.PHONY: rm_builder_cache
+rm_builder_cache:
+	@-docker builder prune -af
+
 # -------------------------------------------------------
 # ssl
 # -------------------------------------------------------
