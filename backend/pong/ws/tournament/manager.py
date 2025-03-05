@@ -361,8 +361,12 @@ class TournamentManager:
         トーナメント中止処理。
         """
         # トーナメント開始後のキャンセル処理
-        # TODO: すべてのCOMPLETEDではないのリソースをCANCELEDに変更
-        pass
+        # 状態がCOMPLETEDではない子のトーナメントに紐づくリソースをすべてCANCELEDに変更
+        update_result = await tournament_service.cancel_uncompleted_tournament(
+            self.tournament_id,
+        )
+        if update_result.is_error:
+            raise Exception(update_result.unwrap_error())
 
     async def _send_player_reload_message(self) -> None:
         """
