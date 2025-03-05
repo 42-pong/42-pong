@@ -38,7 +38,7 @@ class OAuth2BaseView(APIView):
 
     @property
     def redirect_uri(self) -> str:
-        return settings.BACKEND_ORIGIN + reverse("oauth2:callback")
+        return settings.PONG_ORIGIN + reverse("oauth2:callback")
 
 
 class OAuth2AuthorizeView(OAuth2BaseView):
@@ -264,7 +264,9 @@ class OAuth2CallbackView(OAuth2BaseView):
                 errors=response.data["errors"],
                 status=response.status_code,
             )
-        return custom_response.CustomResponse(
-            data=response.data["data"],
-            status=response.status_code,
+        # todo: クエリパラメータ以外の一般的なデータの渡し方を調査（余裕あれば）
+        redirect_uri: str = f"{settings.PONG_ORIGIN}/oauth2/?access={response.data['data']['access']}&refresh={response.data['data']['refresh']}"
+        return Response(
+            status=status.HTTP_302_FOUND,
+            headers={"Location": redirect_uri},
         )

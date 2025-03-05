@@ -56,8 +56,8 @@ def get_valid_str_env(key: str) -> str:
 #     - .github/workflows/backend_code_check.ymlのenvに追加
 #     - .github/workflows/backend_unit_test.ymlのCreate .env fileに追加
 # 使用する環境変数を全て取得
-BACKEND_SERVER_PORT = get_valid_str_env("BACKEND_SERVER_PORT")
-BACKEND_ORIGIN = f"http://localhost:{BACKEND_SERVER_PORT}"
+SERVER_PORT = get_valid_str_env("FRONT_SERVER_PORT")
+PONG_ORIGIN = f"https://localhost:{SERVER_PORT}"
 DB_NAME = get_valid_str_env("DB_NAME")
 DB_USER = get_valid_str_env("DB_USER")
 DB_PASSWORD = get_valid_str_env("DB_PASSWORD")
@@ -68,7 +68,6 @@ OAUTH2_AUTHORIZATION_ENDPOINT = get_valid_str_env(
 )
 OAUTH2_TOKEN_ENDPOINT = get_valid_str_env("OAUTH2_TOKEN_ENDPOINT")
 JWS_SECRET_KEY = get_valid_str_env("JWS_SECRET_KEY")
-FRONT_SERVER_PORT = get_valid_str_env("FRONT_SERVER_PORT")
 REDIS_PASSWORD = get_valid_str_env("REDIS_PASSWORD")
 REDIS_CHANNEL_LAYER_DB = get_valid_str_env("REDIS_CHANNEL_LAYER_DB")
 REDIS_STORE_DB = get_valid_str_env("REDIS_STORE_DB")
