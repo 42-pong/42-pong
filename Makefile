@@ -26,6 +26,11 @@ SSL_CNF_PATH	:=	frontend/openssl.cnf
 .PHONY: all
 all: gen_ssl_cert up
 
+# rm container,volume,network,image,build cache,avatars,ssl_cert
+.PHONY: clean
+clean: down_v clean_docker rm_avatars rm_ssl_cert
+	@echo "All containers, volume, network, images, build cache, avatars, ssl_cert are removed."
+
 # -------------------------------------------------------
 # docker compose
 # -------------------------------------------------------
@@ -100,6 +105,9 @@ rm_images:
 .PHONY: rm_builder_cache
 rm_builder_cache:
 	@-docker builder prune -af
+
+.PHONY: clean_docker
+clean_docker: rm_images rm_builder_cache
 
 # デフォルト画像"sample.png"以外のアバター画像を削除
 .PHONY: rm_avatars
