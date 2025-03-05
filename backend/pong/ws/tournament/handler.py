@@ -79,9 +79,12 @@ class TournamentHandler:
         playerがtournamentに参加する際の処理を行う関数
         """
         join_type: str = data[tournament_constants.JOIN_TYPE]
-        participation_name: str = data[tournament_constants.PARTICIPATION_NAME]
-        player_data = self._create_player_data(participation_name)
-        if player_data is None:
+        participation_name: Optional[str] = data[
+            tournament_constants.PARTICIPATION_NAME
+        ]
+        if participation_name is not None:
+            self.player_data = self._create_player_data(participation_name)
+        if self.player_data is None:
             await self._send_join_result(
                 tournament_constants.Status.ERROR.value, None
             )
@@ -107,7 +110,7 @@ class TournamentHandler:
                 ]
 
                 await self.manager_registry.create_tournament(
-                    tournament_id, player_data
+                    tournament_id, self.player_data
                 )
                 await self.channel_handler.add_to_group(
                     f"tournament_{tournament_id}"
@@ -126,7 +129,7 @@ class TournamentHandler:
                     return
 
                 await self.manager_registry.add_participant(
-                    tournament_id, player_data
+                    tournament_id, self.player_data
                 )
                 await self._send_join_result(
                     tournament_constants.Status.OK.value, tournament_id
@@ -142,7 +145,7 @@ class TournamentHandler:
                     return
 
                 await self.manager_registry.add_participant(
-                    tournament_id, player_data
+                    tournament_id, self.player_data
                 )
                 await self._send_join_result(
                     tournament_constants.Status.OK.value, tournament_id
@@ -159,12 +162,11 @@ class TournamentHandler:
         if tournament_id is None:  # IDが数値でない場合はエラー
             return
 
-        player_data = self._create_player_data(None)
-        if player_data is None:
+        if self.player_data is None:
             return
 
         await self.manager_registry.remove_participant(
-            tournament_id, player_data
+            tournament_id, self.player_data
         )
 
     def _create_player_data(
