@@ -11,6 +11,8 @@ REDIS_SERVICE		:=	redis
 SERVICES	:=	$(FRONTEND_SERVICE) $(BACKEND_SERVICE) \
 				$(DATABASE_SERVICE) $(ADMINER_SERVICE) $(REDIS_SERVICE)
 
+AVATARS_DIR	:=	backend/pong/media/avatars
+
 # ssl
 DOMAIN_NAME		:=	localhost
 SSL_DIR			:=	frontend/ssl
@@ -98,6 +100,11 @@ rm_images:
 .PHONY: rm_builder_cache
 rm_builder_cache:
 	@-docker builder prune -af
+
+# デフォルト画像"sample.png"以外のアバター画像を削除
+.PHONY: rm_avatars
+rm_avatars:
+	@find $(AVATARS_DIR) -type f ! -name "sample.png" -delete
 
 # -------------------------------------------------------
 # ssl
