@@ -2,6 +2,7 @@ import random
 from typing import Final
 
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
 from accounts.player.models import Player
 from matches import constants
@@ -34,64 +35,76 @@ class Command(BaseCommand):
     help = "Create mock data for tournaments, rounds, matches, participations, and scores"
 
     def handle(self, *args: tuple, **kwargs: dict) -> None:
-        # tournament作成
-        tournament: Tournament = self._create_tournament()
+        try:
+            with transaction.atomic():
+                # tournament作成
+                tournament: Tournament = self._create_tournament()
 
-        # tournamentに参加する4人のplayerをランダムに選択
-        players: list[Player] = list(Player.objects.order_by("?")[:4])
+                # tournamentに参加する4人のplayerをランダムに選択
+                players: list[Player] = list(Player.objects.order_by("?")[:4])
 
-        # tournamentとplayerを紐づけるtournament participationsを作成
-        self._create_tournament_participations(tournament, players)
+                # tournamentとplayerを紐づけるtournament participationsを作成
+                self._create_tournament_participations(tournament, players)
 
-        # 1ラウンド目を作成
-        round1: Round = self._create_round(tournament, 1)
+                # 1ラウンド目を作成
+                round1: Round = self._create_round(tournament, 1)
 
-        # 1ラウンド目のmatchを作成
-        match1: Match = self._create_match(round1)
-        match2: Match = self._create_match(round1)
+                # 1ラウンド目のmatchを作成
+                match1: Match = self._create_match(round1)
+                match2: Match = self._create_match(round1)
 
-        # 1ラウンド目のmatchに参加するplayerを設定
-        match1_players: list[Player] = players[:2]
-        match2_players: list[Player] = players[2:]
+                # 1ラウンド目のmatchに参加するplayerを設定
+                match1_players: list[Player] = players[:2]
+                match2_players: list[Player] = players[2:]
 
-        # 1ラウンド目のmatchとplayerを紐づけるmatch participationsを作成
-        match1_participations: list[MatchParticipation] = (
-            self._create_match_participations(match1, match1_players)
-        )
-        match2_participations: list[MatchParticipation] = (
-            self._create_match_participations(match2, match2_players)
-        )
+                # 1ラウンド目のmatchとplayerを紐づけるmatch participationsを作成
+                match1_participations: list[MatchParticipation] = (
+                    self._create_match_participations(match1, match1_players)
+                )
+                match2_participations: list[MatchParticipation] = (
+                    self._create_match_participations(match2, match2_players)
+                )
 
-        # 1ラウンド目のmatchのscoreを作成
-        self._create_scores_for_match(match1_participations)
-        self._create_scores_for_match(match2_participations)
+                # 1ラウンド目のmatchのscoreを作成
+                self._create_scores_for_match(match1_participations)
+                self._create_scores_for_match(match2_participations)
 
-        # 1ラウンド目の勝者を決定
-        match1_winner: Player = self._determine_winner(match1_participations)
-        match2_winner: Player = self._determine_winner(match2_participations)
+                # 1ラウンド目の勝者を決定
+                match1_winner: Player = self._determine_winner(
+                    match1_participations
+                )
+                match2_winner: Player = self._determine_winner(
+                    match2_participations
+                )
 
-        # 2ラウンド目を作成
-        round2: Round = self._create_round(tournament, 2)
+                # 2ラウンド目を作成
+                round2: Round = self._create_round(tournament, 2)
 
-        # 2ラウンド目のマッチを作成
-        final_match: Match = self._create_match(round2)
+                # 2ラウンド目のマッチを作成
+                final_match: Match = self._create_match(round2)
 
-        # 2ラウンド目のマッチに1ラウンド目の勝者を設定
-        final_match_participations: list[MatchParticipation] = (
-            self._create_match_participations(
-                final_match, [match1_winner, match2_winner]
+                # 2ラウンド目のマッチに1ラウンド目の勝者を設定
+                final_match_participations: list[MatchParticipation] = (
+                    self._create_match_participations(
+                        final_match, [match1_winner, match2_winner]
+                    )
+                )
+
+                # 2ラウンド目のマッチのスコアを作成
+                self._create_scores_for_match(final_match_participations)
+
+                # 2ラウンド目の勝者を決定
+                self._determine_winner(final_match_participations)
+
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Successfully created mock tournament id={tournament.id}"
+                )
             )
-        )
-
-        # 2ラウンド目のマッチのスコアを作成
-        self._create_scores_for_match(final_match_participations)
-
-        # 2ラウンド目の勝者を決定
-        self._determine_winner(final_match_participations)
-
-        self.stdout.write(
-            self.style.SUCCESS("Successfully created mock games")
-        )
+        except Exception as e:
+            self.stderr.write(
+                self.style.ERROR(f"Failed to create mock tournament: {str(e)}")
+            )
 
     def _create_tournament(self) -> Tournament:
         return Tournament.objects.create(status=COMPLETED)
