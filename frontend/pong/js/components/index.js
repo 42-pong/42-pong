@@ -14,16 +14,19 @@ import { ChatGlobal } from "./chat/ChatGlobal";
 import { ChatInputForm } from "./chat/ChatInputForm";
 import { ChatMessageListItem } from "./chat/ChatMessageListItem";
 import { ChatPanel } from "./chat/ChatPanel";
+import { DashboardContainer } from "./dashboard/DashboardContainer";
+import { DashboardStats } from "./dashboard/DashboardStats";
 import { AddFriendButton } from "./friend/AddFriendButton";
 import { RemoveFriendButton } from "./friend/RemoveFriendButton";
 import { GameStartPanel } from "./game/GameStartPanel";
+import { MatchBoard } from "./match/MatchBoard";
+import { MatchCard } from "./match/MatchCard";
 import { MatchContainer } from "./match/MatchContainer";
 import { MatchRenderer } from "./match/MatchRenderer";
 import { MatchRenderer3D } from "./match/MatchRenderer3D";
+import { PlayerProfile } from "./match/PlayerProfile";
 import { MainNavbar } from "./navigation/MainNavbar";
-import { MatchCard } from "./tournament/MatchCard";
 import { ParticipationProfile } from "./tournament/ParticipationProfile";
-import { PlayerProfile } from "./tournament/PlayerProfile";
 import { RoundCard } from "./tournament/RoundCard";
 import { TournamentContainer } from "./tournament/TournamentContainer";
 import { TournamentEntrance } from "./tournament/TournamentEntrance";
@@ -85,20 +88,23 @@ customElements.define(
   {},
 );
 customElements.define("chat-panel", ChatPanel, {});
+customElements.define("dashboard-container", DashboardContainer, {});
+customElements.define("dashboard-stats", DashboardStats, {});
 customElements.define("add-friend-button", AddFriendButton, {});
 customElements.define("remove-friend-button", RemoveFriendButton, {});
 customElements.define("game-start-panel", GameStartPanel, {});
+customElements.define("match-board", MatchBoard, {});
+customElements.define("match-card", MatchCard, {});
 customElements.define("match-container", MatchContainer, {});
 customElements.define("match-renderer", MatchRenderer, {});
 customElements.define("match-renderer-3d", MatchRenderer3D, {});
+customElements.define("player-profile", PlayerProfile, {});
 customElements.define("main-navbar", MainNavbar, {});
-customElements.define("match-card", MatchCard, {});
 customElements.define(
   "participation-profile",
   ParticipationProfile,
   {},
 );
-customElements.define("player-profile", PlayerProfile, {});
 customElements.define("round-card", RoundCard, {});
 customElements.define(
   "tournament-container",
