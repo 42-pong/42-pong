@@ -30,6 +30,11 @@ up:
 down:
 	@$(DOCKER_COMPOSE) down
 
+# rm container,volume,network
+.PHONY: down_v
+down_v:
+	@$(DOCKER_COMPOSE) down -v
+
 .PHONY: build-up
 build-up:
 	@$(DOCKER_COMPOSE) up --build -d
