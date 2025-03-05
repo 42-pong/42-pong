@@ -1,9 +1,55 @@
+import { getTournaments } from "../../api/tournaments/getTournaments";
+import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { AuthView } from "../../core/AuthView";
+import { UserSessionManager } from "../../session/UserSessionManager";
+import { extractMatches } from "../../utils/match/extractMatches";
+import { DashboardContainer } from "../dashboard/DashboardContainer";
+import { LoadingView } from "./LoadingView";
 
 export class DashboardView extends AuthView {
-  _onConnect() {}
+  constructor(state = {}) {
+    super({
+      isLoading: true,
+      userId: null,
+      tournaments: [],
+      matches: [],
+      ...state,
+    });
+  }
+
+  _setStyle() {
+    BootstrapSizing.setWidth100(this);
+    BootstrapSizing.setHeight100(this);
+  }
+
+  _onConnect() {
+    const userId = UserSessionManager.getInstance().myInfo.observe(
+      ({ id }) => id,
+    );
+    getTournaments(userId).then(({ tournaments, error }) => {
+      if (error) return;
+      this._updateState({
+        isLoading: false,
+        tournaments,
+        matches: extractMatches(tournaments, userId),
+        userId,
+      });
+    });
+  }
 
   _render() {
-    this.append("dashboard");
+    const { isLoading, userId, tournaments, matches } =
+      this._getState();
+    if (isLoading) {
+      this.append(new LoadingView());
+      return;
+    }
+
+    const dashboardContainer = new DashboardContainer({
+      userId,
+      tournaments,
+      matches,
+    });
+    this.append(dashboardContainer);
   }
 }
