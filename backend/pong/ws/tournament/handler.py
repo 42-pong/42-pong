@@ -128,12 +128,14 @@ class TournamentHandler:
                     )
                     return
 
-                await self.manager_registry.add_participant(
+                result = await self.manager_registry.add_participant(
                     tournament_id, self.player_data
                 )
-                await self._send_join_result(
-                    tournament_constants.Status.OK.value, tournament_id
-                )
+                if result:
+                    join_result = tournament_constants.Status.OK.value
+                else:
+                    join_result = tournament_constants.Status.ERROR.value
+                await self._send_join_result(join_result, tournament_id)
 
             case tournament_constants.JoinType.SELECTED.value:
                 logger.debug("JOIN TYPE: SELECTED")
@@ -144,12 +146,15 @@ class TournamentHandler:
                     )
                     return
 
-                await self.manager_registry.add_participant(
+                result = await self.manager_registry.add_participant(
                     tournament_id, self.player_data
                 )
-                await self._send_join_result(
-                    tournament_constants.Status.OK.value, tournament_id
-                )
+                if result:
+                    join_result = tournament_constants.Status.OK.value
+                else:
+                    join_result = tournament_constants.Status.ERROR.value
+
+                await self._send_join_result(join_result, tournament_id)
 
             case _:
                 pass

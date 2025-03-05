@@ -46,7 +46,7 @@ class TournamentManager:
 
     async def add_participant(
         self, participant: player_data.PlayerData
-    ) -> None:
+    ) -> bool:
         """
         参加者を追加。DBにも参加テーブルを作成する。
         参加者が4人になったらトーナメントを開始する。
@@ -56,7 +56,7 @@ class TournamentManager:
             participant.user_id is None
             or participant.participation_name is None
         ):
-            return
+            return False
 
         # 参加レコードを作成
         create_result = await database_sync_to_async(
@@ -67,7 +67,7 @@ class TournamentManager:
             participant.participation_name,
         )
         if create_result.is_error:
-            return
+            return False
 
         # 先にいるトーナメント参加者全員にリロードメッセージを送信
         await self._send_player_reload_message()
@@ -82,6 +82,9 @@ class TournamentManager:
         if len(self.participants) == 4:
             # 4人集まったらイベントをセットしてトーナメントを開始
             self.waiting_for_participants.set()
+            return True
+
+        return True
 
     async def remove_participant(
         self, participant: player_data.PlayerData

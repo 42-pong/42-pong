@@ -69,16 +69,16 @@ class TournamentManagerRegistry:
 
     async def add_participant(
         self, tournament_id: int, participant: player_data.PlayerData
-    ) -> None:
+    ) -> bool:
         """
         指定した TournamentManager に参加者を追加
         """
         async with self.lock:
             if tournament_id not in self.tournaments:
-                return  # トーナメントが存在しない場合は何もしない
+                return False  # トーナメントが存在しない場合は何もしない
 
             tournament_manager = self.tournaments[tournament_id]
-            await tournament_manager.add_participant(
+            return await tournament_manager.add_participant(
                 participant
             )  # 参加者を追加
 
