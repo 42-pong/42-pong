@@ -104,6 +104,9 @@ class UsersSerializer(serializers.Serializer):
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
 
+        # Playerごとの勝敗数をキャッシュするための辞書を初期化
+        self._match_stats_cache: dict[int, dict] = {}
+
     def get_is_friend(self, player: player_models.Player) -> bool:
         """
         playerがログインユーザーのフレンドであるかどうかを取得する
@@ -151,9 +154,9 @@ class UsersSerializer(serializers.Serializer):
     def _get_match_stats(
         self, player: player_models.Player, result: str
     ) -> int:
-        if not hasattr(self, "_match_stats_cache"):
-            # playerの勝敗数を一度だけ取得してキャッシュしておく
-            self._match_stats_cache: dict[str, int] = (
+        if player.id not in self._match_stats_cache:
+            # 各playerの勝敗数を一度だけ取得してキャッシュしておく
+            self._match_stats_cache[player.id] = (
                 player.match_participations.aggregate(
                     wins=Count(
                         accounts_constants.PlayerFields.ID,
@@ -168,7 +171,7 @@ class UsersSerializer(serializers.Serializer):
                     ),
                 )
             )
-        return self._match_stats_cache[result]
+        return self._match_stats_cache[player.id][result]
 
     def get_match_wins(self, player: player_models.Player) -> int:
         """
