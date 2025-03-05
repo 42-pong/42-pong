@@ -34,7 +34,12 @@ export const handlers = [
 
       return HttpResponse.json({
         status: "ok",
-        data: participations,
+        data: {
+          count: participations.length,
+          next: null,
+          previous: null,
+          results: participations,
+        },
       });
     },
   ),
