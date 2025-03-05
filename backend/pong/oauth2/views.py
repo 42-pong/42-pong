@@ -19,7 +19,6 @@ from rest_framework.views import APIView
 
 from jwt.views import token
 from pong import settings
-from pong.custom_response import custom_response
 
 from . import create_oauth2_account, models
 from .providers import forty_two_authorization
@@ -151,16 +150,18 @@ class OAuth2CallbackView(OAuth2BaseView):
         この関数は認可エンドポイント(`/api/oauth2/authorize`)のレスポンスを受け取り、認可コードを取得するために使用する。
         そのため、このエンドポイントはFEから呼ばれることはありません。
         """
+        redirect_uri: str = f"{settings.PONG_ORIGIN}/oauth2/"
 
         code = request.GET.get("code")
         if code is None:
+            error_query_string = "error=fail"
             error_message = "Authorization code is None. Please check your authentication process."
             logger.error(f"401 AuthenticationFailedError: {error_message}")
-            return custom_response.CustomResponse(
-                code=["fail"],
-                errors={"detail": error_message},
-                status=status.HTTP_401_UNAUTHORIZED,
+            return Response(
+                status=status.HTTP_302_FOUND,
+                headers={"Location": redirect_uri + "?" + error_query_string},
             )
+
         # ===== todo: def authenticate_user(code: str) -> dict:作成 ======
         # 成功: user_infoを返す
         # 失敗: 例外 AuthenticationFailedError, InternalServerError
@@ -178,13 +179,13 @@ class OAuth2CallbackView(OAuth2BaseView):
         )
         tokens = token_response.json()
         if token_response.status_code != status.HTTP_200_OK:
+            error_query_string = "error=fail"
             logger.error(
                 f"401 AuthenticationFailedError: {tokens["error_description"]}"
             )
-            return custom_response.CustomResponse(
-                code=["fail"],
-                errors={"detail": tokens["error_description"]},
-                status=status.HTTP_401_UNAUTHORIZED,
+            return Response(
+                status=status.HTTP_302_FOUND,
+                headers={"Location": redirect_uri + "?" + error_query_string},
             )
         user_response = requests.get(
             "https://api.intra.42.fr/v2/me",
@@ -195,10 +196,10 @@ class OAuth2CallbackView(OAuth2BaseView):
             logger.error(
                 f"401 AuthenticationFailedError: {user_info["error_description"]}"
             )
-            return custom_response.CustomResponse(
-                code=["fail"],
-                errors={"detail": user_info["error_description"]},
-                status=status.HTTP_401_UNAUTHORIZED,
+            error_query_string = "error=fail"
+            return Response(
+                status=status.HTTP_302_FOUND,
+                headers={"Location": redirect_uri + "?" + error_query_string},
             )
         # =============================================================
 
@@ -212,11 +213,17 @@ class OAuth2CallbackView(OAuth2BaseView):
             )
             # todo: internal_errorのエラーハンドリングを追加する
             if not oauth2_user_result.is_ok:
-                return custom_response.CustomResponse(
-                    code=["internal_error"],
-                    errors={"detail": oauth2_user_result.unwrap_error()},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                error_query_string = "error=internal_error"
+                logger.error(
+                    f"500 InternalServerError: {oauth2_user_result.unwrap_error()}"
                 )
+                return Response(
+                    status=status.HTTP_302_FOUND,
+                    headers={
+                        "Location": redirect_uri + "?" + error_query_string
+                    },
+                )
+
             user_info = oauth2_user_result.unwrap()
             forty_two_token_data = {
                 "access_token": tokens.get("access_token"),
@@ -235,10 +242,15 @@ class OAuth2CallbackView(OAuth2BaseView):
             # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
             if not oauth2_result.is_ok:
                 models.User.objects.get(id=user_info["id"]).delete()
-                return custom_response.CustomResponse(
-                    code=["internal_error"],
-                    errors={"detail": oauth2_user_result.unwrap_error()},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                error_query_string = "error=internal_error"
+                logger.error(
+                    f"500 InternalServerError: {oauth2_user_result.unwrap_error()}"
+                )
+                return Response(
+                    status=status.HTTP_302_FOUND,
+                    headers={
+                        "Location": redirect_uri + "?" + error_query_string
+                    },
                 )
             # ==================================================================
 
@@ -255,22 +267,21 @@ class OAuth2CallbackView(OAuth2BaseView):
         response = token.TokenObtainView.as_view()(request)
         if response.status_code != status.HTTP_200_OK:
             oauth2_user.delete()
+            error_query_string = "error=fail"
             logger.error(
                 f"{response.status_code} TokenObtainFailedError: {response.data}"
             )
-            return custom_response.CustomResponse(
-                code=response.data["code"],
-                errors=response.data["errors"],
-                status=response.status_code,
+            return Response(
+                status=status.HTTP_302_FOUND,
+                headers={"Location": redirect_uri + "?" + error_query_string},
             )
         # todo: クエリパラメータ以外の一般的なデータの渡し方を調査（余裕あれば）
         query_params: dict[str, str] = {
             "access": response.data["data"]["access"],
             "refresh": response.data["data"]["refresh"],
         }
-        query_string: str = urlencode(query_params)
-        redirect_uri: str = f"{settings.PONG_ORIGIN}/oauth2/?{query_string}"
+        query_string = urlencode(query_params)
         return Response(
             status=status.HTTP_302_FOUND,
-            headers={"Location": redirect_uri},
+            headers={"Location": redirect_uri + "?" + query_string},
         )
