@@ -2,8 +2,14 @@
 COMPOSE_FILE		:=	compose.yaml
 DOCKER_COMPOSE		:=	docker compose -f $(COMPOSE_FILE)
 
+FRONTEND_SERVICE	:=	frontend
 BACKEND_SERVICE		:=	backend
-DATABASE_SERVICE	:=	db
+DATABASE_SERVICE	:=	postgres
+ADMINER_SERVICE		:=	adminer
+REDIS_SERVICE		:=	redis
+
+SERVICES	:=	$(FRONTEND_SERVICE) $(BACKEND_SERVICE) \
+				$(DATABASE_SERVICE) $(ADMINER_SERVICE) $(REDIS_SERVICE)
 
 # ssl
 DOMAIN_NAME		:=	localhost
@@ -79,6 +85,15 @@ logs-be:
 .PHONY: logs-db
 logs-db:
 	@$(DOCKER_COMPOSE) logs $(DATABASE_SERVICE)
+
+# -------------------------------------------------------
+# cleanup
+# -------------------------------------------------------
+.PHONY: rm_images
+rm_images:
+	@for service in $(SERVICES); do \
+        docker rmi -f $$(docker images -q --filter "reference=$$service") || true; \
+    done
 
 # -------------------------------------------------------
 # ssl
