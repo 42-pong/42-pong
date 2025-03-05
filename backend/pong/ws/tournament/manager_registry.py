@@ -22,7 +22,9 @@ class TournamentManagerRegistry:
         ] = {}  # { tournament_id: asyncio.Task } トーナメントIDと対応するタスクを保持
         self.lock = asyncio.Lock()
 
-    async def create_tournament(self, tournament_id: int) -> None:
+    async def create_tournament(
+        self, tournament_id: int, participant: player_data.PlayerData
+    ) -> None:
         """
         tournament_id に TournamentManager を作成し、トーナメントを開始。
         終了後に回収する。
@@ -31,7 +33,9 @@ class TournamentManagerRegistry:
             if tournament_id in self.tournaments:
                 return  # 既にトーナメントが存在する場合は何もしない
 
-            tournament_manager = manager.TournamentManager(tournament_id)
+            tournament_manager = manager.TournamentManager(
+                tournament_id, participant
+            )
             self.tournaments[tournament_id] = tournament_manager
 
             # `run()` を非同期タスクとして実行し、並列処理を可能にする

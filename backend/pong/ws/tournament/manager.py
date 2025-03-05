@@ -29,12 +29,14 @@ class TournamentManager:
     group_name: 'tournament_{tournament_id}'
     """
 
-    def __init__(self, tournament_id: int) -> None:
+    def __init__(
+        self, tournament_id: int, participant: player_data.PlayerData
+    ) -> None:
         self.tournament_id: int = tournament_id
         self.group_name: str = f"tournament_{self.tournament_id}"
-        self.participants: list[
-            player_data.PlayerData
-        ] = []  # 参加者の情報のリスト
+        self.participants: list[player_data.PlayerData] = [
+            participant
+        ]  # 参加者の情報のリスト
         self.channel_handler = channel_handler.ChannelHandler(
             get_channel_layer(), None
         )
@@ -76,7 +78,6 @@ class TournamentManager:
         )
 
         self.participants.append(participant)
-
 
         if len(self.participants) == 4:
             # 4人集まったらイベントをセットしてトーナメントを開始

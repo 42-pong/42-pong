@@ -106,9 +106,11 @@ class TournamentHandler:
                     tournament_db_constants.TournamentFields.ID
                 ]
 
-                await self.manager_registry.create_tournament(tournament_id)
-                await self.manager_registry.add_participant(
+                await self.manager_registry.create_tournament(
                     tournament_id, player_data
+                )
+                await self.channel_handler.add_to_group(
+                    f"tournament_{tournament_id}"
                 )
                 await self._send_join_result(
                     tournament_constants.Status.OK.value, tournament_id
