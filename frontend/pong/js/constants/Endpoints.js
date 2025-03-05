@@ -37,6 +37,11 @@ export const Endpoints = Object.freeze({
     withId: (tournamentId) =>
       new URL(`${tournamentId}/`, Endpoints.TOURNAMENTS.default),
   },
+  MATCHES: {
+    default: new URL("/api/matches/", BASE_URL),
+    withId: (matchId) =>
+      new URL(`${matchId}/`, Endpoints.MATCHES.default),
+  },
 
   ACCOUNTS: new URL("/api/accounts/", BASE_URL),
 });
