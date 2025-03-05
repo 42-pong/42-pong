@@ -23,6 +23,7 @@ class Command(BaseCommand):
 
     def handle(self, *args: tuple, **kwargs: dict) -> None:
         num = kwargs["num_players"]
+        created_players: set[int] = set()
 
         # Create users and players
         for i in range(1, num + 1):  # type: ignore
@@ -36,6 +37,7 @@ class Command(BaseCommand):
                     Player.objects.create(
                         user=user, display_name=f"player_{i}"
                     )
+                created_players.add(i)
             except Exception as e:
                 self.stderr.write(
                     self.style.ERROR(
@@ -43,6 +45,9 @@ class Command(BaseCommand):
                     )
                 )
 
-        self.stdout.write(
-            self.style.SUCCESS("Successfully created mock players")
-        )
+        if created_players:
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Successfully created mock players {",".join(map(str, created_players))}"
+                )
+            )
