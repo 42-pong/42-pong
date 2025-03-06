@@ -3,10 +3,12 @@ from typing import Optional
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 from rest_framework import serializers as drf_serializers
 
 from pong.custom_response import custom_response
+from users import constants as users_constants
 from utils import result
 
 from .. import constants
@@ -51,6 +53,85 @@ class VerifyOTPView(views.APIView):
         )
         return response
 
+    @utils.extend_schema(
+        request=utils.OpenApiRequest(
+            user_serializers.UserSerializer,
+            examples=[
+                utils.OpenApiExample(
+                    "Example request",
+                    value={
+                        constants.UserFields.EMAIL: "user@example.com",
+                        otp_constants.OptFields.OTP_CODE: "123456",
+                    },
+                ),
+            ],
+        ),
+        responses={
+            201: utils.OpenApiResponse(
+                response=user_serializers.UserSerializer,
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 201 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.OK,
+                            custom_response.DATA: {
+                                constants.UserFields.ID: 2,
+                                constants.UserFields.USERNAME: "username",
+                                constants.UserFields.EMAIL: "user@example.com",
+                                constants.PlayerFields.DISPLAY_NAME: "default",
+                                constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
+                                users_constants.UsersFields.IS_FRIEND: False,
+                                users_constants.UsersFields.IS_BLOCKED: False,
+                                users_constants.UsersFields.MATCH_WINS: 0,
+                                users_constants.UsersFields.MATCH_LOSSES: 0,
+                            },
+                        },
+                    ),
+                ],
+            ),
+            400: utils.OpenApiResponse(
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 400 response - invalid",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                otp_constants.Code.INVALID,
+                            ],
+                        },
+                    ),
+                ],
+            ),
+            500: utils.OpenApiResponse(
+                description="Internal server error",
+                response={
+                    "type": "object",
+                    "properties": {
+                        custom_response.STATUS: {"type": "string"},
+                        custom_response.CODE: {"type": "list"},
+                    },
+                },
+                examples=[
+                    utils.OpenApiExample(
+                        "Example 500 response",
+                        value={
+                            custom_response.STATUS: custom_response.Status.ERROR,
+                            custom_response.CODE: [
+                                users_constants.Code.INTERNAL_ERROR
+                            ],
+                        },
+                    ),
+                ],
+            ),
+        },
+    )
     def post(self, request: request.Request) -> response.Response:
         """
         OTPを検証し、アカウントを作成するPOSTメソッド
