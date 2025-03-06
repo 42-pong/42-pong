@@ -4,7 +4,6 @@ import { Paths } from "../constants/Paths";
 import { PongEvents } from "../constants/PongEvents";
 import { DataSubject } from "../core/DataSubject";
 import { WebSocketEnums } from "../enums/WebSocketEnums";
-import { Cookie } from "../utils/cookie/Cookie";
 import { WebSocketWrapper } from "../websocket/WebSocketWrapper";
 
 export class UserSession {
@@ -13,9 +12,7 @@ export class UserSession {
   #status;
   #webSocket;
 
-  // TODO: manage tokens
   #accessToken;
-  #refreshToken;
 
   constructor() {
     this.#apps = {};
@@ -63,7 +60,6 @@ export class UserSession {
   async #init() {
     const { appGlobal } = this.#apps;
     clearGlobalFeatures(appGlobal);
-    this.#initTokens();
     this.#myInfo.init({ isSignedIn: false });
     this.#status.init();
     this.#webSocket.close();
@@ -90,11 +86,10 @@ export class UserSession {
   }
 
   async signOut() {
+    this.#clearTokens();
     const isValid = await this.#reset();
     if (isValid) {
       this.updateWindowPath();
-      Cookie.deleteCookie("refreshToken");
-      sessionStorage.removeItem("accessToken");
     }
     return isValid;
   }
@@ -131,26 +126,25 @@ export class UserSession {
     return this.#webSocket;
   }
 
-  // TODO: manage tokens
   getAccessToken() {
-    return sessionStorage.getItem("accessToken");
+    return this.#accessToken;
   }
 
   getRefreshToken() {
-    return Cookie.getCookie("refreshToken");
+    return sessionStorage.getItem("pong-refresh-token");
   }
 
   setAccessToken(access) {
-    sessionStorage.setItem("accessToken", access);
+    this.#accessToken = access;
   }
 
   setRefreshToken(refresh) {
-    Cookie.setCookie("refreshToken", refresh, 7);
+    sessionStorage.setItem("pong-refresh-token", refresh);
   }
 
-  #initTokens() {
-    this.#accessToken = this.getAccessToken();
-    this.#refreshToken = this.getRefreshToken();
+  #clearTokens() {
+    this.#accessToken = "";
+    sessionStorage.removeItem("pong-refresh-token");
   }
 }
 
