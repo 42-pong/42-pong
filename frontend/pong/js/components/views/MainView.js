@@ -17,6 +17,7 @@ export class MainView extends View {
     HOME: "/",
     USERS: "/users",
     FRIENDS: "/friends",
+    DASHBOARD: "/dashboard",
     MYPAGE: "/mypage",
     TOURNAMENTS: "/tournaments",
     NOT_FOUND: "/not-found",

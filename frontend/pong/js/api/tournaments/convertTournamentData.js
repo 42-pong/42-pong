@@ -17,19 +17,20 @@ const convertRoundData = (round, tournamentId) => {
   const { round_number, status, created_at, updated_at, matches } =
     round;
 
+  const roundNumber = round_number;
   return {
     tournamentId,
-    roundNumber: round_number,
+    roundNumber,
     status: convertStatus(status),
     createdAt: created_at,
     updatedAt: updated_at,
     matches: matches.map((match) =>
-      convertMatchData(match, tournamentId),
+      convertMatchData(match, tournamentId, roundNumber),
     ),
   };
 };
 
-const convertMatchData = (match, tournamentId) => {
+const convertMatchData = (match, tournamentId, roundNumber) => {
   const {
     id,
     round_id,
@@ -43,6 +44,7 @@ const convertMatchData = (match, tournamentId) => {
     tournamentId,
     matchId: id,
     roundId: round_id,
+    roundNumber,
     status: convertStatus(status),
     createdAt: created_at,
     updatedAt: updated_at,

@@ -106,11 +106,13 @@ class LoginHandler:
             login_constants.CHANNEL_RESOURCE,
             self.channel_handler.channel_name,
         )
-        self.user_id = None
 
         # 接続数が1->0の時だけfollowerに通知する
         if connection_cnt == 0:
             await self._notify_followers(False)
+
+        # この後切断するだけだからNoneを入れる必要ないかも？
+        self.user_id = None
 
     async def _validate_user_id(self, input_user_id: int) -> None:
         """
@@ -154,7 +156,7 @@ class LoginHandler:
         # オンライン状態でフレンド登録している人をイテレーションで順に処理
         async for follower_id in (
             friend_models.Friendship.objects.filter(friend_id=self.user_id)
-            .values_list("id", flat=True)
+            .values_list("user_id", flat=True)
             .aiterator()
         ):
             # followerのうちがオンライン状態であるユーザーのchannel名の集合を取得

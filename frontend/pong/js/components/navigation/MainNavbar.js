@@ -10,6 +10,7 @@ export class MainNavbar extends Component {
     { name: "ホーム", path: Paths.HOME },
     { name: "ユーザー一覧", path: Paths.USERS },
     { name: "フレンド一覧", path: Paths.FRIENDS },
+    { name: "ダッシュボード", path: Paths.DASHBOARD },
     { name: "マイページ", path: Paths.MYPAGE },
   ]);
 

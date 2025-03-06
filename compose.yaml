@@ -12,6 +12,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend/pong/media:/usr/share/nginx/html/media
+      - ./backend/pong/staticfiles:/usr/share/nginx/html/static
     restart: always
     ports:
       - "${FRONT_SERVER_PORT}:443"
