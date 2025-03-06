@@ -7,7 +7,7 @@ from channels.layers import get_channel_layer  # type: ignore
 
 from matches import constants as match_db_constants
 from tournaments import constants as tournament_db_constants
-from ws.match import match_manager, manager_registry
+from ws.match import manager_registry, match_manager
 from ws.share import constants as ws_constants
 
 from ..match import async_db_service as match_service
@@ -274,7 +274,9 @@ class TournamentManager:
                 )
             )
             # 参加レコードを並列作成
-            participation_results = await asyncio.gather(*self.participation_tasks)
+            participation_results = await asyncio.gather(
+                *self.participation_tasks
+            )
             for result in participation_results:
                 if result.is_error:
                     logger.error(f"Error: {result.unwrap_error()}")
@@ -291,18 +293,17 @@ class TournamentManager:
             )
 
             # MatchManagerRegistryにMatchManagerを追加
-            await self.match_manager_registry.register_match_manager(match_id, manager)
-            # 試合をバックグラウンドで実行
-            self.match_manager_tasks.append(
-                asyncio.create_task(manager.run())
+            await self.match_manager_registry.register_match_manager(
+                match_id, manager
             )
+            # 試合をバックグラウンドで実行
+            self.match_manager_tasks.append(asyncio.create_task(manager.run()))
 
             # 試合開始を 各consumer に通知
             await self._send_assign_match_message(match_id, player1)
             await self._send_assign_match_message(match_id, player2)
 
             self.valid_matches.append((match_id, manager, player1, player2))
-
 
         # バックグラウンドタスクの結果を収集
         match_results = await asyncio.gather(*self.match_manager_tasks)

@@ -115,7 +115,9 @@ class MatchManager:
                 if player.channel_name == self.player1.channel_name
                 else match_constants.Team.TWO.value
             )
-            await self.channel_handler.add_to_group(self.group_name, player.channel_name)
+            await self.channel_handler.add_to_group(
+                self.group_name, player.channel_name
+            )
 
         message = self._build_message(
             match_constants.Stage.INIT.value,
