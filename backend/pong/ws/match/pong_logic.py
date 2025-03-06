@@ -202,7 +202,10 @@ class PongLogic:
         """
         ボールを開始位置に動かす関数
         """
-        self.ball_pos = PosStruct(self.WIDTH // 2, self.HEIGHT // 2)
+        self.ball_pos = PosStruct(
+            x=self.WIDTH // 2 - self.BALL_SIZE // 2,
+            y=self.HEIGHT // 2 - self.BALL_SIZE // 2,
+        )
 
         # ボールをランダムな4方向に動き出させる
         self.ball_speed.x = self.BALL_SPEED * random.choice([-1, 1])
