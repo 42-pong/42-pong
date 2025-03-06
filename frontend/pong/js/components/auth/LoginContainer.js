@@ -97,7 +97,7 @@ export class LoginContainer extends Component {
           }),
         });
 
-        const { status, data, code } = await response.json();
+        const { status, data: tokens, code } = await response.json();
 
         if (status !== "ok") {
           this.#form.reset();
@@ -109,7 +109,7 @@ export class LoginContainer extends Component {
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
 
         const isVerified =
-          await UserSessionManager.getInstance().signIn(data);
+          await UserSessionManager.getInstance().signIn(tokens);
         if (isVerified)
           UserSessionManager.getInstance().redirect(Paths.HOME);
       } catch (error) {

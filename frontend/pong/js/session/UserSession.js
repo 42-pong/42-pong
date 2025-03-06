@@ -88,9 +88,7 @@ export class UserSession {
   async signOut() {
     this.#clearTokens();
     const isValid = await this.#reset();
-    if (isValid) {
-      this.updateWindowPath();
-    }
+    if (isValid) this.updateWindowPath();
     return isValid;
   }
 
