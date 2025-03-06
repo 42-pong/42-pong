@@ -4,12 +4,14 @@ import { AuthView } from "../../core/AuthView";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { extractMatches } from "../../utils/match/extractMatches";
 import { DashboardContainer } from "../dashboard/DashboardContainer";
+import { ErrorView } from "./ErrorView";
 import { LoadingView } from "./LoadingView";
 
 export class DashboardView extends AuthView {
   constructor(state = {}) {
     super({
       isLoading: true,
+      isError: false,
       userId: null,
       tournaments: [],
       matches: [],
@@ -27,7 +29,13 @@ export class DashboardView extends AuthView {
       ({ id }) => id,
     );
     getTournaments(userId).then(({ tournaments, error }) => {
-      if (error) return;
+      if (error) {
+        this._updateState({
+          isLoading: false,
+          isError: true,
+        });
+        return;
+      }
       this._updateState({
         isLoading: false,
         tournaments,
@@ -38,10 +46,14 @@ export class DashboardView extends AuthView {
   }
 
   _render() {
-    const { isLoading, userId, tournaments, matches } =
+    const { isLoading, isError, userId, tournaments, matches } =
       this._getState();
     if (isLoading) {
       this.append(new LoadingView());
+      return;
+    }
+    if (isError) {
+      this.append(new ErrorView());
       return;
     }
 
