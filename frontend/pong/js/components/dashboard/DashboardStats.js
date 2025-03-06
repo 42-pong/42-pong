@@ -43,7 +43,7 @@ export class DashboardStats extends Component {
     );
     BootstrapSpacing.setMargin(winRate, 2);
 
-    const wonTournaments = getWonTournaments(tournaments, userId);
+    const wonTournaments = getWonTournaments(matches, userId);
     const wonTournamentsIndex = createTextElement(
       `トーナメント優勝: ${wonTournaments.length} / ${tournaments.length}`,
       4,
