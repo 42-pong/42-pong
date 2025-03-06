@@ -96,14 +96,15 @@ export class LoginContainer extends Component {
             password: password,
           }),
         });
-        const { status, data: tokens } = await response.json();
+
+        const { status, data: tokens, code } = await response.json();
 
         if (status !== "ok") {
           this.#form.reset();
           this.#loginError.textContent =
             FrontendMessage.Auth[MessageEnums.AuthCode.LOGIN_ERROR];
           this.#loginError.style.display = "block"; //エラーメッセージを表示する
-          throw new Error(response.code);
+          throw new Error(code);
         }
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
 

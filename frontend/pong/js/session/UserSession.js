@@ -12,9 +12,7 @@ export class UserSession {
   #status;
   #webSocket;
 
-  // TODO: manage tokens
   #accessToken;
-  #refreshToken;
 
   constructor() {
     this.#apps = {};
@@ -62,7 +60,6 @@ export class UserSession {
   async #init() {
     const { appGlobal } = this.#apps;
     clearGlobalFeatures(appGlobal);
-    this.#initTokens();
     this.#myInfo.init({ isSignedIn: false });
     this.#status.init();
     this.#webSocket.close();
@@ -89,6 +86,7 @@ export class UserSession {
   }
 
   async signOut() {
+    this.#clearTokens();
     const isValid = await this.#reset();
     if (isValid) this.updateWindowPath();
     return isValid;
@@ -126,13 +124,12 @@ export class UserSession {
     return this.#webSocket;
   }
 
-  // TODO: manage tokens
   getAccessToken() {
     return this.#accessToken;
   }
 
   getRefreshToken() {
-    return this.#refreshToken;
+    return sessionStorage.getItem("pong-refresh-token");
   }
 
   setAccessToken(access) {
@@ -140,12 +137,12 @@ export class UserSession {
   }
 
   setRefreshToken(refresh) {
-    this.#refreshToken = refresh;
+    sessionStorage.setItem("pong-refresh-token", refresh);
   }
 
-  #initTokens() {
+  #clearTokens() {
     this.#accessToken = "";
-    this.#refreshToken = "";
+    sessionStorage.removeItem("pong-refresh-token");
   }
 }
 
