@@ -14,8 +14,12 @@ from tournaments.participation.models import (
 )
 from tournaments.round.models import Round
 from tournaments.tournament.models import Tournament
+from ws.match import pong_logic
 
 COMPLETED: Final[str] = constants.MatchFields.StatusEnum.COMPLETED.value
+
+HEIGHT: Final[int] = pong_logic.PongLogic.HEIGHT
+WIDTH: Final[int] = pong_logic.PongLogic.WIDTH
 
 
 class Command(BaseCommand):
@@ -151,10 +155,14 @@ class Command(BaseCommand):
         scores: dict = {participation: 0 for participation in participations}
         while max(scores.values()) < 5:
             participation = random.choice(participations)
+            if participation.team == "1":
+                goal_pos_x = WIDTH
+            else:
+                goal_pos_x = 0
             Score.objects.create(
                 match_participation=participation,
-                pos_x=random.randint(0, 800),
-                pos_y=random.randint(0, 600),
+                pos_x=goal_pos_x,
+                pos_y=random.randint(0, HEIGHT),
             )
             scores[participation] += 1
 
