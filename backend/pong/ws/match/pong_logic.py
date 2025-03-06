@@ -133,6 +133,11 @@ class PongLogic:
             and ball_top <= paddle1_posbottom
         ):  # ボールの上下がパドルの範囲内
             self.ball_speed.x = -self.ball_speed.x
+            # パドルのどの部分に当たったかによって反射角度を調整
+            hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
+                self.paddle1_pos.y + self.PADDLE_HEIGHT // 2
+            )
+            self.ball_speed.y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
 
         # パドル2（右側プレイヤー）との衝突判定
         paddle2_posleft = self.paddle2_pos.x
@@ -148,6 +153,11 @@ class PongLogic:
             and ball_top <= paddle2_posbottom
         ):  # ボールの上下がパドルの範囲内
             self.ball_speed.x = -self.ball_speed.x
+            # パドルのどの部分に当たったかによって反射角度を調整
+            hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
+                self.paddle2_pos.y + self.PADDLE_HEIGHT // 2
+            )
+            self.ball_speed.y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
 
     async def check_score(self) -> Optional[str]:
         """
