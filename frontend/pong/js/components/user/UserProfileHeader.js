@@ -51,7 +51,7 @@ export class UserProfileHeader extends Component {
       return;
     }
 
-    const nameplate = createNameplate(user, "4vh");
+    const nameplate = createNameplate(user, "max(30px,4vh)");
     const signOutButton = new SignOutButton();
     BootstrapSpacing.setMarginLeft(signOutButton, 3);
 

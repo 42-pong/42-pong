@@ -19,7 +19,7 @@ export class UserListItem extends Component {
 
   _render() {
     const { item: user } = this._getState();
-    const nameplate = createNameplate(user, "4vh");
+    const nameplate = createNameplate(user, "max(30px,4vh)");
     this.append(nameplate);
   }
 }

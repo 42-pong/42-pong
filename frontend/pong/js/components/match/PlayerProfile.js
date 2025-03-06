@@ -6,7 +6,7 @@ import { ParticipationProfile } from "../tournament/ParticipationProfile";
 import { createScore } from "./createScore";
 
 export class PlayerProfile extends Component {
-  static #DEFAULT_HEIGHT = "max(15px, 3vh)";
+  static #DEFAULT_HEIGHT = "max(25px, 3vh)";
 
   _onConnect() {
     const { player } = this._getState();

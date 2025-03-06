@@ -4,7 +4,7 @@ import { Component } from "../../core/Component";
 import { createNameplate } from "../../utils/elements/div/createNameplate";
 
 export class ParticipationProfile extends Component {
-  static #DEFAULT_HEIGHT = "max(20px, 5vh)";
+  static #DEFAULT_HEIGHT = "max(40px, 5vh)";
 
   constructor(state) {
     super({ participation: null, user: null, ...state });
