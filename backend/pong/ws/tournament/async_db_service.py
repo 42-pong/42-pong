@@ -207,7 +207,7 @@ def update_tournament_status(
     try:
         # 他の操作が間に入り込むこともありそうなのでトランザクションで一応かこっている。
         with transaction.atomic():
-            tournament = tournament_models.Tournament.objects.aget(id=id)
+            tournament = tournament_models.Tournament.objects.get(id=id)
             data = {
                 constants.TournamentFields.STATUS: new_status,
             }
