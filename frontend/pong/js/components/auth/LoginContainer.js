@@ -76,8 +76,9 @@ export class LoginContainer extends Component {
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
     submitButton.textContent = "サインイン";
-    BootstrapButtons.setOutlinePrimary(submitButton);
+    BootstrapButtons.setPrimary(submitButton);
     BootstrapSpacing.setMargin(submitButton);
+    BootstrapSizing.setWidth25(submitButton);
 
     // ゲストボタン作成
     const guestButton = new LinkButton({
@@ -86,14 +87,18 @@ export class LoginContainer extends Component {
     });
     guestButton.setSecondary();
     BootstrapSpacing.setMargin(guestButton);
+    BootstrapSizing.setWidth25(guestButton);
 
     // 42 OAuth2.0ボタン作成
     const oauthButton = new OauthButton();
     BootstrapSpacing.setMargin(oauthButton);
+    BootstrapSizing.setWidth25(oauthButton);
 
     // サインアップボタン作成
     const signupButton = new SignUpButton();
+    signupButton.setOutlinePrimary();
     BootstrapSpacing.setMargin(signupButton);
+    BootstrapSizing.setWidth25(signupButton);
 
     form.append(
       this.#loginError,

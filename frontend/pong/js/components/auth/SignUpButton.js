@@ -10,10 +10,6 @@ export class SignUpButton extends StyledButton {
     );
   }
 
-  _setStyle() {
-    this.setPrimary();
-  }
-
   _onConnect() {
     this._attachEventListener("click", (event) => {
       event.preventDefault();
