@@ -197,6 +197,11 @@ class MatchManager:
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
             if delta >= self.FPS:
+                # Pongを更新する前のボールの位置を保存
+                pos_x, pos_y = (
+                    self.pong_logic.ball_pos.x,
+                    self.pong_logic.ball_pos.y,
+                )
                 # Pongを更新
                 score_team: Optional[
                     str
@@ -236,10 +241,6 @@ class MatchManager:
                         self.player1.user_id
                         if score_team == match_constants.Team.ONE.value
                         else self.player2.user_id
-                    )
-                    pos_x, pos_y = (
-                        self.pong_logic.ball_pos.x,
-                        self.pong_logic.ball_pos.y,
                     )
                     asyncio.create_task(
                         match_service.create_score(
