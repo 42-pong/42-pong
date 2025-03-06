@@ -1,3 +1,8 @@
+import { BootstrapButtons } from "../../bootstrap/components/buttons";
+import { BootstrapDisplay } from "../../bootstrap/utilities/display";
+import { BootstrapFlex } from "../../bootstrap/utilities/flex";
+import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
+import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { AuthConstants } from "../../constants/AuthConstants";
 import { Endpoints } from "../../constants/Endpoints";
 import { Paths } from "../../constants/Paths";
@@ -5,23 +10,35 @@ import { PongEvents } from "../../constants/PongEvents";
 import { ApiMessage } from "../../constants/message/ApiMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
+import { setClassNames } from "../../utils/elements/setClassNames";
+import { createTextElement } from "../../utils/elements/span/createTextElement";
 
 export class SignUpContainer extends Component {
-  #container;
   #title;
   #form;
   #loginError;
   #mailError;
   #passwordError;
 
-  _onConnect() {
-    //コンテナ要素を作成
-    const container = document.createElement("div");
-    container.className = "form-container";
+  _setStyle() {
+    BootstrapDisplay.setFlex(this);
+    BootstrapFlex.setFlexColumn(this);
+    BootstrapFlex.setJustifyContentAround(this);
+    BootstrapFlex.setAlignItemsCenter(this);
+    BootstrapSpacing.setPadding(this);
 
+    BootstrapDisplay.setFlex(this.#form);
+    BootstrapFlex.setFlexColumn(this.#form);
+    BootstrapFlex.setJustifyContentAround(this.#form);
+    BootstrapFlex.setAlignItemsCenter(this.#form);
+    BootstrapSizing.setWidth100(this.#form);
+    BootstrapSizing.setHeight75(this.#form);
+    BootstrapSpacing.setPadding(this.#form);
+  }
+
+  _onConnect() {
     //タイトル要素を作成
-    const title = document.createElement("h1");
-    title.textContent = "Sign Up";
+    const title = createTextElement("Sign Up", 1);
 
     //フォーム要素を作成
     const form = document.createElement("form");
@@ -40,6 +57,9 @@ export class SignUpContainer extends Component {
     emailInput.placeholder = "E-mail";
     emailInput.required = true;
     emailInput.pattern = `${AuthConstants.EMAIL_PATTERN}`;
+    setClassNames(emailInput, "form-control");
+    BootstrapSizing.setWidth50(emailInput);
+    BootstrapSpacing.setMargin(emailInput);
 
     //メールのエラー文字
     this.#mailError = document.createElement("div");
@@ -53,6 +73,9 @@ export class SignUpContainer extends Component {
     passwordInput.name = "password";
     passwordInput.placeholder = "Password";
     passwordInput.required = true;
+    setClassNames(passwordInput, "form-control");
+    BootstrapSizing.setWidth50(passwordInput);
+    BootstrapSpacing.setMargin(passwordInput);
 
     //パスワードのエラー文字
     this.#passwordError = document.createElement("div");
@@ -64,6 +87,7 @@ export class SignUpContainer extends Component {
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
     submitButton.textContent = "サインアップ";
+    BootstrapButtons.setPrimary(submitButton);
 
     form.append(
       this.#loginError,
@@ -74,7 +98,6 @@ export class SignUpContainer extends Component {
       submitButton,
     );
 
-    this.#container = container;
     this.#title = title;
     this.#form = form;
 
@@ -128,10 +151,7 @@ export class SignUpContainer extends Component {
   }
 
   _render() {
-    // コンテナにタイトルとフォームを追加
-    this.#container.append(this.#title, this.#form);
-    // コンテナをカスタム要素に追加
-    this.appendChild(this.#container);
+    this.append(this.#title, this.#form);
   }
 
   #handleStatusError(code) {

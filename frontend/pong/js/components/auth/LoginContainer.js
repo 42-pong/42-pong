@@ -1,26 +1,43 @@
+import { BootstrapButtons } from "../../bootstrap/components/buttons";
+import { BootstrapDisplay } from "../../bootstrap/utilities/display";
+import { BootstrapFlex } from "../../bootstrap/utilities/flex";
+import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
+import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Endpoints } from "../../constants/Endpoints";
 import { Paths } from "../../constants/Paths";
 import { FrontendMessage } from "../../constants/message/FrontendMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
+import { setClassNames } from "../../utils/elements/setClassNames";
+import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { LinkButton } from "../utils/LinkButton";
 import { SignUpButton } from "./SignUpButton";
 
 export class LoginContainer extends Component {
-  #container;
   #title;
   #form;
   #loginError;
 
-  _onConnect() {
-    //コンテナ要素を作成
-    const container = document.createElement("div");
-    container.className = "form-container";
+  _setStyle() {
+    BootstrapDisplay.setFlex(this);
+    BootstrapFlex.setFlexColumn(this);
+    BootstrapFlex.setJustifyContentAround(this);
+    BootstrapFlex.setAlignItemsCenter(this);
+    BootstrapSpacing.setPadding(this);
 
+    BootstrapDisplay.setFlex(this.#form);
+    BootstrapFlex.setFlexColumn(this.#form);
+    BootstrapFlex.setJustifyContentAround(this.#form);
+    BootstrapFlex.setAlignItemsCenter(this.#form);
+    BootstrapSizing.setWidth100(this.#form);
+    BootstrapSizing.setHeight75(this.#form);
+    BootstrapSpacing.setPadding(this.#form);
+  }
+
+  _onConnect() {
     //タイトル要素を作成
-    const title = document.createElement("h1");
-    title.textContent = "Pong";
+    const title = createTextElement("Pong", 1);
 
     //フォーム要素を作成
     const form = document.createElement("form");
@@ -38,6 +55,9 @@ export class LoginContainer extends Component {
     emailInput.name = "email";
     emailInput.placeholder = "E-mail";
     emailInput.required = true;
+    setClassNames(emailInput, "form-control");
+    BootstrapSizing.setWidth50(emailInput);
+    BootstrapSpacing.setMargin(emailInput);
 
     // パスワード入力フィールドを作成
     const passwordInput = document.createElement("input");
@@ -45,37 +65,46 @@ export class LoginContainer extends Component {
     passwordInput.name = "password";
     passwordInput.placeholder = "Password";
     passwordInput.required = true;
+    setClassNames(passwordInput, "form-control");
+    BootstrapSizing.setWidth50(passwordInput);
+    BootstrapSpacing.setMargin(passwordInput);
 
     // サインインボタンを作成
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
     submitButton.textContent = "サインイン";
+    BootstrapButtons.setOutlinePrimary(submitButton);
+    BootstrapSpacing.setMargin(submitButton);
 
     // ゲストボタン作成
     const guestButton = new LinkButton({
       textContent: "ゲストとして",
       pathname: Paths.HOME,
     });
+    guestButton.setSecondary();
+    BootstrapSpacing.setMargin(guestButton);
 
     // 42 OAuth2.0ボタン作成
     const oauth2Button = document.createElement("button");
     oauth2Button.type = "button";
     oauth2Button.textContent = "42 OAuth 2.0";
+    BootstrapButtons.setSecondary(oauth2Button);
+    BootstrapSpacing.setMargin(oauth2Button);
 
     // サインアップボタン作成
     const signupButton = new SignUpButton();
+    BootstrapSpacing.setMargin(signupButton);
 
     form.append(
       this.#loginError,
       emailInput,
       passwordInput,
       submitButton,
-      guestButton,
-      oauth2Button,
       signupButton,
+      oauth2Button,
+      guestButton,
     );
 
-    this.#container = container;
     this.#title = title;
     this.#form = form;
 
@@ -119,10 +148,7 @@ export class LoginContainer extends Component {
   }
 
   _render() {
-    // コンテナにタイトルとフォームを追加
-    this.#container.append(this.#title, this.#form);
-    // コンテナをカスタム要素に追加
-    this.appendChild(this.#container);
+    this.append(this.#title, this.#form);
 
     //todo
     //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
