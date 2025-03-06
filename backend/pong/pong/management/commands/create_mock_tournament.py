@@ -136,11 +136,11 @@ class Command(BaseCommand):
         self, match: Match, players: list[Player]
     ) -> list[MatchParticipation]:
         match_participations: list[MatchParticipation] = []
-        for player in players:
+        for team_number, player in enumerate(players, start=1):
             participation = MatchParticipation.objects.create(
                 match=match,
                 player=player,
-                team="1",
+                team=str(team_number),
             )
             match_participations.append(participation)
         return match_participations
