@@ -171,35 +171,31 @@ class PongLogic:
         """
         引数で受け取ったチームのパドルを上に動かす関数
         """
+
+        def _move_paddle_up(paddle_pos: PosStruct) -> None:
+            next_paddle_pos_y: int = paddle_pos.y - self.PADDLE_SPEED
+            paddle_pos.y = max(0, next_paddle_pos_y)
+
         if team == constants.Team.ONE.value:
-            y = self.paddle1_pos.y
-            if y > 0:
-                self.paddle1_pos = PosStruct(
-                    self.paddle1_pos.x, y - self.PADDLE_SPEED
-                )
+            _move_paddle_up(self.paddle1_pos)
         elif team == constants.Team.TWO.value:
-            y = self.paddle2_pos.y
-            if y > 0:
-                self.paddle2_pos = PosStruct(
-                    self.paddle2_pos.x, y - self.PADDLE_SPEED
-                )
+            _move_paddle_up(self.paddle2_pos)
 
     async def move_paddle_down(self, team: str) -> None:
         """
         引数で受け取ったチームのパドルを下に動かす関数
         """
+
+        def _move_paddle_down(paddle_pos: PosStruct) -> None:
+            max_paddle_posbottom: int = self.HEIGHT - self.PADDLE_HEIGHT
+
+            next_paddle_pos_y: int = paddle_pos.y + self.PADDLE_SPEED
+            paddle_pos.y = min(max_paddle_posbottom, next_paddle_pos_y)
+
         if team == constants.Team.ONE.value:
-            y = self.paddle1_pos.y
-            if y < self.HEIGHT - self.PADDLE_HEIGHT:
-                self.paddle1_pos = PosStruct(
-                    self.paddle1_pos.x, y + self.PADDLE_SPEED
-                )
+            _move_paddle_down(self.paddle1_pos)
         elif team == constants.Team.TWO.value:
-            y = self.paddle2_pos.y
-            if y < self.HEIGHT - self.PADDLE_HEIGHT:
-                self.paddle2_pos = PosStruct(
-                    self.paddle2_pos.x, y + self.PADDLE_SPEED
-                )
+            _move_paddle_down(self.paddle2_pos)
 
     async def reset_ball(self) -> None:
         """
