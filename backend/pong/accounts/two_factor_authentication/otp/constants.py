@@ -1,6 +1,8 @@
 import dataclasses
 from typing import Final
 
+from pong.custom_response import custom_response
+
 
 @dataclasses.dataclass(frozen=True)
 class OptFields:
@@ -13,3 +15,9 @@ class OptFields:
 
 OPT_CODE_LENGTH: Final[int] = 6
 EXPIRED_MINUTES: Final[int] = 5
+
+
+@dataclasses.dataclass(frozen=True)
+class Code:
+    INVALID: Final[str] = "invalid"
+    INTERNAL_ERROR: Final[str] = custom_response.Code.INTERNAL_ERROR
