@@ -29,11 +29,11 @@ export class WebSocketWrapper {
       this.#handlers[category] = new Set();
 
     this.attachHandler(WebSocketEnums.Category.LOGIN, (payload) => {
-      const { status, online_status_ids } = payload;
+      const { status, online_friend_ids } = payload;
       if (status !== "OK") return;
       const newData = {};
-      for (const online_status_id of online_status_ids) {
-        newData[online_status_id] = { isOnline: true };
+      for (const online_friend_id of online_friend_ids) {
+        newData[online_friend_id] = { isOnline: true };
       }
       this.#status.updateData(newData);
     });
