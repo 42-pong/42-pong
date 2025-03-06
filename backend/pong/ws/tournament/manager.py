@@ -189,7 +189,8 @@ class TournamentManager:
             raise Exception(create_result.unwrap_error())
         # TODO: ラウンド開始をアナウンス
 
-        round_id = create_result.value[tournament_db_constants.RoundFields.ID]
+        value = create_result.unwrap()
+        round_id = value[tournament_db_constants.RoundFields.ID]
 
         # ラウンドの1対1マッチに振り分ける
         matchups = self._pair_participants(participants)
@@ -249,7 +250,8 @@ class TournamentManager:
             if create_result.is_error:
                 raise Exception(create_result.unwrap_error())
 
-            match_id = create_result.value[match_db_constants.MatchFields.ID]
+            value = create_result.unwrap()
+            match_id = value[match_db_constants.MatchFields.ID]
 
             # 参加レコード作成
             self.participation_tasks.append(
