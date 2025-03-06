@@ -49,6 +49,7 @@ import { UserProfileContainer } from "./user/UserProfileContainer";
 import { UserProfileHeader } from "./user/UserProfileHeader";
 import { ErrorContainer } from "./utils/ErrorContainer";
 import { EventDispatchingButton } from "./utils/EventDispatchingButton";
+import { LangSelector } from "./utils/LangSelector";
 import { LinkButton } from "./utils/LinkButton";
 import { ListContainer } from "./utils/ListContainer";
 import { ObservableInput } from "./utils/ObservableInput";
@@ -160,6 +161,7 @@ customElements.define(
   EventDispatchingButton,
   {},
 );
+customElements.define("lang-selector", LangSelector, {});
 customElements.define("link-button", LinkButton, {});
 customElements.define("list-container", ListContainer, {});
 customElements.define("observable-input", ObservableInput, {});
