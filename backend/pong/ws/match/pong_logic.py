@@ -1,3 +1,4 @@
+import random
 from dataclasses import dataclass
 from typing import Final, Optional
 
@@ -202,9 +203,10 @@ class PongLogic:
         ボールを開始位置に動かす関数
         """
         self.ball_pos = PosStruct(self.WIDTH // 2, self.HEIGHT // 2)
-        # TODO: ボールの動き出す方向変えてもいいかも
-        self.ball_speed.x = self.BALL_SPEED
-        self.ball_speed.y = self.BALL_SPEED
+
+        # ボールをランダムな4方向に動き出させる
+        self.ball_speed.x = self.BALL_SPEED * random.choice([-1, 1])
+        self.ball_speed.y = self.BALL_SPEED * random.choice([-1, 1])
 
     async def game_end(self) -> bool:
         """
