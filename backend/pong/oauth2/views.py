@@ -5,7 +5,6 @@ from urllib.parse import urlencode
 
 import requests
 from django.urls import reverse
-from django.utils.crypto import get_random_string
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
@@ -20,7 +19,6 @@ from rest_framework.views import APIView
 
 from jwt.views import token
 from pong import settings
-from pong.custom_response import custom_response
 
 from . import create_oauth2_account, models
 from .providers import forty_two_authorization
@@ -38,7 +36,7 @@ class OAuth2BaseView(APIView):
 
     @property
     def redirect_uri(self) -> str:
-        return settings.BACKEND_ORIGIN + reverse("oauth2:callback")
+        return settings.PONG_ORIGIN + reverse("oauth2:callback")
 
 
 class OAuth2AuthorizeView(OAuth2BaseView):
@@ -152,16 +150,18 @@ class OAuth2CallbackView(OAuth2BaseView):
         この関数は認可エンドポイント(`/api/oauth2/authorize`)のレスポンスを受け取り、認可コードを取得するために使用する。
         そのため、このエンドポイントはFEから呼ばれることはありません。
         """
+        redirect_uri: str = f"{settings.PONG_ORIGIN}/oauth2/"
 
         code = request.GET.get("code")
         if code is None:
+            error_query_string = "error=fail"
             error_message = "Authorization code is None. Please check your authentication process."
             logger.error(f"401 AuthenticationFailedError: {error_message}")
-            return custom_response.CustomResponse(
-                code=["fail"],
-                errors={"detail": error_message},
-                status=status.HTTP_401_UNAUTHORIZED,
+            return Response(
+                status=status.HTTP_302_FOUND,
+                headers={"Location": redirect_uri + "?" + error_query_string},
             )
+
         # ===== todo: def authenticate_user(code: str) -> dict:作成 ======
         # 成功: user_infoを返す
         # 失敗: 例外 AuthenticationFailedError, InternalServerError
@@ -179,13 +179,13 @@ class OAuth2CallbackView(OAuth2BaseView):
         )
         tokens = token_response.json()
         if token_response.status_code != status.HTTP_200_OK:
+            error_query_string = "error=fail"
             logger.error(
                 f"401 AuthenticationFailedError: {tokens["error_description"]}"
             )
-            return custom_response.CustomResponse(
-                code=["fail"],
-                errors={"detail": tokens["error_description"]},
-                status=status.HTTP_401_UNAUTHORIZED,
+            return Response(
+                status=status.HTTP_302_FOUND,
+                headers={"Location": redirect_uri + "?" + error_query_string},
             )
         user_response = requests.get(
             "https://api.intra.42.fr/v2/me",
@@ -196,75 +196,92 @@ class OAuth2CallbackView(OAuth2BaseView):
             logger.error(
                 f"401 AuthenticationFailedError: {user_info["error_description"]}"
             )
-            return custom_response.CustomResponse(
-                code=["fail"],
-                errors={"detail": user_info["error_description"]},
-                status=status.HTTP_401_UNAUTHORIZED,
+            error_query_string = "error=fail"
+            return Response(
+                status=status.HTTP_302_FOUND,
+                headers={"Location": redirect_uri + "?" + error_query_string},
             )
         # =============================================================
 
-        random_password: str = get_random_string(length=12)
-        # ====== todo: OAuth2の登録（リファクタリング）======
-        # 成功: oauth2_userを返す
-        # 失敗: 例外, InternalServerError
-        oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = (
-            create_oauth2_account.create_oauth2_user(
-                user_info["email"], random_password, user_info["login"]
+        password_42: str = "42" + user_info["login"]
+        if not models.User.objects.filter(email=user_info["email"]).exists():
+            # ====== todo: OAuth2の登録（リファクタリング）======
+            # 成功: oauth2_userを返す
+            # 失敗: 例外, InternalServerError
+            oauth2_user_result: create_oauth2_account.CreateOAuth2UserResult = create_oauth2_account.create_oauth2_user(
+                user_info["email"], password_42, user_info["login"]
             )
-        )
-        # todo: internal_errorのエラーハンドリングを追加する
-        if not oauth2_user_result.is_ok:
-            return custom_response.CustomResponse(
-                code=["internal_error"],
-                errors={"detail": oauth2_user_result.unwrap_error()},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-        oauth2_user: dict = oauth2_user_result.unwrap()
-        forty_two_token_data = {
-            "access_token": tokens.get("access_token"),
-            "token_type": tokens.get("token_type"),
-            "access_token_expiry": datetime.now()
-            + timedelta(seconds=tokens.get("expires_in")),
-            "refresh_token": tokens.get("refresh_token"),
-            "refresh_token_expiry": datetime.fromtimestamp(
-                tokens.get("secret_valid_until")
-            ),
-            "scope": tokens.get("scope"),
-        }
-        oauth2_result: forty_two_authorization.CreateFortyTwoAuthorizationResult = forty_two_authorization.create_forty_two_authorization(
-            oauth2_user["id"], "42", user_info["id"], forty_two_token_data
-        )
-        # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
-        if not oauth2_result.is_ok:
-            models.User.objects.get(id=oauth2_user["id"]).delete()
-            return custom_response.CustomResponse(
-                code=["internal_error"],
-                errors={"detail": oauth2_user_result.unwrap_error()},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-        # ==================================================================
+            # todo: internal_errorのエラーハンドリングを追加する
+            if not oauth2_user_result.is_ok:
+                error_query_string = "error=internal_error"
+                logger.error(
+                    f"500 InternalServerError: {oauth2_user_result.unwrap_error()}"
+                )
+                return Response(
+                    status=status.HTTP_302_FOUND,
+                    headers={
+                        "Location": redirect_uri + "?" + error_query_string
+                    },
+                )
 
+            user_info = oauth2_user_result.unwrap()
+            forty_two_token_data = {
+                "access_token": tokens.get("access_token"),
+                "token_type": tokens.get("token_type"),
+                "access_token_expiry": datetime.now()
+                + timedelta(seconds=tokens.get("expires_in")),
+                "refresh_token": tokens.get("refresh_token"),
+                "refresh_token_expiry": datetime.fromtimestamp(
+                    tokens.get("secret_valid_until")
+                ),
+                "scope": tokens.get("scope"),
+            }
+            oauth2_result: forty_two_authorization.CreateFortyTwoAuthorizationResult = forty_two_authorization.create_forty_two_authorization(
+                user_info["id"], "42", user_info["id"], forty_two_token_data
+            )
+            # 42認証のテーブルが失敗した場合は、Userテーブルを削除する
+            if not oauth2_result.is_ok:
+                models.User.objects.get(id=user_info["id"]).delete()
+                error_query_string = "error=internal_error"
+                logger.error(
+                    f"500 InternalServerError: {oauth2_user_result.unwrap_error()}"
+                )
+                return Response(
+                    status=status.HTTP_302_FOUND,
+                    headers={
+                        "Location": redirect_uri + "?" + error_query_string
+                    },
+                )
+            # ==================================================================
+
+        oauth2_user = models.User.objects.get(email=user_info["email"])
         factory = APIRequestFactory()
         request = factory.post(
             reverse("jwt:token_obtain_pair"),
             {
-                "email": oauth2_user["email"],
-                "password": random_password,
+                "email": oauth2_user.email,
+                "password": password_42,
             },
             format="json",
         )
         response = token.TokenObtainView.as_view()(request)
         if response.status_code != status.HTTP_200_OK:
-            models.User.objects.get(id=oauth2_user["id"]).delete()
+            oauth2_user.delete()
+            error_query_string = "error=fail"
             logger.error(
                 f"{response.status_code} TokenObtainFailedError: {response.data}"
             )
-            return custom_response.CustomResponse(
-                code=response.data["code"],
-                errors=response.data["errors"],
-                status=response.status_code,
+            return Response(
+                status=status.HTTP_302_FOUND,
+                headers={"Location": redirect_uri + "?" + error_query_string},
             )
-        return custom_response.CustomResponse(
-            data=response.data["data"],
-            status=response.status_code,
+        # todo: クエリパラメータ以外の一般的なデータの渡し方を調査（余裕あれば）
+        query_params: dict[str, str] = {
+            "access": response.data["data"]["access"],
+            "refresh": response.data["data"]["refresh"],
+        }
+        query_string = urlencode(query_params)
+        return Response(
+            status=status.HTTP_302_FOUND,
+            headers={"Location": redirect_uri + "?" + query_string},
         )
