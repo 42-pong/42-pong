@@ -111,9 +111,10 @@ class MatchManager:
         if is_remote:
             team = (
                 match_constants.Team.ONE.value
-                if player == self.player1
+                if player.channel_name == self.player1.channel_name
                 else match_constants.Team.TWO.value
             )
+            await self.channel_handler.add_to_group(self.group_name, player.channel_name)
 
         message = self._build_message(
             match_constants.Stage.INIT.value,
@@ -161,9 +162,7 @@ class MatchManager:
 
         # 全員からREADYメッセージが届いたらイベントをセットしてゲームを開始する。
         if self.ready_players == self.waiting_player_num:
-            await self.channel_handler.send_to_consumer(
-                message, player.channel_name
-            )
+            await self._send_message(message)
             self.waiting_player_ready.set()
 
     async def _start_game(self) -> None:
