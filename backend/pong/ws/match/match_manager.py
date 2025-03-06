@@ -90,9 +90,10 @@ class MatchManager:
         await self._end_game()
 
         # 勝者チームのデータを返り値として返す。
+        win_team = await self.pong_logic.get_winner()
         return (
             self.player1
-            if self.pong_logic.get_winner == match_constants.Team.ONE.value
+            if win_team == match_constants.Team.ONE.value
             else self.player2
         )
 

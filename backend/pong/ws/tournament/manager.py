@@ -314,7 +314,7 @@ class TournamentManager:
                 continue
 
             # 試合結果を保持
-            if match_winner == player1:
+            if match_winner.channel_name == player1.channel_name:
                 winner = player1
                 loser = player2
             else:
