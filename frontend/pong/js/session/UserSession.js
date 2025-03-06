@@ -18,11 +18,11 @@ export class UserSession {
     this.#apps = {};
     this.#myInfo = new DataSubject();
     this.#status = new DataSubject();
-    const signOut = this.signOut.bind(this);
+    const onError = this.onError.bind(this);
     this.#webSocket = new WebSocketWrapper({
       status: this.#status,
-      onClose: signOut,
-      onError: signOut,
+      onClose: onError,
+      onError: onError,
     });
   }
 
@@ -90,6 +90,11 @@ export class UserSession {
     const isValid = await this.#reset();
     if (isValid) this.updateWindowPath();
     return isValid;
+  }
+
+  async onError() {
+    const { displayMainError } = this.#apps;
+    displayMainError();
   }
 
   async verifyAuth() {

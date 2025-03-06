@@ -6,6 +6,7 @@ import { UserSessionManager } from "../../session/UserSessionManager";
 import { createNameplate } from "../../utils/elements/div/createNameplate";
 import { SignInButton } from "../auth/SignInButton";
 import { SignOutButton } from "../auth/SignOutButton";
+import { SignUpButton } from "../auth/SignUpButton";
 
 export class UserProfileHeader extends Component {
   #userDataObserver;
@@ -41,11 +42,16 @@ export class UserProfileHeader extends Component {
   _render() {
     const { user } = this._getState();
     if (!user) {
-      this.append(new SignInButton());
+      const signIn = new SignInButton();
+      signIn.setSmall();
+      const signUp = new SignUpButton();
+      signUp.setSmall();
+      BootstrapSpacing.setMarginLeft(signUp, 3);
+      this.append(signIn, signUp);
       return;
     }
 
-    const nameplate = createNameplate(user, "4vh");
+    const nameplate = createNameplate(user, "max(30px,4vh)");
     const signOutButton = new SignOutButton();
     BootstrapSpacing.setMarginLeft(signOutButton, 3);
 

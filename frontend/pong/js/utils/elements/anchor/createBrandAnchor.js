@@ -4,7 +4,7 @@ import { createElement } from "../createElement";
 export const createBrandAnchor = () => {
   const brandAnchor = createElement(
     "a",
-    { textContent: "Pong" },
+    { textContent: "Pong 🏓" },
     { href: Paths.HOME },
   );
   return brandAnchor;

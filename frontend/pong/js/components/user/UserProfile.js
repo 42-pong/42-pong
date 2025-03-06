@@ -49,7 +49,7 @@ export class UserProfile extends Component {
       return;
     }
 
-    const nameplate = createNameplate(user, "8vh");
+    const nameplate = createNameplate(user, "max(60px,8vh)");
     const isMe =
       UserSessionManager.getInstance().myInfo.observe(
         ({ id }) => id,

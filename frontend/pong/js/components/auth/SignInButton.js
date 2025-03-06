@@ -12,7 +12,6 @@ export class SignInButton extends StyledButton {
 
   _setStyle() {
     this.setOutlinePrimary();
-    this.setSmall();
   }
 
   _onConnect() {

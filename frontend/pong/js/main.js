@@ -1,4 +1,5 @@
 import "./components";
+import { ErrorView } from "./components/views/ErrorView";
 import { MainView } from "./components/views/MainView";
 import { PongEvents } from "./constants/PongEvents";
 import { Route } from "./core/Route";
@@ -31,9 +32,7 @@ function main() {
         Route.createRoute(MainView, MainView.Paths.LOADING),
       ),
     displayMainError: () =>
-      router.display(
-        Route.createRoute(MainView, MainView.Paths.ERROR),
-      ),
+      router.display(Route.defaultRoute(ErrorView)),
   });
 }
 

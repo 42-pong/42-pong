@@ -5,23 +5,22 @@ import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
+import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
 import { MatchContainer } from "../match/MatchContainer";
 import { EventDispatchingButton } from "../utils/EventDispatchingButton";
 import { LinkButton } from "../utils/LinkButton";
 
 export class GameStartPanel extends Component {
-  #menu;
+  #listenIsSignedIn;
 
   constructor(state = {}) {
     super({ isPlayingMatch: false, ...state });
+
+    this.#listenIsSignedIn = null;
   }
 
   _setStyle() {
-    BootstrapDisplay.setGrid(this.#menu);
-    BootstrapSizing.setWidth50(this.#menu);
-    BootstrapSpacing.setGap(this.#menu);
-
     BootstrapDisplay.setFlex(this);
     BootstrapFlex.setFlexColumn(this);
     BootstrapFlex.setJustifyContentCenter(this);
@@ -31,7 +30,11 @@ export class GameStartPanel extends Component {
   }
 
   _onConnect() {
-    this.#menu = createMenu();
+    const isSignedIn =
+      UserSessionManager.getInstance().myInfo.observe(
+        ({ isSignedIn }) => isSignedIn,
+      );
+    Object.assign(this._state, { isSignedIn });
 
     this._attachEventListener(
       PongEvents.START_MATCH.type,
@@ -45,22 +48,45 @@ export class GameStartPanel extends Component {
       event.preventDefault();
       this._updateState({ isPlayingMatch: false });
     });
+
+    this.#listenIsSignedIn = ({ isSignedIn }) => {
+      this._updateState({ isSignedIn });
+    };
+    UserSessionManager.getInstance().myInfo.attach(
+      this.#listenIsSignedIn,
+    );
+  }
+
+  _onDisconnect() {
+    UserSessionManager.getInstance().myInfo.detach(
+      this.#listenIsSignedIn,
+    );
+    this.#listenIsSignedIn = null;
   }
 
   _render() {
     const { isPlayingMatch } = this._getState();
 
     if (isPlayingMatch) this.append(new MatchContainer());
-    else this.appendChild(this.#menu);
+    else {
+      const { isSignedIn } = this._getState();
+      const menu = createMenu(isSignedIn);
+      BootstrapDisplay.setGrid(menu);
+      BootstrapSizing.setWidth50(menu);
+      BootstrapSpacing.setGap(menu);
+
+      this.append(menu);
+    }
   }
 }
 
-const createMenu = () => {
+const createMenu = (isSignedIn) => {
   const tournamentStartButton = new LinkButton(
     { textContent: "トーナメント開始", pathname: Paths.TOURNAMENTS },
     { type: "button" },
   );
   tournamentStartButton.setPrimary();
+  if (!isSignedIn) tournamentStartButton.setDisabled();
 
   const localMatchStartButton = new EventDispatchingButton(
     { textContent: "ローカル対戦" },
