@@ -55,6 +55,7 @@ export class LoginContainer extends Component {
     emailInput.name = "email";
     emailInput.placeholder = "E-mail";
     emailInput.required = true;
+    emailInput.setAttribute("autocomplete", "username");
     setClassNames(emailInput, "form-control");
     BootstrapSizing.setWidth50(emailInput);
     BootstrapSpacing.setMargin(emailInput);
@@ -65,6 +66,7 @@ export class LoginContainer extends Component {
     passwordInput.name = "password";
     passwordInput.placeholder = "Password";
     passwordInput.required = true;
+    passwordInput.setAttribute("autocomplete", "current-password");
     setClassNames(passwordInput, "form-control");
     BootstrapSizing.setWidth50(passwordInput);
     BootstrapSpacing.setMargin(passwordInput);
