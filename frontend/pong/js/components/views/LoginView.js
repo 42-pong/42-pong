@@ -5,7 +5,7 @@ export class LoginView extends AuthView {
   #main;
 
   constructor(state = {}) {
-    super({ authType: AuthView.Type.PROHIBITED });
+    super({ authType: AuthView.Type.PROHIBITED, ...state });
   }
 
   _onConnect() {
