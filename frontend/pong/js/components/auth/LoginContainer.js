@@ -12,6 +12,7 @@ import { UserSessionManager } from "../../session/UserSessionManager";
 import { setClassNames } from "../../utils/elements/setClassNames";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { LinkButton } from "../utils/LinkButton";
+import { OauthButton } from "./OauthButton";
 import { SignUpButton } from "./SignUpButton";
 
 export class LoginContainer extends Component {
@@ -87,11 +88,8 @@ export class LoginContainer extends Component {
     BootstrapSpacing.setMargin(guestButton);
 
     // 42 OAuth2.0ボタン作成
-    const oauth2Button = document.createElement("button");
-    oauth2Button.type = "button";
-    oauth2Button.textContent = "42 OAuth 2.0";
-    BootstrapButtons.setSecondary(oauth2Button);
-    BootstrapSpacing.setMargin(oauth2Button);
+    const oauthButton = new OauthButton();
+    BootstrapSpacing.setMargin(oauthButton);
 
     // サインアップボタン作成
     const signupButton = new SignUpButton();
@@ -103,7 +101,7 @@ export class LoginContainer extends Component {
       passwordInput,
       submitButton,
       signupButton,
-      oauth2Button,
+      oauthButton,
       guestButton,
     );
 
