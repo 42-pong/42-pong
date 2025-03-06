@@ -101,6 +101,7 @@ class PongLogic:
         x += self.ball_speed.x
         y += self.ball_speed.y
 
+        # 上下の壁に当たった場合に上下の進行方向を変える
         if y <= 0 or y >= self.HEIGHT - self.BALL_SIZE:
             self.ball_speed.y = -self.ball_speed.y
 
@@ -109,7 +110,7 @@ class PongLogic:
     async def check_collisions(self) -> None:
         """
         ボールとパドルの接触判定
-        接触していれば、ボールの進行方向を返る。
+        接触していれば、ボールの進行方向を変える。
         """
         # ボールの四隅の座標
         ball_left = self.ball_pos.x
