@@ -189,6 +189,7 @@ class TournamentManager:
             logger.error(f"Error: {create_result.unwrap_error()}")
 
         # TODO: ラウンド開始をアナウンス
+        await self._send_tournament_reload_message()
 
         value = create_result.unwrap()
         round_id = value[tournament_db_constants.RoundFields.ID]
@@ -210,6 +211,7 @@ class TournamentManager:
             logger.error(f"Error: {update_result.unwrap_error()}")
 
         # TODO: ラウンド終了をアナウンス
+        await self._send_tournament_reload_message()
 
         await self._progress_rounds(next_round_participants, round_number + 1)
 
@@ -242,6 +244,7 @@ class TournamentManager:
         # マッチ作成と参加レコード作成
         create_tasks = [match_service.create_match(round_id) for _ in matchups]
         create_results = await asyncio.gather(*create_tasks)
+        await self._send_tournament_reload_message()
 
         self.valid_matches = []
         self.match_manager_tasks = []  # バックグラウンドで実行する run() タスクを格納
@@ -274,7 +277,7 @@ class TournamentManager:
             participation_results = await asyncio.gather(*self.participation_tasks)
             for result in participation_results:
                 if result.is_error:
-                    logger.error(f"Error: {participation_result.unwrap_error()}")
+                    logger.error(f"Error: {result.unwrap_error()}")
 
             # MatchManager 作成と登録
             manager = match_manager.MatchManager(
