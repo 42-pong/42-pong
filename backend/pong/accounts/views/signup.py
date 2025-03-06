@@ -1,22 +1,30 @@
 import logging
+import random
+import string
+from typing import Optional
 
+from django.db import transaction
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
 from pong.custom_response import custom_response
-from users import constants as users_constants
 
-from . import constants
-from .create_account import create_account
-from .player import serializers as player_serializers
-from .user import serializers as user_serializers
+from .. import constants
+from ..player import serializers as player_serializers
+from ..two_factor_authentication.otp import constants as otp_constants
+from ..two_factor_authentication.otp import models as otp_models
+from ..two_factor_authentication.temporary_user import (
+    serializers as temp_user_serializers,
+)
 
 logger = logging.getLogger(__name__)
 
 
+# todo: class名変更したい
 class AccountCreateView(views.APIView):
     """
-    新規アカウントを作成するビュー
+    新規アカウントを作成するサインアップ時に呼ばれるビュー
+    実際のアカウント作成はしない
     """
 
     serializer_class: type[player_serializers.PlayerSerializer] = (
@@ -50,7 +58,7 @@ class AccountCreateView(views.APIView):
                     "Example request",
                     value={
                         constants.UserFields.EMAIL: "user@example.com",
-                        constants.UserFields.PASSWORD: "passwordpassword",
+                        constants.UserFields.PASSWORD: "test12345",
                     },
                 ),
             ],
@@ -64,15 +72,7 @@ class AccountCreateView(views.APIView):
                         value={
                             custom_response.STATUS: custom_response.Status.OK,
                             custom_response.DATA: {
-                                constants.UserFields.ID: 2,
-                                constants.UserFields.USERNAME: "username",
                                 constants.UserFields.EMAIL: "user@example.com",
-                                constants.PlayerFields.DISPLAY_NAME: "default",
-                                constants.PlayerFields.AVATAR: "/media/avatars/sample.png",
-                                users_constants.UsersFields.IS_FRIEND: False,
-                                users_constants.UsersFields.IS_BLOCKED: False,
-                                users_constants.UsersFields.MATCH_WINS: 0,
-                                users_constants.UsersFields.MATCH_LOSSES: 0,
                             },
                         },
                     ),
@@ -144,20 +144,10 @@ class AccountCreateView(views.APIView):
         self, request: request.Request, *args: tuple, **kwargs: dict
     ) -> response.Response:
         """
-        新規アカウントを作成するPOSTメソッド
-        requestをSerializerに渡してvalidationを行い、
-        有効な場合はPlayerとUserを作成してDBに追加し、作成されたアカウント情報をresponseとして返す
+        サインアップ時に呼ばれるPOSTメソッド
+        emailとpasswordを受け取り、emailに対してワンタイムパスワードを送信する
+        email,password,otpを仮のテーブルに保存しておく
         """
-
-        def _create_user_serializer(
-            user_data: dict,
-        ) -> user_serializers.UserSerializer:
-            # usernameのみBEがランダムな文字列をセット
-            user_data[constants.UserFields.USERNAME] = (
-                create_account.get_unique_random_username()
-            )
-            # user_dataの中に必須fieldが存在しない場合は、UserSerializerでエラーになる
-            return user_serializers.UserSerializer(data=user_data)
 
         def _handle_validation_error(errors: dict) -> response.Response:
             code: list[str] = []
@@ -188,30 +178,57 @@ class AccountCreateView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # サインアップ専用のUserSerializerを作成
-        user_serializer: user_serializers.UserSerializer = (
-            _create_user_serializer(request.data)
-        )
-        if not user_serializer.is_valid():
-            return _handle_validation_error(user_serializer.errors)
+        email: Optional[str] = request.data.get(constants.UserFields.EMAIL)
 
-        # 作成したUserSerializerを使って新規アカウントを作成
-        create_account_result: create_account.CreateAccountResult = (
-            create_account.create_account(
-                user_serializer,
-                request.data,
-            )
-        )
-        if create_account_result.is_error:
-            logger.error(
-                f"Unexpected error occurred while creating account: \
-                {create_account_result.unwrap_error()}"
-            )
-            raise Exception
+        try:
+            with transaction.atomic():
+                # TemporaryUserにemail,hash化したpasswordを一時的に保存
+                temp_user_serializer: temp_user_serializers.TemporaryUserSerializer = temp_user_serializers.TemporaryUserSerializer(
+                    data=request.data
+                )
+                if not temp_user_serializer.is_valid():
+                    return _handle_validation_error(
+                        temp_user_serializer.errors
+                    )
+                temp_user = temp_user_serializer.save()
 
-        user_serializer_data: dict = create_account_result.unwrap()
-        # todo: logger.info()追加
-        return custom_response.CustomResponse(
-            data=user_serializer_data,
-            status=status.HTTP_201_CREATED,
-        )
+                # OPTを生成してDBに保存
+                otp: str = generate_otp()
+                otp_models.OTP.objects.create(
+                    temp_user=temp_user, otp_code=otp
+                )
+
+                # todo: 時間があれば修正したい仮のassert。email,otpどちらかがNoneの場合は400を返したい
+                assert email is not None, "Email is required"
+                # OTPの保存に成功したらメールを送信
+                send_otp_to_email(email, otp)
+
+            # todo: できれば`/verify/otp/`のリダイレクトLocationを追加したい
+            return custom_response.CustomResponse(
+                data={constants.UserFields.EMAIL: email},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            # DatabaseErrorなど
+            logger.error(f"[500] Failed to create account: {str(e)}")
+            raise
+
+
+# todo: ファイル移動したい
+def generate_otp() -> str:
+    """
+    6桁のOTPを生成する
+    """
+    otp: str = "".join(
+        random.choices(string.digits, k=otp_constants.OPT_CODE_LENGTH)
+    )
+    return otp
+
+
+# todo: ファイル移動したい
+# todo: email宛てにOTPを送信する
+def send_otp_to_email(email: str, otp: str) -> None:
+    """
+    OTPをメールで送信する
+    """
+    pass
