@@ -4,7 +4,12 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 from . import constants
-from .player import models
+from .player import models as player_models
+from .two_factor_authentication.otp import constants as otp_constants
+from .two_factor_authentication.otp import models as otp_models
+from .two_factor_authentication.temporary_user import (
+    models as temporary_user_models,
+)
 
 
 # todo: Userモデルに関するカスタマイズは専用のファイルに移動した方が良いのかも
@@ -29,7 +34,7 @@ admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 
 
-@admin.register(models.Player)
+@admin.register(player_models.Player)
 class AccountAdmin(ModelAdmin):
     """
     adminサイトでPlayersに表示されるカラムをカスタマイズ
@@ -52,14 +57,45 @@ class AccountAdmin(ModelAdmin):
         constants.PlayerFields.DISPLAY_NAME,
     )
 
-    def user_id(self, obj: models.Player) -> int:
+    def user_id(self, obj: player_models.Player) -> int:
         """
         Playerと1対1関係にあるUserのIDをlist_displayで表示するためのメソッド
         """
         return obj.user.id
 
-    def username(self, obj: models.Player) -> str:
+    def username(self, obj: player_models.Player) -> str:
         """
         Playerと1対1関係にあるUserのusernameをlist_displayで表示するためのメソッド
         """
         return obj.user.username
+
+
+@admin.register(otp_models.OTP)
+class OTPAdmin(ModelAdmin):
+    """
+    adminサイトでOtpsに表示されるカラムをカスタマイズ
+    """
+
+    list_display: tuple = (
+        otp_constants.OptFields.ID,
+        otp_constants.OptFields.TEMP_USER_ID,
+        otp_constants.OptFields.OTP_CODE,
+        otp_constants.OptFields.CREATED_AT,
+    )
+    list_filter: tuple = (otp_constants.OptFields.CREATED_AT,)
+    search_fields: tuple = (otp_constants.OptFields.TEMP_USER_ID,)
+
+
+@admin.register(temporary_user_models.TemporaryUser)
+class TemporaryUserAdmin(ModelAdmin):
+    """
+    adminサイトでTemporary usersに表示されるカラムをカスタマイズ
+    """
+
+    list_display: tuple = (
+        constants.UserFields.ID,
+        constants.UserFields.EMAIL,
+        constants.UserFields.PASSWORD,
+    )
+    list_filter: tuple = (constants.UserFields.EMAIL,)
+    search_fields: tuple = (constants.UserFields.EMAIL,)
