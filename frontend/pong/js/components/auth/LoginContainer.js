@@ -37,7 +37,7 @@ export class LoginContainer extends Component {
 
   _onConnect() {
     //タイトル要素を作成
-    const title = createTextElement("Pong", 1);
+    const title = createTextElement("Pong 🏓", 1);
 
     //フォーム要素を作成
     const form = document.createElement("form");
