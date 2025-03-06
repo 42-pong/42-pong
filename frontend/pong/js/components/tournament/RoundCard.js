@@ -6,8 +6,8 @@ import { createDefaultCard } from "../../utils/elements/div/createDefaultCard";
 import { createStartFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createInlineListItem } from "../../utils/elements/li/createListItem";
 import { createStatusBadge } from "../../utils/tournament/createStatusBadge";
+import { MatchCard } from "../match/MatchCard";
 import { ListContainer } from "../utils/ListContainer";
-import { MatchCard } from "./MatchCard";
 
 export class RoundCard extends Component {
   _setStyle() {

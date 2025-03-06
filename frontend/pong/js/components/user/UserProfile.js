@@ -6,6 +6,7 @@ import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { BootstrapText } from "../../bootstrap/utilities/text";
 import { Component } from "../../core/Component";
+import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
 import { createDefaultCard } from "../../utils/elements/div/createDefaultCard";
 import { createNameplate } from "../../utils/elements/div/createNameplate";
@@ -38,7 +39,6 @@ export class UserProfile extends Component {
 
   _render() {
     const { user } = this._getState();
-
     if (!user) {
       const placeholderText = createTextElement(
         "ユーザーを選択してください",
@@ -50,6 +50,10 @@ export class UserProfile extends Component {
     }
 
     const nameplate = createNameplate(user, "8vh");
+    const isMe =
+      UserSessionManager.getInstance().myInfo.observe(
+        ({ id }) => id,
+      ) === user.id;
 
     const matchResult = createTextElement(
       `勝: ${user.matchWins} | 敗 : ${user.matchLosses}`,
@@ -62,7 +66,7 @@ export class UserProfile extends Component {
       createDefaultCard({
         title: nameplate,
         text: matchResult,
-        others: [profileButtonPanel],
+        others: isMe ? [] : [profileButtonPanel],
       }),
     );
   }

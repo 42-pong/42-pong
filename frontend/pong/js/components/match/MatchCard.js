@@ -5,9 +5,19 @@ import { createEndFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createThreeColumnLayout } from "../../utils/elements/div/createThreeColumnLayout";
 import { getMatchResult } from "../../utils/match/getMatchResult";
 import { createStatusBadge } from "../../utils/tournament/createStatusBadge";
+import { MatchBoard } from "./MatchBoard";
 import { PlayerProfile } from "./PlayerProfile";
 
 export class MatchCard extends Component {
+  #matchBoard;
+
+  _onConnect() {
+    const {
+      item: { matchId, createdAt },
+    } = this._getState();
+    this.#matchBoard = new MatchBoard({ matchId, createdAt });
+  }
+
   _render() {
     const {
       item: { players, status },
@@ -32,6 +42,6 @@ export class MatchCard extends Component {
       2,
     );
     const card = createDefaultCard({ text });
-    this.append(card);
+    this.append(card, this.#matchBoard);
   }
 }

@@ -1,3 +1,4 @@
+import { DashboardView } from "../components/views/DashboardView";
 import { ErrorView } from "../components/views/ErrorView";
 import { FriendsView } from "../components/views/FriendsView";
 import { HomeView } from "../components/views/HomeView";
@@ -15,6 +16,7 @@ export const mainRouter = (target) => {
     [MainView.Paths.HOME]: Route.defaultRoute(HomeView),
     [MainView.Paths.USERS]: Route.defaultRoute(UsersView),
     [MainView.Paths.FRIENDS]: Route.defaultRoute(FriendsView),
+    [MainView.Paths.DASHBOARD]: Route.defaultRoute(DashboardView),
     [MainView.Paths.MYPAGE]: Route.defaultRoute(MyPageView),
     [MainView.Paths.TOURNAMENTS]: Route.defaultRoute(TournamentsView),
     [MainView.Paths.NOT_FOUND]: Route.defaultRoute(NotFoundView),
