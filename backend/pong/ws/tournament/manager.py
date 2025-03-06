@@ -7,7 +7,7 @@ from channels.layers import get_channel_layer  # type: ignore
 
 from matches import constants as match_db_constants
 from tournaments import constants as tournament_db_constants
-from ws.match import match_manager
+from ws.match import match_manager, manager_registry
 from ws.share import constants as ws_constants
 
 from ..match import async_db_service as match_service
@@ -43,6 +43,7 @@ class TournamentManager:
         self.waiting_for_participants = (
             asyncio.Event()
         )  # 参加者を待機するイベント
+        self.match_manager_registry = manager_registry.global_registry
 
     async def add_participant(
         self, participant: player_data.PlayerData
@@ -270,22 +271,28 @@ class TournamentManager:
             )
 
             # MatchManager 作成と登録
-            match_manager = match_manager.MatchManager(
+            manager = match_manager.MatchManager(
                 match_id=match_id,
                 player1=player1,
                 player2=player2,
                 mode=match_ws_constants.Mode.REMOTE.value,
             )
+            logger.info(
+                f"Tournament: {self.tournament_id} create match manager"
+            )
+
+            # MatchManagerRegistryにMatchManagerを追加
+            await self.match_manager_registry.register_match_manager(match_id, manager)
             # 試合をバックグラウンドで実行
             self.match_manager_tasks.append(
-                asyncio.create_task(match_manager.run())
+                asyncio.create_task(manager.run())
             )
 
             # 試合開始を 各consumer に通知
             await self._send_assign_match_message(match_id, player1)
             await self._send_assign_match_message(match_id, player2)
 
-            self.valid_matches.append((match_id, match_manager))
+            self.valid_matches.append((match_id, manager))
 
         # 参加レコードを並列作成
         participation_results = await asyncio.gather(*self.participation_tasks)
@@ -297,7 +304,7 @@ class TournamentManager:
         match_results = await asyncio.gather(*self.match_manager_tasks)
 
         final_results = []
-        for match_winner, (match_id, match_manager) in zip(
+        for match_winner, (match_id, manager) in zip(
             match_results, self.valid_matches
         ):
             # 型チェックの関係で必要
