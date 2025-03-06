@@ -298,14 +298,14 @@ class TournamentManager:
             await self._send_assign_match_message(match_id, player1)
             await self._send_assign_match_message(match_id, player2)
 
-            self.valid_matches.append((match_id, manager))
+            self.valid_matches.append((match_id, manager, player1, player2))
 
 
         # バックグラウンドタスクの結果を収集
         match_results = await asyncio.gather(*self.match_manager_tasks)
 
         final_results = []
-        for match_winner, (match_id, manager) in zip(
+        for match_winner, (match_id, manager, player1, player2) in zip(
             match_results, self.valid_matches
         ):
             # 型チェックの関係で必要
@@ -323,7 +323,6 @@ class TournamentManager:
             final_results.append((match_id, winner, loser))
 
         return final_results
-        pass
 
     async def _process_results(
         self,
