@@ -51,9 +51,12 @@ export class DashboardStats extends Component {
     );
     BootstrapSpacing.setMargin(wonTournamentsIndex, 2);
 
-    const recentResults = createRecentResults(matches, userId);
+    this.append(winRate, wonTournamentsIndex);
 
-    this.append(winRate, wonTournamentsIndex, recentResults);
+    if (matches.length === 0) return;
+
+    const recentResults = createRecentResults(matches, userId);
+    this.append(recentResults);
   }
 }
 
