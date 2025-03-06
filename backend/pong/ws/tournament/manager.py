@@ -139,9 +139,9 @@ class TournamentManager:
 
             # トーナメントの終了処理を行う。
             await self._end_tournament()
-        except Exception:
+        except Exception as e:
             # データベース操作によるエラーをキャッチ
-            # TODO: logger出力
+            logger.error(f"Error: {e}")
             await self.cancel_tournament()
 
     async def _start_tournament(self) -> None:
@@ -157,7 +157,7 @@ class TournamentManager:
         )
 
         if update_result.is_error:
-            raise Exception(update_result.unwrap_error())
+            logger.error(f"Error: {update_result.unwrap_error()}")
 
         # トーナメント情報を更新するように通知
         await self._send_tournament_reload_message()
@@ -177,8 +177,7 @@ class TournamentManager:
                 )
             )
             if update_result.is_error:
-                raise Exception(update_result.unwrap_error())
-            return
+                logger.error(f"Error: {update_result.unwrap_error()}")
 
         # ラウンド作成
         create_result = await tournament_service.create_round(
@@ -187,7 +186,8 @@ class TournamentManager:
             tournament_db_constants.RoundFields.StatusEnum.ON_GOING.value,
         )
         if create_result.is_error:
-            raise Exception(create_result.unwrap_error())
+            logger.error(f"Error: {create_result.unwrap_error()}")
+
         # TODO: ラウンド開始をアナウンス
 
         value = create_result.unwrap()
@@ -207,7 +207,7 @@ class TournamentManager:
             tournament_db_constants.RoundFields.StatusEnum.COMPLETED.value,
         )
         if update_result.is_error:
-            raise Exception(update_result.unwrap_error())
+            logger.error(f"Error: {update_result.unwrap_error()}")
 
         # TODO: ラウンド終了をアナウンス
 
@@ -250,7 +250,7 @@ class TournamentManager:
             self.participation_tasks = []
 
             if create_result.is_error:
-                raise Exception(create_result.unwrap_error())
+                logger.error(f"Error: {create_result.unwrap_error()}")
 
             value = create_result.unwrap()
             match_id = value[match_db_constants.MatchFields.ID]
@@ -274,7 +274,7 @@ class TournamentManager:
             participation_results = await asyncio.gather(*self.participation_tasks)
             for result in participation_results:
                 if result.is_error:
-                    raise Exception(result.unwrap_error())
+                    logger.error(f"Error: {participation_result.unwrap_error()}")
 
             # MatchManager 作成と登録
             manager = match_manager.MatchManager(
@@ -364,7 +364,7 @@ class TournamentManager:
         )
         # TODO: Error処理
         if update_result.is_error:
-            raise Exception(update_result.unwrap_error())
+            logger.error(f"Error: {update_result.unwrap_error()}")
 
         await self._send_tournament_reload_message()
 
@@ -378,7 +378,7 @@ class TournamentManager:
             self.tournament_id,
         )
         if update_result.is_error:
-            raise Exception(update_result.unwrap_error())
+            logger.error(f"Error: {update_result.unwrap_error()}")
 
     async def _send_player_reload_message(self) -> None:
         """
