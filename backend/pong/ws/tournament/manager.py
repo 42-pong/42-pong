@@ -244,10 +244,11 @@ class TournamentManager:
         create_results = await asyncio.gather(*create_tasks)
 
         self.valid_matches = []
-        self.participation_tasks = []
         self.match_manager_tasks = []  # バックグラウンドで実行する run() タスクを格納
 
         for (player1, player2), create_result in zip(matchups, create_results):
+            self.participation_tasks = []
+
             if create_result.is_error:
                 raise Exception(create_result.unwrap_error())
 
@@ -269,6 +270,11 @@ class TournamentManager:
                     team=match_ws_constants.Team.TWO.value,
                 )
             )
+            # 参加レコードを並列作成
+            participation_results = await asyncio.gather(*self.participation_tasks)
+            for result in participation_results:
+                if result.is_error:
+                    raise Exception(result.unwrap_error())
 
             # MatchManager 作成と登録
             manager = match_manager.MatchManager(
@@ -294,11 +300,6 @@ class TournamentManager:
 
             self.valid_matches.append((match_id, manager))
 
-        # 参加レコードを並列作成
-        participation_results = await asyncio.gather(*self.participation_tasks)
-        for result in participation_results:
-            if result.is_error:
-                raise Exception(result.unwrap_error())
 
         # バックグラウンドタスクの結果を収集
         match_results = await asyncio.gather(*self.match_manager_tasks)
