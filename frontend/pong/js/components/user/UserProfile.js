@@ -11,6 +11,7 @@ import { createElement } from "../../utils/elements/createElement";
 import { createDefaultCard } from "../../utils/elements/div/createDefaultCard";
 import { createNameplate } from "../../utils/elements/div/createNameplate";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { BlockUserButton } from "../block/BlockUserButton";
 import { AddFriendButton } from "../friend/AddFriendButton";
 import { RemoveFriendButton } from "../friend/RemoveFriendButton";
@@ -56,7 +57,7 @@ export class UserProfile extends Component {
       ) === user.id;
 
     const matchResult = createTextElement(
-      `勝: ${user.matchWins} | 敗 : ${user.matchLosses}`,
+      `${getTextContent("win")} ${user.matchWins} | ${getTextContent("loss")} ${user.matchLosses}`,
       5,
       BootstrapBadge.setWarning,
     );

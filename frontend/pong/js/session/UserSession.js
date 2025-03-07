@@ -4,6 +4,7 @@ import { Paths } from "../constants/Paths";
 import { PongEvents } from "../constants/PongEvents";
 import { DataSubject } from "../core/DataSubject";
 import { WebSocketEnums } from "../enums/WebSocketEnums";
+import { initLang } from "../utils/i18n/lang";
 import { WebSocketWrapper } from "../websocket/WebSocketWrapper";
 
 export class UserSession {
@@ -39,6 +40,7 @@ export class UserSession {
   async main(apps) {
     Object.assign(this.#apps, apps);
 
+    initLang();
     const isValid = await this.#reset();
     if (isValid) {
       await this.signIn();

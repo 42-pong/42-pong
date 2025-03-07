@@ -1,11 +1,12 @@
 import { postFriends } from "../../api/users/postFriends";
 import { StyledButton } from "../../core/StyledButton";
+import { getTextContent } from "../../utils/i18n/lang";
 
 export class AddFriendButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
     super(
       {
-        textContent: "フレンド追加",
+        textContent: getTextContent("addFriend"),
         user: null,
         reload: null,
         ...state,

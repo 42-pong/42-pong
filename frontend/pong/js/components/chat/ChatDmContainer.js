@@ -4,6 +4,7 @@ import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { createElement } from "../../utils/elements/createElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { EventDispatchingButton } from "../utils/EventDispatchingButton";
 
 export class ChatDmContainer extends Component {
@@ -19,7 +20,7 @@ export class ChatDmContainer extends Component {
   _onConnect() {
     this.#backToList = new EventDispatchingButton(
       {
-        textContent: "戻る",
+        textContent: getTextContent("goBack"),
       },
       {},
       PongEvents.TOGGLE_CHAT_USER_SELECTION,

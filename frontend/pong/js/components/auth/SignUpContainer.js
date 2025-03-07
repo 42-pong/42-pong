@@ -12,6 +12,7 @@ import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
 import { setClassNames } from "../../utils/elements/setClassNames";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { getTextContent } from "../../utils/i18n/lang";
 
 export class SignUpContainer extends Component {
   #title;
@@ -88,7 +89,7 @@ export class SignUpContainer extends Component {
     // サインインアップボタンを作成
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
-    submitButton.textContent = "サインアップ";
+    submitButton.textContent = getTextContent("signup");
     BootstrapButtons.setPrimary(submitButton);
     BootstrapSizing.setWidth25(submitButton);
 

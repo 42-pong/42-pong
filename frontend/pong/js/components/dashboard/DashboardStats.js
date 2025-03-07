@@ -8,6 +8,7 @@ import { MatchEnums } from "../../enums/MatchEnums";
 import { TournamentEnums } from "../../enums/TournamentEnums";
 import { createCenterFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { getMatchResult } from "../../utils/match/getMatchResult";
 import { createScore } from "../match/createScore";
 import { ErrorContainer } from "../utils/ErrorContainer";
@@ -37,7 +38,7 @@ export class DashboardStats extends Component {
       isWin(match, userId),
     );
     const winRate = createTextElement(
-      `マッチ勝率: ${(getRate(wonMatches.length, matches.length) * 100).toFixed(2)} %`,
+      `${getTextContent("matchWinRate")}: ${(getRate(wonMatches.length, matches.length) * 100).toFixed(2)} %`,
       4,
       BootstrapBadge.setPrimary,
     );
@@ -45,7 +46,7 @@ export class DashboardStats extends Component {
 
     const wonTournaments = getWonTournaments(matches, userId);
     const wonTournamentsIndex = createTextElement(
-      `トーナメント優勝: ${wonTournaments.length} / ${tournaments.length}`,
+      `${getTextContent("tournamentWin")}: ${wonTournaments.length} / ${tournaments.length}`,
       4,
       BootstrapBadge.setSecondary,
     );

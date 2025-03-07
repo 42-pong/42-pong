@@ -1,4 +1,5 @@
 import { BootstrapNavsTabs } from "../../../bootstrap/components/navsTabs";
+import { getTextContent } from "../../i18n/lang";
 import { createElement } from "../createElement";
 
 export const createNavbarNavList = (links) => {
@@ -23,7 +24,7 @@ const createNavbarNavListItem = (link) => {
   const linkAnchor = createElement(
     "a",
     {
-      textContent: link.name,
+      textContent: getTextContent(link.name),
     },
     {
       href: link.path,

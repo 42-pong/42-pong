@@ -10,6 +10,7 @@ import { createDefaultFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createHorizontalSplitLayout } from "../../utils/elements/div/createHorizontalSplitLayout";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { setHeight } from "../../utils/elements/style/setHeight";
+import { getTextContent } from "../../utils/i18n/lang";
 import { ListContainer } from "../utils/ListContainer";
 import { BlockListItem } from "./BlockListItem";
 
@@ -41,7 +42,7 @@ export class BlockListContainer extends Component {
     if (isError) {
       this.append(
         createTextElement(
-          "ブロック情報の取得",
+          getTextContent("getBlockInformation"),
           5,
           BootstrapBadge.setWarning,
         ),
@@ -50,7 +51,7 @@ export class BlockListContainer extends Component {
     }
 
     const title = createTextElement(
-      "ブロック一覧",
+      getTextContent("blocksList"),
       5,
       BootstrapBadge.setDanger,
     );
@@ -70,7 +71,7 @@ export class BlockListContainer extends Component {
 
 const noBlockedUser = () => {
   const content = createTextElement(
-    "ユーザーが見つかりませんでした",
+    getTextContent("noUserAnnouncement"),
     5,
     BootstrapBadge.setSecondary,
   );

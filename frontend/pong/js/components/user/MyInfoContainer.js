@@ -12,6 +12,7 @@ import { createButton } from "../../utils/elements/button/createButton";
 import { createElement } from "../../utils/elements/createElement";
 import { createAroundFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { EventDispatchingButton } from "../utils/EventDispatchingButton";
 import { MyInfoAvatar } from "./MyInfoAvatar";
 
@@ -94,7 +95,7 @@ const createDisplayInputField = (displayInput) => {
   const label = createTextElement("表示名", 6);
   BootstrapSizing.setWidth25(label);
   const patchDisplayName = new EventDispatchingButton(
-    { textContent: "保存" },
+    { textContent: getTextContent("save") },
     {},
     PongEvents.PATCH_DISPLAY_NAME,
   );
