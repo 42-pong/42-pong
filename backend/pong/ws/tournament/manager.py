@@ -221,6 +221,14 @@ class TournamentManager:
             round_number, match_results
         )
 
+        async with (
+            self.participant_lock
+        ):  # 参加者リストを最新のものと比較して更新
+            current_participants = set(self.participants)  # 最新の参加者リスト
+            next_round_participants = [
+                p for p in next_round_participants if p in current_participants
+            ]
+
         update_result = await tournament_service.update_round_status(
             round_id,
             tournament_db_constants.RoundFields.StatusEnum.COMPLETED.value,
