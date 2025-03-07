@@ -4,7 +4,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from jwt import create_token_functions
 from pong.custom_response import custom_response
@@ -23,7 +22,6 @@ class TokenObtainView(views.APIView):
     @utils.extend_schema(
         request=utils.OpenApiRequest(
             # todo: email, passwordをシリアライズ作成する
-            TokenObtainPairSerializer,
             examples=[
                 utils.OpenApiExample(
                     "Example request",
