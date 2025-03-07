@@ -191,6 +191,9 @@ class TournamentManager:
         # TODO: ラウンド開始をアナウンス
         await self._send_tournament_reload_message()
 
+        # 新規ラウンド時に10秒待機
+        await asyncio.sleep(10)
+
         value = create_result.unwrap()
         round_id = value[tournament_db_constants.RoundFields.ID]
 
