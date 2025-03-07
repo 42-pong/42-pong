@@ -103,7 +103,8 @@ class MatchHandler:
         mode: str = data[match_constants.Mode.key()]
         # プレイモードによって所属させるグループを変える
         if mode == match_constants.Mode.LOCAL.value:
-            # TODO: マッチマネジャーを作成して、ローカルゲームのセットアップを行う。
+            self.is_local_play = True
+            # マッチマネジャーを作成して、ローカルゲームのセットアップを行う。
             self.match_manager = match_manager.MatchManager(
                 match_id, self.player_data, None, mode
             )
@@ -190,6 +191,10 @@ class MatchHandler:
         ゲーム終了後のクリーンナップ処理
         グループから削除し、状態を初期化する
         """
+        if self.match_id != 0:
+            await manager_registry.global_registry.exit_match(
+                self.match_id, self.player_data
+            )
         self.stage = None
         self.is_local_play = True
         self.match_manager = None

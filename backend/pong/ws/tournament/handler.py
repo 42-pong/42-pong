@@ -43,6 +43,8 @@ class TournamentHandler:
         )
         self.manager_registry = manager_registry.global_tournament_registry
         self.user_id: Optional[int] = None
+        self.tournament_id: Optional[int] = None
+        self.player_data: Optional[player_data.PlayerData]
 
     def __str__(self) -> str:
         """
@@ -124,6 +126,9 @@ class TournamentHandler:
         tournament_id = result.unwrap()[
             tournament_db_constants.TournamentFields.ID
         ]
+        # 参加するトーナメントIDをセット
+        self.tournament_id = tournament_id
+
         await self.manager_registry.create_tournament(
             tournament_id, self.player_data
         )
@@ -153,6 +158,9 @@ class TournamentHandler:
         success = await self.manager_registry.add_participant(
             tournament_id, self.player_data
         )
+        if success:
+            # 参加するトーナメントIDをセット
+            self.tournament_id = tournament_id
         status = (
             tournament_constants.Status.OK.value
             if success
@@ -181,6 +189,9 @@ class TournamentHandler:
         success = await self.manager_registry.add_participant(
             tournament_id, self.player_data
         )
+        if success:
+            # 参加するトーナメントIDをセット
+            self.tournament_id = tournament_id
         status = (
             tournament_constants.Status.OK.value
             if success
@@ -202,6 +213,9 @@ class TournamentHandler:
         await self.manager_registry.remove_participant(
             tournament_id, self.player_data
         )
+
+        # 退出したので、トーナメントIDを削除
+        self.tournament_id = None
 
     def _create_player_data(
         self, participation_name: Optional[str]
@@ -251,3 +265,15 @@ class TournamentHandler:
                 ws_constants.DATA_KEY: data,
             },
         }
+
+    async def exit(self) -> None:
+        """
+        トーナメントに参加中に切断した場合、トーナメント進行クラスに退出を伝えるための関数
+        """
+        # loginしていないか、トーナメント参加中でなければ特に何もしない
+        if self.player_data is None or self.tournament_id is None:
+            return
+
+        await self.manager_registry.remove_participant(
+            self.tournament_id, self.player_data
+        )

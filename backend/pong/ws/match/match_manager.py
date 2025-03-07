@@ -5,6 +5,7 @@ from typing import Final, Optional
 from channels.layers import get_channel_layer  # type: ignore
 
 from matches import constants as match_db_constants
+from ws.tournament import manager_registry as tournament_manager_registry
 
 from ..share import channel_handler, player_data
 from ..share import constants as ws_constants
@@ -36,6 +37,7 @@ class MatchManager:
         player1: player_data.PlayerData,
         player2: Optional[player_data.PlayerData],
         mode: str,
+        tournament_id: Optional[int] = None,
     ) -> None:
         """
         Args:
@@ -51,7 +53,8 @@ class MatchManager:
 
         self.pong_logic = PongLogic()
         self.group_name = f"pong_{match_id}"  # 一意
-        self.ready_players = 0
+        self.player1_ready: bool = False
+        self.player2_ready: bool = False
         self.waiting_player_ready = asyncio.Event()
         self.canceled = False
         self.remained_player: Optional[player_data.PlayerData] = None
@@ -61,6 +64,7 @@ class MatchManager:
         self.waiting_player_num = (
             1 if self.mode == match_constants.Mode.LOCAL.value else 2
         )
+        self.tournament_id = tournament_id
 
     async def run(self) -> Optional[player_data.PlayerData]:
         """
@@ -155,7 +159,10 @@ class MatchManager:
         consumerから渡されたready メッセージの処理、返信を行う関数。
         """
         # readyメッセージを送ってきたプレーヤーのカウント
-        self.ready_players += 1
+        if player.channel_name == self.player1.channel_name:
+            self.player1_ready = True
+        else:
+            self.player2_ready = True
 
         # メッセージ作成
         message = self._build_message(
@@ -164,7 +171,17 @@ class MatchManager:
         )
 
         # 全員からREADYメッセージが届いたらイベントをセットしてゲームを開始する。
-        if self.ready_players == self.waiting_player_num:
+        if (
+            self.mode == match_constants.Mode.LOCAL.value
+            and self.player1_ready
+        ):
+            await self._send_message(message)
+            self.waiting_player_ready.set()
+        elif (
+            self.mode == match_constants.Mode.REMOTE.value
+            and self.player1_ready
+            and self.player2_ready
+        ):
             await self._send_message(message)
             self.waiting_player_ready.set()
 
@@ -250,6 +267,12 @@ class MatchManager:
                             self.match_id, scoring_player_id, pos_x, pos_y
                         )
                     )
+                    if self.tournament_id is not None:
+                        asyncio.create_task(
+                            tournament_manager_registry.global_tournament_registry.send_match_reload_message(
+                                self.tournament_id
+                            )
+                        )
 
                 last_update = current_time
             else:
@@ -349,8 +372,6 @@ class MatchManager:
             # 試合中に退出した場合は、バックグラウンドタスクが終了していない可能性があるので、終了させる。
             if self.send_task:
                 self.send_task.cancel()
-                # キャンセルされるのを待つ
-                await self.send_task
 
         # 残ったプレーヤーを勝者とする。
         if self.mode == match_constants.Mode.REMOTE.value:

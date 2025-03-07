@@ -46,6 +46,7 @@ class TournamentManager:
             asyncio.Event()
         )  # 参加者を待機するイベント
         self.match_manager_registry = manager_registry.global_registry
+        self.participant_lock = asyncio.Lock()  # 排他制御用の Lock
 
     async def add_participant(
         self, participant: player_data.PlayerData
@@ -79,12 +80,13 @@ class TournamentManager:
             self.group_name, participant.channel_name
         )
 
-        self.participants.append(participant)
+        async with self.participant_lock:  # 排他制御
+            self.participants.append(participant)
 
-        if len(self.participants) == 4:
-            # 4人集まったらイベントをセットしてトーナメントを開始
-            self.waiting_for_participants.set()
-            return True
+            if len(self.participants) == 4:
+                # 4人集まったらイベントをセットしてトーナメントを開始
+                self.waiting_for_participants.set()
+                return True
 
         # await self.send_group_announcement(
         #    chat_constants.GroupAnnouncement.MessageType.JOIN.value,
@@ -110,19 +112,20 @@ class TournamentManager:
             # 残りが一人なわけではないが、0以外の値を返したい
             return 1
 
-        if participant in self.participants:
-            self.participants.remove(participant)
-
         # 退出者をグループから削除
         await self.channel_handler.remove_from_group(
             self.group_name, participant.channel_name
         )
 
-        # 参加者がいなくなったらキャンセル処理をして、
-        if len(self.participants) == 0:
-            # キャンセル処理
-            await self.cancel_tournament()
-            return 0
+        async with self.participant_lock:  # 排他制御
+            if participant in self.participants:
+                self.participants.remove(participant)
+
+            # 参加者がいなくなったらキャンセル処理をして、
+            if len(self.participants) == 0:
+                # キャンセル処理
+                await self.cancel_tournament()
+                return 0
 
         # トーナメント参加者全員にリロードメッセージを送信
         await self._send_player_reload_message()
@@ -218,6 +221,14 @@ class TournamentManager:
             round_number, match_results
         )
 
+        async with (
+            self.participant_lock
+        ):  # 参加者リストを最新のものと比較して更新
+            current_participants = set(self.participants)  # 最新の参加者リスト
+            next_round_participants = [
+                p for p in next_round_participants if p in current_participants
+            ]
+
         update_result = await tournament_service.update_round_status(
             round_id,
             tournament_db_constants.RoundFields.StatusEnum.COMPLETED.value,
@@ -302,6 +313,7 @@ class TournamentManager:
                 player1=player1,
                 player2=player2,
                 mode=match_ws_constants.Mode.REMOTE.value,
+                tournament_id=self.tournament_id,
             )
 
             # MatchManagerRegistryにMatchManagerを追加
@@ -371,7 +383,7 @@ class TournamentManager:
                 )
             )
             if update_result.is_error:
-                return update_result  # エラー発生時は処理を中断
+                logger.error(f"Error: {update_result.unwrap_error()}")
             next_round_participants.append(winner)
         return next_round_participants
 
