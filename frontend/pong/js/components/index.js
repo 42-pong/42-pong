@@ -1,4 +1,5 @@
 import { LoginContainer } from "./auth/LoginContainer";
+import { OauthButton } from "./auth/OauthButton";
 import { SignInButton } from "./auth/SignInButton";
 import { SignOutButton } from "./auth/SignOutButton";
 import { SignUpButton } from "./auth/SignUpButton";
@@ -65,6 +66,7 @@ import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
+customElements.define("oauth-button", OauthButton, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
 customElements.define("sign-up-button", SignUpButton, {});
