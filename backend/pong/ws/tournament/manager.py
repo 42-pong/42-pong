@@ -313,6 +313,7 @@ class TournamentManager:
                 player1=player1,
                 player2=player2,
                 mode=match_ws_constants.Mode.REMOTE.value,
+                tournament_id=self.tournament_id,
             )
 
             # MatchManagerRegistryにMatchManagerを追加

@@ -117,6 +117,16 @@ class TournamentManagerRegistry:
             tournament_manager = self.tournaments[tournament_id]
             await tournament_manager.send_group_chat(message)
 
+    async def send_match_reload_message(self, tournament_id: int) -> None:
+        """
+        MatchManagerからスコアが入るたびにリロードメッセージを送るための関数
+        """
+        async with self.lock:
+            if tournament_id not in self.tournaments:
+                return  # トーナメントが存在しない場合は何もしない
+            tournament_manager = self.tournaments[tournament_id]
+            await tournament_manager._send_tournament_reload_message()
+
 
 # === グローバルな MatchManagerRegistry インスタンス ===
 global_tournament_registry = TournamentManagerRegistry()

@@ -5,6 +5,7 @@ from typing import Final, Optional
 from channels.layers import get_channel_layer  # type: ignore
 
 from matches import constants as match_db_constants
+from ws.tournament import manager_registry as tournament_manager_registry
 
 from ..share import channel_handler, player_data
 from ..share import constants as ws_constants
@@ -36,6 +37,7 @@ class MatchManager:
         player1: player_data.PlayerData,
         player2: Optional[player_data.PlayerData],
         mode: str,
+        tournament_id: Optional[int] = None,
     ) -> None:
         """
         Args:
@@ -61,6 +63,7 @@ class MatchManager:
         self.waiting_player_num = (
             1 if self.mode == match_constants.Mode.LOCAL.value else 2
         )
+        self.tournament_id = tournament_id
 
     async def run(self) -> Optional[player_data.PlayerData]:
         """
@@ -250,6 +253,12 @@ class MatchManager:
                             self.match_id, scoring_player_id, pos_x, pos_y
                         )
                     )
+                    if self.tournament_id is not None:
+                        asyncio.create_task(
+                            tournament_manager_registry.global_tournament_registry.send_match_reload_message(
+                                self.tournament_id
+                            )
+                        )
 
                 last_update = current_time
             else:
