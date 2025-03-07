@@ -12,6 +12,7 @@ import { UserSessionManager } from "../../session/UserSessionManager";
 import { setClassNames } from "../../utils/elements/setClassNames";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { LinkButton } from "../utils/LinkButton";
+import { OauthButton } from "./OauthButton";
 import { SignUpButton } from "./SignUpButton";
 
 export class LoginContainer extends Component {
@@ -75,8 +76,9 @@ export class LoginContainer extends Component {
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
     submitButton.textContent = "サインイン";
-    BootstrapButtons.setOutlinePrimary(submitButton);
+    BootstrapButtons.setPrimary(submitButton);
     BootstrapSpacing.setMargin(submitButton);
+    BootstrapSizing.setWidth25(submitButton);
 
     // ゲストボタン作成
     const guestButton = new LinkButton({
@@ -85,17 +87,18 @@ export class LoginContainer extends Component {
     });
     guestButton.setSecondary();
     BootstrapSpacing.setMargin(guestButton);
+    BootstrapSizing.setWidth25(guestButton);
 
     // 42 OAuth2.0ボタン作成
-    const oauth2Button = document.createElement("button");
-    oauth2Button.type = "button";
-    oauth2Button.textContent = "42 OAuth 2.0";
-    BootstrapButtons.setSecondary(oauth2Button);
-    BootstrapSpacing.setMargin(oauth2Button);
+    const oauthButton = new OauthButton();
+    BootstrapSpacing.setMargin(oauthButton);
+    BootstrapSizing.setWidth25(oauthButton);
 
     // サインアップボタン作成
     const signupButton = new SignUpButton();
+    signupButton.setOutlinePrimary();
     BootstrapSpacing.setMargin(signupButton);
+    BootstrapSizing.setWidth25(signupButton);
 
     form.append(
       this.#loginError,
@@ -103,7 +106,7 @@ export class LoginContainer extends Component {
       passwordInput,
       submitButton,
       signupButton,
-      oauth2Button,
+      oauthButton,
       guestButton,
     );
 

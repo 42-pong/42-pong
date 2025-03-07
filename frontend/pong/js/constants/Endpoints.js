@@ -44,4 +44,5 @@ export const Endpoints = Object.freeze({
   },
 
   ACCOUNTS: new URL("/api/accounts/", BASE_URL),
+  OAUTH: new URL("/api/oauth2/authorize/", BASE_URL),
 });

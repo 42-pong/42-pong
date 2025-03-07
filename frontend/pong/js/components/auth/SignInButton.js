@@ -10,10 +10,6 @@ export class SignInButton extends StyledButton {
     );
   }
 
-  _setStyle() {
-    this.setOutlinePrimary();
-  }
-
   _onConnect() {
     this._attachEventListener("click", (event) => {
       event.preventDefault();

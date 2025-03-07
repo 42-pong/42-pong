@@ -31,9 +31,9 @@ export class UserSession {
     app.dispatchEvent(PongEvents.UPDATE_ROUTER.create(path));
   }
 
-  updateWindowPath() {
+  async updateWindowPath() {
     const { updateWindowPath } = this.#apps;
-    updateWindowPath();
+    await updateWindowPath();
   }
 
   async main(apps) {
@@ -42,7 +42,7 @@ export class UserSession {
     const isValid = await this.#reset();
     if (isValid) {
       await this.signIn();
-      this.updateWindowPath();
+      await this.updateWindowPath();
     }
     return isValid;
   }
@@ -81,6 +81,8 @@ export class UserSession {
         user_id: id,
       });
       // initGlobalFeatures(appGlobal);
+    } else {
+      this.#clearTokens();
     }
     return isVerified;
   }
@@ -88,7 +90,7 @@ export class UserSession {
   async signOut() {
     this.#clearTokens();
     const isValid = await this.#reset();
-    if (isValid) this.updateWindowPath();
+    if (isValid) await this.updateWindowPath();
     return isValid;
   }
 
