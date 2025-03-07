@@ -69,7 +69,7 @@ class ChatHandler:
         """
         from_user_id: Optional[Any] = payload.get(chat_constants.FROM)
         await self._validate_user_id(from_user_id)
-        tournament_id = payload.get(chat_constants.TOURNAMENT_ID)
+        tournament_id = payload.get(chat_constants.TO)
         if tournament_id is None:
             return
 

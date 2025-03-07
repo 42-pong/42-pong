@@ -478,9 +478,6 @@ class TournamentManager:
         プレーヤーがグループチャットに送信したメッセージを全員に再送信する関数。
         ChatHandlerから呼ばれる。
         """
-        message = self._build_chat_message(
-            chat_constants.Type.GROUP_CHAT.value, message
-        )
         await self.channel_handler.send_to_group(self.group_name, message)
 
     async def send_group_announcement(
