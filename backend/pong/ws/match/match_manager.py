@@ -372,8 +372,6 @@ class MatchManager:
             # 試合中に退出した場合は、バックグラウンドタスクが終了していない可能性があるので、終了させる。
             if self.send_task:
                 self.send_task.cancel()
-                # キャンセルされるのを待つ
-                await self.send_task
 
         # 残ったプレーヤーを勝者とする。
         if self.mode == match_constants.Mode.REMOTE.value:
