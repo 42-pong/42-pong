@@ -37,6 +37,7 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
     async def disconnect(self, close_code: int) -> None:
         await self.login_handler.logout()
         await self.match_handler.cleanup()
+        await self.tournament_handler.exit()
         logger.debug(f"disconnect: {self.channel_name}")
 
     async def receive_json(self, message: dict) -> None:
