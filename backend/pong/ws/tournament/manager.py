@@ -371,7 +371,7 @@ class TournamentManager:
                 )
             )
             if update_result.is_error:
-                return update_result  # エラー発生時は処理を中断
+                logger.error(f"Error: {update_result.unwrap_error()}")
             next_round_participants.append(winner)
         return next_round_participants
 
