@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     "pong",
     "jwt",
     "oauth2",
+    "login",
     "accounts",
     "users",
     "users.friends",
