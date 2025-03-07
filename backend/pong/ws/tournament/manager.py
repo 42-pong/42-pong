@@ -178,6 +178,7 @@ class TournamentManager:
             )
             if update_result.is_error:
                 logger.error(f"Error: {update_result.unwrap_error()}")
+            return
 
         # ラウンド作成
         create_result = await tournament_service.create_round(
@@ -290,9 +291,6 @@ class TournamentManager:
                 player1=player1,
                 player2=player2,
                 mode=match_ws_constants.Mode.REMOTE.value,
-            )
-            logger.info(
-                f"Tournament: {self.tournament_id} create match manager"
             )
 
             # MatchManagerRegistryにMatchManagerを追加
