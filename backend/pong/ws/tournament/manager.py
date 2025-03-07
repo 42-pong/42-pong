@@ -46,6 +46,7 @@ class TournamentManager:
             asyncio.Event()
         )  # 参加者を待機するイベント
         self.match_manager_registry = manager_registry.global_registry
+        self.participant_lock = asyncio.Lock()  # 排他制御用の Lock
 
     async def add_participant(
         self, participant: player_data.PlayerData
@@ -79,12 +80,13 @@ class TournamentManager:
             self.group_name, participant.channel_name
         )
 
-        self.participants.append(participant)
+        async with self.participant_lock:  # 排他制御
+            self.participants.append(participant)
 
-        if len(self.participants) == 4:
-            # 4人集まったらイベントをセットしてトーナメントを開始
-            self.waiting_for_participants.set()
-            return True
+            if len(self.participants) == 4:
+                # 4人集まったらイベントをセットしてトーナメントを開始
+                self.waiting_for_participants.set()
+                return True
 
         # await self.send_group_announcement(
         #    chat_constants.GroupAnnouncement.MessageType.JOIN.value,
@@ -110,19 +112,20 @@ class TournamentManager:
             # 残りが一人なわけではないが、0以外の値を返したい
             return 1
 
-        if participant in self.participants:
-            self.participants.remove(participant)
-
         # 退出者をグループから削除
         await self.channel_handler.remove_from_group(
             self.group_name, participant.channel_name
         )
 
-        # 参加者がいなくなったらキャンセル処理をして、
-        if len(self.participants) == 0:
-            # キャンセル処理
-            await self.cancel_tournament()
-            return 0
+        async with self.participant_lock:  # 排他制御
+            if participant in self.participants:
+                self.participants.remove(participant)
+
+            # 参加者がいなくなったらキャンセル処理をして、
+            if len(self.participants) == 0:
+                # キャンセル処理
+                await self.cancel_tournament()
+                return 0
 
         # トーナメント参加者全員にリロードメッセージを送信
         await self._send_player_reload_message()
