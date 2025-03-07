@@ -90,9 +90,10 @@ class MatchManager:
         await self._end_game()
 
         # 勝者チームのデータを返り値として返す。
+        win_team = await self.pong_logic.get_winner()
         return (
             self.player1
-            if self.pong_logic.get_winner == match_constants.Team.ONE.value
+            if win_team == match_constants.Team.ONE.value
             else self.player2
         )
 
@@ -111,8 +112,11 @@ class MatchManager:
         if is_remote:
             team = (
                 match_constants.Team.ONE.value
-                if player == self.player1
+                if player.channel_name == self.player1.channel_name
                 else match_constants.Team.TWO.value
+            )
+            await self.channel_handler.add_to_group(
+                self.group_name, player.channel_name
             )
 
         message = self._build_message(
@@ -161,9 +165,7 @@ class MatchManager:
 
         # 全員からREADYメッセージが届いたらイベントをセットしてゲームを開始する。
         if self.ready_players == self.waiting_player_num:
-            await self.channel_handler.send_to_consumer(
-                message, player.channel_name
-            )
+            await self._send_message(message)
             self.waiting_player_ready.set()
 
     async def _start_game(self) -> None:
@@ -198,6 +200,11 @@ class MatchManager:
             current_time = asyncio.get_event_loop().time()
             delta = current_time - last_update
             if delta >= self.FPS:
+                # Pongを更新する前のボールの位置を保存
+                pos_x, pos_y = (
+                    self.pong_logic.ball_pos.x,
+                    self.pong_logic.ball_pos.y,
+                )
                 # Pongを更新
                 score_team: Optional[
                     str
@@ -237,10 +244,6 @@ class MatchManager:
                         self.player1.user_id
                         if score_team == match_constants.Team.ONE.value
                         else self.player2.user_id
-                    )
-                    pos_x, pos_y = (
-                        self.pong_logic.ball_pos.x,
-                        self.pong_logic.ball_pos.y,
                     )
                     asyncio.create_task(
                         match_service.create_score(

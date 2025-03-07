@@ -7,7 +7,7 @@ from channels.layers import get_channel_layer  # type: ignore
 
 from matches import constants as match_db_constants
 from tournaments import constants as tournament_db_constants
-from ws.match import match_manager
+from ws.match import manager_registry, match_manager
 from ws.share import constants as ws_constants
 
 from ..match import async_db_service as match_service
@@ -29,22 +29,25 @@ class TournamentManager:
     group_name: 'tournament_{tournament_id}'
     """
 
-    def __init__(self, tournament_id: int) -> None:
+    def __init__(
+        self, tournament_id: int, participant: player_data.PlayerData
+    ) -> None:
         self.tournament_id: int = tournament_id
         self.group_name: str = f"tournament_{self.tournament_id}"
-        self.participants: list[
-            player_data.PlayerData
-        ] = []  # 参加者の情報のリスト
+        self.participants: list[player_data.PlayerData] = [
+            participant
+        ]  # 参加者の情報のリスト
         self.channel_handler = channel_handler.ChannelHandler(
             get_channel_layer(), None
         )
         self.waiting_for_participants = (
             asyncio.Event()
         )  # 参加者を待機するイベント
+        self.match_manager_registry = manager_registry.global_registry
 
     async def add_participant(
         self, participant: player_data.PlayerData
-    ) -> None:
+    ) -> bool:
         """
         参加者を追加。DBにも参加テーブルを作成する。
         参加者が4人になったらトーナメントを開始する。
@@ -54,7 +57,7 @@ class TournamentManager:
             participant.user_id is None
             or participant.participation_name is None
         ):
-            return
+            return False
 
         # 参加レコードを作成
         create_result = await database_sync_to_async(
@@ -65,21 +68,24 @@ class TournamentManager:
             participant.participation_name,
         )
         if create_result.is_error:
-            return
+            return False
 
-        # 参加者をグループに追加
+        # 先にいるトーナメント参加者全員にリロードメッセージを送信
+        await self._send_player_reload_message()
+
+        # 新規参加者をグループに追加
         await self.channel_handler.add_to_group(
             self.group_name, participant.channel_name
         )
 
         self.participants.append(participant)
 
-        # トーナメント参加者全員にリロードメッセージを送信
-        await self._send_player_reload_message()
-
         if len(self.participants) == 4:
             # 4人集まったらイベントをセットしてトーナメントを開始
             self.waiting_for_participants.set()
+            return True
+
+        return True
 
     async def remove_participant(
         self, participant: player_data.PlayerData
@@ -133,9 +139,9 @@ class TournamentManager:
 
             # トーナメントの終了処理を行う。
             await self._end_tournament()
-        except Exception:
+        except Exception as e:
             # データベース操作によるエラーをキャッチ
-            # TODO: logger出力
+            logger.error(f"Error: {e}")
             await self.cancel_tournament()
 
     async def _start_tournament(self) -> None:
@@ -151,7 +157,7 @@ class TournamentManager:
         )
 
         if update_result.is_error:
-            raise Exception(update_result.unwrap_error())
+            logger.error(f"Error: {update_result.unwrap_error()}")
 
         # トーナメント情報を更新するように通知
         await self._send_tournament_reload_message()
@@ -171,7 +177,7 @@ class TournamentManager:
                 )
             )
             if update_result.is_error:
-                raise Exception(update_result.unwrap_error())
+                logger.error(f"Error: {update_result.unwrap_error()}")
             return
 
         # ラウンド作成
@@ -181,10 +187,16 @@ class TournamentManager:
             tournament_db_constants.RoundFields.StatusEnum.ON_GOING.value,
         )
         if create_result.is_error:
-            raise Exception(create_result.unwrap_error())
-        # TODO: ラウンド開始をアナウンス
+            logger.error(f"Error: {create_result.unwrap_error()}")
 
-        round_id = create_result.value[tournament_db_constants.RoundFields.ID]
+        # TODO: ラウンド開始をアナウンス
+        await self._send_tournament_reload_message()
+
+        # 新規ラウンド時に10秒待機
+        await asyncio.sleep(10)
+
+        value = create_result.unwrap()
+        round_id = value[tournament_db_constants.RoundFields.ID]
 
         # ラウンドの1対1マッチに振り分ける
         matchups = self._pair_participants(participants)
@@ -200,9 +212,10 @@ class TournamentManager:
             tournament_db_constants.RoundFields.StatusEnum.COMPLETED.value,
         )
         if update_result.is_error:
-            raise Exception(update_result.unwrap_error())
+            logger.error(f"Error: {update_result.unwrap_error()}")
 
         # TODO: ラウンド終了をアナウンス
+        await self._send_tournament_reload_message()
 
         await self._progress_rounds(next_round_participants, round_number + 1)
 
@@ -235,16 +248,19 @@ class TournamentManager:
         # マッチ作成と参加レコード作成
         create_tasks = [match_service.create_match(round_id) for _ in matchups]
         create_results = await asyncio.gather(*create_tasks)
+        await self._send_tournament_reload_message()
 
         self.valid_matches = []
-        self.participation_tasks = []
         self.match_manager_tasks = []  # バックグラウンドで実行する run() タスクを格納
 
         for (player1, player2), create_result in zip(matchups, create_results):
-            if create_result.is_error:
-                raise Exception(create_result.unwrap_error())
+            self.participation_tasks = []
 
-            match_id = create_result.value[match_db_constants.MatchFields.ID]
+            if create_result.is_error:
+                logger.error(f"Error: {create_result.unwrap_error()}")
+
+            value = create_result.unwrap()
+            match_id = value[match_db_constants.MatchFields.ID]
 
             # 参加レコード作成
             self.participation_tasks.append(
@@ -261,36 +277,40 @@ class TournamentManager:
                     team=match_ws_constants.Team.TWO.value,
                 )
             )
+            # 参加レコードを並列作成
+            participation_results = await asyncio.gather(
+                *self.participation_tasks
+            )
+            for result in participation_results:
+                if result.is_error:
+                    logger.error(f"Error: {result.unwrap_error()}")
 
             # MatchManager 作成と登録
-            match_manager = match_manager.MatchManager(
+            manager = match_manager.MatchManager(
                 match_id=match_id,
                 player1=player1,
                 player2=player2,
                 mode=match_ws_constants.Mode.REMOTE.value,
             )
-            # 試合をバックグラウンドで実行
-            self.match_manager_tasks.append(
-                asyncio.create_task(match_manager.run())
+
+            # MatchManagerRegistryにMatchManagerを追加
+            await self.match_manager_registry.register_match_manager(
+                match_id, manager
             )
+            # 試合をバックグラウンドで実行
+            self.match_manager_tasks.append(asyncio.create_task(manager.run()))
 
             # 試合開始を 各consumer に通知
             await self._send_assign_match_message(match_id, player1)
             await self._send_assign_match_message(match_id, player2)
 
-            self.valid_matches.append((match_id, match_manager))
-
-        # 参加レコードを並列作成
-        participation_results = await asyncio.gather(*self.participation_tasks)
-        for result in participation_results:
-            if result.is_error:
-                raise Exception(result.unwrap_error())
+            self.valid_matches.append((match_id, manager, player1, player2))
 
         # バックグラウンドタスクの結果を収集
         match_results = await asyncio.gather(*self.match_manager_tasks)
 
         final_results = []
-        for match_winner, (match_id, match_manager) in zip(
+        for match_winner, (match_id, manager, player1, player2) in zip(
             match_results, self.valid_matches
         ):
             # 型チェックの関係で必要
@@ -299,7 +319,7 @@ class TournamentManager:
                 continue
 
             # 試合結果を保持
-            if match_winner == player1:
+            if match_winner.channel_name == player1.channel_name:
                 winner = player1
                 loser = player2
             else:
@@ -308,7 +328,6 @@ class TournamentManager:
             final_results.append((match_id, winner, loser))
 
         return final_results
-        pass
 
     async def _process_results(
         self,
@@ -350,7 +369,7 @@ class TournamentManager:
         )
         # TODO: Error処理
         if update_result.is_error:
-            raise Exception(update_result.unwrap_error())
+            logger.error(f"Error: {update_result.unwrap_error()}")
 
         await self._send_tournament_reload_message()
 
@@ -359,8 +378,12 @@ class TournamentManager:
         トーナメント中止処理。
         """
         # トーナメント開始後のキャンセル処理
-        # TODO: すべてのCOMPLETEDではないのリソースをCANCELEDに変更
-        pass
+        # 状態がCOMPLETEDではない子のトーナメントに紐づくリソースをすべてCANCELEDに変更
+        update_result = await tournament_service.cancel_uncompleted_tournament(
+            self.tournament_id,
+        )
+        if update_result.is_error:
+            logger.error(f"Error: {update_result.unwrap_error()}")
 
     async def _send_player_reload_message(self) -> None:
         """

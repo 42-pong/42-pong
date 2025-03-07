@@ -59,7 +59,7 @@ def update_match_status(match_id: int, status: str) -> UpdateMatchResult:
 
 @database_sync_to_async
 def create_participation(
-    match_id: int, user_id: int, team: str, is_win: bool
+    match_id: int, user_id: int, team: str, is_win: bool = False
 ) -> CreateParticipationResult:
     """
     試合の参加レコードを作成する。
