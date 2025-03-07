@@ -53,7 +53,8 @@ class MatchManager:
 
         self.pong_logic = PongLogic()
         self.group_name = f"pong_{match_id}"  # 一意
-        self.ready_players = 0
+        self.player1_ready: bool = False
+        self.player2_ready: bool = False
         self.waiting_player_ready = asyncio.Event()
         self.canceled = False
         self.remained_player: Optional[player_data.PlayerData] = None
@@ -158,7 +159,10 @@ class MatchManager:
         consumerから渡されたready メッセージの処理、返信を行う関数。
         """
         # readyメッセージを送ってきたプレーヤーのカウント
-        self.ready_players += 1
+        if player.channel_name == self.player1.channel_name:
+            self.player1_ready = True
+        else:
+            self.player2_ready = True
 
         # メッセージ作成
         message = self._build_message(
@@ -167,7 +171,17 @@ class MatchManager:
         )
 
         # 全員からREADYメッセージが届いたらイベントをセットしてゲームを開始する。
-        if self.ready_players == self.waiting_player_num:
+        if (
+            self.mode == match_constants.Mode.LOCAL.value
+            and self.player1_ready
+        ):
+            await self._send_message(message)
+            self.waiting_player_ready.set()
+        elif (
+            self.mode == match_constants.Mode.REMOTE.value
+            and self.player1_ready
+            and self.player2_ready
+        ):
             await self._send_message(message)
             self.waiting_player_ready.set()
 
