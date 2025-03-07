@@ -86,11 +86,11 @@ class TournamentManager:
             self.waiting_for_participants.set()
             return True
 
-        await self.send_group_announcement(
-            chat_constants.GroupAnnouncement.MessageType.JOIN.value,
-            participant,
-            None,
-        )
+        # await self.send_group_announcement(
+        #    chat_constants.GroupAnnouncement.MessageType.JOIN.value,
+        #    participant,
+        #    None,
+        # )
         return True
 
     async def remove_participant(
@@ -126,11 +126,11 @@ class TournamentManager:
 
         # トーナメント参加者全員にリロードメッセージを送信
         await self._send_player_reload_message()
-        await self.send_group_announcement(
-            chat_constants.GroupAnnouncement.MessageType.LEAVE.value,
-            participant,
-            None,
-        )
+        # await self.send_group_announcement(
+        #    chat_constants.GroupAnnouncement.MessageType.LEAVE.value,
+        #    participant,
+        #    None,
+        # )
         return len(self.participants)
 
     async def run(self) -> None:
@@ -312,11 +312,11 @@ class TournamentManager:
             self.match_manager_tasks.append(asyncio.create_task(manager.run()))
 
             # 試合開始を 各consumer に通知
-            await self.send_group_announcement(
-                chat_constants.GroupAnnouncement.MessageType.MATCH_START.value,
-                player1,
-                player2,
-            )
+            # await self.send_group_announcement(
+            #    chat_constants.GroupAnnouncement.MessageType.MATCH_START.value,
+            #    player1,
+            #    player2,
+            # )
             await asyncio.sleep(5)
             await self._send_assign_match_message(match_id, player1)
             await self._send_assign_match_message(match_id, player2)
