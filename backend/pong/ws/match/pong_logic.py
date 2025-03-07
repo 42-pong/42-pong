@@ -124,6 +124,16 @@ class PongLogic:
 
             return paddle_top <= ball_bottom and ball_top <= paddle_bottom
 
+        # パドルのどの部分に当たったかによって反射角度を調整
+        def _adjust_reflection_angle(
+            paddle_pos: PosStruct, ball_speed_y: int
+        ) -> int:
+            hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
+                paddle_pos.y + self.PADDLE_HEIGHT // 2
+            )
+            ball_speed_y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
+            return ball_speed_y
+
         # パドル1（左側プレイヤー）との衝突判定
         ball_left = self.ball_pos.x
         paddle1_posright = self.paddle1_pos.x + self.PADDLE_WIDTH
@@ -132,11 +142,9 @@ class PongLogic:
             and _is_in_vertical_paddle_range(self.paddle1_pos)
         ):
             self.ball_speed.x = -self.ball_speed.x
-            # パドルのどの部分に当たったかによって反射角度を調整
-            hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
-                self.paddle1_pos.y + self.PADDLE_HEIGHT // 2
+            self.ball_speed.y = _adjust_reflection_angle(
+                self.paddle1_pos, self.ball_speed.y
             )
-            self.ball_speed.y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
 
         # パドル2（右側プレイヤー）との衝突判定
         ball_right = self.ball_pos.x + self.BALL_SIZE
@@ -146,11 +154,9 @@ class PongLogic:
             and _is_in_vertical_paddle_range(self.paddle2_pos)
         ):
             self.ball_speed.x = -self.ball_speed.x
-            # パドルのどの部分に当たったかによって反射角度を調整
-            hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
-                self.paddle2_pos.y + self.PADDLE_HEIGHT // 2
+            self.ball_speed.y = _adjust_reflection_angle(
+                self.paddle2_pos, self.ball_speed.y
             )
-            self.ball_speed.y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
 
     async def check_score(self) -> Optional[str]:
         """
