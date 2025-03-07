@@ -317,6 +317,7 @@ class TournamentManager:
                 player1,
                 player2,
             )
+            await asyncio.sleep(5)
             await self._send_assign_match_message(match_id, player1)
             await self._send_assign_match_message(match_id, player2)
 
