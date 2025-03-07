@@ -1,12 +1,14 @@
 import asyncio
 import logging
 import random
+from typing import Optional
 
 from channels.db import database_sync_to_async  # type: ignore
 from channels.layers import get_channel_layer  # type: ignore
 
 from matches import constants as match_db_constants
 from tournaments import constants as tournament_db_constants
+from ws.chat import constants as chat_constants
 from ws.match import manager_registry, match_manager
 from ws.share import constants as ws_constants
 
@@ -441,20 +443,27 @@ class TournamentManager:
             },
         }
 
-    def _build_announce_message(self, type: str, data: dict) -> dict:
+    def _build_chat_message(self, type: str, data: dict) -> dict:
         """
         プレーヤーに送るアナウンスメッセージを作成。
 
         :param data: ステージに関連するデータ
         :return: 作成したメッセージ
         """
-        # TODO: チャットを実装したら実装
-        return {}
+        return {
+            ws_constants.Category.key(): ws_constants.Category.CHAT.value,
+            ws_constants.PAYLOAD_KEY: {
+                chat_constants.Type.key(): type,
+                ws_constants.DATA_KEY: data,
+            },
+        }
 
-    def send_group_chat(self, user_id: int, content: str) -> None:
+    async def send_group_chat(self, message: dict) -> None:
         """
         プレーヤーがグループチャットに送信したメッセージを全員に再送信する関数。
         ChatHandlerから呼ばれる。
         """
-        # TODO: チャットを実装したら実装
-        pass
+        message = self._build_chat_message(
+            chat_constants.Type.GROUP_CHAT.value, message
+        )
+        await self.channel_handler.send_to_group(self.group_name, message)
