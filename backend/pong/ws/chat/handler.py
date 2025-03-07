@@ -5,6 +5,7 @@ from channels.layers import BaseChannelLayer  # type: ignore
 
 from ..share import channel_handler
 from ..share import constants as ws_constants
+from ..tournament import manager_registry as tournament_manager_registry
 from . import constants as chat_constants
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,20 @@ class ChatHandler:
         pass
 
     async def _handle_group_chat(self, payload: dict) -> None:
-        # TODO: TournamentManagerRegistryを通して、全体に送る
+        """
+        グループチャット用のハンドラ関数
+        TournamentManagerRegistryを通して、トーナメントグループに送る
+        """
+        tournament_id = payload.get(chat_constants.TOURNAMENT_ID)
+        if tournament_id is None:
+            return
+
+        message = self._build_chat_message(
+            chat_constants.Type.GROUP_CHAT.value, payload
+        )
+        await tournament_manager_registry.global_tournament_registry.send_group_chat(
+            tournament_id, message
+        )
         pass
 
     def _build_chat_message(self, type: str, data: dict) -> dict:
