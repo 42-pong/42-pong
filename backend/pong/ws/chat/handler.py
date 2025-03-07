@@ -3,6 +3,7 @@ from typing import Optional
 
 from channels.layers import BaseChannelLayer  # type: ignore
 
+from ..login import constants as login_constants
 from ..share import channel_handler
 from ..share import constants as ws_constants
 from ..tournament import manager_registry as tournament_manager_registry
@@ -84,3 +85,14 @@ class ChatHandler:
                 ws_constants.DATA_KEY: data,
             },
         }
+
+    async def _is_online_user(self, user_id: int) -> bool:
+        """
+        引数で受け取ったuser_idのユーザーのオンライン状態を取得する関数
+        """
+        exist = await AsyncRedisClient.exists(
+            login_constants.USER_NAMESPACE,
+            user_id,
+            login_constants.CHANNEL_RESOURCE,
+        )
+        return exist
