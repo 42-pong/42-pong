@@ -467,3 +467,24 @@ class TournamentManager:
             chat_constants.Type.GROUP_CHAT.value, message
         )
         await self.channel_handler.send_to_group(self.group_name, message)
+
+    async def send_group_announce(
+        self,
+        msg_type: str,
+        player1: player_data.PlayerData,
+        player2: Optional[player_data.PlayerData],
+    ) -> None:
+        """
+        トーナメント中にトーナメント待機画面へ送るメッセージ
+        """
+        message = self._build_chat_message(
+            chat_constants.Type.GROUP_ANNOUNCEMENT.value,
+            {
+                chat_constants.MESSAGE_TYPE: msg_type,
+                chat_constants.GroupAnnouncement.PLAYER1: player1.user_id,
+                chat_constants.GroupAnnouncement.PLAYER2: player2.user_id
+                if player2 is not None and player2.user_id is not None
+                else None,
+            },
+        )
+        await self.channel_handler.send_to_group(self.group_name, message)
