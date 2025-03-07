@@ -1,7 +1,11 @@
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from channels.layers import BaseChannelLayer  # type: ignore
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
+from ws.share.async_redis_client import AsyncRedisClient  # type: ignore
 
 from ..login import constants as login_constants
 from ..share import channel_handler
@@ -44,10 +48,18 @@ class ChatHandler:
 
     async def _handle_dm(self, payload: dict) -> None:
         # TODO: # 相手がオンラインなら送信する
+        from_user_id: Optional[Any] = payload.get(chat_constants.FROM)
+        await self._validate_user_id(from_user_id)
+        to_user_id: Optional[Any] = payload.get(chat_constants.TO)
+        await self._validate_user_id(to_user_id)
         pass
 
     async def _handle_invite(self, payload: dict) -> None:
         # TODO: # 相手がオンラインなら送信する
+        from_user_id: Optional[Any] = payload.get(chat_constants.FROM)
+        await self._validate_user_id(from_user_id)
+        to_user_id: Optional[Any] = payload.get(chat_constants.TO)
+        await self._validate_user_id(to_user_id)
         pass
 
     async def _handle_group_chat(self, payload: dict) -> None:
@@ -55,6 +67,8 @@ class ChatHandler:
         グループチャット用のハンドラ関数
         TournamentManagerRegistryを通して、トーナメントグループに送る
         """
+        from_user_id: Optional[Any] = payload.get(chat_constants.FROM)
+        await self._validate_user_id(from_user_id)
         tournament_id = payload.get(chat_constants.TOURNAMENT_ID)
         if tournament_id is None:
             return
@@ -96,3 +110,18 @@ class ChatHandler:
             login_constants.CHANNEL_RESOURCE,
         )
         return exist
+
+    async def _validate_user_id(self, input_user_id: Optional[Any]) -> None:
+        """
+        messageで受け取ったuser_idが有効かどうかバリデーションを行う
+        """
+        exists = False
+        # Noneなら呼ばれない想定だがtype checkのために確認
+        if isinstance(input_user_id, int):
+            # 非同期にUserを取得
+            exists = await User.objects.filter(id=input_user_id).aexists()
+
+        if not exists:
+            raise serializers.ValidationError(
+                f"Invalid user_id: {input_user_id}"
+            )
