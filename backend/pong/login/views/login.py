@@ -5,15 +5,15 @@ from django.contrib.auth.models import User
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
-from pong.custom_response import custom_response
 from login import models, two_factor_auth
+from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
 
 
 class LoginView(views.APIView):
     """
-    アカウントが存在するかどうかを認証するエンドポイント
+    アカウントが存在するかどうかを認証し、2要素認証用のパラメータを返すエンドポイント
     """
 
     authentication_classes = []
@@ -43,7 +43,7 @@ class LoginView(views.APIView):
                         "qr_code": {
                             "type": "string",
                             "description": "QRコードのURL",
-                        }
+                        },
                     },
                 },
                 examples=[
@@ -114,9 +114,9 @@ class LoginView(views.APIView):
             ),
         },
     )
-    def get(self, request: request.Request) -> response.Response:
+    def post(self, request: request.Request) -> response.Response:
         """
-        アカウントが存在するかどうかを認証するGETメソッド
+        アカウントが存在するかどうかを認証し、2要素認証用のパラメータ生成するPOSTメソッド
 
         Responses:
             - 200: そのアカウントが2要素認証が有効かどうかを返す。無効の場合はQRコードのURLも返す
@@ -164,12 +164,14 @@ class LoginView(views.APIView):
         qr_code = ""
         if not two_fa.is_done_2fa:
             qr_code = f"/media/qr/{user.username}.png"
-            two_fa.secret = two_factor_auth.generate_2fa_qr_code(user.email, "pong", qr_code)
+            two_fa.secret = two_factor_auth.generate_2fa_qr_code(
+                user.email, "pong", qr_code
+            )
             two_fa.save()
         return custom_response.CustomResponse(
             data={
                 "is_done_2fa": two_fa.is_done_2fa,
                 "qr_code": qr_code,
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )

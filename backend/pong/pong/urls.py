@@ -38,6 +38,6 @@ urlpatterns = [
     path("api/tournaments/", include("tournaments.urls")),
     # matches
     path("api/matches/", include("matches.urls")),
-	# login
-	path("api/login/", include("login.urls")),
+    # login
+    path("api/login/", include("login.urls")),
 ]

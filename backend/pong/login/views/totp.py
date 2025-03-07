@@ -1,12 +1,13 @@
 import logging
 
 from django.contrib.auth.models import User
-from drf_spectacular import utils
-from rest_framework import permissions, request, response, status, views, test
-from pong.custom_response import custom_response
-from login import models, two_factor_auth
-from jwt.views import token
 from django.urls import reverse
+from drf_spectacular import utils
+from rest_framework import permissions, request, response, status, test, views
+
+from jwt.views import token
+from login import models, two_factor_auth
+from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ class TotpView(views.APIView):
             ),
         },
     )
-    def POST(self, request: request.Request) -> response.Response:
+    def post(self, request: request.Request) -> response.Response:
         """
         ワンタイムパスワードを検証し、アクセストークンとリフレッシュトークンを生成するPOSTメソッド
 
@@ -123,7 +124,7 @@ class TotpView(views.APIView):
                 - internal_error:
                     - 予期せぬエラーが発生した場合
         """
-        required_keys: set = {"totp","email", "password"}
+        required_keys: set = {"totp", "email", "password"}
         request_keys: set = set(request.data.keys())
         if request_keys != required_keys:
             return custom_response.CustomResponse(
@@ -139,9 +140,21 @@ class TotpView(views.APIView):
                 code=["not_exists"], status=status.HTTP_401_UNAUTHORIZED
             )
         two_fa = models.TwoFactorAuth.objects.get(user_id=user.id)
+        totp = request.data.get("totp")
+        if totp is None:
+            logger.error(f"TOTP fail: {totp}")
+            return custom_response.CustomResponse(
+                code=["fail"], status=status.HTTP_401_UNAUTHORIZED
+            )
+
         secret = two_fa.secret
-        totp = request.data["totp"]
-        if (two_factor_auth.verify_2fa_otp(secret, totp)):
+        if secret is None:
+            logger.error(f"Secret not found for user {user.id}")
+            return custom_response.CustomResponse(
+                code=["fail"], status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not two_factor_auth.verify_2fa_totp(secret, totp):
             return custom_response.CustomResponse(
                 code=["incorrect_password"],
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -163,7 +176,7 @@ class TotpView(views.APIView):
                 f"{response.status_code} TokenObtainFailedError: {response.data}"
             )
             return custom_response.CustomResponse(
-                code=response.code,
+                code=["internal_error"],
                 status=response.status_code,
                 data=response.data,
             )
