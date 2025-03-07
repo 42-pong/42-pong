@@ -120,15 +120,12 @@ class PongLogic:
         ball_bottom = self.ball_pos.y + self.BALL_SIZE
 
         # パドル1（左側プレイヤー）との衝突判定
-        paddle1_posleft = self.paddle1_pos.x
         paddle1_posright = self.paddle1_pos.x + self.PADDLE_WIDTH
         paddle1_postop = self.paddle1_pos.y
         paddle1_posbottom = self.paddle1_pos.y + self.PADDLE_HEIGHT
 
         if (
-            paddle1_posleft
-            <= ball_right
-            <= paddle1_posright  # ボールの右側がパドルの左端に接触
+            ball_left <= paddle1_posright  # ボールの左側がパドルの右端に接触
             and paddle1_postop <= ball_bottom
             and ball_top <= paddle1_posbottom
         ):  # ボールの上下がパドルの範囲内
@@ -141,14 +138,11 @@ class PongLogic:
 
         # パドル2（右側プレイヤー）との衝突判定
         paddle2_posleft = self.paddle2_pos.x
-        paddle2_posright = self.paddle2_pos.x + self.PADDLE_WIDTH
         paddle2_postop = self.paddle2_pos.y
         paddle2_posbottom = self.paddle2_pos.y + self.PADDLE_HEIGHT
 
         if (
-            paddle2_posleft
-            <= ball_left
-            <= paddle2_posright  # ボールの左側がパドルの右端に接触
+            paddle2_posleft <= ball_right  # ボールの右側がパドルの左端に接触
             and paddle2_postop <= ball_bottom
             and ball_top <= paddle2_posbottom
         ):  # ボールの上下がパドルの範囲内
