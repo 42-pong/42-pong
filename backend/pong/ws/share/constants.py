@@ -13,6 +13,7 @@ class Category(BaseEnum):
     STATUS = "STATUS"
     MATCH = "MATCH"
     TOURNAMENT = "TOURNAMENT"
+    CHAT = "CHAT"
     # TODO: 他のカテゴリーは順次追加する
 
 
