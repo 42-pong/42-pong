@@ -23,8 +23,8 @@ class ChatHandler:
         channel_name: str,
     ):
         self.type_handlers = {
-            chat_constants.Type.DM.value: self._handle_dm,
-            chat_constants.Type.INVITE.value: self._handle_invite,
+            # chat_constants.Type.DM.value: self._handle_dm,
+            # chat_constants.Type.INVITE.value: self._handle_invite,
             chat_constants.Type.GROUP_CHAT.value: self._handle_group_chat,
         }
         self.channel_handler: channel_handler.ChannelHandler = (
