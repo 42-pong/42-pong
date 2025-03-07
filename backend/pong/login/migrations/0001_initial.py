@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,16 +14,37 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='TwoFactorAuth',
+            name="TwoFactorAuth",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_two_factor_auth', models.BooleanField(default=False)),
-                ('secret', models.CharField(blank=True, max_length=32, null=True)),
-                ('qr_code_path', models.CharField(blank=True, max_length=255, null=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='two_fa', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("is_two_factor_auth", models.BooleanField(default=False)),
+                (
+                    "secret",
+                    models.CharField(blank=True, max_length=32, null=True),
+                ),
+                (
+                    "qr_code_path",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="two_fa",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'two_factor_auth',
+                "db_table": "two_factor_auth",
             },
         ),
     ]

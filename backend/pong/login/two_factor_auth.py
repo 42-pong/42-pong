@@ -1,5 +1,6 @@
 import pyotp
-import qrcode
+import qrcode  # type: ignore[import-untyped]
+
 
 def generate_2fa_qr_code(email: str, issuer_name: str, save_path: str) -> str:
     """
@@ -19,7 +20,8 @@ def generate_2fa_qr_code(email: str, issuer_name: str, save_path: str) -> str:
 
     return secret
 
-def verify_2fa_otp(secret: str, user_input: str) -> bool:
+
+def verify_2fa_totp(secret: str, user_input: str) -> bool:
     """
     ユーザー入力のワンタイムパスワードが正しいかどうかを検証する関数。
 

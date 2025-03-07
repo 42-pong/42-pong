@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('login', '0001_initial'),
+        ("login", "0001_initial"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='twofactorauth',
-            old_name='is_two_factor_auth',
-            new_name='is_done_2fa',
+            model_name="twofactorauth",
+            old_name="is_two_factor_auth",
+            new_name="is_done_2fa",
         ),
     ]
