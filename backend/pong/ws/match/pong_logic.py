@@ -113,22 +113,24 @@ class PongLogic:
         ボールとパドルの接触判定
         接触していれば、ボールの進行方向を変える。
         """
-        # ボールの四隅の座標
-        ball_left = self.ball_pos.x
-        ball_right = self.ball_pos.x + self.BALL_SIZE
-        ball_top = self.ball_pos.y
-        ball_bottom = self.ball_pos.y + self.BALL_SIZE
+
+        # ボールの上下がパドルの範囲内にあればTrue
+        def _is_in_vertical_paddle_range(paddle_pos: PosStruct) -> bool:
+            paddle_top = paddle_pos.y
+            paddle_bottom = paddle_pos.y + self.PADDLE_HEIGHT
+
+            ball_top = self.ball_pos.y
+            ball_bottom = self.ball_pos.y + self.BALL_SIZE
+
+            return paddle_top <= ball_bottom and ball_top <= paddle_bottom
 
         # パドル1（左側プレイヤー）との衝突判定
+        ball_left = self.ball_pos.x
         paddle1_posright = self.paddle1_pos.x + self.PADDLE_WIDTH
-        paddle1_postop = self.paddle1_pos.y
-        paddle1_posbottom = self.paddle1_pos.y + self.PADDLE_HEIGHT
-
         if (
             ball_left <= paddle1_posright  # ボールの左側がパドルの右端に接触
-            and paddle1_postop <= ball_bottom
-            and ball_top <= paddle1_posbottom
-        ):  # ボールの上下がパドルの範囲内
+            and _is_in_vertical_paddle_range(self.paddle1_pos)
+        ):
             self.ball_speed.x = -self.ball_speed.x
             # パドルのどの部分に当たったかによって反射角度を調整
             hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
@@ -137,15 +139,12 @@ class PongLogic:
             self.ball_speed.y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
 
         # パドル2（右側プレイヤー）との衝突判定
+        ball_right = self.ball_pos.x + self.BALL_SIZE
         paddle2_posleft = self.paddle2_pos.x
-        paddle2_postop = self.paddle2_pos.y
-        paddle2_posbottom = self.paddle2_pos.y + self.PADDLE_HEIGHT
-
         if (
             paddle2_posleft <= ball_right  # ボールの右側がパドルの左端に接触
-            and paddle2_postop <= ball_bottom
-            and ball_top <= paddle2_posbottom
-        ):  # ボールの上下がパドルの範囲内
+            and _is_in_vertical_paddle_range(self.paddle2_pos)
+        ):
             self.ball_speed.x = -self.ball_speed.x
             # パドルのどの部分に当たったかによって反射角度を調整
             hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
