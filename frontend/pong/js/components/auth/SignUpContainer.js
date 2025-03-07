@@ -90,6 +90,7 @@ export class SignUpContainer extends Component {
     submitButton.type = "submit";
     submitButton.textContent = "サインアップ";
     BootstrapButtons.setPrimary(submitButton);
+    BootstrapSizing.setWidth25(submitButton);
 
     form.append(
       this.#loginError,

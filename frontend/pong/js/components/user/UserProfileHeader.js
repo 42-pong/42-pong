@@ -43,8 +43,10 @@ export class UserProfileHeader extends Component {
     const { user } = this._getState();
     if (!user) {
       const signIn = new SignInButton();
+      signIn.setOutlinePrimary();
       signIn.setSmall();
       const signUp = new SignUpButton();
+      signUp.setPrimary();
       signUp.setSmall();
       BootstrapSpacing.setMarginLeft(signUp, 3);
       this.append(signIn, signUp);
