@@ -5,6 +5,7 @@ import { createElement } from "../../utils/elements/createElement";
 import { createDefaultCard } from "../../utils/elements/div/createDefaultCard";
 import { createStartFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createInlineListItem } from "../../utils/elements/li/createListItem";
+import { getTextContent } from "../../utils/i18n/lang";
 import { createStatusBadge } from "../../utils/tournament/createStatusBadge";
 import { MatchCard } from "../match/MatchCard";
 import { ListContainer } from "../utils/ListContainer";
@@ -20,7 +21,7 @@ export class RoundCard extends Component {
     } = this._getState();
 
     const roundName = createElement("span", {
-      textContent: `ラウンド ${roundNumber}`,
+      textContent: `${getTextContent("round")} ${roundNumber}`,
     });
     const statusBadge = createStatusBadge(status);
     BootstrapSpacing.setMarginLeft(statusBadge, 3);

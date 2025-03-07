@@ -1,11 +1,12 @@
 import { deleteBlocks } from "../../api/users/deleteBlocks";
 import { StyledButton } from "../../core/StyledButton";
+import { getTextContent } from "../../utils/i18n/lang";
 
 export class UnblockUserButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
     super(
       {
-        textContent: "解除",
+        textContent: getTextContent("unset"),
         user: null,
         reload: null,
         ...state,

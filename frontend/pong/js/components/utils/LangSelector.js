@@ -12,7 +12,7 @@ import {
 export class LangSelector extends Component {
   #select;
 
-  static #langs = ["en", "jp", "fr"];
+  static #langs = ["en", "jp", "fr", "zh", "es", "ko"];
 
   _setStyle() {
     setClassNames(this, "form-group-sm");

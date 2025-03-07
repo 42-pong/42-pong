@@ -5,6 +5,7 @@ import { Component } from "../../core/Component";
 import { createDefaultFlexBox } from "../../utils/elements/div/createFlexBox";
 import { createHorizontalSplitLayout } from "../../utils/elements/div/createHorizontalSplitLayout";
 import { setHeight } from "../../utils/elements/style/setHeight";
+import { getTextContent } from "../../utils/i18n/lang";
 import { LinkButton } from "../utils/LinkButton";
 import { TournamentLeaveButton } from "./TournamentLeaveButton";
 import { TournamentScoreboard } from "./TournamentScoreboard";
@@ -44,14 +45,14 @@ export class TournamentFinished extends Component {
 
 const createReturningButtons = (tournamentId) => {
   const backToTournamentEntrance = new TournamentLeaveButton({
-    textContent: "もう一度",
+    textContent: getTextContent("tryOneMoreTime"),
     tournamentId,
   });
   backToTournamentEntrance.setPrimary();
   BootstrapSpacing.setMargin(backToTournamentEntrance, 3);
 
   const backToHome = new LinkButton({
-    textContent: "ホームに戻る",
+    textContent: getTextContent("backToHome"),
     pathname: Paths.HOME,
   });
   backToHome.setOutlinePrimary();

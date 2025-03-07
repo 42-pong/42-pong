@@ -14,6 +14,7 @@ import { createElement } from "../../utils/elements/createElement";
 import { createHorizontalSplitLayout } from "../../utils/elements/div/createHorizontalSplitLayout";
 import { createVerticalSplitLayout } from "../../utils/elements/div/createVerticalSplitLayout";
 import { setHeight } from "../../utils/elements/style/setHeight";
+import { getTextContent } from "../../utils/i18n/lang";
 import { isValidId } from "../../utils/isValidId";
 import { ChatPayload } from "../../websocket/payload/ChatPayload";
 import { TournamentPayload } from "../../websocket/payload/TournamentPayload";
@@ -140,7 +141,7 @@ export class TournamentProgress extends Component {
 
     // TODO: タイトル要素を作成する関数でまとめる
     const title = createElement("h1");
-    title.textContent = `🏓 トーナメント #${tournamentId}`;
+    title.textContent = `🏓 ${getTextContent("tournament")} #${tournamentId}`;
     BootstrapSpacing.setMargin(title, 5);
 
     const left = createHorizontalSplitLayout(

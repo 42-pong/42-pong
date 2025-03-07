@@ -1,11 +1,12 @@
 import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { StyledButton } from "../../core/StyledButton";
+import { getTextContent } from "../../utils/i18n/lang";
 
 export class SignUpButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
     super(
-      { textContent: "サインアップ", ...state },
+      { textContent: getTextContent("signup"), ...state },
       { type: "button", ...attributes },
     );
   }

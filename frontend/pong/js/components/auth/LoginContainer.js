@@ -11,6 +11,7 @@ import { MessageEnums } from "../../enums/MessageEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { setClassNames } from "../../utils/elements/setClassNames";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { LinkButton } from "../utils/LinkButton";
 import { OauthButton } from "./OauthButton";
 import { SignUpButton } from "./SignUpButton";
@@ -75,14 +76,14 @@ export class LoginContainer extends Component {
     // サインインボタンを作成
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
-    submitButton.textContent = "サインイン";
+    submitButton.textContent = getTextContent("signin");
     BootstrapButtons.setPrimary(submitButton);
     BootstrapSpacing.setMargin(submitButton);
     BootstrapSizing.setWidth25(submitButton);
 
     // ゲストボタン作成
     const guestButton = new LinkButton({
-      textContent: "ゲストとして",
+      textContent: getTextContent("guest"),
       pathname: Paths.HOME,
     });
     guestButton.setSecondary();
@@ -147,17 +148,12 @@ export class LoginContainer extends Component {
         if (isVerified)
           UserSessionManager.getInstance().redirect(Paths.HOME);
       } catch (error) {
-        console.error("ログインエラー:", error);
+        console.error("login error:", error);
       }
     });
   }
 
   _render() {
     this.append(this.#title, this.#form);
-
-    //todo
-    //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
-    //cookieからJWTを取得する
-    //this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
   }
 }

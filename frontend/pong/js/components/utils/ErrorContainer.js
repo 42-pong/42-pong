@@ -4,6 +4,7 @@ import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { Paths } from "../../constants/Paths";
 import { Component } from "../../core/Component";
 import { createElement } from "../../utils/elements/createElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { LinkButton } from "./LinkButton";
 
 export class ErrorContainer extends Component {
@@ -25,7 +26,7 @@ export class ErrorContainer extends Component {
 
   _onConnect() {
     this.#toHome = new LinkButton({
-      textContent: "[ホーム] に戻る",
+      textContent: getTextContent("backToHome"),
       pathname: Paths.HOME,
     });
   }
@@ -34,7 +35,7 @@ export class ErrorContainer extends Component {
     const { message } = this._getState();
 
     const errorMessage = createElement("span", {
-      textContent: `❗ Error: ${message}`,
+      textContent: `❗ ${getTextContent("error")}: ${message}`,
     });
 
     this.append(errorMessage, this.#toHome);

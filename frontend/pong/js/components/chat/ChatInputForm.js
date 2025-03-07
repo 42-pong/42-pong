@@ -6,6 +6,7 @@ import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Component } from "../../core/Component";
 import { isValidGroupMessage } from "../../utils/chat/isValidGroupMessage";
 import { createElement } from "../../utils/elements/createElement";
+import { getTextContent } from "../../utils/i18n/lang";
 
 export class ChatInputForm extends Component {
   #form;
@@ -34,11 +35,11 @@ export class ChatInputForm extends Component {
     this.#input = createElement(
       "input",
       {},
-      { type: "text", placeholder: "メッセージ" },
+      { type: "text", placeholder: getTextContent("message") },
     );
     this.#button = createElement(
       "button",
-      { textContent: "送信" },
+      { textContent: getTextContent("send") },
       { type: "submit" },
     );
     this.#form = createElement("form");

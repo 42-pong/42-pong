@@ -7,6 +7,7 @@ import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { MatchContainer } from "../match/MatchContainer";
 import { EventDispatchingButton } from "../utils/EventDispatchingButton";
 import { LinkButton } from "../utils/LinkButton";
@@ -82,14 +83,17 @@ export class GameStartPanel extends Component {
 
 const createMenu = (isSignedIn) => {
   const tournamentStartButton = new LinkButton(
-    { textContent: "トーナメント開始", pathname: Paths.TOURNAMENTS },
+    {
+      textContent: getTextContent("remoteTournament"),
+      pathname: Paths.TOURNAMENTS,
+    },
     { type: "button" },
   );
   tournamentStartButton.setPrimary();
   if (!isSignedIn) tournamentStartButton.setDisabled();
 
   const localMatchStartButton = new EventDispatchingButton(
-    { textContent: "ローカル対戦" },
+    { textContent: getTextContent("localMatch") },
     { type: "button" },
     PongEvents.START_MATCH,
   );

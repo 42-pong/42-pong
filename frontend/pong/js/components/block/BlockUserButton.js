@@ -1,10 +1,16 @@
 import { postBlocks } from "../../api/users/postBlocks";
 import { StyledButton } from "../../core/StyledButton";
+import { getTextContent } from "../../utils/i18n/lang";
 
 export class BlockUserButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
     super(
-      { textContent: "ブロック", user: null, reload: null, ...state },
+      {
+        textContent: getTextContent("blockUser"),
+        user: null,
+        reload: null,
+        ...state,
+      },
       { type: "button", ...attributes },
     );
   }
@@ -16,10 +22,10 @@ export class BlockUserButton extends StyledButton {
     } = this._getState();
     if (isBlocked) {
       this.setDisabled();
-      this.setTextContent("ブロック済み");
+      this.setTextContent(getTextContent("alreadyBlocked"));
     } else {
       this.unsetDisabled();
-      this.setTextContent("ブロック");
+      this.setTextContent(getTextContent("blockUser"));
     }
   }
 

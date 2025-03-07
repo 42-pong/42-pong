@@ -4,6 +4,7 @@ import { BootstrapFlex } from "../../bootstrap/utilities/flex";
 import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { Component } from "../../core/Component";
 import { setHeight } from "../../utils/elements/style/setHeight";
+import { getTextContent } from "../../utils/i18n/lang";
 import { UserListItem } from "../user/UserListItem";
 import { ListContainer } from "../utils/ListContainer";
 import { TournamentLeaveButton } from "./TournamentLeaveButton";
@@ -41,7 +42,7 @@ export class TournamentWaiting extends Component {
 
     const { tournamentId } = this._getState();
     this.#leaveButton = new TournamentLeaveButton({
-      textContent: "戻る",
+      textContent: getTextContent("goBack"),
       tournamentId,
     });
   }

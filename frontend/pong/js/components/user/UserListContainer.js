@@ -8,6 +8,7 @@ import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { setHeight } from "../../utils/elements/style/setHeight";
+import { getTextContent } from "../../utils/i18n/lang";
 import { ErrorContainer } from "../utils/ErrorContainer";
 import { ListContainer } from "../utils/ListContainer";
 import { UserListItem } from "./UserListItem";
@@ -68,14 +69,18 @@ export class UserListContainer extends Component {
   _render() {
     const { isError } = this._getState();
     if (isError) {
-      this.append(new ErrorContainer({ message: "一覧情報の取得" }));
+      this.append(
+        new ErrorContainer({
+          message: getTextContent("getListInformation"),
+        }),
+      );
       return;
     }
 
     const { users } = this._getState();
     if (users.length === 0) {
       const placeholderText = createTextElement(
-        "ユーザーが見つかりませんでした",
+        getTextContent("noUserAnnouncement"),
         5,
         BootstrapBadge.setSecondary,
       );
