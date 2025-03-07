@@ -128,10 +128,17 @@ class PongLogic:
         def _adjust_reflection_angle(
             paddle_pos: PosStruct, ball_speed_y: int
         ) -> int:
+            # ボールの最大速度を初期値の2倍に設定
+            max_ball_speed_y: Final[int] = self.BALL_SPEED * 2
             hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
                 paddle_pos.y + self.PADDLE_HEIGHT // 2
             )
             ball_speed_y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
+            # ボールの速度が最大速度を超えないように
+            if abs(self.ball_speed.y) > max_ball_speed_y:
+                self.ball_speed.y = max_ball_speed_y * (
+                    1 if self.ball_speed.y > 0 else -1
+                )
             return ball_speed_y
 
         # パドル1（左側プレイヤー）との衝突判定
