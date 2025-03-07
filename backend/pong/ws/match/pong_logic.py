@@ -130,9 +130,12 @@ class PongLogic:
         ) -> int:
             # ボールの最大速度を初期値の2倍に設定
             max_ball_speed_y: Final[int] = self.BALL_SPEED * 2
+
+            # ボールの中心とパドルの中心のy座標の差
             hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
                 paddle_pos.y + self.PADDLE_HEIGHT // 2
             )
+            # パドルの上部に当たった場合は上方向に、下部に当たった場合は下方向にボールを打ち返す
             ball_speed_y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
             # ボールの速度が最大速度を超えないように
             if abs(self.ball_speed.y) > max_ball_speed_y:
