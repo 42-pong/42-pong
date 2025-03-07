@@ -5,6 +5,7 @@ from channels.generic.websocket import (  # type: ignore
 )
 from rest_framework import serializers
 
+from .chat import handler as chat_handler
 from .login import handler as login_handler
 from .match import handler as match_handler
 from .share import constants as ws_constants
@@ -22,6 +23,10 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
         )
         self.match_handler = match_handler.MatchHandler(self.channel_name)
         self.tournament_handler = tournament_handler.TournamentHandler(
+            self.channel_layer,
+            self.channel_name,
+        )
+        self.chat_handler = chat_handler.ChatHandler(
             self.channel_layer,
             self.channel_name,
         )
@@ -56,6 +61,10 @@ class MultiEventConsumer(AsyncJsonWebsocketConsumer):
                     )
                 case ws_constants.Category.TOURNAMENT.value:
                     await self.tournament_handler.handle(
+                        payload, self.login_handler.user_id
+                    )
+                case ws_constants.Category.CHAT.value:
+                    await self.chat_handler.handle(
                         payload, self.login_handler.user_id
                     )
                 case _:

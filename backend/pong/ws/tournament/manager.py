@@ -1,12 +1,14 @@
 import asyncio
 import logging
 import random
+from typing import Optional
 
 from channels.db import database_sync_to_async  # type: ignore
 from channels.layers import get_channel_layer  # type: ignore
 
 from matches import constants as match_db_constants
 from tournaments import constants as tournament_db_constants
+from ws.chat import constants as chat_constants
 from ws.match import manager_registry, match_manager
 from ws.share import constants as ws_constants
 
@@ -58,7 +60,6 @@ class TournamentManager:
             or participant.participation_name is None
         ):
             return False
-
         # 参加レコードを作成
         create_result = await database_sync_to_async(
             tournament_service.create_participation
@@ -85,6 +86,11 @@ class TournamentManager:
             self.waiting_for_participants.set()
             return True
 
+        # await self.send_group_announcement(
+        #    chat_constants.GroupAnnouncement.MessageType.JOIN.value,
+        #    participant,
+        #    None,
+        # )
         return True
 
     async def remove_participant(
@@ -120,6 +126,11 @@ class TournamentManager:
 
         # トーナメント参加者全員にリロードメッセージを送信
         await self._send_player_reload_message()
+        # await self.send_group_announcement(
+        #    chat_constants.GroupAnnouncement.MessageType.LEAVE.value,
+        #    participant,
+        #    None,
+        # )
         return len(self.participants)
 
     async def run(self) -> None:
@@ -301,6 +312,12 @@ class TournamentManager:
             self.match_manager_tasks.append(asyncio.create_task(manager.run()))
 
             # 試合開始を 各consumer に通知
+            # await self.send_group_announcement(
+            #    chat_constants.GroupAnnouncement.MessageType.MATCH_START.value,
+            #    player1,
+            #    player2,
+            # )
+            await asyncio.sleep(5)
             await self._send_assign_match_message(match_id, player1)
             await self._send_assign_match_message(match_id, player2)
 
@@ -441,20 +458,45 @@ class TournamentManager:
             },
         }
 
-    def _build_announce_message(self, type: str, data: dict) -> dict:
+    def _build_chat_message(self, type: str, data: dict) -> dict:
         """
         プレーヤーに送るアナウンスメッセージを作成。
 
         :param data: ステージに関連するデータ
         :return: 作成したメッセージ
         """
-        # TODO: チャットを実装したら実装
-        return {}
+        return {
+            ws_constants.Category.key(): ws_constants.Category.CHAT.value,
+            ws_constants.PAYLOAD_KEY: {
+                chat_constants.Type.key(): type,
+                ws_constants.DATA_KEY: data,
+            },
+        }
 
-    def send_group_chat(self, user_id: int, content: str) -> None:
+    async def send_group_chat(self, message: dict) -> None:
         """
         プレーヤーがグループチャットに送信したメッセージを全員に再送信する関数。
         ChatHandlerから呼ばれる。
         """
-        # TODO: チャットを実装したら実装
-        pass
+        await self.channel_handler.send_to_group(self.group_name, message)
+
+    async def send_group_announcement(
+        self,
+        msg_type: str,
+        player1: player_data.PlayerData,
+        player2: Optional[player_data.PlayerData],
+    ) -> None:
+        """
+        トーナメント中にトーナメント待機画面へ送るメッセージ
+        """
+        message = self._build_chat_message(
+            chat_constants.Type.GROUP_ANNOUNCEMENT.value,
+            {
+                chat_constants.MESSAGE_TYPE: msg_type,
+                chat_constants.GroupAnnouncement.PLAYER1: player1.user_id,
+                chat_constants.GroupAnnouncement.PLAYER2: player2.user_id
+                if player2 is not None and player2.user_id is not None
+                else None,
+            },
+        )
+        await self.channel_handler.send_to_group(self.group_name, message)

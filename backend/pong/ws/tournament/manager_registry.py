@@ -105,6 +105,18 @@ class TournamentManagerRegistry:
                     task.cancel()  # タスクをキャンセル
                     await task  # キャンセルしたタスクの完了を待機
 
+    async def send_group_chat(self, tournament_id: int, message: dict) -> None:
+        """
+        プレーヤーがグループチャットに送信したメッセージを全員に再送信する関数。
+        ChatHandlerから呼ばれる。
+        """
+        async with self.lock:
+            if tournament_id not in self.tournaments:
+                return  # トーナメントが存在しない場合は何もしない
+
+            tournament_manager = self.tournaments[tournament_id]
+            await tournament_manager.send_group_chat(message)
+
 
 # === グローバルな MatchManagerRegistry インスタンス ===
 global_tournament_registry = TournamentManagerRegistry()
