@@ -8,5 +8,5 @@ app_name: Final[str] = "login"
 urlpatterns = [
     # 'api/token/'
     path("", login.LoginView.as_view(), name="login"),
-    path("/totp", totp.TotpView.as_view(), name="totp"),
+    path("totp/", totp.TotpView.as_view(), name="totp"),
 ]

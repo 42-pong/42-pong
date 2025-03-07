@@ -153,20 +153,20 @@ class LoginView(views.APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        # 2要素認証のテーブル
-        # - user_id
-        # - secret
-        # - is_done_2fa
-        # userに紐づけていてる2要素認証のテーブルでis_done_two_fa2fa
-        # falseの場合のみ
-        # -> generate_2fa_qr_codeでsecretを生成し、2要素認証のテーブルにあるsecretを更新する
         two_fa, _ = models.TwoFactorAuth.objects.get_or_create(user=user)
         qr_code = ""
         if not two_fa.is_done_2fa:
             qr_code = f"/media/qr/{user.username}.png"
-            two_fa.secret = two_factor_auth.generate_2fa_qr_code(
-                user.email, "pong", qr_code
-            )
+            try:
+                two_fa.secret = two_factor_auth.generate_2fa_qr_code(
+                    user.email, "pong", qr_code
+                )
+            except ValueError as e:
+                logger.error(e)
+                return custom_response.CustomResponse(
+                    code=["internal_error"],
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
             two_fa.save()
         return custom_response.CustomResponse(
             data={
