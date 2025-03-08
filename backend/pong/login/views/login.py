@@ -5,15 +5,15 @@ from django.contrib.auth.models import User
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
-from jwt import create_token_functions
+from login import models, two_factor_auth
 from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
 
 
-class TokenObtainView(views.APIView):
+class LoginView(views.APIView):
     """
-    アクセストークンとリフレッシュトークンを取得するエンドポイント
+    アカウントが存在するかどうかを認証し、2要素認証用のパラメータを返すエンドポイント
     """
 
     authentication_classes = []
@@ -21,7 +21,6 @@ class TokenObtainView(views.APIView):
 
     @utils.extend_schema(
         request=utils.OpenApiRequest(
-            # todo: email, passwordをシリアライズ作成する
             examples=[
                 utils.OpenApiExample(
                     "Example request",
@@ -34,17 +33,16 @@ class TokenObtainView(views.APIView):
         ),
         responses={
             200: utils.OpenApiResponse(
-                description="アクセストークンとリフレッシュトークンを返す",
                 response={
                     "type": "object",
                     "properties": {
-                        "access": {
-                            "type": "string",
-                            "description": "アクセストークン",
+                        "is_done_2fa": {
+                            "type": "boolean",
+                            "description": "2段階認証が有効かどうか",
                         },
-                        "refresh": {
+                        "qr_code": {
                             "type": "string",
-                            "description": "リフレッシュトークン",
+                            "description": "QRコードのURL",
                         },
                     },
                 },
@@ -54,8 +52,8 @@ class TokenObtainView(views.APIView):
                         value={
                             "status": "ok",
                             "data": {
-                                "access": "eyJhbGciOiJIUzI1...",
-                                "refresh": "eyJhbGciOiJIUzI1...",
+                                "is_done_2fa": "false",
+                                "qr_code": "/media/qrs/qr_code.png",
                             },
                         },
                     ),
@@ -118,10 +116,10 @@ class TokenObtainView(views.APIView):
     )
     def post(self, request: request.Request) -> response.Response:
         """
-        アクセストークンとリフレッシュトークンを取得するPOSTメソッド
+        アカウントが存在するかどうかを認証し、2要素認証用のパラメータ生成するPOSTメソッド
 
         Responses:
-            - 200: アクセストークンとリフレッシュトークンを返す
+            - 200: そのアカウントが2要素認証が有効かどうかを返す。無効の場合はQRコードのURLも返す
             - 400:
                 - internal_error: リクエスト形式が不正の場合
             - 401:
@@ -129,7 +127,6 @@ class TokenObtainView(views.APIView):
                 - incorrect_password: パスワードが間違っている場合
             - 500:
                 - internal_error:
-                    - JWTトークンの生成に失敗した場合
                     - 予期せぬエラーが発生した場合
         """
         required_keys: set = {"email", "password"}
@@ -156,14 +153,25 @@ class TokenObtainView(views.APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        tokens: dict = create_token_functions.create_access_and_refresh_token(
-            user.username
-        )
-        if not tokens["access"] or not tokens["refresh"]:
-            return custom_response.CustomResponse(
-                code=["internal_error"],
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        two_fa, _ = models.TwoFactorAuth.objects.get_or_create(user=user)
+        qr_code = ""
+        if not two_fa.is_done_2fa:
+            qr_code = f"/media/qrs/{user.username}.png"
+            try:
+                two_fa.secret = two_factor_auth.generate_2fa_qr_code(
+                    user.email, "pong", qr_code
+                )
+            except ValueError as e:
+                logger.error(e)
+                return custom_response.CustomResponse(
+                    code=["internal_error"],
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            two_fa.save()
         return custom_response.CustomResponse(
-            data=tokens, status=status.HTTP_200_OK
+            data={
+                "is_done_2fa": two_fa.is_done_2fa,
+                "qr_code": qr_code,
+            },
+            status=status.HTTP_200_OK,
         )

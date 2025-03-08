@@ -1,19 +1,20 @@
 import logging
 
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.urls import reverse
 from drf_spectacular import utils
-from rest_framework import permissions, request, response, status, views
+from rest_framework import permissions, request, response, status, test, views
 
-from jwt import create_token_functions
+from jwt.views import token
+from login import models, two_factor_auth
 from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
 
 
-class TokenObtainView(views.APIView):
+class TotpView(views.APIView):
     """
-    アクセストークンとリフレッシュトークンを取得するエンドポイント
+    ワンタイムパスワードを検証し、アクセストークンとリフレッシュトークンを取得するエンドポイント
     """
 
     authentication_classes = []
@@ -21,11 +22,11 @@ class TokenObtainView(views.APIView):
 
     @utils.extend_schema(
         request=utils.OpenApiRequest(
-            # todo: email, passwordをシリアライズ作成する
             examples=[
                 utils.OpenApiExample(
                     "Example request",
                     value={
+                        "totp": "123456",
                         "email": "user@example.com",
                         "password": "password",
                     },
@@ -83,14 +84,7 @@ class TokenObtainView(views.APIView):
                 },
                 examples=[
                     utils.OpenApiExample(
-                        "Example 401 response (アカウントが存在しない場合)",
-                        value={
-                            "status": "error",
-                            "code": "not_exists",
-                        },
-                    ),
-                    utils.OpenApiExample(
-                        "Example 401 response (パスワードが間違っている場合)",
+                        "Example 401 response (ワンタイムパスワードが間違っている場合)",
                         value={
                             "status": "error",
                             "code": "incorrect_password",
@@ -118,21 +112,19 @@ class TokenObtainView(views.APIView):
     )
     def post(self, request: request.Request) -> response.Response:
         """
-        アクセストークンとリフレッシュトークンを取得するPOSTメソッド
+        ワンタイムパスワードを検証し、アクセストークンとリフレッシュトークンを生成するPOSTメソッド
 
         Responses:
             - 200: アクセストークンとリフレッシュトークンを返す
             - 400:
                 - internal_error: リクエスト形式が不正の場合
             - 401:
-                - not_exists: アカウントが存在しない場合
-                - incorrect_password: パスワードが間違っている場合
+                - incorrect_password: ワンタイムパスワードが間違っている場合
             - 500:
                 - internal_error:
-                    - JWTトークンの生成に失敗した場合
                     - 予期せぬエラーが発生した場合
         """
-        required_keys: set = {"email", "password"}
+        required_keys: set = {"totp", "email", "password"}
         request_keys: set = set(request.data.keys())
         if request_keys != required_keys:
             return custom_response.CustomResponse(
@@ -147,23 +139,45 @@ class TokenObtainView(views.APIView):
             return custom_response.CustomResponse(
                 code=["not_exists"], status=status.HTTP_401_UNAUTHORIZED
             )
+        two_fa = models.TwoFactorAuth.objects.get(user_id=user.id)
+        totp = request.data.get("totp")
+        if totp is None:
+            logger.error(f"TOTP fail: {totp}")
+            return custom_response.CustomResponse(
+                code=["fail"], status=status.HTTP_401_UNAUTHORIZED
+            )
 
-        password = request.data.get("password")
-        if authenticate(username=user.username, password=password) is None:
-            logger.error("Password is incorrect")
+        secret = two_fa.secret
+        if secret is None:
+            logger.error(f"Secret not found for user {user.id}")
+            return custom_response.CustomResponse(
+                code=["fail"], status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not two_factor_auth.verify_2fa_totp(secret, totp):
             return custom_response.CustomResponse(
                 code=["incorrect_password"],
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        tokens: dict = create_token_functions.create_access_and_refresh_token(
-            user.username
+        password = request.data.get("password")
+        factory = test.APIRequestFactory()
+        request = factory.post(
+            reverse("jwt:token_obtain_pair"),
+            {
+                "email": user.email,
+                "password": password,
+            },
+            format="json",
         )
-        if not tokens["access"] or not tokens["refresh"]:
-            return custom_response.CustomResponse(
-                code=["internal_error"],
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        response = token.TokenObtainView.as_view()(request)
+        if response.status_code != status.HTTP_200_OK:
+            logger.error(
+                f"{response.status_code} TokenObtainFailedError: {response.data}"
             )
-        return custom_response.CustomResponse(
-            data=tokens, status=status.HTTP_200_OK
-        )
+            return response
+
+        if not two_fa.is_done_2fa:
+            two_fa.is_done_2fa = True
+            two_fa.save()
+        return response
