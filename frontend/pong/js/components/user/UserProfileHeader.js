@@ -7,6 +7,7 @@ import { createNameplate } from "../../utils/elements/div/createNameplate";
 import { SignInButton } from "../auth/SignInButton";
 import { SignOutButton } from "../auth/SignOutButton";
 import { SignUpButton } from "../auth/SignUpButton";
+import { LangSelector } from "../utils/LangSelector";
 
 export class UserProfileHeader extends Component {
   #userDataObserver;
@@ -41,13 +42,19 @@ export class UserProfileHeader extends Component {
 
   _render() {
     const { user } = this._getState();
+
+    const langSelector = new LangSelector();
+    BootstrapSpacing.setMarginLeft(langSelector, 3);
+
     if (!user) {
       const signIn = new SignInButton();
+      signIn.setOutlinePrimary();
       signIn.setSmall();
       const signUp = new SignUpButton();
+      signUp.setPrimary();
       signUp.setSmall();
       BootstrapSpacing.setMarginLeft(signUp, 3);
-      this.append(signIn, signUp);
+      this.append(signIn, signUp, langSelector);
       return;
     }
 
@@ -55,7 +62,7 @@ export class UserProfileHeader extends Component {
     const signOutButton = new SignOutButton();
     BootstrapSpacing.setMarginLeft(signOutButton, 3);
 
-    this.append(nameplate, signOutButton);
+    this.append(nameplate, signOutButton, langSelector);
   }
 }
 

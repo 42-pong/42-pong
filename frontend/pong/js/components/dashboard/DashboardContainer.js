@@ -14,6 +14,7 @@ import {
 import { createInlineListItem } from "../../utils/elements/li/createListItem";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { setHeight } from "../../utils/elements/style/setHeight";
+import { getTextContent } from "../../utils/i18n/lang";
 import { MatchCard } from "../match/MatchCard";
 import { UserProfile } from "../user/UserProfile";
 import { ErrorContainer } from "../utils/ErrorContainer";
@@ -69,7 +70,7 @@ export class DashboardContainer extends Component {
 
 const createMatchHistoryContainer = (matches) => {
   const title = createTextElement(
-    "マッチ履歴",
+    getTextContent("matchHistory"),
     5,
     BootstrapBadge.setPrimary,
   );
@@ -87,7 +88,7 @@ const createMatchHistoryContainer = (matches) => {
 
 const noMatchHistory = () => {
   const content = createTextElement(
-    "マッチが見つかりませんでした。",
+    getTextContent("noMatchAnnouncement"),
     5,
     BootstrapBadge.setSecondary,
   );

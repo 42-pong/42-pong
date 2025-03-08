@@ -8,6 +8,7 @@ import { Component } from "../../core/Component";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
 import { createHorizontalSplitLayout } from "../../utils/elements/div/createHorizontalSplitLayout";
+import { getTextContent } from "../../utils/i18n/lang";
 import { createAvatarImage } from "../../utils/user/createAvatarImage";
 import { formatUserInfo } from "../../utils/user/formatUserInfo";
 import { EventDispatchingButton } from "../utils/EventDispatchingButton";
@@ -54,7 +55,7 @@ export class MyInfoAvatar extends Component {
     );
     this.#button = new EventDispatchingButton(
       {
-        textContent: "✏ アップロード",
+        textContent: `✏ ${getTextContent("upload")}`,
       },
       {},
       PongEvents.PATCH_AVATAR,

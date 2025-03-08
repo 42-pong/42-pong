@@ -1,10 +1,11 @@
 import { StyledButton } from "../../core/StyledButton";
 import { UserSessionManager } from "../../session/UserSessionManager";
+import { getTextContent } from "../../utils/i18n/lang";
 
 export class SignOutButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
     super(
-      { textContent: "サインアウト", ...state },
+      { textContent: getTextContent("signout"), ...state },
       { type: "button", ...attributes },
     );
   }

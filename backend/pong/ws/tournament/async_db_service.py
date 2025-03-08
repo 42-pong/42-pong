@@ -8,6 +8,8 @@ from rest_framework import serializers as drf_serializers
 
 import utils.result
 from accounts.player import models as player_models
+from matches import constants as match_constants
+from matches.match import models as match_models
 from tournaments import constants
 from tournaments.participation import models as participation_models
 from tournaments.participation import serializers as participation_serializers
@@ -205,7 +207,7 @@ def update_tournament_status(
     try:
         # 他の操作が間に入り込むこともありそうなのでトランザクションで一応かこっている。
         with transaction.atomic():
-            tournament = tournament_models.Tournament.objects.aget(id=id)
+            tournament = tournament_models.Tournament.objects.get(id=id)
             data = {
                 constants.TournamentFields.STATUS: new_status,
             }
@@ -411,3 +413,87 @@ def update_round_status(round_id: int, status: str) -> UpdateRoundResult:
         return UpdateRoundResult.error(
             {"error": f"Failed to update round: {str(e)}"}
         )
+
+
+@database_sync_to_async
+def cancel_uncompleted_tournament(
+    tournament_id: int,
+) -> UpdateTournamentResult:
+    """
+    指定されたトーナメントに関連する Tournament, Round, Match のステータスを
+    COMPLETED でない場合に CANCELED に更新する。
+    Args:
+        tournament_id (int): トーナメントのID
+
+    Returns:
+        UpdateTournamentResult: 更新結果
+          - ok: すべてのエンティティのステータスが適切に更新された場合
+          - error: データベースエラーまたは渡されたIDのtournamentが存在しない場合
+    """
+    try:
+        with transaction.atomic():
+            # Tournamentを取得
+            tournament = (
+                tournament_models.Tournament.objects.select_related().get(
+                    id=tournament_id
+                )
+            )
+
+            if (
+                tournament.status
+                != constants.TournamentFields.StatusEnum.COMPLETED.value
+            ):
+                tournament.status = (
+                    constants.TournamentFields.StatusEnum.CANCELED.value
+                )
+                serializer = tournament_serializers.TournamentCommandSerializer(
+                    instance=tournament,
+                    data={
+                        constants.TournamentFields.STATUS: constants.TournamentFields.StatusEnum.CANCELED.value,
+                    },
+                )
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+
+            # Roundを取得・更新
+            rounds = round_models.Round.objects.filter(
+                tournament_id=tournament_id
+            )
+            for round_instance in rounds:
+                if (
+                    round_instance.status
+                    != constants.RoundFields.StatusEnum.COMPLETED.value
+                ):
+                    round_instance.status = (
+                        constants.RoundFields.StatusEnum.CANCELED.value
+                    )
+                    round_instance.save()
+
+            # Matchを取得・更新
+            matches = match_models.Match.objects.filter(
+                round__tournament_id=tournament_id
+            )
+            for match in matches:
+                if (
+                    match.status
+                    != match_constants.MatchFields.StatusEnum.COMPLETED.value
+                ):
+                    match.status = (
+                        match_constants.MatchFields.StatusEnum.CANCELED.value
+                    )
+                    match.save()
+
+    except tournament_models.Tournament.DoesNotExist as e:
+        return UpdateTournamentResult.error(
+            _handle_does_not_exist_error(
+                e, "Tournament object does not exist."
+            )
+        )
+    except drf_serializers.ValidationError as e:
+        return UpdateTournamentResult.error(_handle_validation_error(e))
+    except DatabaseError as e:
+        return UpdateTournamentResult.error(
+            _handle_database_error(e, "Failed to cancel tournament.")
+        )
+
+    return UpdateTournamentResult.ok(serializer.data)

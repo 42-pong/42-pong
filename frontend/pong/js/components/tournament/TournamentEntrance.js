@@ -9,6 +9,7 @@ import { TournamentEnums } from "../../enums/TournamentEnums";
 import { WebSocketEnums } from "../../enums/WebSocketEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { createElement } from "../../utils/elements/createElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { isValidIdStr } from "../../utils/isValidIdStr";
 import { isValidDisplayName } from "../../utils/user/isValidDisplayName";
 import { LinkButton } from "../utils/LinkButton";
@@ -73,7 +74,7 @@ export class TournamentEntrance extends Component {
       {},
       {
         type: "text",
-        placeholder: "表示名",
+        placeholder: getTextContent("displayName"),
         value: defaultDisplayName,
       },
     );
@@ -96,7 +97,7 @@ export class TournamentEntrance extends Component {
     });
 
     this.#toHome = new LinkButton({
-      textContent: "戻る",
+      textContent: getTextContent("goBack"),
       pathname: Paths.HOME,
     });
 
@@ -126,14 +127,16 @@ export class TournamentEntrance extends Component {
   _render() {
     // TODO: タイトル要素を作成する関数でまとめる
     const title = createElement("h1", {
-      textContent: "🏓 トーナメント開始",
+      textContent: `🏓 ${getTextContent("startTournament")}`,
     });
     const { isJoinError } = this._getState();
 
     // TODO: エラーメッセージ
     this.append(
       title,
-      isJoinError ? "[Error] Joining Tournament" : "",
+      isJoinError
+        ? `[${getTextContent("error")}] ${getTextContent("joiningTournament")}`
+        : "",
       this.#displayNameInput,
       this.#entranceButtons,
       this.#toHome,
@@ -148,14 +151,14 @@ const createTournamentEntranceButtons = ({
   const joinRandom = new TournamentJoinButton({
     joinType: TournamentEnums.JoinType.RANDOM,
     getDisplayName,
-    textContent: "ランダム参加",
+    textContent: getTextContent("randomJoin"),
   });
   joinRandom.setPrimary();
 
   const joinWithCreation = new TournamentJoinButton({
     joinType: TournamentEnums.JoinType.CREATE,
     getDisplayName,
-    textContent: "トーナメント作成",
+    textContent: getTextContent("createTournament"),
   });
   joinWithCreation.setOutlinePrimary();
 
@@ -177,7 +180,7 @@ const createJoinWithInput = ({
     {},
     {
       type: "text",
-      placeholder: "トーナメント ID",
+      placeholder: `${getTextContent("tournament")} ID`,
       value: defaultTournamentIdStr,
     },
   );
@@ -198,7 +201,7 @@ const createJoinWithInput = ({
     joinType: TournamentEnums.JoinType.SELECTED,
     getDisplayName,
     getTournamentId,
-    textContent: "参加",
+    textContent: getTextContent("join"),
   });
   BootstrapSizing.setWidth50(joinButton);
   BootstrapSpacing.setPadding(joinButton);

@@ -11,7 +11,9 @@ import { MessageEnums } from "../../enums/MessageEnums";
 import { UserSessionManager } from "../../session/UserSessionManager";
 import { setClassNames } from "../../utils/elements/setClassNames";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { LinkButton } from "../utils/LinkButton";
+import { OauthButton } from "./OauthButton";
 import { SignUpButton } from "./SignUpButton";
 
 export class LoginContainer extends Component {
@@ -74,28 +76,30 @@ export class LoginContainer extends Component {
     // サインインボタンを作成
     const submitButton = document.createElement("button");
     submitButton.type = "submit";
-    submitButton.textContent = "サインイン";
-    BootstrapButtons.setOutlinePrimary(submitButton);
+    submitButton.textContent = getTextContent("signin");
+    BootstrapButtons.setPrimary(submitButton);
     BootstrapSpacing.setMargin(submitButton);
+    BootstrapSizing.setWidth25(submitButton);
 
     // ゲストボタン作成
     const guestButton = new LinkButton({
-      textContent: "ゲストとして",
+      textContent: getTextContent("guest"),
       pathname: Paths.HOME,
     });
     guestButton.setSecondary();
     BootstrapSpacing.setMargin(guestButton);
+    BootstrapSizing.setWidth25(guestButton);
 
     // 42 OAuth2.0ボタン作成
-    const oauth2Button = document.createElement("button");
-    oauth2Button.type = "button";
-    oauth2Button.textContent = "42 OAuth 2.0";
-    BootstrapButtons.setSecondary(oauth2Button);
-    BootstrapSpacing.setMargin(oauth2Button);
+    const oauthButton = new OauthButton();
+    BootstrapSpacing.setMargin(oauthButton);
+    BootstrapSizing.setWidth25(oauthButton);
 
     // サインアップボタン作成
     const signupButton = new SignUpButton();
+    signupButton.setOutlinePrimary();
     BootstrapSpacing.setMargin(signupButton);
+    BootstrapSizing.setWidth25(signupButton);
 
     form.append(
       this.#loginError,
@@ -103,7 +107,7 @@ export class LoginContainer extends Component {
       passwordInput,
       submitButton,
       signupButton,
-      oauth2Button,
+      oauthButton,
       guestButton,
     );
 
@@ -144,17 +148,12 @@ export class LoginContainer extends Component {
         if (isVerified)
           UserSessionManager.getInstance().redirect(Paths.HOME);
       } catch (error) {
-        console.error("ログインエラー:", error);
+        console.error("login error:", error);
       }
     });
   }
 
   _render() {
     this.append(this.#title, this.#form);
-
-    //todo
-    //ログインページへ遷移した途端にJWT認証を行い、ホームページへリダイレクトする
-    //cookieからJWTを取得する
-    //this.dispatchEvent(PongEvents.UPDATE_ROUTER.create(Paths.HOME));
   }
 }

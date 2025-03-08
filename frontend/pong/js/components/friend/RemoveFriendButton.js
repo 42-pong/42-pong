@@ -1,11 +1,12 @@
 import { deleteFriends } from "../../api/users/deleteFriends";
 import { StyledButton } from "../../core/StyledButton";
+import { getTextContent } from "../../utils/i18n/lang";
 
 export class RemoveFriendButton extends StyledButton {
   constructor(state = {}, attributes = {}) {
     super(
       {
-        textContent: "フレンド解除",
+        textContent: getTextContent("removeFriend"),
         user: null,
         reload: null,
         ...state,

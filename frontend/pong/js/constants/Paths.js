@@ -7,4 +7,5 @@ export const Paths = Object.freeze({
   DASHBOARD: "/dashboard",
   MYPAGE: "/mypage",
   TOURNAMENTS: "/tournaments",
+  OAUTH: "/oauth2/",
 });

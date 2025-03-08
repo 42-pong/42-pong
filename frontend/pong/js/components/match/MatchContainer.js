@@ -18,6 +18,7 @@ import {
 } from "../../utils/elements/div/createFlexBox";
 import { createThreeColumnLayout } from "../../utils/elements/div/createThreeColumnLayout";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
+import { getTextContent } from "../../utils/i18n/lang";
 import { isValidId } from "../../utils/isValidId";
 import { createInitialMatchEntities } from "../../utils/match/entity/createInitialMatchEntities";
 import { setEntities } from "../../utils/match/entity/setEntities";
@@ -127,7 +128,7 @@ export class MatchContainer extends Component {
 
     if (!matchId) {
       const backToHome = new EventDispatchingButton(
-        { textContent: "ホームに戻る" },
+        { textContent: getTextContent("backToHome") },
         {},
         PongEvents.END_MATCH,
       );
@@ -164,7 +165,9 @@ export class MatchContainer extends Component {
         this.#keydownHandler = keydownHandler(team);
         document.addEventListener("keydown", this.#keydownHandler);
 
-        this.#announcement.textContent = `Enter を押して${team ? "準備" : "スタート"}!`;
+        this.#announcement.textContent = team
+          ? getTextContent("pressEnterToGetReady")
+          : getTextContent("pressEnterToStart");
 
         this.#display1.textContent =
           displayName1 !== "" ? displayName1 : "LOCAL#1";
@@ -332,4 +335,6 @@ const keydownHandlers = (team) =>
   });
 
 const create3dConvertingMessage = (is3d) =>
-  `${is3d ? "2D" : "3D"} に切り替え`;
+  is3d
+    ? getTextContent("convertTo2d")
+    : getTextContent("convertTo3d");

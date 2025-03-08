@@ -9,11 +9,11 @@ export class MainNavbar extends Component {
   #listenIsSignedIn;
 
   static links = Object.freeze([
-    { name: "ホーム", path: Paths.HOME },
-    { name: "ユーザー一覧", path: Paths.USERS },
-    { name: "フレンド一覧", path: Paths.FRIENDS },
-    { name: "ダッシュボード", path: Paths.DASHBOARD },
-    { name: "マイページ", path: Paths.MYPAGE },
+    { name: "home", path: Paths.HOME },
+    { name: "usersList", path: Paths.USERS },
+    { name: "friendsList", path: Paths.FRIENDS },
+    { name: "dashboard", path: Paths.DASHBOARD },
+    { name: "mypage", path: Paths.MYPAGE },
   ]);
 
   constructor(state = {}) {

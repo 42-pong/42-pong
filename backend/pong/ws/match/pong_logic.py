@@ -1,3 +1,4 @@
+import random
 from dataclasses import dataclass
 from typing import Final, Optional
 
@@ -101,6 +102,7 @@ class PongLogic:
         x += self.ball_speed.x
         y += self.ball_speed.y
 
+        # 上下の壁に当たった場合に上下の進行方向を変える
         if y <= 0 or y >= self.HEIGHT - self.BALL_SIZE:
             self.ball_speed.y = -self.ball_speed.y
 
@@ -109,43 +111,62 @@ class PongLogic:
     async def check_collisions(self) -> None:
         """
         ボールとパドルの接触判定
-        接触していれば、ボールの進行方向を返る。
+        接触していれば、ボールの進行方向を変える。
         """
-        # ボールの四隅の座標
-        ball_left = self.ball_pos.x
-        ball_right = self.ball_pos.x + self.BALL_SIZE
-        ball_top = self.ball_pos.y
-        ball_bottom = self.ball_pos.y + self.BALL_SIZE
+
+        # ボールの上下がパドルの範囲内にあればTrue
+        def _is_in_vertical_paddle_range(paddle_pos: PosStruct) -> bool:
+            paddle_top = paddle_pos.y
+            paddle_bottom = paddle_pos.y + self.PADDLE_HEIGHT
+
+            ball_top = self.ball_pos.y
+            ball_bottom = self.ball_pos.y + self.BALL_SIZE
+
+            return paddle_top <= ball_bottom and ball_top <= paddle_bottom
+
+        # パドルのどの部分に当たったかによって反射角度を調整
+        def _adjust_reflection_angle(
+            paddle_pos: PosStruct, ball_speed_y: int
+        ) -> int:
+            # ボールの最大速度を初期値の2倍に設定
+            max_ball_speed_y: Final[int] = self.BALL_SPEED * 2
+
+            # ボールの中心とパドルの中心のy座標の差
+            hit_pos_y = (self.ball_pos.y + self.BALL_SIZE // 2) - (
+                paddle_pos.y + self.PADDLE_HEIGHT // 2
+            )
+            # パドルの上部に当たった場合は上方向に、下部に当たった場合は下方向にボールを打ち返す
+            ball_speed_y += hit_pos_y // (self.PADDLE_HEIGHT // 2)
+            # ボールの速度が最大速度を超えないように
+            if abs(self.ball_speed.y) > max_ball_speed_y:
+                self.ball_speed.y = max_ball_speed_y * (
+                    1 if self.ball_speed.y > 0 else -1
+                )
+            return ball_speed_y
 
         # パドル1（左側プレイヤー）との衝突判定
-        paddle1_posleft = self.paddle1_pos.x
+        ball_left = self.ball_pos.x
         paddle1_posright = self.paddle1_pos.x + self.PADDLE_WIDTH
-        paddle1_postop = self.paddle1_pos.y
-        paddle1_posbottom = self.paddle1_pos.y + self.PADDLE_HEIGHT
-
         if (
-            paddle1_posleft
-            <= ball_right
-            <= paddle1_posright  # ボールの右側がパドルの左端に接触
-            and paddle1_postop <= ball_bottom
-            and ball_top <= paddle1_posbottom
-        ):  # ボールの上下がパドルの範囲内
+            ball_left <= paddle1_posright  # ボールの左側がパドルの右端に接触
+            and _is_in_vertical_paddle_range(self.paddle1_pos)
+        ):
             self.ball_speed.x = -self.ball_speed.x
+            self.ball_speed.y = _adjust_reflection_angle(
+                self.paddle1_pos, self.ball_speed.y
+            )
 
         # パドル2（右側プレイヤー）との衝突判定
+        ball_right = self.ball_pos.x + self.BALL_SIZE
         paddle2_posleft = self.paddle2_pos.x
-        paddle2_posright = self.paddle2_pos.x + self.PADDLE_WIDTH
-        paddle2_postop = self.paddle2_pos.y
-        paddle2_posbottom = self.paddle2_pos.y + self.PADDLE_HEIGHT
-
         if (
-            paddle2_posleft
-            <= ball_left
-            <= paddle2_posright  # ボールの左側がパドルの右端に接触
-            and paddle2_postop <= ball_bottom
-            and ball_top <= paddle2_posbottom
-        ):  # ボールの上下がパドルの範囲内
+            paddle2_posleft <= ball_right  # ボールの右側がパドルの左端に接触
+            and _is_in_vertical_paddle_range(self.paddle2_pos)
+        ):
             self.ball_speed.x = -self.ball_speed.x
+            self.ball_speed.y = _adjust_reflection_angle(
+                self.paddle2_pos, self.ball_speed.y
+            )
 
     async def check_score(self) -> Optional[str]:
         """
@@ -170,44 +191,44 @@ class PongLogic:
         """
         引数で受け取ったチームのパドルを上に動かす関数
         """
+
+        def _move_paddle_up(paddle_pos: PosStruct) -> None:
+            next_paddle_pos_y: int = paddle_pos.y - self.PADDLE_SPEED
+            paddle_pos.y = max(0, next_paddle_pos_y)
+
         if team == constants.Team.ONE.value:
-            y = self.paddle1_pos.y
-            if y > 0:
-                self.paddle1_pos = PosStruct(
-                    self.paddle1_pos.x, y - self.PADDLE_SPEED
-                )
+            _move_paddle_up(self.paddle1_pos)
         elif team == constants.Team.TWO.value:
-            y = self.paddle2_pos.y
-            if y > 0:
-                self.paddle2_pos = PosStruct(
-                    self.paddle2_pos.x, y - self.PADDLE_SPEED
-                )
+            _move_paddle_up(self.paddle2_pos)
 
     async def move_paddle_down(self, team: str) -> None:
         """
         引数で受け取ったチームのパドルを下に動かす関数
         """
+
+        def _move_paddle_down(paddle_pos: PosStruct) -> None:
+            max_paddle_posbottom: int = self.HEIGHT - self.PADDLE_HEIGHT
+
+            next_paddle_pos_y: int = paddle_pos.y + self.PADDLE_SPEED
+            paddle_pos.y = min(max_paddle_posbottom, next_paddle_pos_y)
+
         if team == constants.Team.ONE.value:
-            y = self.paddle1_pos.y
-            if y < self.HEIGHT - self.PADDLE_HEIGHT:
-                self.paddle1_pos = PosStruct(
-                    self.paddle1_pos.x, y + self.PADDLE_SPEED
-                )
+            _move_paddle_down(self.paddle1_pos)
         elif team == constants.Team.TWO.value:
-            y = self.paddle2_pos.y
-            if y < self.HEIGHT - self.PADDLE_HEIGHT:
-                self.paddle2_pos = PosStruct(
-                    self.paddle2_pos.x, y + self.PADDLE_SPEED
-                )
+            _move_paddle_down(self.paddle2_pos)
 
     async def reset_ball(self) -> None:
         """
         ボールを開始位置に動かす関数
         """
-        self.ball_pos = PosStruct(self.WIDTH // 2, self.HEIGHT // 2)
-        # TODO: ボールの動き出す方向変えてもいいかも
-        self.ball_speed.x = self.BALL_SPEED
-        self.ball_speed.y = self.BALL_SPEED
+        self.ball_pos = PosStruct(
+            x=self.WIDTH // 2 - self.BALL_SIZE // 2,
+            y=self.HEIGHT // 2 - self.BALL_SIZE // 2,
+        )
+
+        # ボールをランダムな4方向に動き出させる
+        self.ball_speed.x = self.BALL_SPEED * random.choice([-1, 1])
+        self.ball_speed.y = self.BALL_SPEED * random.choice([-1, 1])
 
     async def game_end(self) -> bool:
         """

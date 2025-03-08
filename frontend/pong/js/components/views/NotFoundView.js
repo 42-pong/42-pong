@@ -15,7 +15,7 @@ export class NotFoundView extends View {
 
   _render() {
     const message = createTextElement(
-      "ページが見つかりませんでした",
+      getTextContent("noPageAnnouncement"),
       3,
       BootstrapBadge.setSecondary,
     );

@@ -43,6 +43,8 @@ class TournamentHandler:
         )
         self.manager_registry = manager_registry.global_tournament_registry
         self.user_id: Optional[int] = None
+        self.tournament_id: Optional[int] = None
+        self.player_data: Optional[player_data.PlayerData]
 
     def __str__(self) -> str:
         """
@@ -79,75 +81,123 @@ class TournamentHandler:
         playerがtournamentに参加する際の処理を行う関数
         """
         join_type: str = data[tournament_constants.JOIN_TYPE]
-        participation_name: str = data[tournament_constants.PARTICIPATION_NAME]
-        player_data = self._create_player_data(participation_name)
-        if player_data is None:
+        participation_name: Optional[str] = data[
+            tournament_constants.PARTICIPATION_NAME
+        ]
+        # participation_nameは参加に必須。
+        if participation_name is None:
             await self._send_join_result(
                 tournament_constants.Status.ERROR.value, None
             )
             return
-        tournament_id: int
 
-        match join_type:
-            case tournament_constants.JoinType.CREATE.value:
-                logger.debug("JOIN TYPE: CREATE")
-                result = await db_service.create_tournament_with_participation(
-                    self.user_id, participation_name
-                )
-                if result.is_error:
-                    logger.error(f"Error: {result.unwrap_error()}")
-                    await self._send_join_result(
-                        tournament_constants.Status.ERROR.value, None
-                    )
-                    return
+        # 参加データを更新。
+        self.player_data = self._create_player_data(participation_name)
 
-                value = result.unwrap()
-                tournament_id = value[
-                    tournament_db_constants.TournamentFields.ID
-                ]
+        # JOINタイプによってハンドラを呼び分ける
+        if join_type == tournament_constants.JoinType.CREATE.value:
+            await self._handle_create_join(participation_name)
+        elif join_type == tournament_constants.JoinType.RANDOM.value:
+            await self._handle_random_join()
+        elif join_type == tournament_constants.JoinType.SELECTED.value:
+            await self._handle_selected_join(data)
 
-                await self.manager_registry.create_tournament(tournament_id)
-                await self.manager_registry.add_participant(
-                    tournament_id, player_data
-                )
-                await self._send_join_result(
-                    tournament_constants.Status.OK.value, tournament_id
-                )
+    async def _handle_create_join(self, participation_name: str) -> None:
+        """
+        トーナメント作成し参加した場合のハンドラ
+        """
+        # 型チェック用
+        if self.player_data is None:
+            await self._send_join_result(
+                tournament_constants.Status.ERROR.value, None
+            )
+            return
 
-            case tournament_constants.JoinType.RANDOM.value:
-                logger.debug("JOIN TYPE: RANDOM")
-                tournament_id = await db_service.get_waiting_tournament()
-                if tournament_id is None:
-                    await self._send_join_result(
-                        tournament_constants.Status.ERROR.value, tournament_id
-                    )
-                    return
+        result = await db_service.create_tournament_with_participation(
+            self.user_id, participation_name
+        )
+        if result.is_error:
+            logger.error(f"Error: {result.unwrap_error()}")
+            await self._send_join_result(
+                tournament_constants.Status.ERROR.value, None
+            )
+            return
 
-                await self.manager_registry.add_participant(
-                    tournament_id, player_data
-                )
-                await self._send_join_result(
-                    tournament_constants.Status.OK.value, tournament_id
-                )
+        tournament_id = result.unwrap()[
+            tournament_db_constants.TournamentFields.ID
+        ]
+        # 参加するトーナメントIDをセット
+        self.tournament_id = tournament_id
 
-            case tournament_constants.JoinType.SELECTED.value:
-                logger.debug("JOIN TYPE: SELECTED")
-                tournament_id = data[tournament_constants.TOURNAMENT_ID]
-                if tournament_id is None:  # IDが数値でない場合はエラー
-                    await self._send_join_result(
-                        tournament_constants.Status.ERROR.value, tournament_id
-                    )
-                    return
+        await self.manager_registry.create_tournament(
+            tournament_id, self.player_data
+        )
+        await self.channel_handler.add_to_group(f"tournament_{tournament_id}")
+        await self._send_join_result(
+            tournament_constants.Status.OK.value, tournament_id
+        )
 
-                await self.manager_registry.add_participant(
-                    tournament_id, player_data
-                )
-                await self._send_join_result(
-                    tournament_constants.Status.OK.value, tournament_id
-                )
+    async def _handle_random_join(self) -> None:
+        """
+        ランダムなトーナメントに参加した場合のハンドラ
+        """
+        # 型チェック用
+        if self.player_data is None:
+            await self._send_join_result(
+                tournament_constants.Status.ERROR.value, None
+            )
+            return
 
-            case _:
-                pass
+        tournament_id = await db_service.get_waiting_tournament()
+        if tournament_id is None:
+            await self._send_join_result(
+                tournament_constants.Status.ERROR.value, None
+            )
+            return
+
+        success = await self.manager_registry.add_participant(
+            tournament_id, self.player_data
+        )
+        if success:
+            # 参加するトーナメントIDをセット
+            self.tournament_id = tournament_id
+        status = (
+            tournament_constants.Status.OK.value
+            if success
+            else tournament_constants.Status.ERROR.value
+        )
+        await self._send_join_result(status, tournament_id)
+
+    async def _handle_selected_join(self, data: dict) -> None:
+        """
+        tournament_idを指定して参加した場合のハンドラ
+        """
+        # 型チェック用
+        if self.player_data is None:
+            await self._send_join_result(
+                tournament_constants.Status.ERROR.value, None
+            )
+            return
+
+        tournament_id = data.get(tournament_constants.TOURNAMENT_ID)
+        if tournament_id is None:
+            await self._send_join_result(
+                tournament_constants.Status.ERROR.value, None
+            )
+            return
+
+        success = await self.manager_registry.add_participant(
+            tournament_id, self.player_data
+        )
+        if success:
+            # 参加するトーナメントIDをセット
+            self.tournament_id = tournament_id
+        status = (
+            tournament_constants.Status.OK.value
+            if success
+            else tournament_constants.Status.ERROR.value
+        )
+        await self._send_join_result(status, tournament_id)
 
     async def _handle_leave(self, data: dict) -> None:
         """
@@ -157,13 +207,15 @@ class TournamentHandler:
         if tournament_id is None:  # IDが数値でない場合はエラー
             return
 
-        player_data = self._create_player_data(None)
-        if player_data is None:
+        if self.player_data is None:
             return
 
         await self.manager_registry.remove_participant(
-            tournament_id, player_data
+            tournament_id, self.player_data
         )
+
+        # 退出したので、トーナメントIDを削除
+        self.tournament_id = None
 
     def _create_player_data(
         self, participation_name: Optional[str]
@@ -213,3 +265,15 @@ class TournamentHandler:
                 ws_constants.DATA_KEY: data,
             },
         }
+
+    async def exit(self) -> None:
+        """
+        トーナメントに参加中に切断した場合、トーナメント進行クラスに退出を伝えるための関数
+        """
+        # loginしていないか、トーナメント参加中でなければ特に何もしない
+        if self.player_data is None or self.tournament_id is None:
+            return
+
+        await self.manager_registry.remove_participant(
+            self.tournament_id, self.player_data
+        )

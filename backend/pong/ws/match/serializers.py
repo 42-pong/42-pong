@@ -15,6 +15,7 @@ class MatchInputINITSerializer(ws_serializers.BaseWebsocketSerializer):
     mode = serializers.ChoiceField(
         choices=[(mode.value, mode.name) for mode in match_constants.Mode],
     )
+    match_id = serializers.IntegerField(required=False)
 
 
 class MatchInputREADYSerializer(ws_serializers.BaseWebsocketSerializer):

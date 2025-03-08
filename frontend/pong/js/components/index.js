@@ -1,4 +1,5 @@
 import { LoginContainer } from "./auth/LoginContainer";
+import { OauthButton } from "./auth/OauthButton";
 import { SignInButton } from "./auth/SignInButton";
 import { SignOutButton } from "./auth/SignOutButton";
 import { SignUpButton } from "./auth/SignUpButton";
@@ -48,6 +49,7 @@ import { UserProfileContainer } from "./user/UserProfileContainer";
 import { UserProfileHeader } from "./user/UserProfileHeader";
 import { ErrorContainer } from "./utils/ErrorContainer";
 import { EventDispatchingButton } from "./utils/EventDispatchingButton";
+import { LangSelector } from "./utils/LangSelector";
 import { LinkButton } from "./utils/LinkButton";
 import { ListContainer } from "./utils/ListContainer";
 import { ObservableInput } from "./utils/ObservableInput";
@@ -65,6 +67,7 @@ import { TournamentsView } from "./views/TournamentsView";
 import { UsersView } from "./views/UsersView";
 
 customElements.define("login-container", LoginContainer, {});
+customElements.define("oauth-button", OauthButton, {});
 customElements.define("sign-in-button", SignInButton, {});
 customElements.define("sign-out-button", SignOutButton, {});
 customElements.define("sign-up-button", SignUpButton, {});
@@ -158,6 +161,7 @@ customElements.define(
   EventDispatchingButton,
   {},
 );
+customElements.define("lang-selector", LangSelector, {});
 customElements.define("link-button", LinkButton, {});
 customElements.define("list-container", ListContainer, {});
 customElements.define("observable-input", ObservableInput, {});
