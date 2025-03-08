@@ -63,6 +63,17 @@ const PATCH_AVATAR = {
   create: () => createPongEvent(PATCH_AVATAR.type, {}),
 };
 
+const VERIFY_2FA = {
+  type: "verify-2fa",
+  create: (credentials) =>
+    createPongEvent(VERIFY_2FA.type, { credentials }),
+};
+
+const VERIFY_TOTP = {
+  type: "verify-totp",
+  create: () => createPongEvent(VERIFY_TOTP.type, {}),
+};
+
 export const PongEvents = {
   UPDATE_ROUTER,
   UPDATE_TOURNAMENT_STAGE,
@@ -74,4 +85,6 @@ export const PongEvents = {
   TOGGLE_3D,
   PATCH_DISPLAY_NAME,
   PATCH_AVATAR,
+  VERIFY_2FA,
+  VERIFY_TOTP,
 };

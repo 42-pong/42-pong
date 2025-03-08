@@ -17,6 +17,8 @@ export const Endpoints = Object.freeze({
     defaultAvatar: new URL(DEFAULT_AVATAR_IMAGE_PATH, BASE_URL),
   },
   TOKEN: new URL("/api/token/", BASE_URL),
+  LOGIN: new URL("/api/login/", BASE_URL),
+  TOTP: new URL("/api/login/totp/", BASE_URL),
   REFRESH_TOKEN: new URL("/api/token/refresh/", BASE_URL),
   FRIENDS: {
     default: new URL("/api/users/me/friends/", BASE_URL),
