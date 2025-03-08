@@ -9,7 +9,6 @@ class TwoFactorAuth(models.Model):
     )
     is_done_2fa = models.BooleanField(default=False)
     secret = models.CharField(max_length=32, null=True, blank=True)
-    qr_code_path = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = "two_factor_auth"

@@ -3,7 +3,7 @@ from login import two_factor_auth
 # サインアップ時
 email = "user@example.com"
 issuer_name = "PONG"
-qr_code_path = "media/qr/qr_code.png"
+qr_code_path = "media/qrs/test.png"
 
 # QRコードを生成し、シークレットキーを取得
 secret = two_factor_auth.generate_2fa_qr_code(email, issuer_name, qr_code_path)
