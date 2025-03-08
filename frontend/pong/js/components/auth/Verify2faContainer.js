@@ -8,6 +8,7 @@ import { Paths } from "../../constants/Paths";
 import { PongEvents } from "../../constants/PongEvents";
 import { Component } from "../../core/Component";
 import { UserSessionManager } from "../../session/UserSessionManager";
+import { createElement } from "../../utils/elements/createElement";
 import { setClassNames } from "../../utils/elements/setClassNames";
 import { setHeight } from "../../utils/elements/style/setHeight";
 import { getTextContent } from "../../utils/i18n/lang";
@@ -26,7 +27,7 @@ export class Verify2faContainer extends Component {
   }
 
   _onConnect() {
-    this.#input = document.createElement("input", {
+    this.#input = createElement("input", {
       type: "password",
     });
     this.#input.placeholder = "TOTP";
