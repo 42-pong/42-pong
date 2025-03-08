@@ -103,7 +103,6 @@ class TournamentManagerRegistry:
                 task = self.tasks.get(tournament_id)
                 if task is not None:
                     task.cancel()  # タスクをキャンセル
-                    await task  # キャンセルしたタスクの完了を待機
 
     async def send_group_chat(self, tournament_id: int, message: dict) -> None:
         """
