@@ -175,11 +175,7 @@ class TotpView(views.APIView):
             logger.error(
                 f"{response.status_code} TokenObtainFailedError: {response.data}"
             )
-            return custom_response.CustomResponse(
-                code=["internal_error"],
-                status=response.status_code,
-                data=response.data,
-            )
+            return response
 
         if not two_fa.is_done_2fa:
             two_fa.is_done_2fa = True
