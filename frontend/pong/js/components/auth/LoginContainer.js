@@ -5,10 +5,10 @@ import { BootstrapSizing } from "../../bootstrap/utilities/sizing";
 import { BootstrapSpacing } from "../../bootstrap/utilities/spacing";
 import { Endpoints } from "../../constants/Endpoints";
 import { Paths } from "../../constants/Paths";
+import { PongEvents } from "../../constants/PongEvents";
 import { FrontendMessage } from "../../constants/message/FrontendMessage";
 import { Component } from "../../core/Component";
 import { MessageEnums } from "../../enums/MessageEnums";
-import { UserSessionManager } from "../../session/UserSessionManager";
 import { setClassNames } from "../../utils/elements/setClassNames";
 import { createTextElement } from "../../utils/elements/span/createTextElement";
 import { getTextContent } from "../../utils/i18n/lang";
@@ -121,7 +121,7 @@ export class LoginContainer extends Component {
       const email = this.#form.elements.email.value;
       const password = this.#form.elements.password.value;
       try {
-        const response = await fetch(Endpoints.TOKEN.href, {
+        const response = await fetch(Endpoints.LOGIN.href, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -132,7 +132,7 @@ export class LoginContainer extends Component {
           }),
         });
 
-        const { status, data: tokens, code } = await response.json();
+        const { status, data, code } = await response.json();
 
         if (status !== "ok") {
           this.#form.reset();
@@ -143,10 +143,15 @@ export class LoginContainer extends Component {
         }
         this.#loginError.style.display = "none"; //エラーメッセージをデフォルトの非表示にする
 
-        const isVerified =
-          await UserSessionManager.getInstance().signIn(tokens);
-        if (isVerified)
-          UserSessionManager.getInstance().redirect(Paths.HOME);
+        const { is_done_2fa: isDone2fa, qr_code: qrCode } = data;
+        this.dispatchEvent(
+          PongEvents.VERIFY_2FA.create({
+            email,
+            password,
+            isDone2fa,
+            qrCode,
+          }),
+        );
       } catch (error) {
         console.error("login error:", error);
       }
