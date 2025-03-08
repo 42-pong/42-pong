@@ -184,6 +184,4 @@ class TotpView(views.APIView):
         if not two_fa.is_done_2fa:
             two_fa.is_done_2fa = True
             two_fa.save()
-        return custom_response.CustomResponse(
-            status=status.HTTP_200_OK, data=response.data
-        )
+        return response

@@ -1,5 +1,3 @@
-import os
-
 import pyotp
 import qrcode  # type: ignore[import-untyped]
 
@@ -12,17 +10,12 @@ def generate_2fa_qr_code(email: str, issuer_name: str, save_path: str) -> str:
     :param issuer_name: 発行元アプリ名
     :param save_path: QRコード画像の保存パス
     """
-    # ユーザーごとの一意のシークレットキーを生成
     totp = pyotp.TOTP(pyotp.random_base32())
     secret = totp.secret
 
     uri = totp.provisioning_uri(email, issuer_name=issuer_name)
-    if not os.path.normpath(save_path).startswith(
-        os.path.normpath("安全なベースディレクトリ")
-    ):
-        raise ValueError("安全でないパスです")
     img = qrcode.make(uri)
-    img.save(save_path)
+    img.save("/pong" + save_path)
     return secret
 
 

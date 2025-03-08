@@ -53,7 +53,7 @@ class LoginView(views.APIView):
                             "status": "ok",
                             "data": {
                                 "is_done_2fa": "false",
-                                "qr_code": "/media/qr/qr_code.png",
+                                "qr_code": "/media/qrs/qr_code.png",
                             },
                         },
                     ),
@@ -156,7 +156,7 @@ class LoginView(views.APIView):
         two_fa, _ = models.TwoFactorAuth.objects.get_or_create(user=user)
         qr_code = ""
         if not two_fa.is_done_2fa:
-            qr_code = f"/media/qr/{user.username}.png"
+            qr_code = f"/media/qrs/{user.username}.png"
             try:
                 two_fa.secret = two_factor_auth.generate_2fa_qr_code(
                     user.email, "pong", qr_code
