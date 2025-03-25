@@ -83,7 +83,7 @@ class AccountCreateView(views.APIView):
                 response={
                     "type": "object",
                     "properties": {
-                        custom_response.STATUS: {"type": ["string"]},
+                        custom_response.STATUS: {"type": "string"},
                         custom_response.CODE: {
                             "type": "array",
                             "items": {"type": "string"},
