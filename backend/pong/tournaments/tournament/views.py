@@ -442,7 +442,10 @@ from . import models, serializers
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.CODE: {"type": "list"},
+                        custom_response.CODE: {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
                         custom_response.ERRORS: {"type": "dict"},
                     },
                 },
