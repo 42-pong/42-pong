@@ -155,7 +155,7 @@ from . import models, serializers
                             "type": "array",
                             "items": {"type": "string"},
                         },
-                        custom_response.ERRORS: {"type": "dict"},
+                        custom_response.ERRORS: {"type": "object"},
                     },
                 },
                 examples=[
