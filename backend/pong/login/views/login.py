@@ -62,14 +62,17 @@ class LoginView(views.APIView):
             400: utils.OpenApiResponse(
                 response={
                     "type": "object",
-                    "properties": {"detail": {"type": "string"}},
+                    "properties": {
+                        "status": {"type": "string"},
+                        "code": {"type": "array", "items": {"type": "string"}},
+                    },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 400 response(リクエスト形式が不正の場合)",
                         value={
                             "status": "error",
-                            "code": "internal_error",
+                            "code": ["internal_error"],
                         },
                     ),
                 ],
@@ -77,21 +80,24 @@ class LoginView(views.APIView):
             401: utils.OpenApiResponse(
                 response={
                     "type": "object",
-                    "properties": {"detail": {"type": "string"}},
+                    "properties": {
+                        "status": {"type": "string"},
+                        "code": {"type": "array", "items": {"type": "string"}},
+                    },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 401 response (アカウントが存在しない場合)",
                         value={
                             "status": "error",
-                            "code": "not_exists",
+                            "code": ["not_exists"],
                         },
                     ),
                     utils.OpenApiExample(
                         "Example 401 response (パスワードが間違っている場合)",
                         value={
                             "status": "error",
-                            "code": "incorrect_password",
+                            "code": ["incorrect_password"],
                         },
                     ),
                 ],
@@ -100,14 +106,17 @@ class LoginView(views.APIView):
                 description="",
                 response={
                     "type": "object",
-                    "properties": {"detail": {"type": "string"}},
+                    "properties": {
+                        "status": {"type": "string"},
+                        "code": {"type": "array", "items": {"type": "string"}},
+                    },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 500 response (予期せぬエラーの場合)",
                         value={
                             "status": "error",
-                            "code": "internal_error",
+                            "code": ["internal_error"],
                         },
                     ),
                 ],
