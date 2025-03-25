@@ -23,7 +23,7 @@ CODE_ALREADY_EXISTS: Final[str] = constants.Code.ALREADY_EXISTS
 CODE_INVALID_EMAIL: Final[str] = constants.Code.INVALID_EMAIL
 CODE_INVALID_PASSWORD: Final[str] = constants.Code.INVALID_PASSWORD
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class AccountsTests(test.APITestCase):

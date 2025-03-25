@@ -33,7 +33,7 @@ CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
 
 AVATAR_DIR: Final[str] = "media/avatars/"
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class UsersMeViewTests(test.APITestCase):

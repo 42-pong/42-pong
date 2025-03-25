@@ -27,7 +27,7 @@ MATCH_LOSSES: Final[str] = users_constants.UsersFields.MATCH_LOSSES
 USER_ID: Final[str] = constants.BlockRelationshipFields.USER_ID
 BLOCKED_USER: Final[str] = constants.BlockRelationshipFields.BLOCKED_USER
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class BlockRelationshipListSerializerTests(TestCase):

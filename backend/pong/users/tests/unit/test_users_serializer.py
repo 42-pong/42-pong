@@ -31,7 +31,7 @@ MATCH_LOSSES: Final[str] = constants.UsersFields.MATCH_LOSSES
 
 USER_ID: Final[str] = friends_constants.FriendshipFields.USER_ID
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class UsersSerializerTests(TestCase):

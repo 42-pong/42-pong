@@ -32,7 +32,7 @@ BLOCKED_USER: Final[str] = constants.BlockRelationshipFields.BLOCKED_USER
 DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class BlocksCreateViewTests(test.APITestCase):

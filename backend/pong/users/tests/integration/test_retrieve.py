@@ -28,7 +28,7 @@ DATA: Final[str] = custom_response.DATA
 CODE: Final[str] = custom_response.CODE
 ERRORS: Final[str] = custom_response.ERRORS
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class UsersRetrieveViewTests(test.APITestCase):

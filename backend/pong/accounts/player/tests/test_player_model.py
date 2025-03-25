@@ -7,7 +7,7 @@ from django.test import TestCase
 from ... import constants
 from .. import models
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 # todo: PlayerModelにフィールドが追加された際にテストも追加
