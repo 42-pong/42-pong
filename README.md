@@ -2,6 +2,8 @@
 
 This web application provides a classic Pong game with user authentication features.
 
+![demo](images/demo.gif)
+
 ## Requires
 
 - Docker
