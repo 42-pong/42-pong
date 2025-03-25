@@ -46,14 +46,17 @@ class TokenRefreshView(views.APIView):
             400: utils.OpenApiResponse(
                 response={
                     "type": "object",
-                    "properties": {"detail": {"type": "string"}},
+                    "properties": {
+                        "status": {"type": "string"},
+                        "code": {"type": "array", "items": {"type": "string"}},
+                    },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 400 response (リクエスト形式が不正の場合)",
                         value={
                             "status": "error",
-                            "code": "internal_error",
+                            "code": ["internal_error"],
                         },
                     ),
                 ],
@@ -62,28 +65,31 @@ class TokenRefreshView(views.APIView):
                 description="",
                 response={
                     "type": "object",
-                    "properties": {"detail": {"type": "string"}},
+                    "properties": {
+                        "status": {"type": "string"},
+                        "code": {"type": "array", "items": {"type": "string"}},
+                    },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 401 response (トークンの形式が間違ってる場合)",
                         value={
                             "status": "error",
-                            "code": "invalid",
+                            "code": ["invalid"],
                         },
                     ),
                     utils.OpenApiExample(
                         "Example 401 response (リフレッシュトークンの有効期限が切れている場合)",
                         value={
                             "status": "error",
-                            "code": "invalid",
+                            "code": ["invalid"],
                         },
                     ),
                     utils.OpenApiExample(
                         "Example 401 response (アカウントが存在しない場合)",
                         value={
                             "status": "error",
-                            "code": "not_exists",
+                            "code": ["not_exists"],
                         },
                     ),
                 ],
@@ -92,14 +98,17 @@ class TokenRefreshView(views.APIView):
                 description="",
                 response={
                     "type": "object",
-                    "properties": {"detail": {"type": "string"}},
+                    "properties": {
+                        "status": {"type": "string"},
+                        "code": {"type": "array", "items": {"type": "string"}},
+                    },
                 },
                 examples=[
                     utils.OpenApiExample(
                         "Example 500 response (予期せぬエラーの場合)",
                         value={
                             "status": "error",
-                            "code": "internal_error",
+                            "code": ["internal_error"],
                         },
                     ),
                 ],
