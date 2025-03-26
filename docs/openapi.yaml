@@ -1,0 +1,2658 @@
+openapi: 3.0.3
+info:
+  title: Pong API
+  version: 1.0.0
+  description: The Pong API provides backend services for the Pong game.
+paths:
+  /api/accounts/:
+    post:
+      operationId: accounts_create
+      description: |-
+        新規アカウントを作成するPOSTメソッド
+        requestをSerializerに渡してvalidationを行い、
+        有効な場合はPlayerとUserを作成してDBに追加し、作成されたアカウント情報をresponseとして返す
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Player'
+            examples:
+              ExampleRequest:
+                value:
+                  email: user@example.com
+                  password: passwordpassword
+                summary: Example request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Player'
+            examples:
+              ExampleRequest:
+                value:
+                  email: user@example.com
+                  password: passwordpassword
+                summary: Example request
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Player'
+            examples:
+              ExampleRequest:
+                value:
+                  email: user@example.com
+                  password: passwordpassword
+                summary: Example request
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+              examples:
+                Example201Response:
+                  value:
+                    status: ok
+                    data:
+                      id: 2
+                      username: username
+                      email: user@example.com
+                      display_name: default
+                      avatar: /media/avatars/sample.png
+                      is_friend: false
+                      is_blocked: false
+                      match_wins: 0
+                      match_losses: 0
+                  summary: Example 201 response
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example400Response-AlreadyExists:
+                  value:
+                    status: error
+                    code:
+                    - already_exists
+                  summary: Example 400 response - already_exists
+                Example400Response-InvalidEmail:
+                  value:
+                    status: error
+                    code:
+                    - invalid_email
+                  summary: Example 400 response - invalid_email
+                Example400Response-InvalidPassword:
+                  value:
+                    status: error
+                    code:
+                    - invalid_password
+                  summary: Example 400 response - invalid_password
+          description: Invalid Request (複数例あり)
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      tags:
+      - health
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/login/:
+    post:
+      operationId: login_create
+      description: |-
+        アカウントが存在するかどうかを認証し、2要素認証用のパラメータ生成するPOSTメソッド
+
+        Responses:
+            - 200: そのアカウントが2要素認証が有効かどうかを返す。無効の場合はQRコードのURLも返す
+            - 400:
+                - internal_error: リクエスト形式が不正の場合
+            - 401:
+                - not_exists: アカウントが存在しない場合
+                - incorrect_password: パスワードが間違っている場合
+            - 500:
+                - internal_error:
+                    - 予期せぬエラーが発生した場合
+      tags:
+      - login
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_done_2fa:
+                    type: boolean
+                    description: 2段階認証が有効かどうか
+                  qr_code:
+                    type: string
+                    description: QRコードのURL
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      is_done_2fa: 'false'
+                      qr_code: /media/qrs/qr_code.png
+                  summary: Example 200 response
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example400Response(リクエスト形式が不正の場合):
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 400 response(リクエスト形式が不正の場合)
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example401Response(アカウントが存在しない場合):
+                  value:
+                    status: error
+                    code:
+                    - not_exists
+                  summary: Example 401 response (アカウントが存在しない場合)
+                Example401Response(パスワードが間違っている場合):
+                  value:
+                    status: error
+                    code:
+                    - incorrect_password
+                  summary: Example 401 response (パスワードが間違っている場合)
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response(予期せぬエラーの場合):
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response (予期せぬエラーの場合)
+          description: ''
+  /api/login/totp/:
+    post:
+      operationId: login_totp_create
+      description: |-
+        ワンタイムパスワードを検証し、アクセストークンとリフレッシュトークンを生成するPOSTメソッド
+
+        Responses:
+            - 200: アクセストークンとリフレッシュトークンを返す
+            - 400:
+                - internal_error: リクエスト形式が不正の場合
+            - 401:
+                - incorrect_password: ワンタイムパスワードが間違っている場合
+            - 500:
+                - internal_error:
+                    - 予期せぬエラーが発生した場合
+      tags:
+      - login
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+                    description: アクセストークン
+                  refresh:
+                    type: string
+                    description: リフレッシュトークン
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      access: eyJhbGciOiJIUzI1...
+                      refresh: eyJhbGciOiJIUzI1...
+                  summary: Example 200 response
+          description: アクセストークンとリフレッシュトークンを返す
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example400Response(リクエスト形式が不正の場合):
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 400 response(リクエスト形式が不正の場合)
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example401Response(ワンタイムパスワードが間違っている場合):
+                  value:
+                    status: error
+                    code:
+                    - incorrect_password
+                  summary: Example 401 response (ワンタイムパスワードが間違っている場合)
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response(予期せぬエラーの場合):
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response (予期せぬエラーの場合)
+          description: ''
+  /api/matches/:
+    get:
+      operationId: matches_list
+      description: Match一覧を取得する。クエリパラメータによるフィルタリングも可能。
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: paginationのページ数
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - canceled
+          - completed
+          - not_started
+          - on_going
+        description: マッチのステータス
+      - in: query
+        name: user-id
+        schema:
+          type: integer
+        description: userテーブルのID
+      tags:
+      - matches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+              examples:
+                Example200Response:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - status: ok
+                      data:
+                        count: 10
+                        next: http://localhost:8000/api/matches/?page=2
+                        previous: null
+                        results:
+                        - id: 1
+                          round_id: 1
+                          status: completed
+                          created_at: '2025-01-01T00:01:00.000000+09:00'
+                          updated_at: '2025-01-01T00:01:00.000000+09:00'
+                          participations:
+                          - user_id: 1
+                            team: '1'
+                            is_win: true
+                            scores:
+                            - created_at: '2025-01-01T00:00:00.000000+09:00'
+                              pos_x: 600
+                              pos_y: 10
+                          - user_id: 2
+                            team: '2'
+                            is_win: false
+                            scores:
+                            - created_at: '2025-01-01T00:00:30.000000+09:00'
+                              pos_x: 0
+                              pos_y: 380
+                        - id: 2
+                          round_id: 1
+                          status: on_going
+                          created_at: '2025-01-01T00:03:00.000000+09:00'
+                          updated_at: '2025-01-01T00:06:00.000000+09:00'
+                          participations:
+                        - id: 3
+                          round_id: 2
+                          status: not_started
+                          created_at: '2025-01-01T00:03:00.000000+09:00'
+                          updated_at: '2025-01-01T00:06:00.000000+09:00'
+                          participations:
+                  summary: Example 200 response
+          description: A list of matches
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          description: Internal server error
+  /api/matches/{id}/:
+    get:
+      operationId: matches_retrieve_by_id
+      description: 特定のMatchを取得する。
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this match.
+        required: true
+      tags:
+      - matches
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      id: 1
+                      round_id: 1
+                      status: completed
+                      created_at: '2025-01-01T00:01:00.000000+09:00'
+                      updated_at: '2025-01-01T00:03:00.000000+09:00'
+                      participations:
+                      - user_id: 1
+                        team: '1'
+                        is_win: true
+                        scores:
+                        - created_at: '2025-01-01T00:00:00.000000+09:00'
+                          pos_x: 600
+                          pos_y: 10
+                      - user_id: 2
+                        team: '2'
+                        is_win: false
+                        scores:
+                        - created_at: '2025-01-01T00:00:30.000000+09:00'
+                          pos_x: 0
+                          pos_y: 380
+                  summary: Example 200 response
+          description: A detail of a match
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+                  errors:
+                    type: object
+              examples:
+                Example404Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                    errors:
+                      id: The resource does not exist.
+                  summary: Example 404 response
+          description: Not Found
+        '500':
+          description: Internal server error
+  /api/oauth2/authorize/:
+    get:
+      operationId: oauth2_authorize_retrieve
+      description: |-
+        認可エンドポイントを呼ぶ関数
+        この関数はクライアント(42pong)が認可サーバーの認可エンドポイントにアクセスし、認可コードを取得するために使用する。
+
+        認可エンドポイントを呼ぶケース
+        - ユーザーが新規アカウントを作成した時
+        - ユーザーが明示的にログアウトした時(ログアウト時にアクセストークンを削除する場合)
+        - リフレッシュトークンの有効期限が切れた時
+      tags:
+      - oauth2
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '302':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+              examples:
+                Example302Redirect:
+                  value:
+                    Location: https://example.com/oauth2/authorize?code=abc123...
+                  summary: Example 302 Redirect
+          description: Redirect to OAuth2 authorization URL
+  /api/oauth2/callback/:
+    get:
+      operationId: oauth2_callback_retrieve
+      description: |-
+        認可サーバーからのレスポンスを受け取る関数
+        この関数は認可エンドポイント(`/api/oauth2/authorize`)のレスポンスを受け取り、認可コードを取得するために使用する。
+        そのため、このエンドポイントはFEから呼ばれることはありません。
+      tags:
+      - oauth2
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: Error when no code is provided
+        '401':
+          description: ユーザーが認証を拒否した場合、また失敗した場合
+        '500':
+          description: 予期せぬエラーが発生した場合（例えば、テーブル作成に失敗したなど）
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/token/:
+    post:
+      operationId: token_create
+      description: |-
+        アクセストークンとリフレッシュトークンを取得するPOSTメソッド
+
+        Responses:
+            - 200: アクセストークンとリフレッシュトークンを返す
+            - 400:
+                - internal_error: リクエスト形式が不正の場合
+            - 401:
+                - not_exists: アカウントが存在しない場合
+                - incorrect_password: パスワードが間違っている場合
+            - 500:
+                - internal_error:
+                    - JWTトークンの生成に失敗した場合
+                    - 予期せぬエラーが発生した場合
+      tags:
+      - token
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+                    description: アクセストークン
+                  refresh:
+                    type: string
+                    description: リフレッシュトークン
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      access: eyJhbGciOiJIUzI1...
+                      refresh: eyJhbGciOiJIUzI1...
+                  summary: Example 200 response
+          description: アクセストークンとリフレッシュトークンを返す
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example400Response(リクエスト形式が不正の場合):
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 400 response(リクエスト形式が不正の場合)
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example401Response(アカウントが存在しない場合):
+                  value:
+                    status: error
+                    code:
+                    - not_exists
+                  summary: Example 401 response (アカウントが存在しない場合)
+                Example401Response(パスワードが間違っている場合):
+                  value:
+                    status: error
+                    code:
+                    - incorrect_password
+                  summary: Example 401 response (パスワードが間違っている場合)
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response(予期せぬエラーの場合):
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response (予期せぬエラーの場合)
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: リフレッシュトークンを使用して新しいアクセストークンを取得するPOSTメソッド
+      tags:
+      - token
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access:
+                    type: string
+                    description: 新しいアクセストークン
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      access: eyJhbGciOiJIUzI1...
+                  summary: Example 200 response
+          description: 新しいアクセストークンを返す
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example400Response(リクエスト形式が不正の場合):
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 400 response (リクエスト形式が不正の場合)
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example401Response(トークンの形式が間違ってる場合):
+                  value:
+                    status: error
+                    code:
+                    - invalid
+                  summary: Example 401 response (トークンの形式が間違ってる場合)
+                Example401Response(リフレッシュトークンの有効期限が切れている場合):
+                  value:
+                    status: error
+                    code:
+                    - invalid
+                  summary: Example 401 response (リフレッシュトークンの有効期限が切れている場合)
+                Example401Response(アカウントが存在しない場合):
+                  value:
+                    status: error
+                    code:
+                    - not_exists
+                  summary: Example 401 response (アカウントが存在しない場合)
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response(予期せぬエラーの場合):
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response (予期せぬエラーの場合)
+          description: ''
+  /api/tournaments/:
+    get:
+      operationId: tournaments_list
+      description: Tournamentレコード一覧を取得する。クエリパラメータによるフィルタリングも可能。
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: paginationのページ数
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - canceled
+          - completed
+          - not_started
+          - on_going
+        description: トーナメントのステータス
+      - in: query
+        name: user-id
+        schema:
+          type: integer
+        description: userテーブルのID
+      tags:
+      - tournaments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTournamentQueryList'
+              examples:
+                Example200Response:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - status: ok
+                      data:
+                        count: 10
+                        next: http://localhost:8000/api/tournaments/?page=2
+                        previous: null
+                        results:
+                        - id: 1
+                          status: completed
+                          created_at: '2025-01-01T00:00:00.000000+09:00'
+                          updated_at: '2025-01-01T00:30:00.000000+09:00'
+                          rounds:
+                          - round_number: 1
+                            status: completed
+                            created_at: '2025-01-01T00:01:00.000000+09:00'
+                            updated_at: '2025-01-01T00:10:00.000000+09:00'
+                            matches:
+                            - id: 1
+                              round_id: 1
+                              status: completed
+                              created_at: '2025-01-01T00:01:00.000000+09:00'
+                              updated_at: '2025-01-01T00:01:00.000000+09:00'
+                              participations:
+                              - user_id: 1
+                                team: '1'
+                                is_win: true
+                                scores:
+                                - created_at: '2025-02-11T14:01:42.410054+09:00'
+                                  pos_x: 600
+                                  pos_y: 10
+                              - user_id: 2
+                                team: '2'
+                                is_win: false
+                                scores:
+                                - created_at: '2025-02-11T14:01:18.735550+09:00'
+                                  pos_x: 0
+                                  pos_y: 100
+                                - created_at: '2025-02-11T14:01:32.315450+09:00'
+                                  pos_x: 0
+                                  pos_y: 380
+                            - id: 2
+                              round_id: 1
+                              status: completed
+                              created_at: '2025-01-01T00:01:00.000000+09:00'
+                              updated_at: '2025-01-01T00:01:00.000000+09:00'
+                              participations:
+                              - user_id: 3
+                                team: '1'
+                                is_win: false
+                                scores:
+                                - created_at: '2025-02-11T14:01:32.315450+09:00'
+                                  pos_x: 600
+                                  pos_y: 10
+                              - user_id: 4
+                                team: '2'
+                                is_win: true
+                                scores:
+                                - created_at: '2025-02-11T14:01:18.735550+09:00'
+                                  pos_x: 0
+                                  pos_y: 100
+                                - created_at: '2025-02-11T14:01:32.315450+09:00'
+                                  pos_x: 0
+                                  pos_y: 380
+                          - round_number: 2
+                            status: completed
+                            created_at: '2025-01-01T00:01:00.000000+09:00'
+                            updated_at: '2025-01-01T00:10:00.000000+09:00'
+                            matches:
+                            - id: 3
+                              round_id: 2
+                              status: completed
+                              created_at: '2025-01-01T00:01:00.000000+09:00'
+                              updated_at: '2025-01-01T00:01:00.000000+09:00'
+                              participations:
+                              - user_id: 2
+                                team: '1'
+                                is_win: true
+                                scores:
+                                - created_at: '2025-01-01T00:06:00.000000+09:00'
+                                  pos_x: 600
+                                  pos_y: 10
+                              - user_id: 3
+                                team: '2'
+                                is_win: false
+                                scores:
+                                - created_at: '2025-01-01T00:06:10.000000+09:00'
+                                  pos_x: 0
+                                  pos_y: 100
+                                - created_at: '2025-01-01T00:06:20.000000+09:00'
+                                  pos_x: 0
+                                  pos_y: 380
+                        - id: 2
+                          status: not_started
+                          created_at: '2025-01-01T00:20:00.000000+09:00'
+                          updated_at: '2025-01-01T00:40:00.000000+09:00'
+                          rounds:
+                          - {}
+                  summary: Example 200 response
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          description: Internal server error
+  /api/tournaments/{id}/:
+    get:
+      operationId: tournaments_retrieve_by_id
+      description: 指定されたIDのTournamentレコードの詳細を取得する。
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this tournament.
+        required: true
+      tags:
+      - tournaments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentQuery'
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      id: 1
+                      status: completed
+                      created_at: '2025-01-01T00:00:00.000000+09:00'
+                      updated_at: '2025-01-01T00:30:00.000000+09:00'
+                      rounds:
+                      - round_number: 1
+                        status: completed
+                        created_at: '2025-01-01T00:01:00.000000+09:00'
+                        updated_at: '2025-01-01T00:10:00.000000+09:00'
+                        matches:
+                        - id: 1
+                          round_id: 1
+                          status: completed
+                          created_at: '2025-01-01T00:01:00.000000+09:00'
+                          updated_at: '2025-01-01T00:01:00.000000+09:00'
+                          participations:
+                          - user_id: 1
+                            team: '1'
+                            is_win: false
+                            scores:
+                            - created_at: '2025-02-11T14:01:42.410054+09:00'
+                              pos_x: 600
+                              pos_y: 10
+                          - user_id: 2
+                            team: '2'
+                            is_win: true
+                            scores:
+                            - created_at: '2025-02-11T14:01:18.735550+09:00'
+                              pos_x: 0
+                              pos_y: 100
+                            - created_at: '2025-02-11T14:01:32.315450+09:00'
+                              pos_x: 0
+                              pos_y: 380
+                        - id: 2
+                          round_id: 1
+                          status: completed
+                          created_at: '2025-01-01T00:01:00.000000+09:00'
+                          updated_at: '2025-01-01T00:01:00.000000+09:00'
+                          participations:
+                          - user_id: 3
+                            team: '1'
+                            is_win: true
+                            scores:
+                            - created_at: '2025-02-11T14:01:32.315450+09:00'
+                              pos_x: 600
+                              pos_y: 10
+                          - user_id: 4
+                            team: '2'
+                            is_win: false
+                            scores:
+                            - created_at: '2025-02-11T14:01:18.735550+09:00'
+                              pos_x: 0
+                              pos_y: 100
+                            - created_at: '2025-02-11T14:01:32.315450+09:00'
+                              pos_x: 0
+                              pos_y: 380
+                      - round_number: 2
+                        status: completed
+                        created_at: '2025-01-01T00:01:00.000000+09:00'
+                        updated_at: '2025-01-01T00:10:00.000000+09:00'
+                        matches:
+                        - id: 3
+                          round_id: 2
+                          status: completed
+                          created_at: '2025-01-01T00:01:00.000000+09:00'
+                          updated_at: '2025-01-01T00:01:00.000000+09:00'
+                          participations:
+                          - user_id: 2
+                            team: '1'
+                            is_win: false
+                            scores:
+                            - created_at: '2025-01-01T00:06:00.000000+09:00'
+                              pos_x: 600
+                              pos_y: 10
+                          - user_id: 3
+                            team: '2'
+                            is_win: true
+                            scores:
+                            - created_at: '2025-01-01T00:06:10.000000+09:00'
+                              pos_x: 0
+                              pos_y: 100
+                            - created_at: '2025-01-01T00:06:20.000000+09:00'
+                              pos_x: 0
+                              pos_y: 380
+                  summary: Example 200 response
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+                  errors:
+                    type: object
+              examples:
+                Example404Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                    errors:
+                      id: The resource does not exist.
+                  summary: Example 404 response
+          description: Not Found
+        '500':
+          description: Internal server error
+  /api/tournaments/participations/:
+    get:
+      operationId: participations_list
+      description: Participationレコード一覧を取得する。クエリパラメータによるフィルタリングも可能。
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: paginationのページ数
+      - in: query
+        name: tournament-id
+        schema:
+          type: integer
+        description: TournamentテーブルのID
+      - in: query
+        name: user-id
+        schema:
+          type: integer
+        description: userテーブルのID
+      tags:
+      - tournaments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+              examples:
+                Example200Response:
+                  value:
+                    count: 123
+                    next: http://api.example.org/accounts/?page=4
+                    previous: http://api.example.org/accounts/?page=2
+                    results:
+                    - status: ok
+                      data:
+                        count: 10
+                        next: http://localhost:8000/api/tournaments/participations/?page=2
+                        previous: null
+                        results:
+                        - id: 1
+                          tournament_id: 4
+                          user_id: 7
+                          participation_name: player_x
+                          ranking: 4
+                          created_at: '2025-01-01T00:00:00.000000+09:00'
+                          updated_at: '2025-01-01T00:30:00.000000+09:00'
+                        - id: 2
+                          tournament_id: 5
+                          user_id: 7
+                          participation_name: player_y
+                          ranking: null
+                          created_at: '2025-01-01T00:01:00.000000+09:00'
+                          updated_at: '2025-01-01T00:01:00.000000+09:00'
+                  summary: Example 200 response
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          description: Internal server error
+  /api/tournaments/participations/{id}/:
+    get:
+      operationId: participations_retrieve_by_id
+      description: 指定されたIDのParticipationレコードの詳細を取得する。
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this participation.
+        required: true
+      tags:
+      - tournaments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      id: 4
+                      tournament_id: 2
+                      user_id: 3
+                      participation_name: player_x
+                      ranking: 1
+                      created_at: '2025-01-01T00:15:00.000000+09:00'
+                      updated_at: '2025-01-01T00:20:00.000000+09:00'
+                  summary: Example 200 response
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+                  errors:
+                    type: object
+              examples:
+                Example404Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                    errors:
+                      id: The resource does not exist.
+                  summary: Example 404 response
+          description: Not Found
+        '500':
+          description: Internal server error
+  /api/users/:
+    get:
+      operationId: get_users_list
+      description: ユーザープロフィール一覧を取得するGETメソッド
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: paginationのページ数
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Users'
+              examples:
+                Example200Response:
+                  value:
+                  - status: ok
+                    data:
+                      count: 25
+                      next: http://localhost:8000/api/users/?page=2
+                      previous: null
+                      results:
+                      - id: 2
+                        username: username1
+                        display_name: display_name1
+                        avatar: /media/avatars/sample1.png
+                        is_friend: false
+                        is_blocked: false
+                        match_wins: 1
+                        match_losses: 0
+                      - id: 3
+                        username: username2
+                        display_name: display_name2
+                        avatar: /media/avatars/sample2.png
+                        is_friend: false
+                        is_blocked: false
+                        match_wins: 1
+                        match_losses: 0
+                      - '...'
+                  summary: Example 200 response
+          description: A list of user profiles
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+  /api/users/{user_id}/:
+    get:
+      operationId: get_users_retrieve
+      description: |-
+        特定のuser_idのユーザープロフィールを取得するGETメソッド
+
+        Args:
+            user_id: URLから取得したユーザーのID
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      id: 2
+                      username: username1
+                      display_name: display_name1
+                      avatar: /media/avatars/sample.png
+                      is_friend: true
+                      is_blocked: false
+                      match_wins: 1
+                      match_losses: 0
+                  summary: Example 200 response
+          description: A user profile
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example404Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 404 response
+          description: The user does not exist.
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+  /api/users/me/:
+    get:
+      operationId: users_me_retrieve
+      description: 自分のユーザープロフィールを取得するGETメソッド
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      id: 1
+                      username: username1
+                      email: username1@example.com
+                      display_name: display_name1
+                      avatar: /media/avatars/sample.png
+                      is_friend: false
+                      is_blocked: false
+                      match_wins: 1
+                      match_losses: 0
+                  summary: Example 200 response
+          description: My user profile
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+    patch:
+      operationId: users_me_partial_update
+      description: 自分のユーザープロフィールを更新するPATCHメソッド
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                display_name:
+                  type: string
+                  example: new_name
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  example: example.png
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+              examples:
+                Example200Response:
+                  value:
+                    status: ok
+                    data:
+                      id: 1
+                      username: username1
+                      email: username1@example.com
+                      display_name: display_name1
+                      avatar: /media/avatars/sample.png
+                      is_friend: false
+                      is_blocked: false
+                      match_wins: 1
+                      match_losses: 0
+                  summary: Example 200 response
+          description: My user profile
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example400Response:
+                  value:
+                    status: error
+                    code:
+                    - invalid
+                  summary: Example 400 response
+          description: Validation error
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+  /api/users/me/blocks/:
+    get:
+      operationId: users_me_blocks_list
+      description: ログインユーザーがブロックしているユーザープロフィール一覧を取得するGETメソッド
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: paginationのページ数
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlockRelationshipList'
+              examples:
+                Example200Response:
+                  value:
+                  - status: ok
+                    data:
+                      count: 25
+                      next: http://localhost:8000/api/users/me/blocks/?page=2
+                      previous: null
+                      results:
+                      - blocked_user:
+                          id: 2
+                          username: username2
+                          display_name: display_name2
+                          avatar: /media/avatars/sample.png
+                          is_friend: false
+                          is_blocked: true
+                          match_wins: 1
+                          match_losses: 0
+                      - '...'
+                  summary: Example 200 response
+          description: A list of blocks for the authenticated user.
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+    post:
+      operationId: users_me_blocks_create
+      description: 自分のブロックリストに特定の新しいユーザーを追加するPOSTメソッド
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRelationshipCreate'
+            examples:
+              ExampleRequest:
+                value:
+                  blocked_user_id: 1
+                summary: Example request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlockRelationshipCreate'
+            examples:
+              ExampleRequest:
+                value:
+                  blocked_user_id: 1
+                summary: Example request
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockRelationshipCreate'
+            examples:
+              ExampleRequest:
+                value:
+                  blocked_user_id: 1
+                summary: Example request
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockRelationshipCreate'
+              examples:
+                Example201Response:
+                  value:
+                    status: ok
+                    data:
+                      blocked_user:
+                        id: 2
+                        username: username2
+                        display_name: display_name2
+                        avatar: /media/avatars/sample.png
+                        is_friend: false
+                        is_blocked: true
+                        match_wins: 1
+                        match_losses: 0
+                  summary: Example 201 response
+          description: Successfully added a new user to the authenticated user's block
+            list.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example400Response-NotExists:
+                  value:
+                    status: error
+                    code:
+                    - not_exists
+                  summary: Example 400 response - not_exists
+                Example400Response-Invalid:
+                  value:
+                    status: error
+                    code:
+                    - invalid
+                  summary: Example 400 response - invalid
+                Example400Response-InternalError:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 400 response - internal_error
+          description: Invalid blocked_user_id (複数例あり)
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+  /api/users/me/blocks/{blocked_user_id}/:
+    delete:
+      operationId: users_me_blocks_destroy
+      description: 自分のブロックリストから特定のユーザーを削除するDELETEメソッド
+      parameters:
+      - in: path
+        name: blocked_user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example404Response-NotExists:
+                  value:
+                    status: error
+                    code:
+                    - not_exists
+                  summary: Example 404 response - not_exists
+                Example404Response-Invalid:
+                  value:
+                    status: error
+                    code:
+                    - invalid
+                  summary: Example 404 response - invalid
+                Example404Response-InternalError:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 404 response - internal_error
+          description: Invalid blocked_user_id (複数例あり)
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+  /api/users/me/friends/:
+    get:
+      operationId: users_me_friends_list
+      description: 自分のフレンドのユーザープロフィール一覧を取得するGETメソッド
+      parameters:
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: paginationのページ数
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendshipList'
+              examples:
+                Example200Response:
+                  value:
+                  - status: ok
+                    data:
+                      count: 25
+                      next: http://localhost:8000/api/users/me/friends/?page=2
+                      previous: null
+                      results:
+                      - friend:
+                          id: 2
+                          username: username2
+                          display_name: display_name2
+                          avatar: /media/avatars/sample.png
+                          is_friend: true
+                          is_blocked: false
+                          match_wins: 1
+                          match_losses: 0
+                      - '...'
+                  summary: Example 200 response
+          description: A list of friends for the authenticated user.
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+    post:
+      operationId: users_me_friends_create
+      description: 自分のフレンドに特定の新しいユーザーを追加するPOSTメソッド
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendshipCreate'
+            examples:
+              ExampleRequest:
+                value:
+                  friend_user_id: 1
+                summary: Example request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FriendshipCreate'
+            examples:
+              ExampleRequest:
+                value:
+                  friend_user_id: 1
+                summary: Example request
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FriendshipCreate'
+            examples:
+              ExampleRequest:
+                value:
+                  friend_user_id: 1
+                summary: Example request
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendshipCreate'
+              examples:
+                Example201Response:
+                  value:
+                    status: ok
+                    data:
+                      friend:
+                        id: 2
+                        username: username2
+                        display_name: display_name2
+                        avatar: /media/avatars/sample.png
+                        is_friend: true
+                        is_blocked: false
+                        match_wins: 1
+                        match_losses: 0
+                  summary: Example 201 response
+          description: Successfully added a new user to the authenticated user's friends
+            list.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example400Response-NotExists:
+                  value:
+                    status: error
+                    code:
+                    - not_exists
+                  summary: Example 400 response - not_exists
+                Example400Response-Invalid:
+                  value:
+                    status: error
+                    code:
+                    - invalid
+                  summary: Example 400 response - invalid
+                Example400Response-InternalError:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 400 response - internal_error
+          description: Invalid friend_user_id (複数例あり)
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+  /api/users/me/friends/{friend_id}/:
+    delete:
+      operationId: users_me_friends_destroy
+      description: 自分のフレンドから特定のユーザーを削除するDELETEメソッド
+      parameters:
+      - in: path
+        name: friend_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+              examples:
+                Example401Response:
+                  value:
+                    detail: Authentication credentials were not provided.
+                  summary: Example 401 response
+          description: Not authenticated
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example404Response-NotExists:
+                  value:
+                    status: error
+                    code:
+                    - not_exists
+                  summary: Example 404 response - not_exists
+                Example404Response-Invalid:
+                  value:
+                    status: error
+                    code:
+                    - invalid
+                  summary: Example 404 response - invalid
+                Example404Response-InternalError:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 404 response - internal_error
+          description: Invalid friend_user_id (複数例あり)
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  code:
+                    type: array
+                    items:
+                      type: string
+              examples:
+                Example500Response:
+                  value:
+                    status: error
+                    code:
+                    - internal_error
+                  summary: Example 500 response
+          description: Internal server error
+components:
+  schemas:
+    BlockRelationshipCreate:
+      type: object
+      properties:
+        blocked_user_id:
+          type: integer
+          minimum: 1
+          writeOnly: true
+        blocked_user:
+          allOf:
+          - $ref: '#/components/schemas/Users'
+          readOnly: true
+      required:
+      - blocked_user
+      - blocked_user_id
+    BlockRelationshipList:
+      type: object
+      properties:
+        blocked_user:
+          allOf:
+          - $ref: '#/components/schemas/Users'
+          readOnly: true
+      required:
+      - blocked_user
+    FriendshipCreate:
+      type: object
+      properties:
+        friend_user_id:
+          type: integer
+          minimum: 1
+          writeOnly: true
+        friend:
+          allOf:
+          - $ref: '#/components/schemas/Users'
+          readOnly: true
+      required:
+      - friend
+      - friend_user_id
+    FriendshipList:
+      type: object
+      properties:
+        friend:
+          allOf:
+          - $ref: '#/components/schemas/Users'
+          readOnly: true
+      required:
+      - friend
+    Match:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        round_id:
+          type: integer
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        participations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participation'
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - participations
+      - round_id
+      - updated_at
+    PaginatedTournamentQueryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TournamentQuery'
+    Participation:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          readOnly: true
+        team:
+          $ref: '#/components/schemas/TeamEnum'
+        is_win:
+          type: boolean
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
+          readOnly: true
+      required:
+      - scores
+      - user_id
+    Player:
+      type: object
+      description: |-
+        Playerモデルのシリアライザ
+        Playerモデルの作成・バリデーションを行う
+      properties:
+        user:
+          type: integer
+        display_name:
+          type: string
+          default: default
+          pattern: ^[a-zA-Z0-9-_.~]+$
+          maxLength: 15
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - user
+    Round:
+      type: object
+      description: Roundモデルのシリアライザ
+      properties:
+        round_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        matches:
+          type: array
+          items:
+            $ref: '#/components/schemas/Match'
+          readOnly: true
+      required:
+      - created_at
+      - matches
+      - round_number
+      - updated_at
+    Score:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        pos_x:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        pos_y:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+      required:
+      - created_at
+      - pos_x
+      - pos_y
+    StatusEnum:
+      enum:
+      - not_started
+      - on_going
+      - completed
+      - canceled
+      type: string
+      description: |-
+        * `not_started` - NOT_STARTED
+        * `on_going` - ON_GOING
+        * `completed` - COMPLETED
+        * `canceled` - CANCELED
+    TeamEnum:
+      enum:
+      - '1'
+      - '2'
+      type: string
+      description: |-
+        * `1` - ONE
+        * `2` - TWO
+    TournamentQuery:
+      type: object
+      description: Tournamentモデルのクエリ(読み取り)操作のためのシリアライザ
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        rounds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Round'
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - rounds
+      - updated_at
+    Users:
+      type: object
+      description: |-
+        users app全体で共通のシリアライザ
+        Playerとそれに紐づくUserから、返しても良い情報のみをまとめてシリアライズする
+
+        Usage:
+            - __init__時にkwargsにfieldsを渡すことで、返す情報を動的に変更可能
+            - is_friendを使用する際は、get_is_friend()で使用するためcontextにUSER_IDを渡す必要がある
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+          default: default
+          pattern: ^[a-zA-Z0-9-_.~]+$
+          maxLength: 15
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        is_friend:
+          type: boolean
+          description: |-
+            playerがログインユーザーのフレンドであるかどうかを取得する
+
+            Args:
+                player: Playerインスタンス
+
+            Returns:
+                bool: ログインユーザーのフレンドであればTrue、そうでなければFalse
+          readOnly: true
+        is_blocked:
+          type: boolean
+          description: |-
+            playerがログインユーザーにブロックされているかどうかを取得する
+
+            Args:
+                player: Playerインスタンス
+
+            Returns:
+                bool: ログインユーザーにブロックされていればTrue、そうでなければFalse
+          readOnly: true
+        match_wins:
+          type: integer
+          description: |-
+            playerが勝利したmatchの数を取得する
+
+            Args:
+                player: Playerインスタンス
+
+            Returns:
+                int: 勝利した試合数
+          readOnly: true
+        match_losses:
+          type: integer
+          description: |-
+            playerが敗北したmatchの数を取得する
+            matchのstatusがCOMPLETEDかつis_win==Falseのものをカウントする
+
+            Args:
+                player: Playerインスタンス
+
+            Returns:
+                int: 敗北した試合数
+          readOnly: true
+      required:
+      - email
+      - id
+      - is_blocked
+      - is_friend
+      - match_losses
+      - match_wins
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
