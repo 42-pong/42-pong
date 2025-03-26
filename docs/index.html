@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pong API Documentation</title>
+    <!-- Swagger UI CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.css" >
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <!-- Swagger UI Bundle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js"></script>
+    <script>
+      window.onload = function() {
+        const ui = SwaggerUIBundle({
+          url: 'openapi.yaml',
+          dom_id: '#swagger-ui',
+        });
+      };
+    </script>
+  </body>
+</html>

@@ -6,6 +6,7 @@ on:
 jobs:
   discussion-discord-notification:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: post message via discord-webhook-url
         run: |
@@ -58,7 +59,7 @@ jobs:
           DISCUSSION_USER_LOGIN='${{ github.event.discussion.user.login }}'
           DISCUSSION_USER_URL='${{ github.event.discussion.user.html_url }}'
           DISCUSSION_USER_AVATAR_URL='${{ github.event.discussion.user.avatar_url }}'
-          DISCUSSION_USER_INFO="$(echo '${{ vars.MEMBERS }}' | jq -r .\"${DISCUSSION_USER_LOGIN}\")"
+          DISCUSSION_USER_INFO="$(echo '${{ secrets.MEMBERS }}' | jq -r .\"${DISCUSSION_USER_LOGIN}\")"
           DISCUSSION_USER_COLOR="$(echo "${DISCUSSION_USER_INFO}" | jq -r .\"color\")"
 
           # random adjective

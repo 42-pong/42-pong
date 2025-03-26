@@ -1,0 +1,142 @@
+# # このファイルには以下のツールの設定が含まれています：
+# - ruff
+# - mypy
+# このプロジェクトのすべての設定はこのファイルに含まれています。
+
+[tool.ruff]
+target-version = "py313"
+
+# チェック対象から除外するディレクトリを選択
+# 公式と同じものを除外
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+# PEP8に準拠したこの長さになるようformatterは最善を尽くすだけで、必ずしもこの文字数にはならない。
+line-length = 79
+# PEP8に準拠
+indent-width = 4
+
+
+[tool.ruff.lint]
+select = [
+  "N", # PEP8準拠の命名規則
+  "E", # PEP8のコーディングルール
+  "W", # PEP8のコーディングルール
+  "F", # 論理エラー
+  "C90", # 複雑度チェック: デフォルトは10
+  # TODO: pong/settings.pyのSEACRET_KEYを環境変数にしたらコメントアウト外す
+  # "S", # セキュリティチェック
+]
+
+# checkしない項目
+ignore = [
+    # 将来的に廃止される非推奨なルールはignoreさせる。
+    "ANN1",   # selfとclsの型注釈が不足している
+    "E999",   # 構文エラー
+    "UP027",  # アンパックされたリスト内包表現
+    "PT004",  # pytestのフィクスチャ名にアンダースコアが不足
+    "PT005",  # pytestのフィクスチャ名が不正
+    "TD001",  # 不正なTODOタグ
+    "TD002",  # TODOタグの作成者が不足
+    "TD003",  # TODOタグのリンクが不足
+    "PD011",  # pandasのドット値の使用
+
+    # formatterとconflictしているルールは除外する。
+    "W191",   # タブインデント
+    "E111",   # 不正な複数インデント
+    "E114",   # 不正な複数インデント（コメント）
+    "E117",   # インデントが多すぎる
+    "D206",   # スペースによるインデント
+    "D300",   # トリプルシングルクオート
+    "Q000",   # インライン文字列の不正なクオート
+    "Q001",   # 複数行文字列の不正なクオート
+    "Q002",   # ドキュメンテーション文字列の不正なクオート
+    "Q003",   # 不必要なエスケープされたクオート
+    "COM812", # 末尾のカンマが足りない
+    "COM819", # 禁止された末尾のカンマ
+    "ISC001", # 1行の暗黙的文字列連結
+    "ISC002",  # 複数行の暗黙的文字列連結
+
+    # formatterで管理するものは除外
+    "E501", # 行の長さ
+    "D",    # docstring
+]
+
+
+# アンダースコア始まりの変数を許可
+# for文などで_を使う場合に有用
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.extend-per-file-ignores]
+# ここでテストファイルには適用したくないルールを追加する
+
+# __init__.pyファイル内の未使用のインポートを許可
+"__init__.py" = ["F401"]
+
+[tool.ruff.format]
+# すべてBlackのコーディングスタイルに従っています。
+quote-style = "double"
+
+indent-style = "space"
+
+# リストや辞書、関数の引数などで最後の項目の後にカンマを追加します
+skip-magic-trailing-comma = false
+
+# 適切な行末の改行文字（LFまたはCRLF）を自動的に判別
+line-ending = "auto"
+
+# docstring内のコード例を自動的にフォーマットする機能を有効にする。
+# reStructuredTextのコード/リテラルブロック、doctestsがサポートされます。
+# docstring は、三重引用符（""" または '''）で囲まれた文字列リテラルとして記述されます。
+docstring-code-format = true
+
+# docstring内のコードスニペットをフォーマットする際に使用する行長制限を設定
+docstring-code-line-length = "dynamic"
+
+
+[tool.mypy]
+# mypy の一般設定をここに記述
+python_version = 3.13
+# 型アノテーションのない関数を呼び出すことや定義することを禁止します。
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+
+# djano-stubsを認識させるためにplugins,django_settings_moduleが必要
+# https://github.com/typeddjango/django-stubs
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "pong.settings"
+
+[tool.pytest.ini_options]
+python_files = "pytest_*.py"
+DJANGO_SETTINGS_MODULE = "pong.settings"
+# 非同期テスト用のイベントループのスコープを指定。
+# 各テスト関数ごとに新しいasyncioイベントループを作成し、テスト終了後に破棄する。
+asyncio_default_fixture_loop_scope = "function"

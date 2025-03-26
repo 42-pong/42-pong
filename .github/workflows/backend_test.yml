@@ -1,0 +1,91 @@
+name: Backend Test
+
+on:
+  pull_request:
+    paths:
+      - 'backend/pong/**'
+      - '.github/workflows/backend_test.yml'
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # GitHubリポジトリの設定で定義した変数を.envファイルに書き込む
+      - name: Create .env file
+        run: |
+          cat <<-EOF > .env
+            FRONT_SERVER_PORT="${{ vars.FRONT_SERVER_PORT }}"
+            BACKEND_SERVER_PORT="${{ vars.BACKEND_SERVER_PORT }}"
+            DEBUG="${{ vars.DEBUG }}"
+            SECRET_KEY="${{ secrets.SECRET_KEY }}"
+            SUPERUSER_NAME="${{ secrets.SUPERUSER_NAME }}"
+            SUPERUSER_EMAIL="${{ secrets.SUPERUSER_EMAIL }}"
+            SUPERUSER_PASSWORD="${{ secrets.SUPERUSER_PASSWORD }}"
+            OAUTH2_CLIENT_ID="${{ secrets.OAUTH2_CLIENT_ID }}"
+            OAUTH2_CLIENT_SECRET_KEY="${{ secrets.OAUTH2_CLIENT_SECRET_KEY }}"
+            OAUTH2_AUTHORIZATION_ENDPOINT="${{ vars.OAUTH2_AUTHORIZATION_ENDPOINT }}"
+            OAUTH2_TOKEN_ENDPOINT="${{ vars.OAUTH2_TOKEN_ENDPOINT }}"
+            DB_NAME="${{ secrets.DB_NAME }}"
+            DB_USER="${{ secrets.DB_USER }}"
+            DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            JWS_SECRET_KEY="${{ secrets.JWS_SECRET_KEY }}"
+            REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+            REDIS_CHANNEL_LAYER_DB="${{ secrets.REDIS_CHANNEL_LAYER_DB }}"
+            REDIS_STORE_DB="${{ secrets.REDIS_STORE_DB }}"
+          EOF
+
+      # backendコンテナのtestがDBコンテナに依存しているため、DBコンテナを先に起動する
+      # --waitオプションによりstateがhealthyになるまで待機する
+      # backendコンテナと同時に起動しない理由は、エラー時に問題を切り分けるため
+      - name: Set up db container with docker compose
+        run: docker compose -f compose.yaml up -d db --wait
+
+      # DBコンテナのログを確認する
+      - name: Check db container logs
+        run: docker compose -f compose.yaml logs db
+
+      # backendコンテナを起動する
+      # --waitオプションによりstateがhealthyになるまで待機する
+      - name: Set up backend container with docker compose
+        run: docker compose -f compose.yaml up -d backend --wait
+
+      # backendコンテナのログを確認する
+      - name: Check backend container logs
+        run: docker compose -f compose.yaml logs backend
+
+      # backendのtestを実行
+      - name: Run Backend Test
+        run: docker compose -f compose.yaml exec -T backend make test
+
+      # docker composeを停止してクリーンアップする
+      - name: Tear down docker compose
+        run: docker compose -f compose.yaml down
+
+      # エラーなどでDBコンテナがまだ起動中の場合はlogsを確認する
+      - name: Check db container logs
+        if: always()
+        run: |
+          if docker ps | grep -q postgres; then
+            docker compose -f compose.yaml logs db
+          fi
+
+      # エラーなどでbackendコンテナがまだ起動中の場合はlogsを確認する
+      - name: Check backend container logs
+        if: always()
+        run: |
+          if docker ps | grep -q backend; then
+            docker compose -f compose.yaml logs backend
+          fi
+
+      # .envファイルを削除
+      - name: Cleanup sensitive file
+        if: always()
+        run: rm -f .env

@@ -1,0 +1,36 @@
+{
+  "name": "pong",
+  "private": true,
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "start": "npm run build && npm run preview",
+    "prebuild": "npm run clean",
+    "build": "vite build",
+    "postbuild": "npm run msw:clean",
+    "preview": "vite preview",
+    "format": "biome format --write",
+    "lint:check": "biome lint",
+    "check": "biome check",
+    "clean": "rimraf ./dist",
+    "msw:clean": "rm ./dist/mockServiceWorker.js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "esbuild": "^0.25.0",
+    "msw": "^2.7.0",
+    "rimraf": "^6.0.1",
+    "vite": "^5.4.12",
+    "vitest": "^2.1.9"
+  },
+  "msw": {
+    "workerDirectory": ["public"]
+  },
+  "dependencies": {
+    "three": "^0.173.0"
+  }
+}

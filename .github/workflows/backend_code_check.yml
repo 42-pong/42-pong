@@ -1,0 +1,60 @@
+name: Backend Code Check
+
+on:
+  pull_request:
+    paths:
+      - 'backend/pong/**'
+      - '.github/workflows/backend_code_check.yml'
+
+jobs:
+  backend-code-check:
+    runs-on: ubuntu-latest  # GitHub Actionsで使用する環境
+    timeout-minutes: 30
+
+    # 環境変数にデフォルト値が入っていないとmypyでエラーになってしまうので、
+    # pong/settings.pyで使用する環境変数は事前にここで設定する
+    env:
+      FRONT_SERVER_PORT: "${{ vars.FRONT_SERVER_PORT }}"
+      BACKEND_SERVER_PORT: "${{ vars.BACKEND_SERVER_PORT }}"
+      DEBUG: "${{ vars.DEBUG }}"
+      SECRET_KEY: "${{ secrets.SECRET_KEY }}"
+      OAUTH2_CLIENT_ID: "${{ secrets.OAUTH2_CLIENT_ID }}"
+      OAUTH2_CLIENT_SECRET_KEY: "${{ secrets.OAUTH2_CLIENT_SECRET_KEY }}"
+      OAUTH2_AUTHORIZATION_ENDPOINT: "${{ vars.OAUTH2_AUTHORIZATION_ENDPOINT }}"
+      OAUTH2_TOKEN_ENDPOINT: "${{ vars.OAUTH2_TOKEN_ENDPOINT }}"
+      DB_NAME: "${{ secrets.DB_NAME }}"
+      DB_USER: "${{ secrets.DB_USER }}"
+      DB_PASSWORD: "${{ secrets.DB_PASSWORD }}"
+      JWS_SECRET_KEY: "${{ secrets.JWS_SECRET_KEY }}"
+      REDIS_PASSWORD: "${{ secrets.REDIS_PASSWORD }}"
+      REDIS_CHANNEL_LAYER_DB: "${{ secrets.REDIS_CHANNEL_LAYER_DB }}"
+      REDIS_STORE_DB: "${{ secrets.REDIS_STORE_DB }}"
+
+    steps:
+      # ソースコードをチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Pythonのセットアップ
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'  # Pythonのバージョンを指定
+
+      # 依存関係のインストール
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/tools/requirements.txt
+
+      # RuffによるLinterチェック
+      - name: Run Ruff Linter
+        run: make -s lint -C backend/pong
+
+      # Ruffによるフォーマットチェック
+      - name: Run Ruff Formatter
+        run: make -s formatcheck -C backend/pong
+
+      # Mypyによる型チェック
+      - name: Run Mypy Type Checker
+        run: make -s typecheck -C backend/pong
