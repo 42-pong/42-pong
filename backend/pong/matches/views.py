@@ -216,8 +216,11 @@ from .match import serializers
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.CODE: {"type": "list"},
-                        custom_response.ERRORS: {"type": "dict"},
+                        custom_response.CODE: {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
+                        custom_response.ERRORS: {"type": "object"},
                     },
                 },
                 examples=[

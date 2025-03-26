@@ -99,7 +99,10 @@ logger = logging.getLogger(__name__)
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.CODE: {"type": "list"},
+                        custom_response.CODE: {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
                     },
                 },
                 examples=[
@@ -159,7 +162,10 @@ logger = logging.getLogger(__name__)
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.CODE: {"type": "list"},
+                        custom_response.CODE: {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
                     },
                 },
                 examples=[
@@ -214,7 +220,10 @@ logger = logging.getLogger(__name__)
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.CODE: {"type": "list"},
+                        custom_response.CODE: {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
                     },
                 },
                 examples=[
@@ -257,7 +266,10 @@ logger = logging.getLogger(__name__)
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.CODE: {"type": "list"},
+                        custom_response.CODE: {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
                     },
                 },
                 examples=[
@@ -296,7 +308,10 @@ logger = logging.getLogger(__name__)
                     "type": "object",
                     "properties": {
                         custom_response.STATUS: {"type": "string"},
-                        custom_response.CODE: {"type": "list"},
+                        custom_response.CODE: {
+                            "type": "array",
+                            "items": {"type": "string"},
+                        },
                     },
                 },
                 examples=[
