@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
-from jwt import create_token_functions
+from jwt import create_token_functions, serializers
 from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
@@ -20,18 +20,7 @@ class TokenObtainView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
-        request=utils.OpenApiRequest(
-            # todo: email, passwordをシリアライズ作成する
-            examples=[
-                utils.OpenApiExample(
-                    "Example request",
-                    value={
-                        "email": "user@example.com",
-                        "password": "password",
-                    },
-                ),
-            ],
-        ),
+        request=serializers.TokenObtainSerializer,
         responses={
             200: utils.OpenApiResponse(
                 description="アクセストークンとリフレッシュトークンを返す",

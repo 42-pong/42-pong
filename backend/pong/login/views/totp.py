@@ -6,7 +6,7 @@ from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, test, views
 
 from jwt.views import token
-from login import models, two_factor_auth
+from login import models, serializers, two_factor_auth
 from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
@@ -21,18 +21,7 @@ class TotpView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
-        request=utils.OpenApiRequest(
-            examples=[
-                utils.OpenApiExample(
-                    "Example request",
-                    value={
-                        "totp": "123456",
-                        "email": "user@example.com",
-                        "password": "password",
-                    },
-                ),
-            ],
-        ),
+        request=serializers.TotpSerializer,
         responses={
             200: utils.OpenApiResponse(
                 description="アクセストークンとリフレッシュトークンを返す",
@@ -148,12 +137,18 @@ class TotpView(views.APIView):
             return custom_response.CustomResponse(
                 code=["not_exists"], status=status.HTTP_401_UNAUTHORIZED
             )
-        two_fa = models.TwoFactorAuth.objects.get(user_id=user.id)
         totp = request.data.get("totp")
-        if totp is None:
+        if not totp:
             logger.error(f"TOTP fail: {totp}")
             return custom_response.CustomResponse(
                 code=["fail"], status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        two_fa = models.TwoFactorAuth.objects.filter(user_id=user.id).first()
+        if two_fa is None:
+            logger.error(f"2fa does not register: {email}")
+            return custom_response.CustomResponse(
+                code=["not_exists"], status=status.HTTP_401_UNAUTHORIZED
             )
 
         secret = two_fa.secret

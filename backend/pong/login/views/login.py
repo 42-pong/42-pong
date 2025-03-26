@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
-from login import models, two_factor_auth
+from login import models, serializers, two_factor_auth
 from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
@@ -20,17 +20,7 @@ class LoginView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
-        request=utils.OpenApiRequest(
-            examples=[
-                utils.OpenApiExample(
-                    "Example request",
-                    value={
-                        "email": "user@example.com",
-                        "password": "password",
-                    },
-                ),
-            ],
-        ),
+        request=serializers.LoginSerializer,
         responses={
             200: utils.OpenApiResponse(
                 response={

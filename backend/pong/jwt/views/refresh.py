@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from drf_spectacular import utils
 from rest_framework import permissions, request, response, status, views
 
-from jwt import create_token_functions, jwt
+from jwt import create_token_functions, jwt, serializers
 from pong.custom_response import custom_response
 
 logger = logging.getLogger(__name__)
@@ -19,6 +19,7 @@ class TokenRefreshView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
     @utils.extend_schema(
+        request=serializers.TokenRefreshSerializer,
         responses={
             200: utils.OpenApiResponse(
                 description="新しいアクセストークンを返す",
