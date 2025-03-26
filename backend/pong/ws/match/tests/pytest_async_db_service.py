@@ -40,7 +40,7 @@ def create_tournament_and_round() -> tuple[Tournament, Round]:
 
 @mock.patch(
     "accounts.player.identicon.generate_identicon",
-    return_value="avatars/sample.png",
+    return_value="avatars/test.png",
 )
 @database_sync_to_async
 def create_user_and_player(

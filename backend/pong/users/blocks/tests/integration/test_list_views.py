@@ -35,7 +35,7 @@ NEXT: Final[str] = custom_pagination.PaginationFields.NEXT
 PREVIOUS: Final[str] = custom_pagination.PaginationFields.PREVIOUS
 RESULTS: Final[str] = custom_pagination.PaginationFields.RESULTS
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class BlocksListViewTests(test.APITestCase):

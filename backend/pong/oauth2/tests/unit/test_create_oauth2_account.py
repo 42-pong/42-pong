@@ -31,7 +31,7 @@ class CreateOAuth2AccountTestCase(TestCase):
 
     @mock.patch(
         "accounts.player.identicon.generate_identicon",
-        return_value="avatars/sample.png",
+        return_value="avatars/test.png",
     )
     def test_create_oauth2_user(self, mock_identicon: mock.MagicMock) -> None:
         """

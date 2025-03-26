@@ -41,7 +41,7 @@ class MatchParticipationModelTest(TestCase):
 
         @mock.patch(
             "accounts.player.identicon.generate_identicon",
-            return_value="avatars/sample.png",
+            return_value="avatars/test.png",
         )
         def _create_player(
             user: User, mock_identicon: mock.MagicMock

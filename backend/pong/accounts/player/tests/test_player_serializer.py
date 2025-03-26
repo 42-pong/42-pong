@@ -18,7 +18,7 @@ USER: Final[str] = constants.PlayerFields.USER
 DISPLAY_NAME: Final[str] = constants.PlayerFields.DISPLAY_NAME
 AVATAR: Final[str] = constants.PlayerFields.AVATAR
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class PlayerSerializerTests(TestCase):

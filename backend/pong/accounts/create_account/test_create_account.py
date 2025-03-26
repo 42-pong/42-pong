@@ -10,7 +10,7 @@ from rest_framework import serializers
 from ..player import models
 from . import create_account
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 @dataclasses.dataclass(frozen=True)

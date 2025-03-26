@@ -26,7 +26,7 @@ CODE_INVALID: Final[str] = users_constants.Code.INVALID
 CODE_NOT_EXISTS: Final[str] = users_constants.Code.NOT_EXISTS
 CODE_INTERNAL_ERROR: Final[str] = users_constants.Code.INTERNAL_ERROR
 
-MOCK_AVATAR_NAME: Final[str] = "avatars/sample.png"
+MOCK_AVATAR_NAME: Final[str] = "avatars/test.png"
 
 
 class FriendshipDestroySerializerTests(TestCase):
