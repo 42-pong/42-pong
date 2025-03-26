@@ -44,7 +44,7 @@ class TournamentHandler:
         self.manager_registry = manager_registry.global_tournament_registry
         self.user_id: Optional[int] = None
         self.tournament_id: Optional[int] = None
-        self.player_data: Optional[player_data.PlayerData]
+        self.player_data: Optional[player_data.PlayerData] = None
 
     def __str__(self) -> str:
         """
