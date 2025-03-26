@@ -63,6 +63,10 @@ exit  # Exit the backend container.
 - API: REST API (built with Django REST Framework)
 - Development: Adminer (a helper tool for database management)
 
+## Documentation
+
+- Backend: [ER Diagram](https://github.com/42-pong/42-pong/wiki/Backend:-ER%E5%9B%B3)
+
 ## Main Features
 
 - Game
