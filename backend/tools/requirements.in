@@ -21,3 +21,4 @@ pytest-mock
 pytest-xdist
 pyotp
 qrcode
+tblib
