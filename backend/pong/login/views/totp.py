@@ -129,7 +129,7 @@ class TotpView(views.APIView):
                 code=["not_exists"], status=status.HTTP_401_UNAUTHORIZED
             )
         totp = request.data.get("totp")
-        if totp is None:
+        if not totp:
             logger.error(f"TOTP fail: {totp}")
             return custom_response.CustomResponse(
                 code=["fail"], status=status.HTTP_401_UNAUTHORIZED
