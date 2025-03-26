@@ -66,6 +66,7 @@ exit  # Exit the backend container.
 ## Documentation
 
 - Backend: [ER Diagram](https://github.com/42-pong/42-pong/wiki/Backend:-ER%E5%9B%B3)
+- API: [OpenAPI Documentation (Swagger UI)](https://42-pong.github.io/42-pong/)
 
 ## Main Features
 
