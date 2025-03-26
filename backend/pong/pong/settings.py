@@ -80,8 +80,9 @@ DEBUG = env.bool("DEBUG", False)
 
 SECRET_KEY = get_valid_str_env("SECRET_KEY")
 
-# http通信をhttpsにリダイレクトする
-SECURE_SSL_REDIRECT = True
+if not DEBUG:
+    # http通信をhttpsにリダイレクトする
+    SECURE_SSL_REDIRECT = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 ALLOWED_HOSTS: list[str] = ["localhost", "frontend"]
