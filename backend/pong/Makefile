@@ -59,11 +59,18 @@ test:
 	@if [ -z "$(ARG)" ]; then \
 		echo "Running all tests..."; \
 		python manage.py test -v2 --parallel; \
+		TEST_RESULT=$$?; \
 		pytest -v -n auto; \
+		PYTEST_RESULT=$$?; \
 	else \
 		echo "Running tests for: $(ARG)..."; \
 		python manage.py test $(ARG) -v2 --parallel; \
+		TEST_RESULT=$$?; \
 		pytest $(ARG) -v -n auto || (test $$? -eq $(TESTCASE_DOESNOT_EXISTS) && exit 0); \
+		PYTEST_RESULT=$$?; \
+	fi; \
+	if [ $$TEST_RESULT -ne 0 ] || [ $$PYTEST_RESULT -ne 0 ]; then \
+		exit 1; \
 	fi
 
 # -------------------------------------------------------
