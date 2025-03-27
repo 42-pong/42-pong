@@ -1,4 +1,4 @@
-const PORT = import.meta.env.VITE_PORT || 8080;
+const PORT = import.meta.env.VITE_PORT || 443;
 const HOST = `localhost:${PORT}`;
 const BASE_URL = new URL(`https://${HOST}`);
 const WEBSOCKET_BASE_URL = new URL(`wss://${HOST}`);

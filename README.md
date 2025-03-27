@@ -13,7 +13,7 @@ This web application provides a classic Pong game with user authentication featu
 
 1. Create a `.env` file based on `.env.example`.
 2. Run `make`
-3. Open your browser and visit `https://localhost:8080/`
+3. Open your browser and visit `https://localhost/`
 
 ## Adding Mock Users and Games
 
