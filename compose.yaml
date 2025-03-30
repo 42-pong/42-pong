@@ -17,7 +17,7 @@ services:
     networks:
       - transcendence
     healthcheck:
-      test: ["CMD-SHELL", "curl -f https://localhost:8080 -k || exit 1"]
+      test: ["CMD-SHELL", "curl -f https://localhost:8443 -k || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 6
