@@ -1,6 +1,10 @@
 # docker compose
-COMPOSE_FILE		:=	compose.yaml
-DOCKER_COMPOSE		:=	docker compose -f $(COMPOSE_FILE)
+COMPOSE_FILE			:=	compose.yaml
+COMPOSE_FILE_OVERRIDE	:=	compose.override.yaml
+COMPOSE_FILE_PROD		:=	compose.prod.yaml
+
+DOCKER_COMPOSE			:=	docker compose -f $(COMPOSE_FILE) -f $(COMPOSE_FILE_PROD)
+DOCKER_COMPOSE_DEV		:=	docker compose -f $(COMPOSE_FILE) -f $(COMPOSE_FILE_OVERRIDE)
 
 FRONTEND_SERVICE	:=	frontend
 BACKEND_SERVICE		:=	backend
@@ -59,6 +63,14 @@ start:
 .PHONY: stop
 stop:
 	@$(DOCKER_COMPOSE) stop
+
+.PHONY: dev-up
+dev-up:
+	@$(DOCKER_COMPOSE_DEV) up --build -d
+
+.PHONY: dev-down
+dev-down:
+	@$(DOCKER_COMPOSE_DEV) down
 
 # -------------------------------------------------------
 # docker ps
